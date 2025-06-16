@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phialo Design - Homepage Mockups</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .mockups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .mockup-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .mockup-thumbnail {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mockup-iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            transform: scale(0.5);
+            transform-origin: top left;
+        }
+
+        .mockup-info {
+            padding: 30px;
+        }
+
+        .version-number {
+            font-size: 0.9rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .mockup-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .mockup-description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Version 1 Colors */
+        .v1-primary { background: #0A192F; }
+        .v1-secondary { background: #D4AF37; }
+        .v1-accent { background: #E5E4E2; }
+
+        /* Version 2 Colors */
+        .v2-primary { background: #0066FF; }
+        .v2-secondary { background: #FF6B6B; }
+        .v2-accent { background: #00FF88; }
+
+        /* Version 3 Colors */
+        .v3-primary { background: #2C3E50; }
+        .v3-secondary { background: #17A2B8; }
+        .v3-accent { background: #FFA726; }
+
+        .view-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            background: #555;
+            transform: translateX(5px);
+        }
+
+        .instructions {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .instructions p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #666;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .mockups-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .mockup-info {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Phialo Design Homepage Mockups</h1>
+            <p class="subtitle">Three distinct design concepts for your jewelry and 3D design business</p>
+        </header>
+
+        <div class="mockups-grid">
+            <!-- Version 1: Minimalist Elegance -->
+            <div class="mockup-card">
+                <div class="mockup-thumbnail">
+                    <iframe src="version1-mockup.html" class="mockup-iframe"></iframe>
+                </div>
+                <div class="mockup-info">
+                    <p class="version-number">Version 1</p>
+                    <h3 class="mockup-title">Minimalist Elegance</h3>
+                    <p class="mockup-description">
+                        A sophisticated, luxury-focused design that emphasizes high-end jewelry through generous white space, refined typography, and subtle interactions. Perfect for discerning clients who appreciate craftsmanship.
+                    </p>
+                    <div class="color-palette">
+                        <div class="color-swatch v1-primary" title="Deep Midnight Blue"></div>
+                        <div class="color-swatch v1-secondary" title="Warm Gold"></div>
+                        <div class="color-swatch v1-accent" title="Soft Platinum"></div>
+                    </div>
+                    <a href="version1-mockup.html" class="view-button">View Full Mockup →</a>
+                </div>
+            </div>
+
+            <!-- Version 2: Modern Creative -->
+            <div class="mockup-card">
+                <div class="mockup-thumbnail">
+                    <iframe src="version2-mockup.html" class="mockup-iframe"></iframe>
+                </div>
+                <div class="mockup-info">
+                    <p class="version-number">Version 2</p>
+                    <h3 class="mockup-title">Modern Creative</h3>
+                    <p class="mockup-description">
+                        A bold, artistic approach showcasing creative prowess through dynamic layouts, interactive 3D elements, and striking visual contrasts. Appeals to forward-thinking clients and students.
+                    </p>
+                    <div class="color-palette">
+                        <div class="color-swatch v2-primary" title="Electric Blue"></div>
+                        <div class="color-swatch v2-secondary" title="Vibrant Coral"></div>
+                        <div class="color-swatch v2-accent" title="Neon Green"></div>
+                    </div>
+                    <a href="version2-mockup.html" class="view-button">View Full Mockup →</a>
+                </div>
+            </div>
+
+            <!-- Version 3: Professional Educational -->
+            <div class="mockup-card">
+                <div class="mockup-thumbnail">
+                    <iframe src="version3-mockup.html" class="mockup-iframe"></iframe>
+                </div>
+                <div class="mockup-info">
+                    <p class="version-number">Version 3</p>
+                    <h3 class="mockup-title">Professional Educational</h3>
+                    <p class="mockup-description">
+                        A balanced, trustworthy design equally showcasing professional services and educational offerings. Builds credibility through clear hierarchy and easy access to learning resources.
+                    </p>
+                    <div class="color-palette">
+                        <div class="color-swatch v3-primary" title="Professional Navy"></div>
+                        <div class="color-swatch v3-secondary" title="Warm Teal"></div>
+                        <div class="color-swatch v3-accent" title="Soft Orange"></div>
+                    </div>
+                    <a href="version3-mockup.html" class="view-button">View Full Mockup →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>How to Use These Mockups</h2>
+            <p>These are static HTML/CSS mockups designed to showcase the visual design concepts for your Phialo Design homepage.</p>
+            <ul>
+                <li>Click "View Full Mockup" to see each design in full screen</li>
+                <li>All mockups are responsive and will adapt to different screen sizes</li>
+                <li>The designs use placeholder content and CSS-based graphics to represent jewelry and 3D designs</li>
+                <li>Each version represents a different approach to presenting your brand and services</li>
+                <li>These mockups can be used as a starting point for the final website development</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
