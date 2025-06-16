@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phialo Design - Professional Educational</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&family=Roboto+Slab:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2C3E50;
+            --secondary: #17A2B8;
+            --accent: #FFA726;
+            --bg-gray: #F8F9FA;
+            --bg-white: #FFFFFF;
+            --text-dark: #333333;
+            --text-medium: #666666;
+            --border-light: #E9ECEF;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            background: var(--bg-gray);
+        }
+
+        /* Utility Bar */
+        .utility-bar {
+            background: var(--primary);
+            color: white;
+            padding: 8px 5%;
+            font-size: 14px;
+        }
+
+        .utility-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .utility-left {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .utility-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .utility-bar a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .utility-bar a:hover {
+            opacity: 0.8;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-option {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .lang-option.active {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        /* Main Header */
+        header {
+            background: white;
+            padding: 20px 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .main-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .main-nav a:hover {
+            color: var(--secondary);
+        }
+
+        .main-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        .main-nav a:hover::after {
+            width: 100%;
+        }
+
+        .header-ctas {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1490A4;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #FF8F00;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: white;
+            padding: 80px 5%;
+        }
+
+        .hero-container {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            gap: 60px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-content h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            margin-bottom: 30px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .trust-badges {
+            display: flex;
+            gap: 40px;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .badge-text {
+            font-size: 14px;
+            color: var(--text-medium);
+        }
+
+        .hero-showcase {
+            position: relative;
+            height: 400px;
+            background: var(--bg-gray);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .showcase-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .showcase-item.active {
+            opacity: 1;
+        }
+
+        .showcase-content {
+            text-align: center;
+            color: white;
+        }
+
+        .showcase-content h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .showcase-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .dot.active {
+            background: white;
+        }
+
+        /* Tab Section */
+        .services-portfolio {
+            padding: 80px 5%;
+            background: white;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 60px;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-medium);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: var(--secondary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--secondary);
+        }
+
+        .tab-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .service-card {
+            text-align: center;
+            padding: 40px 30px;
+            background: var(--bg-gray);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .service-card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .service-card p {
+            color: var(--text-medium);
+            margin-bottom: 20px;
+        }
+
+        .service-card a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: gap 0.3s ease;
+        }
+
+        .service-card a:hover {
+            gap: 10px;
+        }
+
+        /* Academy Section */
+        .academy {
+            padding: 80px 5%;
+            background: var(--bg-gray);
+        }
+
+        .academy-hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .instructor-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .instructor-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+        }
+
+        .instructor-details h4 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .learning-paths {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto 60px;
+        }
+
+        .path-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .path-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+
+        .beginner { background: #4CAF50; }
+        .professional { background: var(--secondary); }
+        .masterclass { background: #FFD700; }
+
+        .path-card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 20px 0 15px;
+        }
+
+        .path-card ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .path-card li {
+            padding: 8px 0;
+            color: var(--text-medium);
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .path-card li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+        }
+
+        .academy-features {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-box h4 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary);
+            margin: 15px 0 10px;
+        }
+
+        .feature-number {
+            font-family: 'Roboto Slab', serif;
+            font-size: 2.5rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        /* Trust Section */
+        .trust-section {
+            padding: 80px 5%;
+            background: white;
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .trust-column h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .client-logos {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .client-logo {
+            height: 40px;
+            background: var(--bg-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-medium);
+            font-size: 12px;
+        }
+
+        .testimonial-card {
+            background: var(--bg-gray);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-card p {
+            font-style: italic;
+            color: var(--text-medium);
+            margin-bottom: 10px;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .author-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+        }
+
+        .author-info {
+            font-size: 14px;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .certification-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .cert-badge {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-gray);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .awards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .award-item {
+            padding: 15px;
+            background: var(--bg-gray);
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .media-mentions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .media-item {
+            padding: 10px;
+            background: var(--bg-gray);
+            border-radius: 5px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Resources Hub */
+        .resources {
+            padding: 80px 5%;
+            background: var(--bg-gray);
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .resource-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .resource-image {
+            height: 150px;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+        }
+
+        .resource-content {
+            padding: 25px;
+        }
+
+        .resource-category {
+            font-size: 12px;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .resource-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .resource-meta {
+            font-size: 14px;
+            color: var(--text-medium);
+        }
+
+        .newsletter-signup {
+            background: var(--primary);
+            color: white;
+            padding: 60px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 60px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .newsletter-signup h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .newsletter-btn {
+            padding: 15px 30px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .newsletter-btn:hover {
+            background: #FF8F00;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 60px 5% 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            max-width: 1400px;
+            margin: 0 auto 40px;
+        }
+
+        .footer-about {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            flex-shrink: 0;
+        }
+
+        .footer-column h4 {
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        .footer-column a {
+            display: block;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-column a:hover {
+            color: white;
+        }
+
+        .office-hours {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .legal-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .legal-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 25px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .utility-content,
+            .header-ctas {
+                display: none;
+            }
+
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .trust-badges {
+                justify-content: center;
+            }
+
+            .services-grid,
+            .learning-paths,
+            .academy-features,
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .trust-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-about {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Utility Bar -->
+    <div class="utility-bar">
+        <div class="utility-content">
+            <div class="utility-left">
+                <span>📧 info@phialo.design</span>
+                <span>📞 +41 123 456 789</span>
+            </div>
+            <div class="utility-right">
+                <div class="language-selector">
+                    <span class="lang-option active">DE</span>
+                    <span class="lang-option">EN</span>
+                </div>
+                <span>|</span>
+                <a href="#">Login</a>
+                <span>/</span>
+                <a href="#">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">PHIALO</div>
+            <nav class="main-nav">
+                <a href="#services">Services</a>
+                <a href="#portfolio">Portfolio</a>
+                <a href="#academy">Academy</a>
+                <a href="#resources">Resources</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </nav>
+            <div class="header-ctas">
+                <a href="#" class="btn btn-primary">Get Quote</a>
+                <a href="#" class="btn btn-secondary">Start Learning</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Master 3D Design<br>Create Custom Jewelry</h1>
+                <p>Professional 3D design services and comprehensive online education from industry experts</p>
+                <div class="hero-buttons">
+                    <a href="#services" class="btn btn-primary">Explore Services</a>
+                    <a href="#academy" class="btn btn-secondary">Browse Courses</a>
+                </div>
+                <div class="trust-badges">
+                    <div class="trust-badge">
+                        <span class="badge-number">500+</span>
+                        <span class="badge-text">Students<br>Worldwide</span>
+                    </div>
+                    <div class="trust-badge">
+                        <span class="badge-number">10</span>
+                        <span class="badge-text">Years<br>Experience</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-showcase">
+                <div class="showcase-item active">
+                    <div class="showcase-content">
+                        <h3>Portfolio Showcase</h3>
+                        <p>Exceptional Jewelry Designs</p>
+                    </div>
+                </div>
+                <div class="showcase-item">
+                    <div class="showcase-content">
+                        <h3>Course Preview</h3>
+                        <p>Learn from Professionals</p>
+                    </div>
+                </div>
+                <div class="showcase-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services & Portfolio Section -->
+    <section id="services" class="services-portfolio">
+        <div class="section-header">
+            <h2>What We Offer</h2>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active">Our Services</div>
+            <div class="tab">Recent Work</div>
+            <div class="tab">Process</div>
+        </div>
+        
+        <div class="tab-content">
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon"></div>
+                    <h3>Custom Design</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+                    <a href="#">Learn More →</a>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon"></div>
+                    <h3>3D Visualization</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+                    <a href="#">Learn More →</a>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon"></div>
+                    <h3>Prototyping</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+                    <a href="#">Learn More →</a>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon"></div>
+                    <h3>Consultation</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+                    <a href="#">Learn More →</a>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon"></div>
+                    <h3>Production Support</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+                    <a href="#">Learn More →</a>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon"></div>
+                    <h3>Training</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.</p>
+                    <a href="#">Learn More →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Academy Section -->
+    <section id="academy" class="academy">
+        <div class="academy-hero">
+            <h2 class="section-header">Learn from a Professional</h2>
+            <div class="instructor-info">
+                <div class="instructor-photo"></div>
+                <div class="instructor-details">
+                    <h4>Georg Saner</h4>
+                    <p>Master Jeweler & 3D Design Expert</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="learning-paths">
+            <div class="path-card">
+                <div class="path-indicator beginner"></div>
+                <h3>Beginner Path</h3>
+                <ul>
+                    <li>Introduction to 3D Design</li>
+                    <li>Basic Jewelry Concepts</li>
+                    <li>Software Fundamentals</li>
+                    <li>First Projects</li>
+                </ul>
+                <a href="#" class="btn btn-primary">Start Learning</a>
+            </div>
+            <div class="path-card">
+                <div class="path-indicator professional"></div>
+                <h3>Professional Path</h3>
+                <ul>
+                    <li>Advanced Techniques</li>
+                    <li>Complex Designs</li>
+                    <li>Client Management</li>
+                    <li>Business Skills</li>
+                </ul>
+                <a href="#" class="btn btn-primary">Level Up</a>
+            </div>
+            <div class="path-card">
+                <div class="path-indicator masterclass"></div>
+                <h3>Masterclasses</h3>
+                <ul>
+                    <li>Specialized Workshops</li>
+                    <li>Guest Experts</li>
+                    <li>Latest Trends</li>
+                    <li>Exclusive Content</li>
+                </ul>
+                <a href="#" class="btn btn-primary">Join Elite</a>
+            </div>
+        </div>
+        
+        <div class="academy-features">
+            <div class="feature-box">
+                <div class="feature-number">50+</div>
+                <h4>Video Courses</h4>
+            </div>
+            <div class="feature-box">
+                <div class="feature-number">24/7</div>
+                <h4>Access</h4>
+            </div>
+            <div class="feature-box">
+                <div class="feature-number">100%</div>
+                <h4>Satisfaction</h4>
+            </div>
+            <div class="feature-box">
+                <div class="feature-number">1-on-1</div>
+                <h4>Mentoring</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust-section">
+        <div class="section-header">
+            <h2>Trust & Credibility</h2>
+        </div>
+        
+        <div class="trust-grid">
+            <div class="trust-column">
+                <h4>Client Partners</h4>
+                <div class="client-logos">
+                    <div class="client-logo">BRAND 1</div>
+                    <div class="client-logo">BRAND 2</div>
+                    <div class="client-logo">BRAND 3</div>
+                </div>
+            </div>
+            
+            <div class="trust-column">
+                <h4>Student Success</h4>
+                <div class="testimonial-card">
+                    <p>"Excellent course structure and support!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-photo"></div>
+                        <div class="author-info">
+                            <div class="author-name">Maria S.</div>
+                            <div>Designer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="trust-column">
+                <h4>Certifications</h4>
+                <div class="certification-badges">
+                    <div class="cert-badge">ISO 9001</div>
+                    <div class="cert-badge">Swiss Made</div>
+                </div>
+            </div>
+            
+            <div class="trust-column">
+                <h4>Awards</h4>
+                <div class="awards-list">
+                    <div class="award-item">Design Award 2023</div>
+                    <div class="award-item">Best Education Platform</div>
+                </div>
+            </div>
+            
+            <div class="trust-column">
+                <h4>Media</h4>
+                <div class="media-mentions">
+                    <div class="media-item">Featured in Design Weekly</div>
+                    <div class="media-item">Swiss TV Interview</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Hub -->
+    <section id="resources" class="resources">
+        <div class="section-header">
+            <h2>Resources & Knowledge</h2>
+        </div>
+        
+        <div class="resources-grid">
+            <div class="resource-card">
+                <div class="resource-image"></div>
+                <div class="resource-content">
+                    <div class="resource-category">Blog</div>
+                    <h3 class="resource-title">Latest 3D Design Trends</h3>
+                    <p class="resource-meta">5 min read</p>
+                </div>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-image"></div>
+                <div class="resource-content">
+                    <div class="resource-category">Tutorial</div>
+                    <h3 class="resource-title">Beginner's Guide to Blender</h3>
+                    <p class="resource-meta">Video - 15 min</p>
+                </div>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-image"></div>
+                <div class="resource-content">
+                    <div class="resource-category">Tools</div>
+                    <h3 class="resource-title">Recommended Software</h3>
+                    <p class="resource-meta">Updated weekly</p>
+                </div>
+            </div>
+            
+            <div class="resource-card">
+                <div class="resource-image"></div>
+                <div class="resource-content">
+                    <div class="resource-category">News</div>
+                    <h3 class="resource-title">Industry Updates</h3>
+                    <p class="resource-meta">Latest insights</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="newsletter-signup">
+            <h3>Get Weekly Design Tips</h3>
+            <p>Join our community and stay updated with the latest trends and techniques</p>
+            <form class="newsletter-form">
+                <input type="email" class="newsletter-input" placeholder="Your email address">
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <div class="footer-about">
+                    <div class="footer-photo"></div>
+                    <div>
+                        <h4>About Phialo</h4>
+                        <p>Professional 3D jewelry design services combined with comprehensive online education. Learn from industry experts and create stunning designs.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Quick Links</h4>
+                <a href="#">Services</a>
+                <a href="#">Portfolio</a>
+                <a href="#">Academy</a>
+                <a href="#">Blog</a>
+                <a href="#">Contact</a>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Student Support</h4>
+                <a href="#">FAQ</a>
+                <a href="#">Contact Support</a>
+                <a href="#">Community Forum</a>
+                <div class="office-hours">
+                    <strong>Office Hours:</strong><br>
+                    Mon-Fri: 9AM-6PM CET<br>
+                    Sat: 10AM-2PM CET
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Connect</h4>
+                <a href="#">LinkedIn</a>
+                <a href="#">YouTube</a>
+                <a href="#">Instagram</a>
+                <a href="#">Newsletter</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="legal-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+            <div class="payment-methods">
+                <div class="payment-icon"></div>
+                <div class="payment-icon"></div>
+                <div class="payment-icon"></div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Showcase slider
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.showcase-item');
+        const dots = document.querySelectorAll('.dot');
+
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+        }
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                showSlide(currentSlide);
+            });
+        });
+
+        // Auto-rotate slides
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }, 5000);
+
+        // Tab functionality
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
