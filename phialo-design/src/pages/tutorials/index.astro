@@ -1,0 +1,257 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Button from '../../components/common/Button.astro';
+
+const title = 'Tutorials | Phialo Design';
+const description = 'Learn about gemstones, jewelry care, and design insights from our expert team.';
+
+const allTutorials = [
+  {
+    id: 1,
+    title: 'Gemstone Authentication Guide',
+    description: 'Learn to identify authentic gemstones and understand quality certificates with our comprehensive guide.',
+    image: '/images/tutorials/gemstone-auth.jpg',
+    duration: '15 min read',
+    category: 'Education',
+    featured: true,
+    published: '2025-06-10',
+    excerpt: 'Master the art of gemstone authentication with expert techniques and professional insights.',
+  },
+  {
+    id: 2,
+    title: 'Essential Jewelry Care Tips',
+    description: 'Preserve the beauty and value of your precious jewelry with proper care and maintenance techniques.',
+    image: '/images/tutorials/jewelry-care.jpg',
+    duration: '10 min read',
+    category: 'Care',
+    featured: false,
+    published: '2025-06-08',
+    excerpt: 'Keep your jewelry looking pristine with these professional care recommendations.',
+  },
+  {
+    id: 3,
+    title: 'Gemstone Investment Guide',
+    description: 'Understanding market trends and investment potential in the world of precious gemstones.',
+    image: '/images/tutorials/gem-investment.jpg',
+    duration: '20 min read',
+    category: 'Investment',
+    featured: true,
+    published: '2025-06-05',
+    excerpt: 'Discover which gemstones offer the best investment opportunities and long-term value.',
+  },
+  {
+    id: 4,
+    title: 'Custom Design Process',
+    description: 'Take a behind-the-scenes look at how we create bespoke jewelry pieces from concept to completion.',
+    image: '/images/tutorials/custom-design.jpg',
+    duration: '12 min read',
+    category: 'Design',
+    featured: false,
+    published: '2025-06-03',
+    excerpt: 'Follow the journey of a custom piece from initial sketch to finished masterpiece.',
+  },
+  {
+    id: 5,
+    title: 'Understanding Diamond Quality',
+    description: 'The complete guide to the 4 Cs of diamonds and how they affect value and beauty.',
+    image: '/images/tutorials/diamond-quality.jpg',
+    duration: '18 min read',
+    category: 'Education',
+    featured: false,
+    published: '2025-06-01',
+    excerpt: 'Learn what makes a diamond exceptional and how to evaluate quality like a professional.',
+  },
+  {
+    id: 6,
+    title: 'Colored Stone Varieties',
+    description: 'Explore the fascinating world of colored gemstones from sapphires to emeralds.',
+    image: '/images/tutorials/colored-stones.jpg',
+    duration: '14 min read',
+    category: 'Education',
+    featured: true,
+    published: '2025-05-28',
+    excerpt: 'Discover the unique characteristics and appeal of colored gemstones.',
+  },
+];
+
+const categories = ['All', 'Education', 'Care', 'Investment', 'Design'];
+---
+
+<PageLayout title={title} description={description}>
+  <!-- Hero Section -->
+  <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
+          Learn & Explore
+        </h1>
+        <p class="text-xl text-neutral-600 leading-relaxed">
+          Discover the fascinating world of gemstones and jewelry through our expert guides, 
+          tips, and insights from three decades of experience.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Section -->
+  <section class="py-12 border-b border-neutral-200">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-wrap justify-center gap-4">
+        {categories.map((category) => (
+          <button 
+            class="px-6 py-2 rounded-full border border-neutral-300 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition-colors filter-btn"
+            data-category={category.toLowerCase()}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Tutorials Grid -->
+  <section class="py-20">
+    <div class="container mx-auto px-6">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="tutorials-grid">
+        {allTutorials.map((tutorial) => (
+          <article 
+            class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 tutorial-card"
+            data-category={tutorial.category.toLowerCase()}
+          >
+            <!-- Image -->
+            <div class="relative h-48 bg-neutral-200">
+              <img 
+                src={tutorial.image} 
+                alt={tutorial.title}
+                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
+              {tutorial.featured && (
+                <div class="absolute top-4 left-4">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-600 text-white">
+                    Featured
+                  </span>
+                </div>
+              )}
+              <div class="absolute top-4 right-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/90 text-neutral-700">
+                  {tutorial.duration}
+                </span>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-neutral-100 text-neutral-700">
+                  {tutorial.category}
+                </span>
+                <span class="text-xs text-neutral-500">
+                  {new Date(tutorial.published).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </span>
+              </div>
+              
+              <h3 class="text-xl font-semibold text-neutral-900 mb-3">
+                {tutorial.title}
+              </h3>
+              
+              <p class="text-neutral-600 mb-6">
+                {tutorial.excerpt}
+              </p>
+
+              <a 
+                href={`/tutorials/${tutorial.id}`}
+                class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
+              >
+                Read Tutorial
+                <svg 
+                  class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section class="py-20 bg-neutral-900 text-white">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-4xl font-light mb-6">
+        Stay Updated
+      </h2>
+      <p class="text-xl text-neutral-300 mb-10 max-w-2xl mx-auto">
+        Get the latest tutorials, insights, and exclusive content delivered to your inbox.
+      </p>
+      
+      <form class="max-w-md mx-auto flex gap-4">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          class="flex-1 px-4 py-3 rounded-lg bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+        />
+        <Button type="submit" variant="primary" size="md">
+          Subscribe
+        </Button>
+      </form>
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  // Filter functionality
+  function initTutorialFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const tutorialCards = document.querySelectorAll('.tutorial-card');
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category');
+
+        // Update active button
+        filterButtons.forEach(btn => {
+          btn.classList.remove('border-primary-500', 'text-primary-600', 'bg-primary-50');
+          btn.classList.add('border-neutral-300', 'text-neutral-600');
+        });
+        
+        button.classList.remove('border-neutral-300', 'text-neutral-600');
+        button.classList.add('border-primary-500', 'text-primary-600', 'bg-primary-50');
+
+        // Filter cards
+        tutorialCards.forEach(card => {
+          const cardCategory = card.getAttribute('data-category');
+          
+          if (category === 'all' || cardCategory === category) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeIn 0.3s ease-in-out';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Set initial active state
+    filterButtons[0]?.click();
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', initTutorialFilters);
+</script>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

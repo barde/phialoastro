@@ -1,0 +1,177 @@
+---
+import { Image } from 'astro:assets';
+import AnimatedText from '../common/AnimatedText';
+import Button from '../common/Button.astro';
+import QualityBadge from '../common/QualityBadge.astro';
+---
+
+<section class="hero relative min-h-screen flex items-center justify-center overflow-hidden">
+  <!-- Background -->
+  <div class="hero-bg absolute inset-0">
+    <!-- Gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>
+      <!-- 3D Jewelry piece placeholder with parallax -->
+    <div 
+      class="hero-jewelry absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-20"
+      data-parallax="0.3"
+    >
+      <div class="jewelry-placeholder w-full h-full bg-gradient-to-br from-gold/30 to-midnight/20 rounded-full animate-float shadow-luxury"></div>
+    </div>
+    
+    <!-- Subtle pattern overlay -->
+    <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 1px 1px, rgba(10,25,47,0.15) 1px, transparent 0); background-size: 60px 60px;"></div>
+  </div>
+  
+  <!-- Content -->
+  <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">
+    <AnimatedText client:load>
+      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-midnight mb-8 leading-tight">
+        Wo Schmuck auf
+        <span class="text-gold block md:inline"> Innovation</span>
+        trifft
+      </h1>
+    </AnimatedText>
+    
+    <div class="hero-subtext animate-fade-in-delay-1">
+      <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+        3D Design <span class="text-gold">·</span> 
+        Individuelle Kreationen <span class="text-gold">·</span> 
+        Expertise
+      </p>
+    </div>
+      <div class="hero-cta animate-fade-in-delay-2">
+      <Button 
+        href="/portfolio" 
+        variant="ghost"
+        size="lg"
+        class="group magnetic-cursor"
+      >
+        Portfolio entdecken
+        <svg 
+          class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </Button>
+    </div>
+
+    <!-- Quality badges -->
+    <div class="hero-badges mt-12 flex flex-wrap justify-center gap-4 animate-fade-in-delay-3">
+      <QualityBadge type="handmade" />
+      <QualityBadge type="swiss" />
+      <QualityBadge type="custom" />
+    </div>
+    
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div class="w-6 h-10 border-2 border-gray-300 rounded-full flex justify-center">
+        <div class="w-1 h-3 bg-gray-300 rounded-full mt-2 animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+  
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-fade-in-delay-1 {
+    animation: fade-in-up 0.8s ease-out 0.3s both;
+  }
+    .animate-fade-in-delay-2 {
+    animation: fade-in-up 0.8s ease-out 0.6s both;
+  }
+  
+  .animate-fade-in-delay-3 {
+    animation: fade-in-up 0.8s ease-out 1.5s both;
+  }
+
+  .magnetic-cursor {
+    transition: transform 0.3s ease-out;
+  }
+
+  .magnetic-cursor:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Subtle parallax effect */
+  .hero-jewelry {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  /* Ensure hero takes up full viewport on mobile */
+  @media (max-height: 640px) {
+    .hero {
+      min-height: 640px;
+    }
+  }
+</style>
+
+<script>
+  // Parallax effect for hero background
+  function initHeroParallax() {
+    const hero = document.querySelector('.hero');
+    const jewelry = document.querySelector('.hero-jewelry');
+    
+    if (!hero || !jewelry) return;
+    
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const heroHeight = hero.clientHeight;
+      const scrollPercent = scrollY / heroHeight;
+      
+      if (scrollPercent <= 1) {
+        // Subtle parallax movement
+        jewelry.style.transform = `translate(-50%, -50%) translateY(${scrollY * 0.3}px) rotate(${scrollY * 0.05}deg)`;
+      }
+    };
+    
+    // Throttle scroll events
+    let ticking = false;
+    const throttledScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+  }
+  
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroParallax);
+  } else {
+    initHeroParallax();
+  }
+  
+  // Re-initialize on page transitions
+  document.addEventListener('astro:page-load', initHeroParallax);
+</script>

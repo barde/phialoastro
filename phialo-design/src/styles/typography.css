@@ -1,0 +1,252 @@
+/* Typography System - Version 1: Minimalist Elegance */
+
+/* Import Google Fonts with display: swap for performance */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
+
+/* Base Typography */
+html {
+  font-family: var(--font-secondary);
+  font-size: 16px;
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Heading Styles */
+.heading-display {
+  font-family: var(--font-primary);
+  font-size: var(--text-6xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+}
+
+.heading-1 {
+  font-family: var(--font-primary);
+  font-size: var(--text-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+}
+
+.heading-2 {
+  font-family: var(--font-primary);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+}
+
+.heading-3 {
+  font-family: var(--font-primary);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-primary);
+}
+
+.heading-4 {
+  font-family: var(--font-secondary);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-primary);
+}
+
+.heading-5 {
+  font-family: var(--font-secondary);
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-primary);
+}
+
+.heading-6 {
+  font-family: var(--font-secondary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+/* Body Text Styles */
+.text-lead {
+  font-family: var(--font-secondary);
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+}
+
+.text-body {
+  font-family: var(--font-secondary);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+}
+
+.text-body-small {
+  font-family: var(--font-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.text-caption {
+  font-family: var(--font-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+/* Accent Text Styles */
+.text-accent {
+  font-family: var(--font-accent);
+  font-weight: var(--font-weight-light);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.text-accent-large {
+  font-family: var(--font-accent);
+  font-weight: var(--font-weight-light);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: var(--text-lg);
+}
+
+.text-accent-medium {
+  font-family: var(--font-accent);
+  font-weight: var(--font-weight-light);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: var(--text-base);
+}
+
+.text-accent-small {
+  font-family: var(--font-accent);
+  font-weight: var(--font-weight-light);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+}
+
+/* Special Typography */
+.text-tagline {
+  font-family: var(--font-primary);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  font-style: italic;
+  color: var(--color-text-primary);
+}
+
+.text-hero-subtitle {
+  font-family: var(--font-accent);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-light);
+  line-height: var(--line-height-normal);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* Link Styles */
+.link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--transition-normal);
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-secondary);
+  transition: width var(--transition-normal);
+}
+
+.link:hover {
+  color: var(--color-secondary);
+}
+
+.link:hover::after {
+  width: 100%;
+}
+
+.link-gold {
+  color: var(--color-secondary);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--transition-normal);
+}
+
+.link-gold::after {
+  background-color: var(--color-secondary);
+}
+
+/* Responsive Typography */
+@media (min-width: 768px) {
+  .heading-display {
+    font-size: clamp(4rem, 8vw, 6rem);
+  }
+  
+  .heading-1 {
+    font-size: clamp(3rem, 6vw, 4.5rem);
+  }
+  
+  .text-tagline {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .heading-display,
+  .heading-1,
+  .heading-2,
+  .heading-3,
+  .heading-4,
+  .heading-5,
+  .heading-6 {
+    page-break-after: avoid;
+  }
+  
+  .text-body,
+  .text-lead {
+    orphans: 3;
+    widows: 3;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.link:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Selection Styles */
+::selection {
+  background-color: var(--color-secondary);
+  color: var(--color-text-light);
+}
+
+::-moz-selection {
+  background-color: var(--color-secondary);
+  color: var(--color-text-light);
+}

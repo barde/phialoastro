@@ -1,0 +1,223 @@
+---
+import { Image } from 'astro:assets';
+import Button from '../common/Button.astro';
+import { Palette, Eye, Cog } from 'lucide-react';
+---
+
+<section class="services-section py-24 bg-off-white">
+  <div class="container mx-auto px-6">
+    <!-- Section Header -->
+    <div class="text-center mb-20">
+      <h2 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
+        3D für Sie
+      </h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Von der ersten Idee bis zum fertigen Schmuckstück begleiten wir Sie mit modernster 
+        3D-Technologie und jahrelanger Expertise. Entdecken Sie unsere maßgeschneiderten Services.
+      </p>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+      <!-- Service 1: Individual Design -->
+      <div class="service-card group">
+        <div class="service-icon">
+          <Palette className="w-8 h-8 text-gold" />
+        </div>
+        <h3 class="service-title">
+          Individuelle Schmuckgestaltung
+        </h3>
+        <p class="service-description">
+          Verwandeln Sie Ihre Vorstellungen in einzigartige Schmuckstücke. 
+          Unsere Designer arbeiten eng mit Ihnen zusammen, um Ihre persönliche 
+          Vision durch innovative 3D-Modellierung zum Leben zu erwecken.
+        </p>
+        <ul class="service-features">
+          <li>Persönliche Beratung</li>
+          <li>3D-Konzeptentwicklung</li>
+          <li>Materialberatung</li>
+          <li>Iterative Anpassungen</li>
+        </ul>
+        <div class="service-cta">
+          <Button href="/services/3d-design" variant="outline" size="sm">
+            Mehr erfahren
+          </Button>
+        </div>
+      </div>
+
+      <!-- Service 2: 3D Visualization -->
+      <div class="service-card group featured">
+        <div class="service-icon">
+          <Eye className="w-8 h-8 text-gold" />
+        </div>
+        <h3 class="service-title">
+          3D Visualisierung
+        </h3>
+        <p class="service-description">
+          Sehen Sie Ihr Schmuckstück, bevor es gefertigt wird. Unsere 
+          photorealistischen 3D-Visualisierungen ermöglichen es Ihnen, 
+          jedes Detail zu begutachten und Änderungen vorzunehmen.
+        </p>
+        <ul class="service-features">
+          <li>Photorealistische Darstellung</li>
+          <li>360°-Ansichten</li>
+          <li>Verschiedene Materialien</li>
+          <li>Beleuchtungsszenarien</li>
+        </ul>
+        <div class="service-cta">
+          <Button href="/services/visualization" variant="primary" size="sm">
+            Visualisierung anfragen
+          </Button>
+        </div>
+      </div>
+
+      <!-- Service 3: Prototyping & Production -->
+      <div class="service-card group">
+        <div class="service-icon">
+          <Cog className="w-8 h-8 text-gold" />
+        </div>
+        <h3 class="service-title">
+          Prototyping & Produktion
+        </h3>
+        <p class="service-description">
+          Vom digitalen Modell zum fertigen Schmuckstück. Wir nutzen 
+          modernste 3D-Drucktechnologie und traditionelle Handwerkskunst 
+          für höchste Qualität und Präzision.
+        </p>
+        <ul class="service-features">
+          <li>3D-Druck Prototyping</li>
+          <li>Traditionelle Handarbeit</li>
+          <li>Qualitätskontrolle</li>
+          <li>Nachbearbeitung</li>
+        </ul>
+        <div class="service-cta">
+          <Button href="/services/prototyping" variant="outline" size="sm">
+            Prozess ansehen
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="text-center mt-20">
+      <div class="max-w-2xl mx-auto">
+        <h3 class="font-display text-2xl font-medium text-midnight mb-4">
+          Bereit für Ihr Projekt?
+        </h3>
+        <p class="text-gray-600 mb-8">
+          Lassen Sie uns gemeinsam Ihre Schmuck-Vision verwirklichen. 
+          Kontaktieren Sie uns für eine unverbindliche Beratung.
+        </p>
+        <Button href="/contact" variant="primary" size="lg">
+          Kostenloses Beratungsgespräch
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .service-card {
+    @apply bg-white rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-300;
+    @apply border border-gray-100 hover:border-gray-200;
+    @apply transform hover:-translate-y-2;
+  }  .service-card.featured {
+    @apply ring-2 ring-gold ring-opacity-20 shadow-luxury;
+    @apply relative overflow-hidden;
+  }
+    .service-card.featured::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-1;
+    background: linear-gradient(to right, #D4AF37, rgba(212, 175, 55, 0.6));
+  }
+  
+  .service-icon {
+    @apply w-16 h-16 rounded-full flex items-center justify-center mb-6;
+    @apply group-hover:bg-gold group-hover:bg-opacity-20 transition-colors duration-300;
+    background: rgba(212, 175, 55, 0.1);
+  }
+  
+  .service-title {
+    @apply font-display text-xl font-medium text-midnight mb-4;
+  }
+  
+  .service-description {
+    @apply text-gray-600 leading-relaxed mb-6;
+  }
+  
+  .service-features {
+    @apply space-y-2 mb-8;
+  }
+  
+  .service-features li {
+    @apply text-sm text-gray-600 flex items-center;
+  }
+  
+  .service-features li::before {
+    content: '✓';
+    @apply text-gold mr-3 font-medium;
+  }
+  
+  .service-cta {
+    @apply mt-auto;
+  }
+  
+  /* Animation on scroll */
+  .service-card {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+  
+  .service-card:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  
+  .service-card:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  
+  .service-card:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  
+  @keyframes fade-in-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  // Intersection Observer for service cards animation
+  function initServicesAnimation() {
+    const cards = document.querySelectorAll('.service-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+        }
+      });
+    }, {
+      threshold: 0.2,
+      rootMargin: '-50px'
+    });
+    
+    cards.forEach((card) => {
+      card.style.animationPlayState = 'paused';
+      observer.observe(card);
+    });
+  }
+  
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initServicesAnimation);
+  } else {
+    initServicesAnimation();
+  }
+  
+  // Re-initialize on page transitions
+  document.addEventListener('astro:page-load', initServicesAnimation);
+</script>

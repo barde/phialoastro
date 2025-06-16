@@ -1,0 +1,107 @@
+---
+import Navigation from './Navigation';
+
+export interface Props {
+  transparent?: boolean;
+}
+
+const { transparent = false } = Astro.props;
+---
+
+<header 
+  id="main-header" 
+  class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    transparent ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-100'
+  }`}
+>
+  <div class="container mx-auto px-6">
+    <div class="flex items-center justify-between h-20">
+      <!-- Logo -->
+      <a 
+        href="/" 
+        class="font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
+        aria-label="Phialo Design Startseite"
+      >
+        PHIALO
+      </a>
+      
+      <!-- Desktop Navigation -->
+      <Navigation client:load />
+      
+      <!-- CTA Button -->
+      <a 
+        href="/contact" 
+        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white transition-all duration-200"
+      >
+        Projekt anfragen
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Header scroll behavior
+  function initHeaderScroll() {
+    const header = document.getElementById('main-header');
+    if (!header) return;
+    
+    let lastScrollY = 0;
+    let isVisible = true;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Add background on scroll
+      if (currentScrollY > 50) {
+        header.classList.remove('bg-transparent');
+        header.classList.add('bg-white/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100');
+      } else if (header.dataset.transparent === 'true') {
+        header.classList.add('bg-transparent');
+        header.classList.remove('bg-white/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100');
+      }
+      
+      // Hide/show header on scroll direction
+      if (currentScrollY > lastScrollY && currentScrollY > 100 && isVisible) {
+        // Scrolling down
+        header.style.transform = 'translateY(-100%)';
+        isVisible = false;
+      } else if (currentScrollY < lastScrollY && !isVisible) {
+        // Scrolling up
+        header.style.transform = 'translateY(0)';
+        isVisible = true;
+      }
+      
+      lastScrollY = currentScrollY;
+    };
+    
+    // Throttle scroll events
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+  }
+  
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeaderScroll);
+  } else {
+    initHeaderScroll();
+  }
+  
+  // Re-initialize on page transitions (Astro ViewTransitions)
+  document.addEventListener('astro:page-load', initHeaderScroll);
+</script>
+
+<style>
+  header {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+</style>
