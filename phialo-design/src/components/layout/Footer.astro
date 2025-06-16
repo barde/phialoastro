@@ -1,0 +1,120 @@
+---
+import { Instagram, Linkedin, Youtube } from 'lucide-react';
+---
+
+<footer class="bg-off-white border-t border-gray-100">
+  <div class="container mx-auto px-6 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <!-- Brand Column -->
+      <div class="space-y-6">
+        <a 
+          href="/" 
+          class="inline-block font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
+        >
+          PHIALO
+        </a>
+        <p class="text-gray-600 text-sm leading-relaxed max-w-xs">
+          Wo Schmuck auf Innovation trifft. Hochwertige 3D Designs und individuelle Kreationen für anspruchsvolle Kunden.
+        </p>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="px-2 py-1 bg-gold/10 text-gold rounded">Handgefertigt</span>
+          <span class="px-2 py-1 bg-gold/10 text-gold rounded">Swiss Made</span>
+        </div>
+      </div>
+      
+      <!-- Quick Links -->
+      <div class="space-y-6">
+        <h3 class="font-sans text-sm font-semibold text-midnight uppercase tracking-wider">
+          Navigation
+        </h3>
+        <nav class="space-y-4">
+          <a href="/portfolio" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            Portfolio
+          </a>
+          <a href="/services" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            3D für Sie
+          </a>
+          <a href="/tutorials" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            Tutorials
+          </a>
+          <a href="/about" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            Über uns
+          </a>
+          <a href="/contact" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            Kontakt
+          </a>
+        </nav>
+      </div>
+      
+      <!-- Contact & Social -->
+      <div class="space-y-6">
+        <h3 class="font-sans text-sm font-semibold text-midnight uppercase tracking-wider">
+          Kontakt
+        </h3>
+        <div class="space-y-4 text-sm text-gray-600">
+          <a 
+            href="mailto:info@phialo.design" 
+            class="block hover:text-midnight transition-colors"
+          >
+            info@phialo.design
+          </a>
+          <a 
+            href="tel:+41123456789" 
+            class="block hover:text-midnight transition-colors"
+          >
+            +41 (0) 12 345 67 89
+          </a>
+        </div>
+        
+        <!-- Social Links -->
+        <div class="flex items-center gap-4 pt-4">
+          <a 
+            href="https://linkedin.com/company/phialo-design" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="p-2 text-gray-600 hover:text-midnight transition-colors"
+            aria-label="LinkedIn"
+          >
+            <Linkedin size={20} />
+          </a>
+          <a 
+            href="https://youtube.com/@phialodesign" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="p-2 text-gray-600 hover:text-midnight transition-colors"
+            aria-label="YouTube"
+          >
+            <Youtube size={20} />
+          </a>
+          <a 
+            href="https://instagram.com/phialodesign" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="p-2 text-gray-600 hover:text-midnight transition-colors"
+            aria-label="Instagram"
+          >
+            <Instagram size={20} />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Bar -->
+    <div class="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-gray-500">
+        © 2024 Phialo Design. Alle Rechte vorbehalten.
+      </p>
+      <div class="flex items-center gap-6 text-xs text-gray-500">
+        <a href="/privacy" class="hover:text-gray-700 transition-colors">
+          Datenschutz
+        </a>
+        <a href="/terms" class="hover:text-gray-700 transition-colors">
+          AGB
+        </a>
+        <a href="/imprint" class="hover:text-gray-700 transition-colors">
+          Impressum
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

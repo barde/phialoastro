@@ -1,0 +1,160 @@
+---
+import PageLayout from './PageLayout.astro';
+
+export interface Props {
+  frontmatter: {
+    title: string;
+    description?: string;
+    publishedAt: Date;
+    duration?: string;
+    level?: string;
+    tags?: string[];
+    thumbnail?: string;
+  };
+}
+
+const { frontmatter } = Astro.props;
+const formattedDate = new Intl.DateTimeFormat('de-DE', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}).format(new Date(frontmatter.publishedAt));
+---
+
+<PageLayout
+  title={`${frontmatter.title} | Phialo Design Tutorials`}
+  description={frontmatter.description}
+  image={frontmatter.thumbnail}
+>
+  <article class="tutorial-article">
+    <header class="tutorial-header">
+      <div class="container mx-auto px-6 py-12">
+        <div class="max-w-4xl mx-auto">
+          <!-- Breadcrumb -->
+          <nav class="text-sm text-gray-600 mb-6">
+            <a href="/" class="hover:text-gold transition-colors">Home</a>
+            <span class="mx-2">•</span>
+            <a href="/tutorials" class="hover:text-gold transition-colors">Tutorials</a>
+            <span class="mx-2">•</span>
+            <span>{frontmatter.title}</span>
+          </nav>
+          
+          <!-- Title -->
+          <h1 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
+            {frontmatter.title}
+          </h1>
+          
+          <!-- Meta information -->
+          <div class="flex flex-wrap gap-6 text-sm text-gray-600 mb-8">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{formattedDate}</span>
+            </div>
+            
+            {frontmatter.duration && (
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{frontmatter.duration}</span>
+              </div>
+            )}
+            
+            {frontmatter.level && (
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>{frontmatter.level}</span>
+              </div>
+            )}
+          </div>
+          
+          <!-- Tags -->
+          {frontmatter.tags && frontmatter.tags.length > 0 && (
+            <div class="flex flex-wrap gap-2">
+              {frontmatter.tags.map(tag => (
+                <span class="px-3 py-1 text-xs font-medium bg-platinum/50 text-midnight rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+    
+    <div class="tutorial-content">
+      <div class="container mx-auto px-6">
+        <div class="max-w-4xl mx-auto prose prose-lg prose-gray max-w-none">
+          <slot />
+        </div>
+      </div>
+    </div>
+  </article>
+</PageLayout>
+
+<style>
+  .tutorial-article {
+    @apply bg-white;
+  }
+  
+  .tutorial-header {
+    @apply border-b border-gray-100;
+  }
+  
+  .tutorial-content {
+    @apply py-12;
+  }
+  
+  /* Enhanced prose styles for tutorial content */
+  :global(.prose) {
+    @apply text-gray-800 leading-relaxed;
+  }
+  
+  :global(.prose h2) {
+    @apply font-display text-2xl font-medium text-midnight mt-12 mb-6;
+  }
+  
+  :global(.prose h3) {
+    @apply font-display text-xl font-medium text-midnight mt-8 mb-4;
+  }
+  
+  :global(.prose h4) {
+    @apply font-sans text-lg font-semibold text-midnight mt-6 mb-3;
+  }
+  
+  :global(.prose p) {
+    @apply mb-6;
+  }
+  
+  :global(.prose code) {
+    @apply bg-gray-100 text-midnight px-2 py-1 rounded text-sm font-mono;
+  }
+  
+  :global(.prose pre) {
+    @apply bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto;
+  }
+  
+  :global(.prose pre code) {
+    @apply bg-transparent text-gray-100 p-0;
+  }
+  
+  :global(.prose blockquote) {
+    @apply border-l-4 border-gold pl-6 italic text-gray-700 my-8;
+  }
+  
+  :global(.prose img) {
+    @apply rounded-lg shadow-sm;
+  }
+  
+  :global(.prose a) {
+    @apply text-gold hover:text-gold/80 transition-colors no-underline;
+  }
+  
+  :global(.prose a:hover) {
+    @apply underline;
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Portfolio from '../../components/sections/Portfolio.tsx';
+
+const title = 'Portfolio | Phialo Design';
+const description = 'Explore our exquisite collection of luxury jewelry, featuring rare gemstones, custom designs, and timeless pieces.';
+---
+
+<PageLayout title={title} description={description}>
+  <!-- Hero Section -->
+  <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
+          Portfolio
+        </h1>
+        <p class="text-xl text-neutral-600 leading-relaxed">
+          Explore our exquisite collection of luxury jewelry, featuring rare gemstones, 
+          custom designs, and timeless pieces crafted with precision and artistry.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Section -->
+  <Portfolio client:load />
+
+  <!-- Call-to-Action -->
+  <section class="py-20 bg-neutral-50">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-3xl font-light text-neutral-900 mb-6">
+        Ready to Create Something Unique?
+      </h2>
+      <p class="text-lg text-neutral-600 mb-8 max-w-2xl mx-auto">
+        Let us bring your vision to life with our bespoke jewelry design services.
+      </p>
+      <a 
+        href="/contact" 
+        class="inline-flex items-center px-8 py-4 bg-neutral-900 text-white text-lg font-medium rounded-full hover:bg-neutral-800 transition-colors"
+      >
+        Start Your Project
+      </a>
+    </div>
+  </section>
+</PageLayout>

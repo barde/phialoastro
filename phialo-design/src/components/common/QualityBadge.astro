@@ -1,0 +1,63 @@
+---
+interface Props {
+  type: 'handmade' | 'swiss' | 'limited' | 'custom';
+  className?: string;
+}
+
+const { type, className = '' } = Astro.props;
+
+const badges = {
+  handmade: {
+    text: 'Handgefertigt',
+    icon: '✨',
+    bg: 'bg-gold/10',
+    border: 'border-gold/20',
+    text_color: 'text-gold'
+  },
+  swiss: {
+    text: 'Swiss Made',
+    icon: '🇨🇭',
+    bg: 'bg-midnight/10',
+    border: 'border-midnight/20',
+    text_color: 'text-midnight'
+  },
+  limited: {
+    text: 'Limited Edition',
+    icon: '💎',
+    bg: 'bg-platinum/20',
+    border: 'border-platinum',
+    text_color: 'text-charcoal'
+  },
+  custom: {
+    text: 'Individuelle Kreation',
+    icon: '👑',
+    bg: 'bg-gold/10',
+    border: 'border-gold/20',
+    text_color: 'text-gold'
+  }
+};
+
+const badge = badges[type];
+---
+
+<div 
+  class={`
+    inline-flex items-center gap-1.5 px-3 py-1.5 
+    text-xs font-medium tracking-wide uppercase
+    ${badge.bg} ${badge.border} ${badge.text_color}
+    border rounded-full backdrop-blur-sm
+    transition-all duration-300 ease-luxury
+    hover:scale-105 hover:shadow-soft
+    ${className}
+  `}
+>
+  <span class="text-sm" aria-hidden="true">{badge.icon}</span>
+  <span>{badge.text}</span>
+</div>
+
+<style>
+  /* Additional subtle glow effect for luxury feel */
+  div:hover {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+  }
+</style>

@@ -1,0 +1,44 @@
+import { defineCollection, z } from 'astro:content';
+
+const portfolioCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    category: z.enum(['rings', 'necklaces', 'earrings', 'bracelets', 'custom']),
+    price: z.string().optional(),
+    featured: z.boolean().default(false),
+    image: z.string(),
+    gallery: z.array(z.string()).optional(),
+    materials: z.array(z.string()).optional(),
+    dimensions: z.string().optional(),
+    weight: z.string().optional(),
+    certifications: z.array(z.string()).optional(),
+    availability: z.enum(['available', 'sold', 'commission']).default('available'),
+    tags: z.array(z.string()).optional(),
+    publishedAt: z.date(),
+  }),
+});
+
+const tutorialCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    excerpt: z.string(),
+    category: z.enum(['education', 'care', 'investment', 'design']),
+    image: z.string(),
+    duration: z.string(),
+    difficulty: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
+    featured: z.boolean().default(false),
+    author: z.string().default('Phialo Design Team'),
+    tags: z.array(z.string()).optional(),
+    publishedAt: z.date(),
+    updatedAt: z.date().optional(),
+  }),
+});
+
+export const collections = {
+  portfolio: portfolioCollection,
+  tutorials: tutorialCollection,
+};
