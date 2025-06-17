@@ -4,9 +4,10 @@ import Hero from '../components/sections/Hero.astro';
 import Portfolio from '../components/sections/Portfolio.tsx';
 import Services from '../components/sections/Services.astro';
 import Tutorials from '../components/sections/Tutorials.astro';
+import Contact from '../components/sections/Contact.astro';
 
-const title = 'Phialo Design | Luxury Jewelry & Gemstones';
-const description = 'Discover our collection of exquisite handcrafted jewelry and rare gemstones. Experience luxury design with minimalist elegance.';
+const title = 'Phialo Design | 3D Design - Schmuck - Tutorials';
+const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen, 3D Design, 3D-Druck und Guss. Ihre Idee als reales Modell! Tutorials & HowTos';
 ---
 
 <PageLayout title={title} description={description}>
@@ -14,4 +15,5 @@ const description = 'Discover our collection of exquisite handcrafted jewelry an
   <Portfolio client:load />
   <Services />
   <Tutorials />
+  <Contact />
 </PageLayout>

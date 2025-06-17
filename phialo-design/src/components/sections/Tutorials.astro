@@ -4,52 +4,66 @@ import Button from '../common/Button.astro';
 const tutorials = [
   {
     id: 1,
-    title: 'Gemstone Authentication',
-    description: 'Learn to identify authentic gemstones and understand quality certificates.',
-    image: '/images/tutorials/gemstone-auth.jpg',
-    duration: '15 min read',
-    category: 'Education',
+    title: 'Lern Blender - 3D Design für absolute Anfänger',
+    description: 'Lernen Sie Blender 3D Design von Grund auf. Ein umfassender Kurs für absolute Anfänger auf Deutsch.',
+    image: '/images/Thumbnaildeutscherkurs.jpg',
+    duration: 'Mehrere Stunden',
+    category: 'Deutsch - Anfängerniveau',
     featured: true,
+    link: 'https://skl.sh/3F2b3lj'
   },
   {
     id: 2,
-    title: 'Jewelry Care Guide',
-    description: 'Essential tips for maintaining your precious jewelry collection.',
-    image: '/images/tutorials/jewelry-care.jpg',
-    duration: '10 min read',
-    category: 'Care',
-    featured: false,
+    title: 'From Sketch To Model - Design for 3D Printing with Blender',
+    description: 'Transform your creative sketches into professional 3D models ready for printing.',
+    image: '/images/thumbnailSkillshare.jpg',
+    duration: 'Several hours',
+    category: 'English - Beginner',
+    featured: true,
+    link: 'https://skl.sh/2Xjn9BV'
   },
   {
     id: 3,
-    title: 'Investment in Gems',
-    description: 'Understanding gemstone investment potential and market trends.',
-    image: '/images/tutorials/gem-investment.jpg',
-    duration: '20 min read',
-    category: 'Investment',
+    title: 'Learn Blender - 3D Design for Absolute Beginners',
+    description: 'Master Blender 3D design from scratch. Available on Skillshare or direct purchase.',
+    image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
+    duration: 'Several hours',
+    category: 'English - Beginner',
     featured: true,
+    link: 'https://skl.sh/3xw8S77',
+    directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
   },
   {
     id: 4,
-    title: 'Custom Design Process',
-    description: 'Behind the scenes of creating bespoke jewelry pieces.',
-    image: '/images/tutorials/custom-design.jpg',
-    duration: '12 min read',
-    category: 'Design',
-    featured: false,
+    title: 'Learn All About Curves And Create A Dazzling Ring Design',
+    description: 'Master Blender\'s curve tools to create stunning ring designs with flowing patterns.',
+    image: '/images/BlenderDazzlingDesigns.jpg',
+    duration: 'Several hours',
+    category: 'English - All Levels',
+    featured: true,
+    link: 'https://skl.sh/419ltwx'
   },
+  {
+    id: 5,
+    title: 'Create Unique Surface Patterns With Textures',
+    description: 'Learn to create stunning, unique surface patterns using Blender\'s texture system.',
+    image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
+    duration: 'Several hours',
+    category: 'English - Intermediate',
+    featured: true,
+    link: 'https://skl.sh/4bMkx3o'
+  }
 ];
 ---
 
-<section class="py-20 bg-neutral-50">
-  <div class="container mx-auto px-6">
-    <!-- Section Header -->
+<section id="tutorials" class="py-20 bg-neutral-50">
+  <div class="container mx-auto px-6">    <!-- Section Header -->
     <div class="text-center mb-16">
       <h2 class="text-4xl md:text-5xl font-light text-neutral-900 mb-6">
-        Learn & Explore
+        Tutorials
       </h2>
       <p class="text-lg text-neutral-600 max-w-2xl mx-auto">
-        Discover the fascinating world of gemstones and jewelry through our expert guides and insights.
+        Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.
       </p>
     </div>
 
@@ -84,9 +98,7 @@ const tutorials = [
                   {tutorial.duration}
                 </span>
               </div>
-            </div>
-
-            <!-- Content -->
+            </div>            <!-- Content -->
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-neutral-100 text-neutral-700">
@@ -102,20 +114,45 @@ const tutorials = [
                 {tutorial.description}
               </p>
 
-              <a 
-                href={`/tutorials/${tutorial.id}`}
-                class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
-              >
-                Read Tutorial
-                <svg 
-                  class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
+              <div class="space-y-3">
+                <a 
+                  href={tutorial.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
+                  Auf Skillshare ansehen
+                  <svg 
+                    class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                
+                {tutorial.directLink && (
+                  <div>
+                    <a 
+                      href={tutorial.directLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors group text-sm"
+                    >
+                      Direkt kaufen (ohne Mitgliedschaft)
+                      <svg 
+                        class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           </article>
         ))}

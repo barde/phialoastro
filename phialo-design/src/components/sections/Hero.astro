@@ -9,13 +9,12 @@ import QualityBadge from '../common/QualityBadge.astro';
   <!-- Background -->
   <div class="hero-bg absolute inset-0">
     <!-- Gradient overlay -->
-    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>
-      <!-- 3D Jewelry piece placeholder with parallax -->
+    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>      <!-- Profile image from old site -->
     <div 
-      class="hero-jewelry absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-20"
+      class="hero-jewelry absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-30"
       data-parallax="0.3"
     >
-      <div class="jewelry-placeholder w-full h-full bg-gradient-to-br from-gold/30 to-midnight/20 rounded-full animate-float shadow-luxury"></div>
+      <img src="/images/profile.png" alt="Phialo Design Profile" class="w-full h-full object-contain animate-float" />
     </div>
     
     <!-- Subtle pattern overlay -->
@@ -23,20 +22,20 @@ import QualityBadge from '../common/QualityBadge.astro';
   </div>
   
   <!-- Content -->
-  <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">
-    <AnimatedText client:load>
+  <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">    <AnimatedText client:load>
       <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-midnight mb-8 leading-tight">
-        Wo Schmuck auf
-        <span class="text-gold block md:inline"> Innovation</span>
-        trifft
+        3D Design
+        <span class="text-gold block md:inline"> Schmuck</span>
+        Tutorials
       </h1>
     </AnimatedText>
     
     <div class="hero-subtext animate-fade-in-delay-1">
-      <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-        3D Design <span class="text-gold">·</span> 
-        Individuelle Kreationen <span class="text-gold">·</span> 
-        Expertise
+      <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+        Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen
+      </p>
+      <p class="text-lg md:text-xl text-midnight mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+        <strong>kontakt@phialo.de</strong>
       </p>
     </div>
       <div class="hero-cta animate-fade-in-delay-2">
