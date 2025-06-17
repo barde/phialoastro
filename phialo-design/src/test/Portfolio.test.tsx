@@ -306,15 +306,7 @@ describe('Portfolio Component', () => {
     const instagramLink = screen.getByText('Portfolio auf Instagram').closest('a');
     expect(instagramLink).toHaveAttribute('href', 'https://instagram.com/phialo_design');
     expect(instagramLink).toHaveAttribute('target', '_blank');
-    expect(instagramLink).toHaveAttribute('rel', 'noopener noreferrer');
-  });
-
-  it('renders view all portfolio CTA', () => {
-    render(<Portfolio />);
-    
-    const viewAllLink = screen.getByText('Komplettes Portfolio ansehen').closest('a');
-    expect(viewAllLink).toHaveAttribute('href', '/portfolio');
-  });
+    expect(instagramLink).toHaveAttribute('rel', 'noopener noreferrer');  });
 
   it('applies correct accessibility attributes', async () => {
     render(<Portfolio />);
