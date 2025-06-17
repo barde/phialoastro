@@ -1,21 +1,14 @@
 import { useState } from 'react';
 import { ExternalLink, Eye } from 'lucide-react';
 import MagneticCursor from '../common/MagneticCursor';
-
-interface PortfolioItemData {
-  id: number;
-  title: string;
-  category: string;
-  image: string;
-  featured?: boolean;
-  slug: string;
-}
+import type { PortfolioItemData } from '../sections/Portfolio';
 
 interface PortfolioItemProps {
   item: PortfolioItemData;
+  onItemClick?: (item: PortfolioItemData) => void;
 }
 
-export default function PortfolioItem({ item }: PortfolioItemProps) {
+export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
   return (
     <MagneticCursor>
       <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with proper scaling */}
@@ -34,13 +27,13 @@ export default function PortfolioItem({ item }: PortfolioItemProps) {
             
             {/* Action buttons */}
             <div className="flex items-center gap-3">
-              <a
-                href={`/portfolio/${item.slug}`}
+              <button
+                onClick={() => onItemClick && onItemClick(item)}
                 className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
               >
                 <Eye size={16} className="mr-2" />
                 Details
-              </a>
+              </button>
               <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
                 <ExternalLink size={16} />
               </button>

@@ -1,20 +1,13 @@
 import { motion } from 'framer-motion';
 import PortfolioItem from './PortfolioItem';
-
-interface PortfolioItemData {
-  id: number;
-  title: string;
-  category: string;
-  image: string;
-  featured?: boolean;
-  slug: string;
-}
+import type { PortfolioItemData } from '../sections/Portfolio';
 
 interface PortfolioGridProps {
   items: PortfolioItemData[];
+  onItemClick?: (item: PortfolioItemData) => void;
 }
 
-export default function PortfolioGrid({ items }: PortfolioGridProps) {
+export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps) {
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -35,7 +28,7 @@ export default function PortfolioGrid({ items }: PortfolioGridProps) {
           layout
           className="portfolio-item"
         >
-          <PortfolioItem item={item} />
+          <PortfolioItem item={item} onItemClick={onItemClick} />
         </motion.div>
       ))}
     </div>
