@@ -68,7 +68,7 @@ A sophisticated, luxury-focused design that emphasizes the high-end jewelry port
 2. **Smooth Scroll**: Butter-smooth scrolling with slight ease
 3. **Image Loading**: Elegant fade-in as images enter viewport
 4. **Micro-interactions**: Buttons have subtle press states
-5. **Quality Indicators**: Tiny "Handgefertigt" and "Swiss Made" badges
+5. **Quality Indicators**: Tiny "Handgefertigt" and "Made in Germany" badges
 
 ## Mobile Considerations
 - Stack all sections vertically
