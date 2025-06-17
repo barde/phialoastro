@@ -1,33 +1,31 @@
 ---
-title: "Diamond Tennis Necklace"
-description: "Classic tennis necklace featuring 50 brilliant-cut diamonds totaling 15 carats, set in 18k white gold for timeless elegance."
-category: "necklaces"
-price: "$28,000"
+title: "DNA-Spirale Ohrhänger"
+description: "DNA-Spirale als Ohrhänger, als 3D-Model gestaltet, in Wachs gedruckt und in Platin gegossen. Eingefasst mit Brillanten in einem speziellen Farbcode."
+category: "earrings"
+price: "Auf Anfrage"
 featured: true
-image: "/images/portfolio/diamond-necklace.jpg"
+image: "/images/portfolio/dna_spirale_freigestellt_refl.jpg"
 gallery: [
-  "/images/portfolio/diamond-necklace-1.jpg",
-  "/images/portfolio/diamond-necklace-2.jpg",
-  "/images/portfolio/diamond-necklace-3.jpg"
+  "/images/portfolio/dna_spirale_freigestellt_refl.jpg"
 ]
-materials: ["18k White Gold", "Diamonds"]
-dimensions: "16 inches length"
-weight: "25.8g"
-certifications: ["GIA Certified Diamonds"]
-availability: "available"
-tags: ["diamonds", "tennis necklace", "white gold", "classic"]
-publishedAt: 2025-06-08
+materials: ["Platin", "Brillanten"]
+client: "Goldschmiede Christoph Greinert"
+projectDate: "Juni 2016"
+availability: "custom"
+tags: ["dna", "spiral", "earrings", "platinum", "diamonds", "3d-design"]
+publishedAt: 2016-06-01
 ---
 
-## Diamond Tennis Necklace
+## DNA-Spirale Ohrhänger
 
-This stunning tennis necklace represents the epitome of classic elegance. Featuring 50 carefully selected brilliant-cut diamonds, each stone displays exceptional fire and brilliance, creating a continuous river of light around the neck.
+Diese außergewöhnlichen Ohrhänger zeigen DNA-Spiralen in ihrer elegantesten Form. Das 3D-Modell wurde präzise gestaltet, in Wachs gedruckt und in Platin gegossen.
 
-### Specifications
+### Besonderheiten
 
-- **Total Diamond Weight**: 15.00 carats
-- **Individual Stones**: 0.30ct each (average)
-- **Diamond Quality**: F-G color, VS1-VS2 clarity
+- **Material**: Platin
+- **Steine**: Brillanten in speziellem Farbcode
+- **Technik**: 3D-Design und Wachsdruck
+- **Auftraggeber**: Goldschmiede Christoph Greinert
 - **Setting**: 18k white gold four-prong settings
 - **Length**: 16 inches with 2-inch extension
 - **Clasp**: Secure box clasp with safety latch

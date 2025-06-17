@@ -1,28 +1,39 @@
 ---
-title: "Gemstone Authentication Guide"
-description: "Learn to identify authentic gemstones and understand quality certificates with our comprehensive guide from industry experts."
-excerpt: "Master the art of gemstone authentication with expert techniques and professional insights that will help you make informed decisions."
-category: "education"
-image: "/images/tutorials/gemstone-auth.jpg"
-duration: "15 min read"
-difficulty: "intermediate"
+title: "From Sketch To Model - Design for 3D Printing with Blender"
+description: "Transform your creative sketches into professional 3D models ready for printing. Learn the complete workflow from concept to finished print."
+excerpt: "Master the art of converting 2D sketches into printable 3D models using Blender's powerful modeling tools."
+category: "3d-design"
+image: "/images/thumbnailSkillshare.jpg"
+duration: "Several hours"
+difficulty: "beginner"
 featured: true
-author: "Sophia Chen, Chief Gemologist"
-tags: ["authentication", "gemstones", "certificates", "quality"]
-publishedAt: 2025-06-10
+author: "Gesa Pickbrenner"
+tags: ["blender", "3d-printing", "sketch", "modeling", "design"]
+publishedAt: 2025-06-07
+link: "https://skl.sh/2Xjn9BV"
+platform: "Skillshare"
 ---
 
-# Gemstone Authentication Guide
+# From Sketch To Model - Design for 3D Printing with Blender
 
-Understanding how to authenticate gemstones is crucial whether you're purchasing fine jewelry or evaluating pieces in your collection. This comprehensive guide will teach you the essential techniques and knowledge used by professional gemologists.
+Learn how to transform your creative sketches into professional 3D models that are ready for 3D printing. This course takes you through the complete workflow from initial concept to finished printable model.
 
-## Why Authentication Matters
+## Course Content
 
-The gemstone market includes both natural and synthetic stones, as well as treatments that can significantly affect value. Proper authentication ensures you understand exactly what you're purchasing and its true market value.
+- Interpreting 2D sketches for 3D modeling
+- Essential Blender tools for 3D printing
+- Creating print-ready models
+- Avoiding common 3D printing pitfalls
+- Optimizing models for successful prints
 
-### Common Concerns
+## Course Details
 
-- **Synthetic vs. Natural**: Lab-created stones can be visually identical to natural ones
+- **Language**: English
+- **Level**: Beginner
+- **Platform**: Skillshare
+- **Instructor**: Gesa Pickbrenner
+
+Perfect for artists, designers, and makers who want to bring their sketches to life through 3D printing.
 - **Treatments**: Heat treatment, irradiation, and fracture filling affect value
 - **Misrepresentation**: Stones sold as higher grades than they actually are
 - **Complete Fakes**: Glass or plastic substitutes passed off as genuine gemstones

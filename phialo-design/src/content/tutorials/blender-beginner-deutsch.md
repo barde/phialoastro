@@ -1,22 +1,39 @@
 ---
-title: "Essential Jewelry Care Tips"
-description: "Preserve the beauty and value of your precious jewelry with proper care and maintenance techniques from our expert team."
-excerpt: "Keep your jewelry looking pristine with these professional care recommendations that will extend the life and beauty of your pieces."
-category: "care"
-image: "/images/tutorials/jewelry-care.jpg"
-duration: "10 min read"
+title: "Learn Blender - 3D Design für absolute Anfänger (Deutsch)"
+description: "Lernen Sie Blender 3D Design von Grund auf. Ein umfassender Kurs für absolute Anfänger auf Deutsch, der Sie durch die Grundlagen des 3D-Designs führt."
+excerpt: "Der perfekte Einstieg in Blender für deutschsprachige Anfänger. Lernen Sie 3D Design von der ersten Minute an."
+category: "3d-design"
+image: "/images/Thumbnaildeutscherkurs.jpg"
+duration: "Mehrere Stunden"
 difficulty: "beginner"
-featured: false
-author: "Elena Phialo, Master Jeweler"
-tags: ["jewelry care", "maintenance", "cleaning", "storage"]
+featured: true
+author: "Gesa Pickbrenner"
+tags: ["blender", "3d-design", "deutsch", "anfänger", "tutorial"]
 publishedAt: 2025-06-08
+link: "https://skl.sh/3F2b3lj"
+platform: "Skillshare"
 ---
 
-# Essential Jewelry Care Tips
+# Learn Blender - 3D Design für absolute Anfänger
 
-Proper care ensures your jewelry maintains its beauty and value for generations. Whether you own a simple gold chain or an elaborate diamond necklace, following these expert guidelines will keep your pieces looking their best.
+Dieser umfassende Kurs führt Sie Schritt für Schritt in die Welt des 3D-Designs mit Blender ein. Perfekt für absolute Anfänger, die keine Vorerfahrung mit 3D-Software haben.
 
-## Daily Care Practices
+## Was Sie lernen werden
+
+- Grundlagen der Blender-Oberfläche
+- Modellierungstechniken für Anfänger
+- Materialien und Texturen
+- Beleuchtung und Rendering
+- Praktische Projekte zum Üben
+
+## Kursdetails
+
+- **Sprache**: Deutsch
+- **Niveau**: Absolute Anfänger
+- **Plattform**: Skillshare
+- **Kursleiter**: Gesa Pickbrenner
+
+Starten Sie Ihre Reise in die 3D-Welt mit diesem strukturierten und leicht verständlichen Kurs.
 
 ### The Last On, First Off Rule
 
