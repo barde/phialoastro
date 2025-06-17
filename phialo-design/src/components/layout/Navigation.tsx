@@ -3,10 +3,10 @@ import { Menu, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 
 const navItems = [
-  { href: '/#portfolio', label: 'Portfolio' },
-  { href: '/#services', label: '3D für Sie' },
-  { href: '/#tutorials', label: 'Tutorials' },
-  { href: '/#contact', label: 'Kontakt' }
+  { href: '/portfolio', label: 'Portfolio' },
+  { href: '/services', label: '3D für Sie' },
+  { href: '/tutorials', label: 'Tutorials' },
+  { href: '/contact', label: 'Kontakt' }
 ];
 
 export default function Navigation() {
