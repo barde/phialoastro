@@ -7,7 +7,7 @@ interface PortfolioItemData {
   title: string;
   category: string;
   image: string;
-  featured: boolean;
+  featured?: boolean;
   slug: string;
 }
 
@@ -18,11 +18,11 @@ interface PortfolioItemProps {
 export default function PortfolioItem({ item }: PortfolioItemProps) {
   return (
     <MagneticCursor>
-      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with simple img tag for debugging */}
+      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with proper scaling */}
         <img
           src={item.image}
           alt={item.title}
-          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+          className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
           loading="lazy"
         />
 
@@ -45,15 +45,7 @@ export default function PortfolioItem({ item }: PortfolioItemProps) {
                 <ExternalLink size={16} />
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Featured badge */}
-        {item.featured && (
-          <div className="absolute top-4 left-4 px-3 py-1 bg-gold text-white text-xs font-medium rounded-full">
-            Featured
-          </div>
-        )}
+          </div>        </div>
       </div>
     </MagneticCursor>
   );

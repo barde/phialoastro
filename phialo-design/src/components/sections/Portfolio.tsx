@@ -10,7 +10,6 @@ const portfolioItems = [
     title: "DNA-Spirale Ohrhänger",
     category: "Ohrringe",
     image: "/images/portfolio/dna_spirale_freigestellt_refl.jpg",
-    featured: true,
     slug: "dna-spirale-ohrhaenger"
   },
   {
@@ -18,7 +17,6 @@ const portfolioItems = [
     title: "Turmalinring Masterpiece",
     category: "Ringe",
     image: "/images/portfolio/turmalinring_refl.jpg",
-    featured: true,
     slug: "turmalinring-masterpiece"
   },
   {
@@ -26,7 +24,6 @@ const portfolioItems = [
     title: "Silbernes Schloss-Münzkästchen",
     category: "Skulpturen",
     image: "/images/portfolio/silver_piggy_bank.jpg",
-    featured: true,
     slug: "silber-piggy-bank"
   },
   {
@@ -34,7 +31,6 @@ const portfolioItems = [
     title: "Möbius-Skulptur",
     category: "Skulpturen",
     image: "/images/portfolio/moebius.jpg",
-    featured: true,
     slug: "moebius-skulptur"
   },
   {
@@ -42,7 +38,6 @@ const portfolioItems = [
     title: "Silberne Madonna-Krone",
     category: "Skulpturen",
     image: "/images/portfolio/crown.jpg",
-    featured: false,
     slug: "madonna-krone"
   },
   {
@@ -50,7 +45,6 @@ const portfolioItems = [
     title: "ParookaVille Jubiläumsring",
     category: "Ringe",
     image: "/images/portfolio/parookavillering.jpg",
-    featured: true,
     slug: "parookaville-ring"
   },
   {
@@ -58,7 +52,6 @@ const portfolioItems = [
     title: "Ouroboros Anhänger",
     category: "Anhänger",
     image: "/images/portfolio/ouroboros-freigestellt-refl.jpg",
-    featured: false,
     slug: "ouroboros-anhaenger"
   },
   {
@@ -66,7 +59,6 @@ const portfolioItems = [
     title: "Tansanit Ring",
     category: "Ringe",
     image: "/images/portfolio/tansanit_1.jpg",
-    featured: true,
     slug: "tansanit-ring"
   },
   {
@@ -74,7 +66,6 @@ const portfolioItems = [
     title: "Meisen-Anstecker",
     category: "Anstecker",
     image: "/images/portfolio/bartmeise_reflect.jpg",
-    featured: false,
     slug: "meisen-anstecker"
   }
 ];
