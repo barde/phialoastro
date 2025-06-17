@@ -13,7 +13,7 @@ export default function LazyImage({
   src, 
   alt, 
   className = '', 
-  placeholder = '/images/placeholder.jpg',
+  placeholder = '/images/profile.png', // Use existing profile image as fallback
   aspectRatio = '1/1',
   objectFit = 'cover'
 }: LazyImageProps) {

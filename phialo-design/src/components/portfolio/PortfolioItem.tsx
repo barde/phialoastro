@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ExternalLink, Eye } from 'lucide-react';
-import LazyImage from '../common/LazyImage';
 import MagneticCursor from '../common/MagneticCursor';
 
 interface PortfolioItemData {
@@ -19,14 +18,12 @@ interface PortfolioItemProps {
 export default function PortfolioItem({ item }: PortfolioItemProps) {
   return (
     <MagneticCursor>
-      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 aspect-square">
-        {/* Image with LazyImage component */}
-        <LazyImage
+      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with simple img tag for debugging */}
+        <img
           src={item.image}
           alt={item.title}
-          className="w-full h-full transition-all duration-700 group-hover:scale-110"
-          aspectRatio="1/1"
-          objectFit="cover"
+          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+          loading="lazy"
         />
 
         {/* Overlay */}
