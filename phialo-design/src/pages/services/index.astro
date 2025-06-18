@@ -8,13 +8,13 @@ const description = 'Professionelle 3D-Design Services für Ihre individuellen P
 
 <PageLayout title={title} description={description}>
   <!-- Hero Section -->
-  <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
+  <section class="pt-32 pb-20 bg-gradient-to-b" style="background: linear-gradient(to bottom, var(--color-bg-secondary), var(--color-bg-primary));">
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
+        <h1 class="text-5xl md:text-6xl font-light mb-8" style="color: var(--color-text-primary);">
           3D für Sie
         </h1>
-        <p class="text-xl text-neutral-600 leading-relaxed">
+        <p class="text-xl leading-relaxed" style="color: var(--color-text-secondary);">
           Verwandeln Sie Ihre Ideen in greifbare Realität. Unser professioneller 3D-Design Service 
           bringt Ihre Visionen vom Konzept bis zum fertigen Modell.
         </p>
@@ -28,17 +28,18 @@ const description = 'Professionelle 3D-Design Services für Ihre individuellen P
   </div>
 
   <!-- Call-to-Action -->
-  <section class="py-20 bg-midnight text-white">
+  <section class="py-20" style="background-color: var(--color-primary); color: var(--color-text-light);">
     <div class="container mx-auto px-6 text-center">
       <h2 class="text-3xl font-light mb-6">
         Haben Sie ein Projekt im Kopf?
       </h2>
-      <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
+      <p class="text-lg mb-8 max-w-2xl mx-auto" style="color: var(--color-text-secondary);">
         Kontaktieren Sie uns für eine kostenlose Beratung und lassen Sie uns gemeinsam Ihre Idee verwirklichen.
       </p>
       <a 
         href="/contact" 
-        class="inline-flex items-center px-8 py-4 bg-gold text-midnight text-lg font-medium rounded-full hover:bg-champagne transition-colors"
+        class="inline-flex items-center px-8 py-4 bg-gold text-lg font-medium rounded-full hover:bg-champagne transition-colors"
+        style="color: var(--color-primary);"
       >
         Kostenlose Beratung
       </a>

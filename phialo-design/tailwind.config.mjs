@@ -60,6 +60,8 @@ export default {
         gold: '#D4AF37',
         platinum: '#E5E4E2',
         charcoal: '#2B2B2B',
+        'off-white': '#FAFAFA',
+        champagne: '#F7E7CE',
       },
 
       // Typography

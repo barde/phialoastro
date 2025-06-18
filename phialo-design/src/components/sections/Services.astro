@@ -4,16 +4,16 @@ import Button from '../common/Button.astro';
 import { Palette, Eye, Cog } from 'lucide-react';
 ---
 
-<section id="services" class="services-section py-24 bg-off-white">
+<section id="services" class="services-section py-24" style="background-color: var(--color-bg-secondary);">
   <div class="container mx-auto px-6">    <!-- Section Header -->
     <div class="text-center mb-20">
-      <h2 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
+      <h2 class="font-display text-4xl md:text-5xl font-medium mb-6" style="color: var(--color-text-primary);">
         3D für Sie
       </h2>
-      <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
+      <p class="text-lg max-w-3xl mx-auto leading-relaxed mb-8" style="color: var(--color-text-secondary);">
         <strong>Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen.</strong>
       </p>
-      <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
+      <p class="text-lg max-w-3xl mx-auto leading-relaxed mb-8" style="color: var(--color-text-secondary);">
         <strong>Fotorealistische Renderings, die beeindrucken und überzeugen.</strong> Möchten Sie Ihr Schmuckstück besonders gut einschätzen, 
         Ihrem Kunden präsentieren oder für eine Werbeaktion darstellen lassen? 
         Wir erstellen für Sie vor dem Guss auf Wunsch eine hochwertige fotorealistische Vorschau.
@@ -34,10 +34,10 @@ import { Palette, Eye, Cog } from 'lucide-react';
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto mb-12">
         <div class="text-left">
-          <p class="text-gray-600 mb-4">
+          <p class="mb-4" style="color: var(--color-text-secondary);">
             Wir bieten <a href="#tutorials" class="text-gold hover:underline">Design Tutorials</a> in Deutsch und Englisch!
           </p>
-          <p class="text-gray-600">
+          <p style="color: var(--color-text-secondary);">
             We offer <a href="#tutorials" class="text-gold hover:underline">Design Tutorials</a> in German and English!
           </p>
         </div>
@@ -82,7 +82,7 @@ import { Palette, Eye, Cog } from 'lucide-react';
           Brauchen Sie Güsse oder ein Wachsmodell? In Zusammenarbeit mit kompetenten Partnern wie 3D-Druckereien 
           und Gießereien erschaffen wir Ihr ideales Juwel.
         </p>
-        <p class="text-sm font-medium text-midnight mb-4">
+        <p class="text-sm font-medium mb-4" style="color: var(--color-text-primary);">
           <strong>Ihre Vorteile:</strong> Persönlicher Ansprechpartner während des gesamten Designprozesses. 
           Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckbarkeit.
         </p>
@@ -117,10 +117,10 @@ import { Palette, Eye, Cog } from 'lucide-react';
     </div>    <!-- CTA Section -->
     <div class="text-center mt-20">
       <div class="max-w-2xl mx-auto">
-        <h3 class="font-display text-2xl font-medium text-midnight mb-4">
+        <h3 class="font-display text-2xl font-medium mb-4" style="color: var(--color-text-primary);">
           Kontaktieren Sie uns jetzt!
         </h3>
-        <p class="text-gray-600 mb-8">
+        <p class="mb-8" style="color: var(--color-text-secondary);">
           Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern.
         </p>
         <Button href="#contact" variant="primary" size="lg">
@@ -133,9 +133,11 @@ import { Palette, Eye, Cog } from 'lucide-react';
 
 <style>
   .service-card {
-    @apply bg-white rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-300;
-    @apply border border-gray-100 hover:border-gray-200;
+    @apply rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-300;
+    @apply border hover:border-gray-200;
     @apply transform hover:-translate-y-2;
+    background-color: var(--color-bg-primary);
+    border-color: var(--color-gray-200);
   }  .service-card.featured {
     @apply ring-2 ring-gold ring-opacity-20 shadow-luxury;
     @apply relative overflow-hidden;
@@ -153,11 +155,13 @@ import { Palette, Eye, Cog } from 'lucide-react';
   }
   
   .service-title {
-    @apply font-display text-xl font-medium text-midnight mb-4;
+    @apply font-display text-xl font-medium mb-4;
+    color: var(--color-text-primary);
   }
   
   .service-description {
-    @apply text-gray-600 leading-relaxed mb-6;
+    @apply leading-relaxed mb-6;
+    color: var(--color-text-secondary);
   }
   
   .service-features {
@@ -165,7 +169,8 @@ import { Palette, Eye, Cog } from 'lucide-react';
   }
   
   .service-features li {
-    @apply text-sm text-gray-600 flex items-center;
+    @apply text-sm flex items-center;
+    color: var(--color-text-secondary);
   }
   
   .service-features li::before {
