@@ -74,8 +74,29 @@ const socialImageURL = new URL(image, Astro.url).href;
       }}
     />
     
+    <!-- Theme initialization script - must run before body to prevent FOUC -->
+    <script is:inline>
+      (function() {
+        const getStoredTheme = () => localStorage.getItem('theme') || 'light';
+        const setTheme = (theme) => {
+          if (theme === 'system') {
+            document.documentElement.removeAttribute('data-theme');
+          } else {
+            document.documentElement.setAttribute('data-theme', theme);
+          }
+          
+          // Update meta theme-color
+          const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          const themeColor = isDark ? '#0A192F' : '#FFFFFF';
+          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
+        };
+        
+        setTheme(getStoredTheme());
+      })();
+    </script>
+    
     <ViewTransitions />
-  </head>  <body class="min-h-screen bg-white text-charcoal antialiased">
+  </head>  <body class="min-h-screen antialiased">
     <SmoothScroll client:load />
     <slot />
     

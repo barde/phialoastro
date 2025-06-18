@@ -11,7 +11,7 @@ const { transparent = false } = Astro.props;
 <header 
   id="main-header" 
   class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-    transparent ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-100'
+    transparent ? 'bg-transparent' : 'bg-white/95 dark:bg-midnight/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800'
   }`}
 >
   <div class="container mx-auto px-6">
@@ -19,7 +19,7 @@ const { transparent = false } = Astro.props;
       <!-- Logo -->
       <a 
         href="/" 
-        class="font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
+        class="font-display text-2xl font-medium text-midnight dark:text-platinum hover:text-gold dark:hover:text-gold transition-colors"
         aria-label="Phialo Design Startseite"
       >
         PHIALO
@@ -31,7 +31,7 @@ const { transparent = false } = Astro.props;
       <!-- CTA Button -->
       <a 
         href="/contact" 
-        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white transition-all duration-200"
+        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white dark:hover:text-midnight transition-all duration-200"
       >
         Projekt anfragen
       </a>
@@ -54,10 +54,10 @@ const { transparent = false } = Astro.props;
       // Add background on scroll
       if (currentScrollY > 50) {
         header.classList.remove('bg-transparent');
-        header.classList.add('bg-white/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100');
+        header.classList.add('bg-white/95', 'dark:bg-midnight/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100', 'dark:border-gray-800');
       } else if (header.dataset.transparent === 'true') {
         header.classList.add('bg-transparent');
-        header.classList.remove('bg-white/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100');
+        header.classList.remove('bg-white/95', 'dark:bg-midnight/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100', 'dark:border-gray-800');
       }
       
       // Hide/show header on scroll direction

@@ -16,8 +16,11 @@
   }
 
   body {
-    @apply text-neutral-900 bg-white antialiased;
+    @apply antialiased;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    transition: color 0.3s ease, background-color 0.3s ease;
   }
 
   /* Headings */

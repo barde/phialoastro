@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const navItems = [
   { href: '/portfolio', label: 'Portfolio' },
@@ -44,8 +45,8 @@ export default function Navigation() {
             href={href}
             className={`relative text-sm font-medium transition-colors duration-200 group ${
               isActiveLink(href)
-                ? 'text-midnight'
-                : 'text-gray-600 hover:text-midnight'
+                ? 'text-midnight dark:text-platinum'
+                : 'text-gray-600 hover:text-midnight dark:text-gray-300 dark:hover:text-platinum'
             }`}
           >
             {label}
@@ -58,16 +59,22 @@ export default function Navigation() {
             />
           </a>
         ))}
+        
+        {/* Theme Toggle for Desktop */}
+        <ThemeToggle />
       </nav>
 
-      {/* Mobile Menu Button */}
-      <button
-        className="lg:hidden p-2 text-midnight hover:text-gold transition-colors"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        aria-label={isMobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
-      >
-        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* Mobile Menu Button and Theme Toggle */}
+      <div className="lg:hidden flex items-center space-x-2">
+        <ThemeToggle />
+        <button
+          className="p-2 text-midnight hover:text-gold dark:text-platinum dark:hover:text-gold transition-colors"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label={isMobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
 
       {/* Mobile Menu */}
       <MobileMenu
