@@ -165,7 +165,7 @@ export const translations: Translations = {
     home: {
       hero: {
         title: 'Fantasie wird zu 3D wird Realität',
-        subtitle: 'Schmuck und Skulpturen, 3D Design, 3D-Druck und Guss. Ihre Idee als reales Modell!',
+        subtitle: 'Schmuck und Skulpturen, 3D-Design, 3D-Druck und Guss. Ihre Idee als reales Modell!',
         cta: 'Entdecken Sie unsere Arbeit'
       },
       overview: {
@@ -177,7 +177,7 @@ export const translations: Translations = {
         },
         services: {
           title: '3D für Sie',
-          description: 'Professionelle 3D-Design Services für Ihre individuellen Projekte'
+          description: 'Professionelle 3D-Design-Services für Ihre individuellen Projekte'
         },
         tutorials: {
           title: 'Tutorials', 
@@ -193,35 +193,35 @@ export const translations: Translations = {
     // Services page
     services: {
       title: '3D für Sie',
-      description: 'Professionelle 3D-Design Services für Ihre individuellen Projekte. Von der Idee zum fertigen 3D-Modell.',
+      description: 'Professionelle 3D-Design-Services für Ihre individuellen Projekte. Von der Idee zum fertigen 3D-Modell.',
       hero: {
         title: '3D für Sie',
-        subtitle: 'Verwandeln Sie Ihre Ideen in greifbare Realität. Unser professioneller 3D-Design Service bringt Ihre Visionen vom Konzept bis zum fertigen Modell.'
+        subtitle: 'Verwandeln Sie Ihre Ideen in greifbare Realität. Unser professioneller 3D-Design-Service bringt Ihre Visionen vom Konzept bis zum fertigen Modell.'
       },
       intro: {
         germanText: 'Wir bieten Design Tutorials in Deutsch und Englisch!',
         englishText: 'We offer Design Tutorials in German and English!'
       },
       service1: {
-        title: '3D Design & CAD',
-        description: 'Erfahrene Goldschmiede erschaffen Ihre Idee mit CAD-Software. Die perfekte Umsetzbarkeit als Guss oder Druck in vielfältigen Materialien ist garantiert. Wir liefern Ihnen druckfähige, wasserdicht vorbereitete Dateien jeglicher Komplexität.',
-        benefits: 'Ihre Vorteile: Persönlicher Ansprechpartner während des gesamten Designprozesses. Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckbarkeit.',
+        title: '3D-Design & CAD',
+        description: 'Erfahrene Goldschmiede setzen Ihre Ideen mit professioneller CAD-Software um. Die perfekte Umsetzbarkeit als Guss oder 3D-Druck in verschiedensten Materialien ist garantiert. Wir liefern Ihnen druckfertige, wasserdichte Dateien in jeder gewünschten Komplexität.',
+        benefits: 'Ihre Vorteile: Persönlicher Ansprechpartner während des gesamten Designprozesses. Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckfähigkeit.',
         cta: 'Kontakt aufnehmen'
       },
       service2: {
         title: 'Guss & 3D-Druck',
-        description: 'Brauchen Sie Güsse oder ein Wachsmodell? In Zusammenarbeit mit kompetenten Partnern wie 3D-Druckereien und Gießereien erschaffen wir Ihr ideales Juwel.',
-        benefits: 'Ihre Vorteile: Persönlicher Ansprechpartner während des gesamten Designprozesses. Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckbarkeit.',
+        description: 'Benötigen Sie Güsse oder ein Wachsmodell? In Zusammenarbeit mit kompetenten Partnern wie spezialisierten 3D-Druckereien und Edelmetall-Gießereien erstellen wir Ihr perfektes Schmuckstück.',
+        benefits: 'Ihre Vorteile: Persönlicher Ansprechpartner während des gesamten Designprozesses. Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckfähigkeit.',
         cta: 'Kontakt aufnehmen'
       },
       service3: {
         title: 'Beratung & Support',
-        description: 'Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern und stehen Ihnen während des gesamten Projekts zur Seite.',
-        benefits: 'Ihre Vorteile: Expertenberatung von erfahrenen Fachleuten. Unterstützung während des gesamten Projektlebenszyklus. Flexible Beratungsoptionen.',
+        description: 'Benötigen Sie weitere Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gerne und begleiten Sie während des gesamten Projektverlaufs.',
+        benefits: 'Ihre Vorteile: Expertenberatung von erfahrenen Fachleuten. Umfassende Unterstützung während des gesamten Projektlebenszyklus. Flexible Beratungsoptionen.',
         cta: 'Kontakt aufnehmen'
       },
       callToAction: {
-        title: 'Haben Sie ein Projekt im Kopf?',
+        title: 'Haben Sie ein Projekt im Sinn?',
         subtitle: 'Kontaktieren Sie uns für eine kostenlose Beratung und lassen Sie uns gemeinsam Ihre Idee verwirklichen.',
         cta: 'Kostenlose Beratung'
       }

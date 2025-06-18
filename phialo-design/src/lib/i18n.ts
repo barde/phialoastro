@@ -14,14 +14,24 @@ export interface Translations {
 
 // Translation utility function
 export function getTranslation(locale: Locale, key: string, translations: Translations): string {
-  const localeTranslations = translations[locale] || translations[DEFAULT_LOCALE];
+  const localeTranslations = translations[locale];
   
   // Support nested keys with dot notation (e.g., 'nav.home')
   const keys = key.split('.');
-  let value: any = localeTranslations;
   
+  // Try to get value from requested locale
+  let value: any = localeTranslations;
   for (const k of keys) {
     value = value?.[k];
+  }
+  
+  // If not found and locale is not default, try default locale
+  if ((value === undefined || value === null) && locale !== DEFAULT_LOCALE) {
+    const defaultTranslations = translations[DEFAULT_LOCALE];
+    value = defaultTranslations;
+    for (const k of keys) {
+      value = value?.[k];
+    }
   }
   
   return typeof value === 'string' ? value : key;
