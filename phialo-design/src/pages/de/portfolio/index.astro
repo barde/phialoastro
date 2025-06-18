@@ -1,14 +1,14 @@
 ---
-import PageLayout from '../layouts/PageLayout.astro';
-import Contact from '../components/sections/Contact.astro';
-import { getLocaleFromUrl, createT } from '../lib/i18n';
-import { translations } from '../lib/translations';
+import PageLayout from '../../../layouts/PageLayout.astro';
+import Portfolio from '../../../components/sections/Portfolio';
+import { getLocaleFromUrl, createT } from '../../../lib/i18n';
+import { translations } from '../../../lib/translations';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = createT(locale, translations);
 
-const title = t('contact.title') + ' | Phialo Design';
-const description = t('contact.description');
+const title = t('portfolio.title') + ' | Phialo Design';
+const description = t('portfolio.description');
 ---
 
 <PageLayout title={title} description={description}>
@@ -17,15 +17,15 @@ const description = t('contact.description');
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          {t('contact.hero.title')}
+          {t('portfolio.hero.title')}
         </h1>
         <p class="text-xl text-neutral-600 leading-relaxed">
-          {t('contact.hero.subtitle')}
+          {t('portfolio.hero.subtitle')}
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Contact Section -->
-  <Contact />
+  <!-- Portfolio Section -->
+  <Portfolio client:load />
 </PageLayout>

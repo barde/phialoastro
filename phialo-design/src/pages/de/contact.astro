@@ -1,8 +1,8 @@
 ---
-import PageLayout from '../layouts/PageLayout.astro';
-import Contact from '../components/sections/Contact.astro';
-import { getLocaleFromUrl, createT } from '../lib/i18n';
-import { translations } from '../lib/translations';
+import PageLayout from '../../layouts/PageLayout.astro';
+import Contact from '../../components/sections/Contact.astro';
+import { getLocaleFromUrl, createT } from '../../lib/i18n';
+import { translations } from '../../lib/translations';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = createT(locale, translations);

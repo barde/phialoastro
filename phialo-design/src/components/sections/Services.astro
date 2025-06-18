@@ -2,6 +2,11 @@
 import { Image } from 'astro:assets';
 import Button from '../common/Button.astro';
 import { Palette, Eye, Cog } from 'lucide-react';
+import { getLocaleFromUrl, createT } from '../../lib/i18n';
+import { translations } from '../../lib/translations';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = createT(locale, translations);
 ---
 
 <section id="services" class="services-section py-24 bg-off-white">
@@ -35,10 +40,10 @@ import { Palette, Eye, Cog } from 'lucide-react';
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto mb-12">
         <div class="text-left">
           <p class="text-gray-600 mb-4">
-            Wir bieten <a href="#tutorials" class="text-gold hover:underline">Design Tutorials</a> in Deutsch und Englisch!
+            {t('services.intro.germanText')}
           </p>
           <p class="text-gray-600">
-            We offer <a href="#tutorials" class="text-gold hover:underline">Design Tutorials</a> in German and English!
+            {t('services.intro.englishText')}
           </p>
         </div>
         <div class="flex justify-center">
@@ -54,18 +59,17 @@ import { Palette, Eye, Cog } from 'lucide-react';
           <Palette className="w-8 h-8 text-gold" />
         </div>
         <h3 class="service-title">
-          3D Design & CAD
+          {t('services.service1.title')}
         </h3>
         <p class="service-description">
-          Erfahrene Goldschmiede erschaffen Ihre Idee mit CAD-Software. Die perfekte Umsetzbarkeit als
-          Guss oder Druck in vielfältigen Materialien ist garantiert. Wir liefern Ihnen druckfähige, wasserdicht vorbereitete Dateien jeglicher Komplexität.
+          {t('services.service1.description')}
         </p>
         <div class="flex justify-center mb-6">
           <img src="/images/3DfuerSie/3dzuSchmuck.jpg" alt="3D zu Schmuck" class="rounded-lg shadow-md max-w-full" />
         </div>
         <div class="service-cta">
           <Button href="/contact" variant="outline" size="sm">
-            Anfrage stellen
+            {t('services.service1.cta')}
           </Button>
         </div>
       </div>
@@ -76,19 +80,17 @@ import { Palette, Eye, Cog } from 'lucide-react';
           <Cog className="w-8 h-8 text-gold" />
         </div>
         <h3 class="service-title">
-          Guss & 3D-Druck
+          {t('services.service2.title')}
         </h3>
         <p class="service-description">
-          Brauchen Sie Güsse oder ein Wachsmodell? In Zusammenarbeit mit kompetenten Partnern wie 3D-Druckereien 
-          und Gießereien erschaffen wir Ihr ideales Juwel.
+          {t('services.service2.description')}
         </p>
         <p class="text-sm font-medium text-midnight mb-4">
-          <strong>Ihre Vorteile:</strong> Persönlicher Ansprechpartner während des gesamten Designprozesses. 
-          Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckbarkeit.
+          <strong>{t('services.service2.benefits')}</strong>
         </p>
         <div class="service-cta">
           <Button href="/contact" variant="primary" size="sm">
-            Kontakt aufnehmen
+            {t('services.service2.cta')}
           </Button>
         </div>
       </div>
@@ -99,18 +101,17 @@ import { Palette, Eye, Cog } from 'lucide-react';
           <Eye className="w-8 h-8 text-gold" />
         </div>
         <h3 class="service-title">
-          Beratung & Support
+          {t('services.service3.title')}
         </h3>
         <p class="service-description">
-          Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern 
-          und stehen Ihnen während des gesamten Projekts zur Seite.
+          {t('services.service3.description')}
         </p>
         <div class="flex justify-center mb-6">
           <img src="/images/engRing2_1.jpg" alt="Engagement Ring Design" class="rounded-lg shadow-md max-w-full" />
         </div>
         <div class="service-cta">
           <Button href="/contact" variant="outline" size="sm">
-            Beratung anfragen
+            {t('services.service3.cta')}
           </Button>
         </div>
       </div>

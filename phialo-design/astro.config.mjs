@@ -12,6 +12,15 @@ export default defineConfig({
     })
   ],
   
+  // Internationalization configuration
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'de'],
+    routing: {
+      prefixDefaultLocale: false
+    }
+  },
+  
   // SEO and performance optimizations
   site: 'https://phialodesign.com',
   

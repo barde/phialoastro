@@ -1,8 +1,8 @@
 ---
-import PageLayout from '../../layouts/PageLayout.astro';
-import Services from '../../components/sections/Services.astro';
-import { getLocaleFromUrl, createT } from '../../lib/i18n';
-import { translations } from '../../lib/translations';
+import PageLayout from '../../../layouts/PageLayout.astro';
+import Services from '../../../components/sections/Services.astro';
+import { getLocaleFromUrl, createT } from '../../../lib/i18n';
+import { translations } from '../../../lib/translations';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = createT(locale, translations);
@@ -41,7 +41,7 @@ const description = t('services.description');
         {t('services.callToAction.subtitle')}
       </p>
       <a 
-        href="/contact" 
+        href="/de/contact" 
         class="inline-flex items-center px-8 py-4 bg-gold text-midnight text-lg font-medium rounded-full hover:bg-champagne transition-colors"
       >
         {t('services.callToAction.cta')}

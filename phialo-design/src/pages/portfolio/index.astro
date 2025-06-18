@@ -1,9 +1,14 @@
 ---
 import PageLayout from '../../layouts/PageLayout.astro';
 import Portfolio from '../../components/sections/Portfolio.tsx';
+import { getLocaleFromUrl, createT } from '../../lib/i18n';
+import { translations } from '../../lib/translations';
 
-const title = 'Portfolio | Phialo Design';
-const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D-Skulpturen. Von Ringen bis zu Skulpturen - jedes Stück ein Kunstwerk.';
+const locale = getLocaleFromUrl(Astro.url);
+const t = createT(locale, translations);
+
+const title = t('portfolio.title') + ' | Phialo Design';
+const description = t('portfolio.description');
 ---
 
 <PageLayout title={title} description={description}>
@@ -12,10 +17,10 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Portfolio
-        </h1>        <p class="text-xl text-neutral-600 leading-relaxed">
-          Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D-Skulpturen. 
-          Jedes Stück wird mit Präzision und künstlerischer Vision gefertigt.
+          {t('portfolio.hero.title')}
+        </h1>
+        <p class="text-xl text-neutral-600 leading-relaxed">
+          {t('portfolio.hero.subtitle')}
         </p>
       </div>
     </div>

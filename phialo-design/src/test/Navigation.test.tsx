@@ -7,18 +7,18 @@ describe('Navigation Component', () => {
     render(<Navigation />);
     
     expect(screen.getByText('Portfolio')).toBeInTheDocument();
-    expect(screen.getByText('3D für Sie')).toBeInTheDocument();
+    expect(screen.getByText('3D for You')).toBeInTheDocument();
     expect(screen.getByText('Tutorials')).toBeInTheDocument();
-    expect(screen.getByText('Kontakt')).toBeInTheDocument();
+    expect(screen.getByText('Contact')).toBeInTheDocument();
   });
 
   it('has correct href attributes', () => {
     render(<Navigation />);
     
     const portfolioLink = screen.getByRole('link', { name: 'Portfolio' });
-    const servicesLink = screen.getByRole('link', { name: '3D für Sie' });
+    const servicesLink = screen.getByRole('link', { name: '3D for You' });
     const tutorialsLink = screen.getByRole('link', { name: 'Tutorials' });
-    const contactLink = screen.getByRole('link', { name: 'Kontakt' });
+    const contactLink = screen.getByRole('link', { name: 'Contact' });
 
     expect(portfolioLink).toHaveAttribute('href', '/portfolio');
     expect(servicesLink).toHaveAttribute('href', '/services');

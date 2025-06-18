@@ -1,23 +1,40 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
+import LanguageSwitcher from './LanguageSwitcher';
+import { getLocaleFromUrl, type Locale } from '../../lib/i18n';
 
-const navItems = [
-  { href: '/portfolio', label: 'Portfolio' },
-  { href: '/services', label: '3D für Sie' },
-  { href: '/tutorials', label: 'Tutorials' },
-  { href: '/contact', label: 'Kontakt' }
-];
+const getNavItems = (locale: Locale) => {
+  const baseItems = [
+    { href: '/portfolio', label: locale === 'de' ? 'Portfolio' : 'Portfolio' },
+    { href: '/services', label: locale === 'de' ? '3D für Sie' : '3D for You' },
+    { href: '/tutorials', label: locale === 'de' ? 'Tutorials' : 'Tutorials' },
+    { href: '/contact', label: locale === 'de' ? 'Kontakt' : 'Contact' }
+  ];
+
+  // Add locale prefix for non-default locale
+  return baseItems.map(item => ({
+    ...item,
+    href: locale === 'en' ? item.href : `/de${item.href}`
+  }));
+};
 
 export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
+  const [currentLocale, setCurrentLocale] = useState<Locale>('en');
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const locale = getLocaleFromUrl(url);
+    setCurrentLocale(locale);
     setCurrentPath(window.location.pathname);
     
-    // Update current path on navigation
+    // Update current path and locale on navigation
     const handleLocationChange = () => {
+      const newUrl = new URL(window.location.href);
+      const newLocale = getLocaleFromUrl(newUrl);
+      setCurrentLocale(newLocale);
       setCurrentPath(window.location.pathname);
     };
     
@@ -28,6 +45,8 @@ export default function Navigation() {
       document.removeEventListener('astro:page-load', handleLocationChange);
     };
   }, []);
+
+  const navItems = getNavItems(currentLocale);
 
   const isActiveLink = (href: string) => {
     if (href === '/') return currentPath === '/';
@@ -58,13 +77,16 @@ export default function Navigation() {
             />
           </a>
         ))}
+        
+        {/* Language Switcher */}
+        <LanguageSwitcher />
       </nav>
 
       {/* Mobile Menu Button */}
       <button
         className="lg:hidden p-2 text-midnight hover:text-gold transition-colors"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        aria-label={isMobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
+        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
