@@ -10,8 +10,8 @@ vi.mock('astro:content', () => ({
 // Mock the framer-motion module
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    img: ({ children, ...props }: any) => <img {...props}>{children}</img>,
+    div: ({ children, layout, variants, ...props }: any) => <div {...props}>{children}</div>,
+    img: ({ children, layout, variants, ...props }: any) => <img {...props}>{children}</img>,
   },
   AnimatePresence: ({ children }: any) => children,
   useInView: () => true,

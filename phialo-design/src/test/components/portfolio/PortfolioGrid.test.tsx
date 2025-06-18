@@ -6,7 +6,7 @@ import type { PortfolioItemData } from '../../../components/sections/Portfolio';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, layout, variants, ...props }: any) => <div {...props}>{children}</div>,
   },
 }));
 
