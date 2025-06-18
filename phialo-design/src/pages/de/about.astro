@@ -1,0 +1,38 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getLocaleFromUrl, createT } from '../../lib/i18n';
+import { translations } from '../../lib/translations';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = createT(locale, translations);
+
+const title = t('about.title') + ' | Phialo Design';
+const description = t('about.description');
+---
+
+<PageLayout title={title} description={description}>
+  <!-- Hero Section -->
+  <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
+          {t('about.hero.title')}
+        </h1>
+        <p class="text-xl text-neutral-600 leading-relaxed">
+          {t('about.hero.subtitle')}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Content -->
+  <section class="py-20">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto">
+        <p class="text-lg text-gray-600 mb-8">
+          Our story and mission are being crafted. Visit us again soon to learn more about Phialo Design's passion for 3D jewelry creation.
+        </p>
+      </div>
+    </div>
+  </section>
+</PageLayout>

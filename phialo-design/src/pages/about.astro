@@ -1,9 +1,14 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
 import Button from '../components/common/Button.astro';
+import { getLocaleFromUrl, createT } from '../lib/i18n';
+import { translations } from '../lib/translations';
 
-const title = 'About | Phialo Design';
-const description = 'Learn about our heritage, craftsmanship, and commitment to creating exceptional jewelry and gemstone pieces.';
+const locale = getLocaleFromUrl(Astro.url);
+const t = createT(locale, translations);
+
+const title = t('about.title') + ' | Phialo Design';
+const description = t('about.description');
 ---
 
 <PageLayout title={title} description={description}>
@@ -12,12 +17,10 @@ const description = 'Learn about our heritage, craftsmanship, and commitment to 
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Our Story
+          {t('about.hero.title')}
         </h1>
         <p class="text-xl text-neutral-600 leading-relaxed">
-          For over three decades, Phialo Design has been synonymous with exceptional craftsmanship, 
-          rare gemstones, and timeless elegance. Our journey began with a simple vision: to create 
-          jewelry that transcends trends and becomes treasured heirlooms.
+          {t('about.hero.subtitle')}
         </p>
       </div>
     </div>
