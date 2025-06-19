@@ -98,7 +98,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath }: M
             {/* Language Selector for Mobile */}
             <div className="mt-8 pt-6 border-t border-gray-100">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Sprache</span>
+                <span className="text-sm font-medium text-gray-600">Language</span>
                 <LanguageSelector />
               </div>
             </div>

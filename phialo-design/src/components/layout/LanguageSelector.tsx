@@ -4,12 +4,16 @@ import { Globe } from 'lucide-react';
 interface Language {
   code: string;
   label: string;
-  googleCode: string;
+  locale: string;
 }
 
 const languages: Language[] = [
-  { code: 'DE', label: 'Deutsch', googleCode: 'de' },
-  { code: 'EN', label: 'English', googleCode: 'en' }
+  { code: 'DE', label: 'Deutsch', locale: 'de' },
+  { code: 'EN', label: 'English', locale: 'en' },
+  { code: 'FR', label: 'Français', locale: 'fr' },
+  { code: 'ES', label: 'Español', locale: 'es' },
+  { code: 'IT', label: 'Italiano', locale: 'it' },
+  { code: 'NL', label: 'Nederlands', locale: 'nl' }
 ];
 
 export default function LanguageSelector() {
@@ -17,57 +21,105 @@ export default function LanguageSelector() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    // Initialize Google Translate
-    const initializeGoogleTranslate = () => {
-      if (typeof window !== 'undefined' && !(window as any).google?.translate) {
-        // Add Google Translate script
-        const script = document.createElement('script');
-        script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-        script.async = true;
-        document.head.appendChild(script);
-
-        // Initialize Google Translate Widget
-        (window as any).googleTranslateElementInit = () => {
-          if ((window as any).google?.translate?.TranslateElement) {
-            new (window as any).google.translate.TranslateElement({
-              pageLanguage: 'de',
-              includedLanguages: 'de,en',
-              layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
-              autoDisplay: false
-            }, 'google_translate_element');
-          }
-        };
+    // Initialize translation system
+    const initializeTranslation = () => {
+      if (typeof window !== 'undefined') {
+        // Try to initialize Weglot if API key is available
+        const weglotApiKey = getWeglotApiKey();
+        
+        if (weglotApiKey && weglotApiKey !== 'your-api-key-here') {
+          initializeWeglot(weglotApiKey);
+        } else {
+          // Fallback to Google Translate for basic functionality
+          initializeGoogleTranslate();
+        }
       }
     };
 
-    initializeGoogleTranslate();
+    initializeTranslation();
   }, []);
+
+  const getWeglotApiKey = (): string | null => {
+    // In production, this would come from environment variables
+    // For demo purposes, using a placeholder
+    return process.env.PUBLIC_WEGLOT_API_KEY || null;
+  };
+
+  const initializeWeglot = (apiKey: string) => {
+    if (!(window as any).Weglot) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.weglot.com/weglot.min.js';
+      script.async = true;
+      document.head.appendChild(script);
+
+      script.onload = () => {
+        if ((window as any).Weglot) {
+          (window as any).Weglot.initialize({
+            api_key: apiKey,
+            original_language: 'de',
+            destination_languages: 'en,fr,es,it,nl',
+            switchers: [{
+              target: '#weglot-switcher',
+              sibling: null
+            }]
+          });
+        }
+      };
+    }
+  };
+
+  const initializeGoogleTranslate = () => {
+    if (!(window as any).google?.translate) {
+      const script = document.createElement('script');
+      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.head.appendChild(script);
+
+      (window as any).googleTranslateElementInit = () => {
+        if ((window as any).google?.translate?.TranslateElement) {
+          new (window as any).google.translate.TranslateElement({
+            pageLanguage: 'de',
+            includedLanguages: 'de,en,fr,es,it,nl',
+            layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+          }, 'google-translate-element');
+        }
+      };
+    }
+  };
 
   const handleLanguageChange = (language: Language) => {
     setCurrentLanguage(language.code);
     setIsDropdownOpen(false);
 
-    // Trigger Google Translate
-    if (typeof window !== 'undefined' && (window as any).google?.translate) {
-      const googleTranslateCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      if (googleTranslateCombo) {
-        googleTranslateCombo.value = language.googleCode;
-        googleTranslateCombo.dispatchEvent(new Event('change'));
+    if (typeof window !== 'undefined') {
+      // Try Weglot first
+      if ((window as any).Weglot) {
+        (window as any).Weglot.switchTo(language.locale);
+      } 
+      // Fallback to Google Translate
+      else if ((window as any).google?.translate) {
+        const googleTranslateCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (googleTranslateCombo) {
+          googleTranslateCombo.value = language.locale;
+          googleTranslateCombo.dispatchEvent(new Event('change'));
+        }
       }
     }
   };
 
   return (
     <div className="relative">
-      {/* Hidden Google Translate Element */}
-      <div id="google_translate_element" className="hidden"></div>
+      {/* Hidden Translation Elements */}
+      <div id="weglot-switcher" className="hidden"></div>
+      <div id="google-translate-element" className="hidden"></div>
       
       {/* Custom Language Selector */}
       <div className="flex items-center">
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-midnight transition-colors duration-200"
-          aria-label="Sprache auswählen"
+          aria-label="Select language"
         >
           <Globe size={16} />
           <span>{currentLanguage}</span>
@@ -83,14 +135,14 @@ export default function LanguageSelector() {
 
         {/* Dropdown */}
         {isDropdownOpen && (
-          <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[120px] z-50">
+          <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] z-50">
             {languages.map((language) => (
               <button
                 key={language.code}
                 onClick={() => handleLanguageChange(language)}
-                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg ${
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg ${
                   currentLanguage === language.code 
-                    ? 'text-gold font-semibold' 
+                    ? 'text-gold font-semibold bg-gold/5' 
                     : 'text-gray-700'
                 }`}
               >

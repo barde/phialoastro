@@ -29,7 +29,7 @@ describe('Navigation Component', () => {
   it('renders language selector', () => {
     render(<Navigation />);
     
-    expect(screen.getByLabelText('Sprache auswählen')).toBeInTheDocument();
+    expect(screen.getByLabelText('Select language')).toBeInTheDocument();
     expect(screen.getByText('DE')).toBeInTheDocument();
   });
 });
