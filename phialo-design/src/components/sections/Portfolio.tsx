@@ -220,7 +220,7 @@ export default function Portfolio() {
   };
 
   return (
-    <section id="portfolio" className="portfolio-section py-24 bg-white" ref={ref}>
+    <section id="portfolio" className="portfolio-section py-24" style={{ backgroundColor: 'var(--color-bg-primary)' }} ref={ref}>
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <motion.div
@@ -231,7 +231,7 @@ export default function Portfolio() {
         >          <h2 className="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
             Portfolio
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
+          <p className="text-lg max-w-2xl mx-auto leading-relaxed mb-8" style={{ color: 'var(--color-text-secondary)' }}>
             Entdecken Sie unsere handgefertigten 3D-Designs und realisierten Schmuckstücke.
           </p>
           <div className="text-center">

@@ -11,7 +11,7 @@ interface PortfolioItemProps {
 export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
   return (
     <MagneticCursor>
-      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with proper scaling */}
+      <div className="portfolio-item-container group relative overflow-hidden rounded-lg h-full" style={{ backgroundColor: 'var(--color-gray-100)' }}>        {/* Image with proper scaling */}
         <img
           src={item.image}
           alt={item.title}
@@ -29,12 +29,20 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
             <div className="flex items-center gap-3">
               <button
                 onClick={() => onItemClick && onItemClick(item)}
-                className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
+                className="inline-flex items-center px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium transition-colors"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
               >
                 <Eye size={16} className="mr-2" />
                 Details
               </button>
-              <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
+              <button 
+                className="p-2 backdrop-blur-sm rounded-full transition-colors"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+              >
                 <ExternalLink size={16} />
               </button>
             </div>

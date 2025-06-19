@@ -11,6 +11,11 @@ export class ThemeManager {
   }
 
   private initializeTheme() {
+    // Only initialize if we're in a browser environment
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+    
     // Get saved theme from localStorage or default to 'light'
     const savedTheme = (localStorage.getItem('theme') as Theme) || 'light';
     this.setTheme(savedTheme, false);
@@ -29,6 +34,11 @@ export class ThemeManager {
   }
 
   private applyTheme() {
+    // Only apply theme if we're in a browser environment
+    if (typeof document === 'undefined') {
+      return;
+    }
+    
     const html = document.documentElement;
     
     if (this.currentTheme === 'system') {
@@ -44,6 +54,11 @@ export class ThemeManager {
   }
 
   private updateMetaThemeColor() {
+    // Only update meta theme color if we're in a browser environment
+    if (typeof document === 'undefined') {
+      return;
+    }
+    
     const isDark = this.getEffectiveTheme() === 'dark';
     const themeColor = isDark ? '#0A192F' : '#FFFFFF';
     
@@ -59,7 +74,7 @@ export class ThemeManager {
   public setTheme(theme: Theme, persist: boolean = true) {
     this.currentTheme = theme;
     
-    if (persist) {
+    if (persist && typeof localStorage !== 'undefined') {
       localStorage.setItem('theme', theme);
     }
     
@@ -73,7 +88,12 @@ export class ThemeManager {
 
   public getEffectiveTheme(): 'light' | 'dark' {
     if (this.currentTheme === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      // Check if we're in a browser environment
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      // Default to light if we can't detect system preference
+      return 'light';
     }
     return this.currentTheme;
   }

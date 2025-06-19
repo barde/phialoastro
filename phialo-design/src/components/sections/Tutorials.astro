@@ -56,13 +56,13 @@ const tutorials = [
 ];
 ---
 
-<section id="tutorials" class="py-20 bg-neutral-50">
+<section id="tutorials" class="py-20" style="background-color: var(--color-bg-secondary);">
   <div class="container mx-auto px-6">    <!-- Section Header -->
     <div class="text-center mb-16">
-      <h2 class="text-4xl md:text-5xl font-light text-neutral-900 mb-6">
+      <h2 class="text-4xl md:text-5xl font-light mb-6" style="color: var(--color-text-primary);">
         Tutorials
       </h2>
-      <p class="text-lg text-neutral-600 max-w-2xl mx-auto">
+      <p class="text-lg max-w-2xl mx-auto" style="color: var(--color-text-secondary);">
         Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.
       </p>
     </div>
@@ -75,11 +75,12 @@ const tutorials = [
       >
         {tutorials.map((tutorial) => (
           <article 
-            class="flex-none w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start tutorial-card"
+            class="flex-none w-80 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start tutorial-card"
+            style="background-color: var(--color-bg-primary);"
             data-tutorial-id={tutorial.id}
           >
             <!-- Image -->
-            <div class="relative h-48 bg-neutral-200">              <img 
+            <div class="relative h-48" style="background-color: var(--color-gray-200);">              <img 
                 src={tutorial.image} 
                 alt={tutorial.title}
                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
@@ -88,16 +89,16 @@ const tutorials = [
             </div>            <!-- Content -->
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
-                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-neutral-100 text-neutral-700">
+                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium" style="background-color: var(--color-gray-100); color: var(--color-text-secondary);">
                   {tutorial.category}
                 </span>
               </div>
               
-              <h3 class="text-xl font-semibold text-neutral-900 mb-3 line-clamp-2">
+              <h3 class="text-xl font-semibold mb-3 line-clamp-2" style="color: var(--color-text-primary);">
                 {tutorial.title}
               </h3>
               
-              <p class="text-neutral-600 mb-6 line-clamp-3">
+              <p class="mb-6 line-clamp-3" style="color: var(--color-text-secondary);">
                 {tutorial.description}
               </p>
 
@@ -106,7 +107,10 @@ const tutorials = [
                   href={tutorial.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
+                  class="inline-flex items-center font-medium transition-colors group"
+                  style="color: var(--color-secondary);"
+                  onmouseover="this.style.opacity='0.8'"
+                  onmouseout="this.style.opacity='1'"
                 >
                   Auf Skillshare ansehen
                   <svg 

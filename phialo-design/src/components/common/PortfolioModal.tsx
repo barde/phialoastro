@@ -160,23 +160,30 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="relative w-full max-w-6xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
             <button
               ref={closeButtonRef}
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
+              className="absolute top-4 right-4 z-10 p-2 backdrop-blur-sm rounded-full transition-colors duration-200 shadow-lg"
+              style={{ 
+                backgroundColor: 'rgba(var(--color-bg-primary-rgb), 0.9)',
+                color: 'var(--color-text-primary)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(var(--color-bg-primary-rgb), 0.9)'}
               aria-label="Close modal"
             >
-              <X size={24} className="text-gray-700" />
+              <X size={24} />
             </button>
 
             {/* Content container */}
             <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
               {/* Image section */}
-              <div className="relative flex-1 bg-gray-100 flex items-center justify-center p-8 lg:p-12">
+              <div className="relative flex-1 flex items-center justify-center p-8 lg:p-12" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                 {/* Main image */}
                 <motion.img
                   key={currentImageIndex}
@@ -193,17 +200,29 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                   <>
                     <button
                       onClick={() => navigateImage('prev')}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 backdrop-blur-sm rounded-full transition-colors duration-200 shadow-lg"
+                      style={{ 
+                        backgroundColor: 'rgba(var(--color-bg-primary-rgb), 0.9)',
+                        color: 'var(--color-text-primary)'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(var(--color-bg-primary-rgb), 0.9)'}
                       aria-label="Previous image"
                     >
-                      <ChevronLeft size={24} className="text-gray-700" />
+                      <ChevronLeft size={24} />
                     </button>
                     <button
                       onClick={() => navigateImage('next')}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 backdrop-blur-sm rounded-full transition-colors duration-200 shadow-lg"
+                      style={{ 
+                        backgroundColor: 'rgba(var(--color-bg-primary-rgb), 0.9)',
+                        color: 'var(--color-text-primary)'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(var(--color-bg-primary-rgb), 0.9)'}
                       aria-label="Next image"
                     >
-                      <ChevronRight size={24} className="text-gray-700" />
+                      <ChevronRight size={24} />
                     </button>
 
                     {/* Image indicators */}
@@ -214,9 +233,14 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                           onClick={() => setCurrentImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all duration-200 ${
                             index === currentImageIndex
-                              ? 'bg-gold w-8'
-                              : 'bg-gray-400 hover:bg-gray-600'
+                              ? 'w-8'
+                              : 'hover:opacity-80'
                           }`}
+                          style={{
+                            backgroundColor: index === currentImageIndex 
+                              ? 'var(--color-secondary)' 
+                              : 'var(--color-gray-400)'
+                          }}
                           aria-label={`Go to image ${index + 1}`}
                         />
                       ))}
@@ -233,17 +257,17 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                   transition={{ duration: 0.4, delay: 0.1 }}
                 >
                   {/* Category badge */}
-                  <span className="inline-block px-3 py-1 text-xs font-medium text-gold bg-gold/10 rounded-full mb-4 uppercase tracking-wider">
+                  <span className="inline-block px-3 py-1 text-xs font-medium rounded-full mb-4 uppercase tracking-wider" style={{ backgroundColor: 'rgba(var(--color-secondary), 0.1)', color: 'var(--color-secondary)' }}>
                     {portfolioItem.category}
                   </span>
 
                   {/* Title */}
-                  <h2 id="modal-title" className="font-display text-3xl md:text-4xl font-light text-midnight mb-6">
+                  <h2 id="modal-title" className="font-display text-3xl md:text-4xl font-light mb-6" style={{ color: 'var(--color-text-primary)' }}>
                     {portfolioItem.title}
                   </h2>
 
                   {/* Description */}
-                  <div className="prose prose-lg text-gray-600 mb-8">
+                  <div className="prose prose-lg mb-8" style={{ color: 'var(--color-text-secondary)' }}>
                     <p>{portfolioItem.description}</p>
                   </div>
 
@@ -252,12 +276,13 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     {/* Materials */}
                     {portfolioItem.materials && portfolioItem.materials.length > 0 && (
                       <div>
-                        <h3 className="font-semibold text-midnight mb-2">Materials</h3>
+                        <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Materials</h3>
                         <div className="flex flex-wrap gap-2">
                           {portfolioItem.materials.map((material, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                              className="px-3 py-1 text-sm rounded-full"
+                              style={{ backgroundColor: 'var(--color-gray-100)', color: 'var(--color-text-secondary)' }}
                             >
                               {material}
                             </span>
@@ -270,26 +295,26 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {portfolioItem.client && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Client</h4>
-                          <p className="text-midnight">{portfolioItem.client}</p>
+                          <h4 className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Client</h4>
+                          <p style={{ color: 'var(--color-text-primary)' }}>{portfolioItem.client}</p>
                         </div>
                       )}
                       {portfolioItem.projectDate && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Project Date</h4>
-                          <p className="text-midnight">{portfolioItem.projectDate}</p>
+                          <h4 className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Project Date</h4>
+                          <p style={{ color: 'var(--color-text-primary)' }}>{portfolioItem.projectDate}</p>
                         </div>
                       )}
                       {portfolioItem.availability && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Availability</h4>
-                          <p className="text-midnight capitalize">{portfolioItem.availability}</p>
+                          <h4 className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Availability</h4>
+                          <p className="capitalize" style={{ color: 'var(--color-text-primary)' }}>{portfolioItem.availability}</p>
                         </div>
                       )}
                       {portfolioItem.price && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Price</h4>
-                          <p className="text-midnight">{portfolioItem.price}</p>
+                          <h4 className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Price</h4>
+                          <p style={{ color: 'var(--color-text-primary)' }}>{portfolioItem.price}</p>
                         </div>
                       )}
                     </div>
@@ -297,12 +322,16 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     {/* Tags */}
                     {portfolioItem.tags && portfolioItem.tags.length > 0 && (
                       <div>
-                        <h3 className="font-semibold text-midnight mb-2">Tags</h3>
+                        <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Tags</h3>
                         <div className="flex flex-wrap gap-2">
                           {portfolioItem.tags.map((tag, index) => (
                             <span
                               key={index}
-                              className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded"
+                              className="px-2 py-1 text-xs border rounded"
+                              style={{ 
+                                color: 'var(--color-text-secondary)', 
+                                borderColor: 'var(--color-gray-300)' 
+                              }}
                             >
                               #{tag}
                             </span>
