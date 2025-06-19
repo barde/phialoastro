@@ -33,9 +33,15 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     };
     initializeTranslation();
   }, [weglotApiKey]);
-
   const initializeWeglot = (apiKey: string) => {
     if (!(window as any).Weglot) {
+      // Add Weglot CSS
+      const styleLink = document.createElement('link');
+      styleLink.rel = 'stylesheet';
+      styleLink.href = 'https://cdn.weglot.com/weglot.min.css';
+      document.head.appendChild(styleLink);
+      
+      // Add Weglot Script
       const script = document.createElement('script');
       script.src = 'https://cdn.weglot.com/weglot.min.js';
       script.async = true;
