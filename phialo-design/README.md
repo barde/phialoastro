@@ -59,6 +59,23 @@ src/
 - Node.js 18.x or higher
 - npm or yarn package manager
 
+
+### Environment Variables
+
+#### Translation (Weglot)
+
+To enable automatic translation, set the Weglot API key in your `.env` file:
+
+```
+PUBLIC_WEGLOT_API_KEY=your_actual_weglot_api_key
+```
+
+Replace `your_actual_weglot_api_key` with your real Weglot API key.
+
+**Never commit your API key to source control.**
+
+---
+
 ### Installation
 
 1. **Install dependencies**
@@ -79,6 +96,7 @@ src/
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
+- `npm run test` - Run tests
 - `npm run astro` - Run Astro CLI commands
 
 ## 🎯 Key Components
@@ -136,6 +154,19 @@ Optimized for excellent Core Web Vitals with static generation, partial hydratio
 ## 🛠️ Development
 
 Built with TypeScript, ESLint, and Prettier for maintainable, high-quality code following Astro and React best practices.
+
+## 🚀 Deployment
+
+This project is deployed on **Cloudflare Pages** at https://phialo.de
+
+See [`DEPLOY.md`](./DEPLOY.md) for deployment instructions.
+
+### Key Files
+
+- `wrangler.toml` - Cloudflare deployment configuration
+- `public/_headers` - Security headers and caching rules
+- `public/_redirects` - URL redirects and rewrites
+- `.env` - Environment variables (never commit this file)
 
 ---
 
