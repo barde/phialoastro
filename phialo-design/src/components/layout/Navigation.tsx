@@ -3,6 +3,10 @@ import { Menu, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import LanguageSelector from './LanguageSelector';
 
+interface NavigationProps {
+  weglotApiKey?: string | null;
+}
+
 const navItems = [
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/services', label: '3D für Sie' },
@@ -10,7 +14,7 @@ const navItems = [
   { href: '/contact', label: 'Kontakt' }
 ];
 
-export default function Navigation() {
+export default function Navigation({ weglotApiKey }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
 
@@ -62,7 +66,7 @@ export default function Navigation() {
         
         {/* Language Selector */}
         <div className="ml-4 pl-4 border-l border-gray-200">
-          <LanguageSelector />
+          <LanguageSelector weglotApiKey={weglotApiKey} />
         </div>
       </nav>
 
@@ -81,6 +85,7 @@ export default function Navigation() {
         onClose={() => setIsMobileMenuOpen(false)}
         navItems={navItems}
         currentPath={currentPath}
+        weglotApiKey={weglotApiKey}
       />
     </>
   );
