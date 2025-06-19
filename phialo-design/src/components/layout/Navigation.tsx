@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import MobileMenu from './MobileMenu';
+import LanguageSelector from './LanguageSelector';
 
 const navItems = [
   { href: '/portfolio', label: 'Portfolio' },
@@ -58,6 +59,11 @@ export default function Navigation() {
             />
           </a>
         ))}
+        
+        {/* Language Selector */}
+        <div className="ml-4 pl-4 border-l border-gray-200">
+          <LanguageSelector />
+        </div>
       </nav>
 
       {/* Mobile Menu Button */}
