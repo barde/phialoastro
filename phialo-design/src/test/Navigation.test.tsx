@@ -25,4 +25,11 @@ describe('Navigation Component', () => {
     expect(tutorialsLink).toHaveAttribute('href', '/tutorials');
     expect(contactLink).toHaveAttribute('href', '/contact');
   });
+
+  it('renders language selector', () => {
+    render(<Navigation />);
+    
+    expect(screen.getByLabelText('Sprache auswählen')).toBeInTheDocument();
+    expect(screen.getByText('DE')).toBeInTheDocument();
+  });
 });
