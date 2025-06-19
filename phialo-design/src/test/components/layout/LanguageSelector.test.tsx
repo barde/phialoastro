@@ -2,7 +2,14 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LanguageSelector from '../../../components/layout/LanguageSelector';
 
-// Mock window and Google Translate
+// Mock window and translation services
+const mockWeglot = {
+  Weglot: {
+    initialize: vi.fn(),
+    switchTo: vi.fn(),
+  },
+};
+
 const mockGoogleTranslate = {
   google: {
     translate: {
@@ -17,9 +24,10 @@ describe('LanguageSelector Component', () => {
     document.head.innerHTML = '';
     document.body.innerHTML = '';
     
-    // Mock window.google
+    // Mock window with both translation services
     vi.stubGlobal('window', {
       ...window,
+      ...mockWeglot,
       ...mockGoogleTranslate,
     });
   });
@@ -32,24 +40,28 @@ describe('LanguageSelector Component', () => {
     render(<LanguageSelector />);
     
     expect(screen.getByText('DE')).toBeInTheDocument();
-    expect(screen.getByLabelText('Sprache auswählen')).toBeInTheDocument();
+    expect(screen.getByLabelText('Select language')).toBeInTheDocument();
   });
 
   it('opens dropdown when clicked', () => {
     render(<LanguageSelector />);
     
-    const button = screen.getByLabelText('Sprache auswählen');
+    const button = screen.getByLabelText('Select language');
     fireEvent.click(button);
     
     expect(screen.getByText('Deutsch')).toBeInTheDocument();
     expect(screen.getByText('English')).toBeInTheDocument();
+    expect(screen.getByText('Français')).toBeInTheDocument();
+    expect(screen.getByText('Español')).toBeInTheDocument();
+    expect(screen.getByText('Italiano')).toBeInTheDocument();
+    expect(screen.getByText('Nederlands')).toBeInTheDocument();
   });
 
   it('changes language when option is selected', () => {
     render(<LanguageSelector />);
     
     // Open dropdown
-    const button = screen.getByLabelText('Sprache auswählen');
+    const button = screen.getByLabelText('Select language');
     fireEvent.click(button);
     
     // Click English option
@@ -64,7 +76,7 @@ describe('LanguageSelector Component', () => {
     render(<LanguageSelector />);
     
     // Open dropdown
-    const button = screen.getByLabelText('Sprache auswählen');
+    const button = screen.getByLabelText('Select language');
     fireEvent.click(button);
     
     // Verify dropdown is open
@@ -84,7 +96,7 @@ describe('LanguageSelector Component', () => {
   it('has proper accessibility attributes', () => {
     render(<LanguageSelector />);
     
-    const button = screen.getByLabelText('Sprache auswählen');
-    expect(button).toHaveAttribute('aria-label', 'Sprache auswählen');
+    const button = screen.getByLabelText('Select language');
+    expect(button).toHaveAttribute('aria-label', 'Select language');
   });
 });
