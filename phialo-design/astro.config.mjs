@@ -11,9 +11,9 @@ export default defineConfig({
       applyBaseStyles: false, // We apply our own base styles
     })
   ],
-  
   // SEO and performance optimizations
-  site: 'https://phialodesign.com',
+  site: 'https://phialo.de',
+  
   
   // Build configuration
   build: {
