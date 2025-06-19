@@ -9,13 +9,7 @@ import QualityBadge from '../common/QualityBadge.astro';
   <!-- Background -->
   <div class="hero-bg absolute inset-0">
     <!-- Gradient overlay -->
-    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>      <!-- Profile image from old site -->
-    <div 
-      class="hero-jewelry absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-30"
-      data-parallax="0.3"
-    >
-      <img src="/images/profile.png" alt="Phialo Design Profile" class="w-full h-full object-contain animate-float" />
-    </div>
+    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>
     
     <!-- Subtle pattern overlay -->
     <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 1px 1px, rgba(10,25,47,0.15) 1px, transparent 0); background-size: 60px 60px;"></div>
@@ -116,11 +110,6 @@ import QualityBadge from '../common/QualityBadge.astro';
     transform: scale(1.05);
   }
   
-  /* Subtle parallax effect */
-  .hero-jewelry {
-    animation: float 8s ease-in-out infinite;
-  }
-  
   /* Ensure hero takes up full viewport on mobile */
   @media (max-height: 640px) {
     .hero {
@@ -129,47 +118,4 @@ import QualityBadge from '../common/QualityBadge.astro';
   }
 </style>
 
-<script>
-  // Parallax effect for hero background
-  function initHeroParallax() {
-    const hero = document.querySelector('.hero');
-    const jewelry = document.querySelector('.hero-jewelry');
-    
-    if (!hero || !jewelry) return;
-    
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const heroHeight = hero.clientHeight;
-      const scrollPercent = scrollY / heroHeight;
-      
-      if (scrollPercent <= 1) {
-        // Subtle parallax movement
-        jewelry.style.transform = `translate(-50%, -50%) translateY(${scrollY * 0.3}px) rotate(${scrollY * 0.05}deg)`;
-      }
-    };
-    
-    // Throttle scroll events
-    let ticking = false;
-    const throttledScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    
-    window.addEventListener('scroll', throttledScroll, { passive: true });
-  }
-  
-  // Initialize on page load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeroParallax);
-  } else {
-    initHeroParallax();
-  }
-  
-  // Re-initialize on page transitions
-  document.addEventListener('astro:page-load', initHeroParallax);
-</script>
+
