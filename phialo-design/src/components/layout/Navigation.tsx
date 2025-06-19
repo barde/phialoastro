@@ -45,17 +45,31 @@ export default function Navigation() {
             href={href}
             className={`relative text-sm font-medium transition-colors duration-200 group ${
               isActiveLink(href)
-                ? 'text-midnight dark:text-platinum'
-                : 'text-gray-600 hover:text-midnight dark:text-gray-300 dark:hover:text-platinum'
+                ? ''
+                : ''
             }`}
+            style={{
+              color: isActiveLink(href) 
+                ? 'var(--color-text-primary)' 
+                : 'var(--color-text-secondary)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--color-text-primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = isActiveLink(href) 
+                ? 'var(--color-text-primary)' 
+                : 'var(--color-text-secondary)';
+            }}
           >
             {label}
             <span 
-              className={`absolute left-0 -bottom-1 h-0.5 bg-gold transition-all duration-200 ${
+              className={`absolute left-0 -bottom-1 h-0.5 transition-all duration-200 ${
                 isActiveLink(href) 
                   ? 'w-full' 
                   : 'w-0 group-hover:w-full'
               }`}
+              style={{ backgroundColor: 'var(--color-secondary)' }}
             />
           </a>
         ))}
@@ -68,7 +82,14 @@ export default function Navigation() {
       <div className="lg:hidden flex items-center space-x-2">
         <ThemeToggle />
         <button
-          className="p-2 text-midnight hover:text-gold dark:text-platinum dark:hover:text-gold transition-colors"
+          className="p-2 transition-colors"
+          style={{ color: 'var(--color-text-primary)' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--color-secondary)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--color-text-primary)';
+          }}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label={isMobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
         >

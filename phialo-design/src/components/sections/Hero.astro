@@ -5,11 +5,11 @@ import Button from '../common/Button.astro';
 import QualityBadge from '../common/QualityBadge.astro';
 ---
 
-<section class="hero relative min-h-screen flex items-center justify-center overflow-hidden">
+<section class="hero relative min-h-screen flex items-center justify-center overflow-hidden" style="background-color: var(--color-bg-primary);">
   <!-- Background -->
   <div class="hero-bg absolute inset-0">
     <!-- Gradient overlay -->
-    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>      <!-- Profile image from old site -->
+    <div class="absolute inset-0 hero-gradient-overlay z-10"></div>      <!-- Profile image from old site -->
     <div 
       class="hero-jewelry absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-30"
       data-parallax="0.3"
@@ -23,18 +23,18 @@ import QualityBadge from '../common/QualityBadge.astro';
   
   <!-- Content -->
   <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">    <AnimatedText client:load>
-      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-midnight mb-8 leading-tight">
+      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium mb-8 leading-tight" style="color: var(--color-text-primary);">
         3D Design
-        <span class="text-gold block md:inline"> Schmuck</span>
+        <span class="block md:inline" style="color: var(--color-secondary);"> Schmuck</span>
         Tutorials
       </h1>
     </AnimatedText>
     
     <div class="hero-subtext animate-fade-in-delay-1">
-      <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+      <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto leading-relaxed" style="color: var(--color-text-secondary);">
         Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen
       </p>
-      <p class="text-lg md:text-xl text-midnight mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+      <p class="text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed font-medium" style="color: var(--color-text-primary);">
         <strong>kontakt@phialo.de</strong>
       </p>
     </div>
@@ -65,16 +65,28 @@ import QualityBadge from '../common/QualityBadge.astro';
     
     <!-- Scroll indicator -->
     <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <div class="w-6 h-10 border-2 border-gray-300 rounded-full flex justify-center">
-        <div class="w-1 h-3 bg-gray-300 rounded-full mt-2 animate-pulse"></div>
+      <div class="w-6 h-10 border-2 rounded-full flex justify-center" style="border-color: var(--color-gray-300);">
+        <div class="w-1 h-3 rounded-full mt-2 animate-pulse" style="background-color: var(--color-gray-300);"></div>
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  .hero {
-    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  .hero-gradient-overlay {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.95) 0%, 
+      rgba(255, 255, 255, 0.80) 50%, 
+      rgba(255, 255, 255, 0.90) 100%
+    );
+  }
+  
+  :root[data-theme="dark"] .hero-gradient-overlay {
+    background: linear-gradient(135deg, 
+      rgba(10, 25, 47, 0.95) 0%, 
+      rgba(10, 25, 47, 0.80) 50%, 
+      rgba(10, 25, 47, 0.90) 100%
+    );
   }
   
   @keyframes float {

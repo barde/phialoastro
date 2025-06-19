@@ -11,15 +11,23 @@ const { transparent = false } = Astro.props;
 <header 
   id="main-header" 
   class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-    transparent ? 'bg-transparent' : 'bg-white/95 dark:bg-midnight/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800'
+    transparent ? 'bg-transparent' : ''
   }`}
+  style={!transparent ? {
+    backgroundColor: 'rgba(var(--color-bg-primary-rgb, 255, 255, 255), 0.95)',
+    backdropFilter: 'blur(12px)',
+    borderBottom: '1px solid var(--color-gray-200)'
+  } : {}}
 >
   <div class="container mx-auto px-6">
     <div class="flex items-center justify-between h-20">
       <!-- Logo -->
       <a 
         href="/" 
-        class="font-display text-2xl font-medium text-midnight dark:text-platinum hover:text-gold dark:hover:text-gold transition-colors"
+        class="font-display text-2xl font-medium transition-colors"
+        style="color: var(--color-text-primary);"
+        onmouseover="this.style.color='var(--color-secondary)'"
+        onmouseout="this.style.color='var(--color-text-primary)'"
         aria-label="Phialo Design Startseite"
       >
         PHIALO
@@ -31,7 +39,10 @@ const { transparent = false } = Astro.props;
       <!-- CTA Button -->
       <a 
         href="/contact" 
-        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white dark:hover:text-midnight transition-all duration-200"
+        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium rounded-full transition-all duration-200"
+        style="color: var(--color-secondary); border: 1px solid var(--color-secondary);"
+        onmouseover="this.style.backgroundColor='var(--color-secondary)'; this.style.color='var(--color-text-light)';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--color-secondary)';"
       >
         Projekt anfragen
       </a>
@@ -53,11 +64,13 @@ const { transparent = false } = Astro.props;
       
       // Add background on scroll
       if (currentScrollY > 50) {
-        header.classList.remove('bg-transparent');
-        header.classList.add('bg-white/95', 'dark:bg-midnight/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100', 'dark:border-gray-800');
+        header.style.backgroundColor = 'rgba(var(--color-bg-primary-rgb), 0.95)';
+        header.style.backdropFilter = 'blur(12px)';
+        header.style.borderBottom = '1px solid var(--color-gray-200)';
       } else if (header.dataset.transparent === 'true') {
-        header.classList.add('bg-transparent');
-        header.classList.remove('bg-white/95', 'dark:bg-midnight/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100', 'dark:border-gray-800');
+        header.style.backgroundColor = 'transparent';
+        header.style.backdropFilter = 'none';
+        header.style.borderBottom = 'none';
       }
       
       // Hide/show header on scroll direction

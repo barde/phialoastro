@@ -55,19 +55,41 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath }: M
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-midnight/20 dark:bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 backdrop-blur-sm"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
         onClick={onClose}
       />
       
       {/* Menu Panel */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white dark:bg-midnight shadow-2xl border-l border-gray-200 dark:border-gray-700">
+      <div 
+        className="fixed inset-y-0 right-0 w-full max-w-sm shadow-2xl border-l"
+        style={{ 
+          backgroundColor: 'var(--color-bg-primary)',
+          borderColor: 'var(--color-gray-200)'
+        }}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
-            <h2 className="font-display text-xl font-medium text-midnight dark:text-platinum">Menü</h2>
+          <div 
+            className="flex items-center justify-between p-6 border-b"
+            style={{ borderColor: 'var(--color-gray-200)' }}
+          >
+            <h2 
+              className="font-display text-xl font-medium"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              Menü
+            </h2>
             <button
               onClick={onClose}
-              className="p-2 text-gray-600 hover:text-midnight dark:text-gray-300 dark:hover:text-platinum transition-colors"
+              className="p-2 transition-colors"
+              style={{ color: 'var(--color-text-secondary)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-text-secondary)';
+              }}
               aria-label="Menü schließen"
             >
               <X size={24} />
@@ -82,11 +104,20 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath }: M
                   <a
                     href={href}
                     onClick={onClose}
-                    className={`block text-lg font-medium transition-colors duration-200 ${
-                      isActiveLink(href)
-                        ? 'text-gold'
-                        : 'text-midnight hover:text-gold dark:text-platinum dark:hover:text-gold'
-                    }`}
+                    className="block text-lg font-medium transition-colors duration-200"
+                    style={{
+                      color: isActiveLink(href)
+                        ? 'var(--color-secondary)'
+                        : 'var(--color-text-primary)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--color-secondary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = isActiveLink(href)
+                        ? 'var(--color-secondary)'
+                        : 'var(--color-text-primary)';
+                    }}
                   >
                     {label}
                   </a>
@@ -96,11 +127,26 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath }: M
           </nav>
           
           {/* CTA */}
-          <div className="p-6 border-t border-gray-100 dark:border-gray-700">
+          <div 
+            className="p-6 border-t"
+            style={{ borderColor: 'var(--color-gray-200)' }}
+          >
             <a
               href="/contact"
               onClick={onClose}
-              className="block w-full text-center px-6 py-3 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white dark:hover:text-midnight transition-all duration-200"
+              className="block w-full text-center px-6 py-3 text-sm font-medium rounded-full transition-all duration-200"
+              style={{ 
+                color: 'var(--color-secondary)',
+                border: '1px solid var(--color-secondary)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-secondary)';
+                e.currentTarget.style.color = 'var(--color-text-light)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--color-secondary)';
+              }}
             >
               Projekt anfragen
             </a>

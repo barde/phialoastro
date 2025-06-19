@@ -28,7 +28,8 @@ export default function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="p-2 rounded-full text-gray-600 hover:text-midnight transition-colors duration-200"
+        className="p-2 rounded-full transition-colors duration-200"
+        style={{ color: 'var(--color-text-secondary)' }}
         aria-label="Theme umschalten"
       >
         <Sun size={20} />
@@ -43,7 +44,17 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={handleToggle}
-      className="p-2 rounded-full text-gray-600 hover:text-midnight dark:text-gray-300 dark:hover:text-gold transition-colors duration-200"
+      className="p-2 rounded-full transition-colors duration-200"
+      style={{ 
+        color: 'var(--color-text-secondary)',
+        ':hover': { color: 'var(--color-text-primary)' }
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = 'var(--color-text-primary)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = 'var(--color-text-secondary)';
+      }}
       aria-label={isDark ? 'Auf helles Design wechseln' : 'Auf dunkles Design wechseln'}
       title={isDark ? 'Hell' : 'Dunkel'}
     >

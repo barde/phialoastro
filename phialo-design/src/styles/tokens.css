@@ -10,6 +10,8 @@
   /* Background Colors */
   --color-bg-primary: #FFFFFF; /* Pure White */
   --color-bg-secondary: #FAFAFA; /* Off-White */
+  --color-bg-primary-rgb: 255, 255, 255;
+  --color-bg-secondary-rgb: 250, 250, 250;
   
   /* Text Colors */
   --color-text-primary: #2B2B2B; /* Charcoal */
@@ -169,6 +171,8 @@
     /* Background Colors */
     --color-bg-primary: #0A192F; /* Deep Midnight Blue */
     --color-bg-secondary: #1A2332; /* Darker Blue */
+    --color-bg-primary-rgb: 10, 25, 47;
+    --color-bg-secondary-rgb: 26, 35, 50;
     
     /* Text Colors */
     --color-text-primary: #E5E4E2; /* Soft Platinum */
@@ -206,6 +210,8 @@
   /* Background Colors */
   --color-bg-primary: #0A192F; /* Deep Midnight Blue */
   --color-bg-secondary: #1A2332; /* Darker Blue */
+  --color-bg-primary-rgb: 10, 25, 47;
+  --color-bg-secondary-rgb: 26, 35, 50;
   
   /* Text Colors */
   --color-text-primary: #E5E4E2; /* Soft Platinum */
@@ -242,6 +248,8 @@
   /* Ensure light theme uses original colors */
   --color-bg-primary: #FFFFFF; /* Pure White */
   --color-bg-secondary: #FAFAFA; /* Off-White */
+  --color-bg-primary-rgb: 255, 255, 255;
+  --color-bg-secondary-rgb: 250, 250, 250;
   
   --color-text-primary: #2B2B2B; /* Charcoal */
   --color-text-secondary: #6B7280; /* Light Gray */

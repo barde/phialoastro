@@ -91,7 +91,27 @@ const socialImageURL = new URL(image, Astro.url).href;
           document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
         };
         
-        setTheme(getStoredTheme());
+        // Initialize theme
+        const initTheme = () => {
+          setTheme(getStoredTheme());
+        };
+        
+        // Run immediately
+        initTheme();
+        
+        // Also run on page transitions (Astro ViewTransitions)
+        document.addEventListener('astro:page-load', initTheme);
+        
+        // Listen for system theme changes
+        if (window.matchMedia) {
+          const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+          mediaQuery.addEventListener('change', () => {
+            const currentTheme = getStoredTheme();
+            if (currentTheme === 'system') {
+              setTheme('system');
+            }
+          });
+        }
       })();
     </script>
     
