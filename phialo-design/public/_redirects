@@ -1,40 +1,20 @@
-# Redirect www to non-www (primary domain)
-https://www.phialo.de/* https://phialo.de/:splat 301
+# NOTE: All redirects have been temporarily removed due to an issue with Firefox showing
+# "The page isn't redirecting properly" errors on Cloudflare Pages deployments.
+#
+# Issue details:
+# - Site works correctly in local development environment
+# - Redirects cause infinite loops on Cloudflare Pages deployments
+# - Firefox detects this as a redirection that will never complete
+#
+# TODO: After the site is functioning properly on Cloudflare Pages,
+# reimplement redirects one by one to determine which specific rule 
+# is causing the issue.
+#
+# For reference, the original redirects included:
+# - Domain redirects (www to non-www)
+# - Legacy URL redirects (e.g., /jewelry/* to /portfolio/*)
+# - Path normalization (removing trailing slashes)
+# - Language-specific redirects
 
-# Handle common variations
-https://phialodesign.com/* https://phialo.de/:splat 301
-https://www.phialodesign.com/* https://phialo.de/:splat 301
-https://www.phialo-design.com/* https://phialo.de/:splat 301
-https://phialo-design.com/* https://phialo.de/:splat 301
-
-# Legacy URL redirects (if applicable)
-/jewelry/* /portfolio/:splat 301
-/gems/* /portfolio/:splat 301
-/jewellery/* /portfolio/:splat 301
-/3d-design/* /services/:splat 301
-/courses/* /tutorials/:splat 301
-/blog/* /tutorials/:splat 301
-
-# Specific page redirects
-/about-me /about 301
-/contact-me /contact 301
-/portfolio.html /portfolio 301
-/services.html /services 301
-
-# Remove trailing slashes
-/about/ /about 301
-/contact/ /contact 301
-/portfolio/ /portfolio 301
-/services/ /services 301
-/tutorials/ /tutorials 301
-
-# Handle index.html requests
-/index.html / 301
-/home / 301
-
-# Language-specific redirects (if not using automatic detection)
-/de/* /:splat 302
-/en/* /:splat 302
-
-# 404 fallback (handled by Astro's 404.astro page)
+# This single rule will handle 404s via Astro's 404.astro page
 /* /404 404
