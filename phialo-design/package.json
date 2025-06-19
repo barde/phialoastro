@@ -6,12 +6,11 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "test": "vitest",
+    "astro": "astro",    "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name phialo-design",
-    "deploy:preview": "npm run build && wrangler pages deploy dist --project-name phialo-design --env preview"
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name phialo-design",
+    "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",

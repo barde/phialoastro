@@ -11,8 +11,11 @@ npm run build
 
 ### 2. Deploy with Wrangler
 ```bash
-# Install wrangler globally (one time)
+# Option 1: Install wrangler globally (one time)
 npm install -g wrangler
+
+# Option 2: Use npx (no installation required)
+# The scripts in package.json have been updated to use npx
 
 # Deploy to production
 npm run deploy
