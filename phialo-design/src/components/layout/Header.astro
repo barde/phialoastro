@@ -1,5 +1,8 @@
 ---
+
 import Navigation from './Navigation';
+
+const weglotApiKey = import.meta.env.PUBLIC_WEGLOT_API_KEY || null;
 
 export interface Props {
   transparent?: boolean;
@@ -26,7 +29,7 @@ const { transparent = false } = Astro.props;
       </a>
       
       <!-- Desktop Navigation -->
-      <Navigation client:load />
+      <Navigation client:load weglotApiKey={weglotApiKey} />
       
       <!-- CTA Button -->
       <a 

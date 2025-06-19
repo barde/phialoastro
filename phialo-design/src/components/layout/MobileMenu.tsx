@@ -12,9 +12,10 @@ interface MobileMenuProps {
   onClose: () => void;
   navItems: NavItem[];
   currentPath: string;
+  weglotApiKey?: string | null;
 }
 
-export default function MobileMenu({ isOpen, onClose, navItems, currentPath }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onClose, navItems, currentPath, weglotApiKey }: MobileMenuProps) {
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -99,7 +100,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath }: M
             <div className="mt-8 pt-6 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600">Language</span>
-                <LanguageSelector />
+                <LanguageSelector weglotApiKey={weglotApiKey} />
               </div>
             </div>
           </nav>

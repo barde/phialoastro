@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react';
+
+interface LanguageSelectorProps {
+  weglotApiKey?: string | null;
+}
 import { Globe } from 'lucide-react';
 
 interface Language {
@@ -9,14 +13,10 @@ interface Language {
 
 const languages: Language[] = [
   { code: 'DE', label: 'Deutsch', locale: 'de' },
-  { code: 'EN', label: 'English', locale: 'en' },
-  { code: 'FR', label: 'Français', locale: 'fr' },
-  { code: 'ES', label: 'Español', locale: 'es' },
-  { code: 'IT', label: 'Italiano', locale: 'it' },
-  { code: 'NL', label: 'Nederlands', locale: 'nl' }
+  { code: 'EN', label: 'English', locale: 'en' }
 ];
 
-export default function LanguageSelector() {
+export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps) {
   const [currentLanguage, setCurrentLanguage] = useState('DE');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -24,26 +24,15 @@ export default function LanguageSelector() {
     // Initialize translation system
     const initializeTranslation = () => {
       if (typeof window !== 'undefined') {
-        // Try to initialize Weglot if API key is available
-        const weglotApiKey = getWeglotApiKey();
-        
         if (weglotApiKey && weglotApiKey !== 'your-api-key-here') {
           initializeWeglot(weglotApiKey);
         } else {
-          // Fallback to Google Translate for basic functionality
           initializeGoogleTranslate();
         }
       }
     };
-
     initializeTranslation();
-  }, []);
-
-  const getWeglotApiKey = (): string | null => {
-    // In production, this would come from environment variables
-    // For demo purposes, using a placeholder
-    return process.env.PUBLIC_WEGLOT_API_KEY || null;
-  };
+  }, [weglotApiKey]);
 
   const initializeWeglot = (apiKey: string) => {
     if (!(window as any).Weglot) {
@@ -57,7 +46,7 @@ export default function LanguageSelector() {
           (window as any).Weglot.initialize({
             api_key: apiKey,
             original_language: 'de',
-            destination_languages: 'en,fr,es,it,nl',
+            destination_languages: 'en',
             switchers: [{
               target: '#weglot-switcher',
               sibling: null
@@ -79,7 +68,7 @@ export default function LanguageSelector() {
         if ((window as any).google?.translate?.TranslateElement) {
           new (window as any).google.translate.TranslateElement({
             pageLanguage: 'de',
-            includedLanguages: 'de,en,fr,es,it,nl',
+            includedLanguages: 'de,en',
             layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false
           }, 'google-translate-element');
