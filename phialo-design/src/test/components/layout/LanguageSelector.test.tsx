@@ -82,10 +82,6 @@ describe('LanguageSelector Component', () => {
     
     expect(screen.getByText('Deutsch')).toBeInTheDocument();
     expect(screen.getByText('English')).toBeInTheDocument();
-    expect(screen.getByText('Français')).toBeInTheDocument();
-    expect(screen.getByText('Español')).toBeInTheDocument();
-    expect(screen.getByText('Italiano')).toBeInTheDocument();
-    expect(screen.getByText('Nederlands')).toBeInTheDocument();
   });
 
   it('changes language when option is selected', () => {

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .navigation-links {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .navigation-links a {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .navigation-links a:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Translation System Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open your Astro site in a browser</li>
+            <li>Select a language (e.g., English) using the language selector</li>
+            <li>Navigate to different pages using the navigation menu</li>
+            <li>Check if the translation persists after navigation</li>
+            <li>Check the browser console for any error messages</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Things to Verify</h2>
+        <ul>
+            <li>✓ Language selection persists after page navigation</li>
+            <li>✓ No duplicate translation widgets are created</li>
+            <li>✓ Translation applies to dynamically loaded content</li>
+            <li>✓ No console errors during navigation</li>
+            <li>✓ Fast navigation doesn't break translations</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Sample Content for Translation</h2>
+        <p>This is a test paragraph in German. After selecting English, this text should be translated.</p>
+        <p>Willkommen auf unserer Testseite. Diese Inhalte sollten nach der Sprachauswahl übersetzt werden.</p>
+        <p>Die Übersetzung sollte auch nach der Navigation zwischen Seiten erhalten bleiben.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Common Issues Fixed</h2>
+        <ul>
+            <li>✓ Translation service reinitializing on every navigation</li>
+            <li>✓ Race conditions during fast navigation</li>
+            <li>✓ Language preference not persisting</li>
+            <li>✓ Multiple translation widgets being created</li>
+            <li>✓ Translation not applying to new content after navigation</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <div id="debug-info">
+            <p><strong>Current Language:</strong> <span id="current-lang">Loading...</span></p>
+            <p><strong>Translation Service:</strong> <span id="translation-service">Loading...</span></p>
+            <p><strong>Navigation Count:</strong> <span id="nav-count">0</span></p>
+        </div>
+        <div class="log" id="debug-log"></div>
+    </div>
+
+    <script>
+        // Debug script to monitor translation system
+        let navigationCount = 0;
+        const debugLog = document.getElementById('debug-log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+        
+        function updateDebugInfo() {
+            const currentLang = localStorage.getItem('preferred-language') || 'DE';
+            document.getElementById('current-lang').textContent = currentLang;
+            
+            let service = 'None';
+            if (window.Weglot) {
+                service = 'Weglot';
+            } else if (window.google && window.google.translate) {
+                service = 'Google Translate';
+            }
+            document.getElementById('translation-service').textContent = service;
+        }
+        
+        // Monitor navigation events
+        document.addEventListener('astro:before-swap', () => {
+            log('Navigation started (astro:before-swap)');
+        });
+        
+        document.addEventListener('astro:page-load', () => {
+            navigationCount++;
+            document.getElementById('nav-count').textContent = navigationCount;
+            log('Page loaded (astro:page-load)');
+            updateDebugInfo();
+        });
+        
+        // Initial update
+        updateDebugInfo();
+        log('Debug monitoring started');
+        
+        // Monitor language changes
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {
+            if (key === 'preferred-language') {
+                log(`Language changed to: ${value}`);
+                setTimeout(updateDebugInfo, 100);
+            }
+            return originalSetItem.apply(this, arguments);
+        };
+    </script>
+</body>
+</html>
