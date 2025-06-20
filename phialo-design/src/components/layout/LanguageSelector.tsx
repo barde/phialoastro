@@ -20,7 +20,6 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
   const [currentLanguage, setCurrentLanguage] = useState('DE');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const translationInitializedRef = useRef<boolean>(false);
-  const navigationCountRef = useRef<number>(0);
   const initializationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const applyLanguageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -42,6 +41,9 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
       setCurrentLanguage(storedLanguage);
     }
     
+    // Flag to track if this component has been initialized
+    let hasInitialized = false;
+    
     // Sync displayed language with actual translation state
     const syncDisplayLanguage = () => {
       const actualLang = getCurrentDisplayLanguage();
@@ -51,8 +53,11 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
       }
     };
 
-    const initAndApply = () => {
-      console.log('🌐 LanguageSelector: Page load detected. Initializing translation.');
+    const handleInitialLoad = () => {
+      if (hasInitialized) return;
+      hasInitialized = true;
+      
+      console.log('🌐 LanguageSelector: Initial component load - initializing Weglot');
 
       // Ensure placeholder element exists for Weglot
       if (!document.getElementById('weglot-switcher')) {
@@ -62,55 +67,86 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
         document.body.appendChild(weglotEl);
       }
 
-      // Track navigation count to determine if this is first load or navigation
-      navigationCountRef.current++;
-      const isFirstLoad = navigationCountRef.current === 1;
+      initializeTranslation();
+    };
 
-      // Check if translation service is active and functional
-      const serviceActive = isTranslationServiceActive();
-      console.log(`🌐 LanguageSelector: Navigation #${navigationCountRef.current}, service active: ${serviceActive}`);
+    const handlePageLoad = () => {
+      console.log('🌐 LanguageSelector: Astro page load event - ensuring Weglot is active');
       
-      // Always initialize on first load, or if service is not active
-      if (isFirstLoad || !serviceActive) {
-        console.log('🌐 LanguageSelector: Initializing translation service');
-        initializeTranslation();
-      } else {
-        // For subsequent navigations, reapply the current language
-        console.log('🌐 LanguageSelector: Service active, reapplying language after navigation');
-        const storedLang = localStorage.getItem('preferred-language');
-        if (storedLang) {
-          const langObj = languages.find(l => l.code === storedLang);
+      // Ensure placeholder element exists for Weglot
+      if (!document.getElementById('weglot-switcher')) {
+        const weglotEl = document.createElement('div');
+        weglotEl.id = 'weglot-switcher';
+        weglotEl.className = 'hidden';
+        document.body.appendChild(weglotEl);
+      }
+
+      // Check if Weglot needs to be applied after navigation
+      const needsReapplication = !isTranslationServiceActive();
+      console.log(`🌐 LanguageSelector: Weglot needs reapplication: ${needsReapplication}`);
+      
+      if (needsReapplication) {
+        // If Weglot is not active or in wrong state, re-apply the stored language
+        const storedLanguage = localStorage.getItem('preferred-language');
+        if (storedLanguage) {
+          console.log(`🌐 LanguageSelector: Re-applying stored language: ${storedLanguage}`);
+          const langObj = languages.find(l => l.code === storedLanguage);
           if (langObj) {
-            // Small delay to ensure DOM is stable
-            applyLanguageTimeoutRef.current = setTimeout(() => {
-              console.log(`🌐 LanguageSelector: Applying stored language: ${langObj.code}`);
-              applyLanguage(langObj);
-              // Retry once more after a delay if needed
-              setTimeout(() => {
-                const currentLang = getCurrentDisplayLanguage();
-                if (currentLang !== langObj.code) {
-                  console.log('🌐 LanguageSelector: Language not applied correctly, retrying...');
-                  applyLanguage(langObj);
-                }
-                // Sync display after applying
-                syncDisplayLanguage();
-              }, 500);
+            // Wait for page to be fully loaded, then apply language
+            setTimeout(() => {
+              applyLanguageWithRetry(langObj, 3);
             }, 100);
           }
         }
+      } else {
+        // Weglot is active, just sync the display
+        syncDisplayLanguage();
+      }
+    };
+    
+    // Apply language with retry mechanism for navigation
+    const applyLanguageWithRetry = (language: Language, retries: number) => {
+      if (retries <= 0) {
+        console.warn('⚠️ LanguageSelector: Failed to apply language after retries');
+        return;
+      }
+      
+      if ((window as any).Weglot && typeof (window as any).Weglot.switchTo === 'function') {
+        try {
+          console.log(`🌐 LanguageSelector: Applying ${language.code} (${language.locale}) with ${retries} retries left`);
+          (window as any).Weglot.switchTo(language.locale);
+          
+          // Verify the language was applied after a short delay
+          setTimeout(() => {
+            const currentLang = (window as any).Weglot?.getCurrentLang?.();
+            if (currentLang !== language.locale) {
+              console.log(`🌐 LanguageSelector: Language not applied correctly (${currentLang} !== ${language.locale}), retrying...`);
+              applyLanguageWithRetry(language, retries - 1);
+            } else {
+              console.log(`🌐 LanguageSelector: Language ${language.code} applied successfully`);
+              syncDisplayLanguage();
+            }
+          }, 200);
+        } catch (e) {
+          console.warn('⚠️ LanguageSelector: Error applying language, retrying...', e);
+          setTimeout(() => applyLanguageWithRetry(language, retries - 1), 300);
+        }
+      } else {
+        console.log('🌐 LanguageSelector: Weglot not ready, initializing first...');
+        initializeTranslation();
+        setTimeout(() => applyLanguageWithRetry(language, retries - 1), 500);
       }
     };
 
-    // Run initialization on the first mount
-    initAndApply();
+    // Handle initial load
+    handleInitialLoad();
 
-    // Re-run initialization on subsequent page loads via Astro's view transitions
-    document.addEventListener('astro:page-load', initAndApply);
+    // Listen for Astro navigation events
+    document.addEventListener('astro:page-load', handlePageLoad);
     
-    // Also listen for after-swap to catch all navigation types
+    // Handle cleanup of timeouts on page swap
     const handleAfterSwap = () => {
-      console.log('🌐 LanguageSelector: After swap event detected');
-      // Clear any pending timeouts
+      console.log('🌐 LanguageSelector: After swap event detected - clearing timeouts');
       if (initializationTimeoutRef.current) {
         clearTimeout(initializationTimeoutRef.current);
       }
@@ -123,7 +159,7 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
 
     // Cleanup listener on component unmount
     return () => {
-      document.removeEventListener('astro:page-load', initAndApply);
+      document.removeEventListener('astro:page-load', handlePageLoad);
       document.removeEventListener('astro:after-swap', handleAfterSwap);
       if (initializationTimeoutRef.current) {
         clearTimeout(initializationTimeoutRef.current);
@@ -134,13 +170,20 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     };
   }, [weglotApiKey]);
   
-  // Check if Weglot is currently active and properly initialized
+  // Check if Weglot is active and in the correct language state
   const isTranslationServiceActive = () => {
     if ((window as any).Weglot && typeof (window as any).Weglot.switchTo === 'function') {
       try {
-        // Test if Weglot is responsive by getting current language
         const currentLang = (window as any).Weglot.getCurrentLang?.();
-        console.log('🌐 LanguageSelector: Weglot check - current language:', currentLang);
+        const storedLanguage = localStorage.getItem('preferred-language');
+        
+        console.log('🌐 LanguageSelector: Weglot check - current:', currentLang, 'stored:', storedLanguage);
+        
+        if (storedLanguage) {
+          const expectedLang = storedLanguage === 'EN' ? 'en' : 'de';
+          return currentLang === expectedLang;
+        }
+        
         return true;
       } catch (e) {
         console.log('🌐 LanguageSelector: Weglot present but not responsive');
@@ -150,6 +193,7 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     
     return false;
   };
+  
   
   // Initialize Weglot translation service
   const initializeTranslation = () => {
@@ -185,13 +229,14 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     
     console.log('🌐 LanguageSelector: Initializing Weglot');
     
-    // Clean up previous instance
+    // Only clean up if Weglot is in a broken state
     try {
-      if ((window as any).Weglot && typeof (window as any).Weglot.destroy === 'function') {
+      if ((window as any).Weglot && typeof (window as any).Weglot.getCurrentLang !== 'function') {
+        console.log('🌐 LanguageSelector: Weglot in broken state, cleaning up');
         (window as any).Weglot.destroy();
       }
     } catch (e) {
-      console.warn('⚠️ LanguageSelector: Error cleaning up Weglot:', e);
+      console.warn('⚠️ LanguageSelector: Error checking Weglot state:', e);
     }
     
     // Add Weglot CSS if it doesn't exist
@@ -231,7 +276,19 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
             // Mark translation as initialized
             translationInitializedRef.current = true;
             
-            // If we have a stored language, apply it after a short delay
+            // Set up Weglot event listeners for better state management
+            try {
+              (window as any).Weglot.on('languageChanged', (newLang: string) => {
+                console.log(`🌐 LanguageSelector: Weglot language changed to: ${newLang}`);
+                const displayLang = newLang === 'en' ? 'EN' : 'DE';
+                setCurrentLanguage(displayLang);
+                localStorage.setItem('preferred-language', displayLang);
+              });
+            } catch (e) {
+              console.warn('⚠️ LanguageSelector: Could not set up Weglot event listeners:', e);
+            }
+            
+            // Apply stored language if different from default
             const storedLanguage = localStorage.getItem('preferred-language');
             if (storedLanguage) {
               const langObj = languages.find(l => l.code === storedLanguage);
