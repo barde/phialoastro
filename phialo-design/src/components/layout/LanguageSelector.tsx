@@ -21,6 +21,17 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const translationInitializedRef = useRef<boolean>(false);
   const navigationCountRef = useRef<number>(0);
+  const initializationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const applyLanguageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Helper function to get current display language
+  const getCurrentDisplayLanguage = () => {
+    if ((window as any).Weglot && (window as any).Weglot.getCurrentLang) {
+      const lang = (window as any).Weglot.getCurrentLang();
+      return lang === 'de' ? 'DE' : 'EN';
+    }
+    return 'DE';
+  };
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -30,42 +41,61 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     if (storedLanguage) {
       setCurrentLanguage(storedLanguage);
     }
+    
+    // Sync displayed language with actual translation state
+    const syncDisplayLanguage = () => {
+      const actualLang = getCurrentDisplayLanguage();
+      if (actualLang !== currentLanguage) {
+        console.log(`🌐 LanguageSelector: Syncing display language from ${currentLanguage} to ${actualLang}`);
+        setCurrentLanguage(actualLang);
+      }
+    };
 
     const initAndApply = () => {
       console.log('🌐 LanguageSelector: Page load detected. Initializing translation.');
 
-      // Ensure placeholder elements exist for translation libraries
+      // Ensure placeholder element exists for Weglot
       if (!document.getElementById('weglot-switcher')) {
         const weglotEl = document.createElement('div');
         weglotEl.id = 'weglot-switcher';
         weglotEl.className = 'hidden';
         document.body.appendChild(weglotEl);
       }
-      if (!document.getElementById('google-translate-element')) {
-        const googleEl = document.createElement('div');
-        googleEl.id = 'google-translate-element';
-        googleEl.className = 'hidden';
-        document.body.appendChild(googleEl);
-      }
 
       // Track navigation count to determine if this is first load or navigation
       navigationCountRef.current++;
       const isFirstLoad = navigationCountRef.current === 1;
 
+      // Check if translation service is active and functional
+      const serviceActive = isTranslationServiceActive();
+      console.log(`🌐 LanguageSelector: Navigation #${navigationCountRef.current}, service active: ${serviceActive}`);
+      
       // Always initialize on first load, or if service is not active
-      if (isFirstLoad || !isTranslationServiceActive()) {
+      if (isFirstLoad || !serviceActive) {
+        console.log('🌐 LanguageSelector: Initializing translation service');
         initializeTranslation();
       } else {
-        // For subsequent navigations, just reapply the current language
-        console.log('🌐 LanguageSelector: Reapplying language after navigation');
+        // For subsequent navigations, reapply the current language
+        console.log('🌐 LanguageSelector: Service active, reapplying language after navigation');
         const storedLang = localStorage.getItem('preferred-language');
         if (storedLang) {
           const langObj = languages.find(l => l.code === storedLang);
           if (langObj) {
-            // Delay to ensure DOM is ready
-            setTimeout(() => {
+            // Small delay to ensure DOM is stable
+            applyLanguageTimeoutRef.current = setTimeout(() => {
+              console.log(`🌐 LanguageSelector: Applying stored language: ${langObj.code}`);
               applyLanguage(langObj);
-            }, 200);
+              // Retry once more after a delay if needed
+              setTimeout(() => {
+                const currentLang = getCurrentDisplayLanguage();
+                if (currentLang !== langObj.code) {
+                  console.log('🌐 LanguageSelector: Language not applied correctly, retrying...');
+                  applyLanguage(langObj);
+                }
+                // Sync display after applying
+                syncDisplayLanguage();
+              }, 500);
+            }, 100);
           }
         }
       }
@@ -76,45 +106,68 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
 
     // Re-run initialization on subsequent page loads via Astro's view transitions
     document.addEventListener('astro:page-load', initAndApply);
+    
+    // Also listen for after-swap to catch all navigation types
+    const handleAfterSwap = () => {
+      console.log('🌐 LanguageSelector: After swap event detected');
+      // Clear any pending timeouts
+      if (initializationTimeoutRef.current) {
+        clearTimeout(initializationTimeoutRef.current);
+      }
+      if (applyLanguageTimeoutRef.current) {
+        clearTimeout(applyLanguageTimeoutRef.current);
+      }
+    };
+    
+    document.addEventListener('astro:after-swap', handleAfterSwap);
 
     // Cleanup listener on component unmount
     return () => {
       document.removeEventListener('astro:page-load', initAndApply);
+      document.removeEventListener('astro:after-swap', handleAfterSwap);
+      if (initializationTimeoutRef.current) {
+        clearTimeout(initializationTimeoutRef.current);
+      }
+      if (applyLanguageTimeoutRef.current) {
+        clearTimeout(applyLanguageTimeoutRef.current);
+      }
     };
   }, [weglotApiKey]);
   
-  // Check if a translation service is currently active
+  // Check if Weglot is currently active and properly initialized
   const isTranslationServiceActive = () => {
-    // Check for Weglot
-    if ((window as any).Weglot) {
-      return true;
+    if ((window as any).Weglot && typeof (window as any).Weglot.switchTo === 'function') {
+      try {
+        // Test if Weglot is responsive by getting current language
+        const currentLang = (window as any).Weglot.getCurrentLang?.();
+        console.log('🌐 LanguageSelector: Weglot check - current language:', currentLang);
+        return true;
+      } catch (e) {
+        console.log('🌐 LanguageSelector: Weglot present but not responsive');
+        return false;
+      }
     }
     
-    // Check for Google Translate - look for the combo box or translate element
-    const googleCombo = document.querySelector('.goog-te-combo');
-    const googleTranslateFrame = document.querySelector('.goog-te-menu-frame');
-    
-    return !!(googleCombo || googleTranslateFrame || (window as any).google?.translate);
+    return false;
   };
   
-  // Initialize appropriate translation service
+  // Initialize Weglot translation service
   const initializeTranslation = () => {
-    console.log('🌐 LanguageSelector: Initializing translation service');
+    console.log('🌐 LanguageSelector: Initializing Weglot translation service');
     
     if (weglotApiKey && weglotApiKey !== 'your-api-key-here') {
       initializeWeglot(weglotApiKey);
     } else {
-      initializeGoogleTranslate();
+      console.error('⚠️ LanguageSelector: No valid Weglot API key provided');
     }
   };
   
-  // Apply language change to active translation service
+  // Apply language change using Weglot
   const applyLanguage = (language: Language) => {
     if (typeof window === 'undefined') return;
     
     console.log(`🌐 LanguageSelector: Applying language ${language.code} (${language.locale})`);
     
-    // Try Weglot first
     if ((window as any).Weglot) {
       try {
         console.log('🌐 LanguageSelector: Using Weglot for language change');
@@ -122,46 +175,8 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
       } catch (e) {
         console.warn('⚠️ LanguageSelector: Error switching Weglot language:', e);
       }
-    }
-    // Fallback to Google Translate
-    else {
-      try {
-        console.log('🌐 LanguageSelector: Using Google Translate for language change');
-        const googleTranslateCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-        if (googleTranslateCombo) {
-          // For German, we need to reset to the original state
-          if (language.locale === 'de') {
-            // Click the "Show original" button if it exists
-            const showOriginalButton = document.querySelector('.goog-te-banner a') as HTMLElement;
-            if (showOriginalButton) {
-              showOriginalButton.click();
-            } else {
-              // Reset by selecting the empty option
-              googleTranslateCombo.value = '';
-              googleTranslateCombo.dispatchEvent(new Event('change'));
-            }
-          } else {
-            googleTranslateCombo.value = language.locale;
-            googleTranslateCombo.dispatchEvent(new Event('change'));
-          }
-        } else {
-          console.warn('⚠️ LanguageSelector: Google translate combo element not found');
-          // If combo not found, might need to wait for Google Translate to initialize
-          setTimeout(() => {
-            const retryCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-            if (retryCombo) {
-              if (language.locale === 'de') {
-                retryCombo.value = '';
-              } else {
-                retryCombo.value = language.locale;
-              }
-              retryCombo.dispatchEvent(new Event('change'));
-            }
-          }, 500);
-        }
-      } catch (e) {
-        console.warn('⚠️ LanguageSelector: Error switching Google Translate language:', e);
-      }
+    } else {
+      console.warn('⚠️ LanguageSelector: Weglot not available for language change');
     }
   };
   
@@ -245,80 +260,6 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     document.head.appendChild(script);
   };
   
-  const initializeGoogleTranslate = () => {
-    if (typeof window === 'undefined') return;
-    
-    console.log('🌐 LanguageSelector: Initializing Google Translate');
-    
-    // Clean up previous instance
-    const googleTranslateElement = document.getElementById('google-translate-element');
-    
-    // Clean up existing iframes to avoid conflicts
-    const googleFrames = document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame');
-    googleFrames.forEach(frame => frame.remove());
-    
-    // Clean up existing translate scripts
-    const existingGoogleScripts = document.querySelectorAll('script[src*="translate_a/element.js"]');
-    existingGoogleScripts.forEach(script => script.remove());
-    
-    // Clear the Google Translate element
-    if (googleTranslateElement) {
-      googleTranslateElement.innerHTML = '';
-    }
-    
-    // Set up Google Translate initialization function
-    (window as any).googleTranslateElementInit = () => {
-      try {
-        console.log('🌐 LanguageSelector: Google Translate callback executing');
-        
-        // Initialize the translate widget
-        new (window as any).google.translate.TranslateElement({
-          pageLanguage: 'de',
-          includedLanguages: languages.map(l => l.locale).join(','),
-          layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        }, 'google-translate-element');
-        
-        // Mark translation as initialized
-        translationInitializedRef.current = true;
-        
-        // Apply stored language after a delay
-        const storedLanguage = localStorage.getItem('preferred-language');
-        if (storedLanguage) {
-          const langObj = languages.find(l => l.code === storedLanguage);
-          if (langObj && langObj.locale !== 'de') {
-            setTimeout(() => {
-              try {
-                console.log(`🌐 LanguageSelector: Applying stored language ${langObj.code} to Google Translate`);
-                const googleTranslateCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-                if (googleTranslateCombo) {
-                  googleTranslateCombo.value = langObj.locale;
-                  googleTranslateCombo.dispatchEvent(new Event('change'));
-                } else {
-                  console.warn('⚠️ LanguageSelector: Google translate combo element not found');
-                }
-              } catch (e) {
-                console.warn('⚠️ LanguageSelector: Error applying stored language to Google Translate:', e);
-              }
-            }, 500);
-          }
-        }
-      } catch (e) {
-        console.error('⚠️ LanguageSelector: Failed to initialize Google Translate:', e);
-      }
-    };
-    
-    // Load the Google Translate script
-    const script = document.createElement('script');
-    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    script.async = true;
-    
-    script.onerror = (error) => {
-      console.error('⚠️ LanguageSelector: Failed to load Google Translate script:', error);
-    };
-    
-    document.head.appendChild(script);
-  };
   
   const handleLanguageChange = (language: Language) => {
     console.log(`🌐 LanguageSelector: User selected language ${language.code}`);
@@ -336,9 +277,8 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
 
   return (
     <div className="relative">
-      {/* Hidden Translation Elements */}
+      {/* Hidden Weglot Element */}
       <div id="weglot-switcher" className="hidden"></div>
-      <div id="google-translate-element" className="hidden"></div>
       
       {/* Custom Language Selector */}
       <div className="flex items-center">
