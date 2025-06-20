@@ -20,104 +20,81 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
   const [currentLanguage, setCurrentLanguage] = useState('DE');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const translationInitializedRef = useRef<boolean>(false);
-  const pageTransitionCountRef = useRef<number>(0);
+  const navigationCountRef = useRef<number>(0);
   
-  // Initial setup - load preference and add event listeners
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
-    console.log('🌐 LanguageSelector: Initial mount setup');
-    
-    // Load saved language preference
+
+    // Load saved language preference from localStorage
     const storedLanguage = localStorage.getItem('preferred-language');
     if (storedLanguage) {
       setCurrentLanguage(storedLanguage);
     }
-    
-    // Create necessary elements if they don't exist
-    if (!document.getElementById('weglot-switcher')) {
-      const weglotEl = document.createElement('div');
-      weglotEl.id = 'weglot-switcher';
-      weglotEl.className = 'hidden';
-      document.body.appendChild(weglotEl);
-    }
-    
-    if (!document.getElementById('google-translate-element')) {
-      const googleEl = document.createElement('div');
-      googleEl.id = 'google-translate-element';
-      googleEl.className = 'hidden';
-      document.body.appendChild(googleEl);
-    }
-    
-    // Initialize translation service
-    initializeTranslation();
-    
-    // Apply stored language with a delay to ensure initialization completes
-    setTimeout(() => {
-      if (storedLanguage) {
-        const language = languages.find(l => l.code === storedLanguage);
-        if (language) {
-          applyLanguage(language);
+
+    const initAndApply = () => {
+      console.log('🌐 LanguageSelector: Page load detected. Initializing translation.');
+
+      // Ensure placeholder elements exist for translation libraries
+      if (!document.getElementById('weglot-switcher')) {
+        const weglotEl = document.createElement('div');
+        weglotEl.id = 'weglot-switcher';
+        weglotEl.className = 'hidden';
+        document.body.appendChild(weglotEl);
+      }
+      if (!document.getElementById('google-translate-element')) {
+        const googleEl = document.createElement('div');
+        googleEl.id = 'google-translate-element';
+        googleEl.className = 'hidden';
+        document.body.appendChild(googleEl);
+      }
+
+      // Track navigation count to determine if this is first load or navigation
+      navigationCountRef.current++;
+      const isFirstLoad = navigationCountRef.current === 1;
+
+      // Always initialize on first load, or if service is not active
+      if (isFirstLoad || !isTranslationServiceActive()) {
+        initializeTranslation();
+      } else {
+        // For subsequent navigations, just reapply the current language
+        console.log('🌐 LanguageSelector: Reapplying language after navigation');
+        const storedLang = localStorage.getItem('preferred-language');
+        if (storedLang) {
+          const langObj = languages.find(l => l.code === storedLang);
+          if (langObj) {
+            // Delay to ensure DOM is ready
+            setTimeout(() => {
+              applyLanguage(langObj);
+            }, 200);
+          }
         }
       }
-    }, 500);
-    
-    // Setup page transition event handler
-    const handlePageTransition = () => {
-      // Increment transition count to track navigation
-      pageTransitionCountRef.current += 1;
-      const currentTransitionCount = pageTransitionCountRef.current;
-      
-      console.log(`🌐 LanguageSelector: Page transition detected #${currentTransitionCount}`);
-      
-      // Reset translation elements to force reinitialization
-      resetTranslationElements();
-      
-      // Re-initialize translation after a short delay
-      setTimeout(() => {
-        // Only process if this is still the most recent transition
-        if (currentTransitionCount === pageTransitionCountRef.current) {
-          console.log(`🌐 LanguageSelector: Reinitializing translation after transition #${currentTransitionCount}`);
-          initializeTranslation();
-          
-          // Apply stored language after a delay
-          setTimeout(() => {
-            const storedLang = localStorage.getItem('preferred-language');
-            if (storedLang) {
-              const lang = languages.find(l => l.code === storedLang);
-              if (lang) {
-                console.log(`🌐 LanguageSelector: Reapplying stored language ${lang.code} after transition`);
-                applyLanguage(lang);
-              }
-            }
-          }, 300);
-        }
-      }, 100);
     };
-    
-    // Listen for Astro page transitions - handle both events for maximum compatibility
-    document.addEventListener('astro:page-load', handlePageTransition);
-    document.addEventListener('astro:after-swap', handlePageTransition);
-    
+
+    // Run initialization on the first mount
+    initAndApply();
+
+    // Re-run initialization on subsequent page loads via Astro's view transitions
+    document.addEventListener('astro:page-load', initAndApply);
+
+    // Cleanup listener on component unmount
     return () => {
-      document.removeEventListener('astro:page-load', handlePageTransition);
-      document.removeEventListener('astro:after-swap', handlePageTransition);
+      document.removeEventListener('astro:page-load', initAndApply);
     };
   }, [weglotApiKey]);
   
-  // Reset translation elements for a clean initialization
-  const resetTranslationElements = () => {
-    // Clear weglot element
-    const weglotEl = document.getElementById('weglot-switcher');
-    if (weglotEl) {
-      weglotEl.innerHTML = '';
+  // Check if a translation service is currently active
+  const isTranslationServiceActive = () => {
+    // Check for Weglot
+    if ((window as any).Weglot) {
+      return true;
     }
     
-    // Clear Google Translate element
-    const googleEl = document.getElementById('google-translate-element');
-    if (googleEl) {
-      googleEl.innerHTML = '';
-    }
+    // Check for Google Translate - look for the combo box or translate element
+    const googleCombo = document.querySelector('.goog-te-combo');
+    const googleTranslateFrame = document.querySelector('.goog-te-menu-frame');
+    
+    return !!(googleCombo || googleTranslateFrame || (window as any).google?.translate);
   };
   
   // Initialize appropriate translation service
@@ -144,32 +121,47 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
         (window as any).Weglot.switchTo(language.locale);
       } catch (e) {
         console.warn('⚠️ LanguageSelector: Error switching Weglot language:', e);
-        // Try reinitializing if switching fails
-        if (weglotApiKey) {
-          console.log('🌐 LanguageSelector: Attempting to recover Weglot');
-          setTimeout(() => initializeWeglot(weglotApiKey), 100);
-        }
       }
-    } 
+    }
     // Fallback to Google Translate
-    else if ((window as any).google?.translate) {
+    else {
       try {
         console.log('🌐 LanguageSelector: Using Google Translate for language change');
         const googleTranslateCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
         if (googleTranslateCombo) {
-          googleTranslateCombo.value = language.locale;
-          googleTranslateCombo.dispatchEvent(new Event('change'));
+          // For German, we need to reset to the original state
+          if (language.locale === 'de') {
+            // Click the "Show original" button if it exists
+            const showOriginalButton = document.querySelector('.goog-te-banner a') as HTMLElement;
+            if (showOriginalButton) {
+              showOriginalButton.click();
+            } else {
+              // Reset by selecting the empty option
+              googleTranslateCombo.value = '';
+              googleTranslateCombo.dispatchEvent(new Event('change'));
+            }
+          } else {
+            googleTranslateCombo.value = language.locale;
+            googleTranslateCombo.dispatchEvent(new Event('change'));
+          }
         } else {
           console.warn('⚠️ LanguageSelector: Google translate combo element not found');
+          // If combo not found, might need to wait for Google Translate to initialize
+          setTimeout(() => {
+            const retryCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+            if (retryCombo) {
+              if (language.locale === 'de') {
+                retryCombo.value = '';
+              } else {
+                retryCombo.value = language.locale;
+              }
+              retryCombo.dispatchEvent(new Event('change'));
+            }
+          }, 500);
         }
       } catch (e) {
         console.warn('⚠️ LanguageSelector: Error switching Google Translate language:', e);
-        // Try reinitializing if switching fails
-        setTimeout(() => initializeGoogleTranslate(), 100);
       }
-    } else {
-      console.warn('⚠️ LanguageSelector: No translation service is available');
-      // Reinitialize translation service      setTimeout(() => initializeTranslation(), 100);
     }
   };
   
@@ -191,7 +183,7 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     if (!document.querySelector('link[href*="weglot.min.css"]')) {
       const styleLink = document.createElement('link');
       styleLink.rel = 'stylesheet';
-      styleLink.href = `https://cdn.weglot.com/weglot.min.css?_t=${Date.now()}`;
+      styleLink.href = 'https://cdn.weglot.com/weglot.min.css';
       document.head.appendChild(styleLink);
     }
     
@@ -199,9 +191,9 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     const existingWeglotScripts = document.querySelectorAll('script[src*="weglot.min.js"]');
     existingWeglotScripts.forEach(script => script.remove());
     
-    // Create and add Weglot script with unique parameter to prevent caching
+    // Create and add Weglot script
     const script = document.createElement('script');
-    script.src = `https://cdn.weglot.com/weglot.min.js?_t=${Date.now()}`;
+    script.src = 'https://cdn.weglot.com/weglot.min.js';
     script.async = true;
     
     script.onload = () => {
@@ -249,7 +241,8 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
     script.onerror = (error) => {
       console.error('⚠️ LanguageSelector: Failed to load Weglot script:', error);
     };
-      document.head.appendChild(script);
+    
+    document.head.appendChild(script);
   };
   
   const initializeGoogleTranslate = () => {
@@ -315,15 +308,16 @@ export default function LanguageSelector({ weglotApiKey }: LanguageSelectorProps
       }
     };
     
-    // Load the Google Translate script with unique parameter to prevent caching
+    // Load the Google Translate script
     const script = document.createElement('script');
-    script.src = `https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&_t=${Date.now()}`;
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     script.async = true;
     
     script.onerror = (error) => {
       console.error('⚠️ LanguageSelector: Failed to load Google Translate script:', error);
     };
-      document.head.appendChild(script);
+    
+    document.head.appendChild(script);
   };
   
   const handleLanguageChange = (language: Language) => {
