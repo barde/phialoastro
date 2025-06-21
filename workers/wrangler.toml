@@ -4,31 +4,29 @@ compatibility_date = "2024-01-01"
 workers_dev = true
 
 [site]
-bucket = "../dist"
+bucket = "../phialo-design/dist"
 
 [build]
 command = "npm run build"
-cwd = ".."
+cwd = "../phialo-design"
 
-[[kv_namespaces]]
-binding = "ASSETS"
-id = "YOUR_KV_NAMESPACE_ID"
-
+# Preview environment for branch deployments
 [env.preview]
 name = "phialo-design-preview"
 workers_dev = true
 
+[env.preview.vars]
+ENVIRONMENT = "preview"
+
+# Production environment
 [env.production]
 name = "phialo-design"
 route = "phialo.de/*"
 zone_id = "YOUR_ZONE_ID"
 workers_dev = false
 
-[vars]
-ENVIRONMENT = "development"
-
-[env.preview.vars]
-ENVIRONMENT = "preview"
-
 [env.production.vars]
 ENVIRONMENT = "production"
+
+[vars]
+ENVIRONMENT = "development"
