@@ -76,6 +76,16 @@ For automatic PR preview deployments:
 3. Add these repository secrets:
    - `CLOUDFLARE_API_TOKEN`: Your API token
    - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
+   - `WEB3FORMS_ACCESS_KEY`: Your Web3Forms access key for contact form functionality
+
+## Environment Variables
+
+The following environment variables are required for full functionality:
+
+- `WEB3FORMS_ACCESS_KEY`: Required for the contact form to work
+  - Get your free key at [https://web3forms.com](https://web3forms.com)
+  - This is a public key (not secret)
+  - Without this, the contact form will not function
 
 ## Rollback Instructions
 

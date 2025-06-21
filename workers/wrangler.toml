@@ -17,6 +17,7 @@ workers_dev = true
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
+# Note: WEB3FORMS_ACCESS_KEY is passed during build via GitHub Actions
 
 # Production environment
 [env.production]
@@ -27,6 +28,7 @@ workers_dev = false
 
 [env.production.vars]
 ENVIRONMENT = "production"
+# Note: WEB3FORMS_ACCESS_KEY must be set in Cloudflare dashboard under Worker settings
 
 [vars]
 ENVIRONMENT = "development"
