@@ -41,10 +41,17 @@ describe('PortfolioModal', () => {
   afterEach(() => {
     // Clean up body overflow style
     document.body.style.overflow = '';
+    // Location will be reset by the test environment
   });
 
   describe('Rendering', () => {
     it('renders modal when isOpen is true', () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -104,6 +111,12 @@ describe('PortfolioModal', () => {
     });
 
     it('renders with single image when no gallery is provided', () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       const singleImageItem = {
         ...mockPortfolioItem,
         gallery: undefined
@@ -125,6 +138,12 @@ describe('PortfolioModal', () => {
 
   describe('User Interactions', () => {
     it('calls onClose when clicking close button', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -140,6 +159,12 @@ describe('PortfolioModal', () => {
     });
 
     it('calls onClose when clicking outside the modal', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -156,6 +181,12 @@ describe('PortfolioModal', () => {
     });
 
     it('does not call onClose when clicking inside the modal content', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -171,6 +202,12 @@ describe('PortfolioModal', () => {
     });
 
     it('calls onClose when pressing ESC key', () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -187,6 +224,12 @@ describe('PortfolioModal', () => {
 
   describe('Gallery Navigation', () => {
     it('navigates to next image when clicking next button', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -209,6 +252,12 @@ describe('PortfolioModal', () => {
     });
 
     it('navigates to previous image when clicking previous button', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -229,6 +278,12 @@ describe('PortfolioModal', () => {
     });
 
     it('navigates with keyboard arrow keys', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -259,6 +314,12 @@ describe('PortfolioModal', () => {
     });
 
     it('navigates to specific image when clicking indicator dots', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -278,8 +339,89 @@ describe('PortfolioModal', () => {
     });
   });
 
+  describe('Language Detection', () => {
+    it('displays English text when on English pages', () => {
+      // Mock window.location for English page
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
+      render(
+        <PortfolioModal
+          isOpen={true}
+          onClose={mockOnClose}
+          portfolioItem={mockPortfolioItem}
+        />
+      );
+
+      // Check that English labels are used
+      expect(screen.getByLabelText('Close modal')).toBeInTheDocument();
+      expect(screen.getByLabelText('Previous image')).toBeInTheDocument();
+      expect(screen.getByLabelText('Next image')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to image 1')).toBeInTheDocument();
+      expect(screen.getByText('Materials')).toBeInTheDocument();
+      expect(screen.getByText('Client')).toBeInTheDocument();
+      expect(screen.getByText('Project Date')).toBeInTheDocument();
+      expect(screen.getByText('Availability')).toBeInTheDocument();
+      expect(screen.getByText('Price')).toBeInTheDocument();
+      expect(screen.getByText('Tags')).toBeInTheDocument();
+    });
+
+    it('displays German text when on German pages', () => {
+      // Mock window.location for German page
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/portfolio' },
+        writable: true
+      });
+
+      render(
+        <PortfolioModal
+          isOpen={true}
+          onClose={mockOnClose}
+          portfolioItem={mockPortfolioItem}
+        />
+      );
+
+      // Check that German labels are used
+      expect(screen.getByLabelText('Modal schließen')).toBeInTheDocument();
+      expect(screen.getByLabelText('Vorheriges Bild')).toBeInTheDocument();
+      expect(screen.getByLabelText('Nächstes Bild')).toBeInTheDocument();
+      expect(screen.getByLabelText('Zu Bild 1')).toBeInTheDocument();
+      expect(screen.getByText('Materialien')).toBeInTheDocument();
+      expect(screen.getByText('Kunde')).toBeInTheDocument();
+      expect(screen.getByText('Projektdatum')).toBeInTheDocument();
+      expect(screen.getByText('Verfügbarkeit')).toBeInTheDocument();
+      expect(screen.getByText('Preis')).toBeInTheDocument();
+      expect(screen.getByText('Tags')).toBeInTheDocument();
+    });
+
+    it('defaults to German when window.location is not available', () => {
+      // Ensure window.location is undefined
+      delete (window as any).location;
+
+      render(
+        <PortfolioModal
+          isOpen={true}
+          onClose={mockOnClose}
+          portfolioItem={mockPortfolioItem}
+        />
+      );
+
+      // Should default to German
+      expect(screen.getByLabelText('Modal schließen')).toBeInTheDocument();
+      expect(screen.getByText('Materialien')).toBeInTheDocument();
+    });
+  });
+
   describe('Accessibility', () => {
     it('has proper ARIA attributes', () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -297,6 +439,12 @@ describe('PortfolioModal', () => {
     });
 
     it('manages focus correctly', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -313,6 +461,12 @@ describe('PortfolioModal', () => {
     });
 
     it('traps focus within modal', async () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -337,6 +491,12 @@ describe('PortfolioModal', () => {
     });
 
     it('prevents body scroll when modal is open', () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       render(
         <PortfolioModal
           isOpen={true}
@@ -349,6 +509,12 @@ describe('PortfolioModal', () => {
     });
 
     it('restores body scroll when modal closes', () => {
+      // Mock English language context
+      Object.defineProperty(window, 'location', {
+        value: { pathname: '/en/portfolio' },
+        writable: true
+      });
+
       const { rerender } = render(
         <PortfolioModal
           isOpen={true}
