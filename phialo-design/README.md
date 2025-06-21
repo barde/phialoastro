@@ -67,7 +67,8 @@ Create a `.env` file in the root directory:
 
 ```bash
 # Web3Forms Access Key for contact form
-WEB3FORMS_ACCESS_KEY=your-web3forms-access-key
+# Note: Must use PUBLIC_ prefix for client-side access in Astro
+PUBLIC_WEB3FORMS_ACCESS_KEY=your-web3forms-access-key
 
 # Site URL (optional, defaults to https://phialo.de)
 PUBLIC_SITE_URL=https://phialo.de
