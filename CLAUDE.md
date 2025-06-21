@@ -131,3 +131,7 @@ Tailwind configuration includes:
 ## Browser Automation
 
 - Use playwright and **NEVER** use pupeteer or other browser automation tools
+
+## Script Development Best Practices
+
+- Always use a linter when editing deployment scripts, e.g. yml files for github workflows
