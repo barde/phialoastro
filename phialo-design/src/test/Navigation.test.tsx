@@ -26,10 +26,5 @@ describe('Navigation Component', () => {
     expect(contactLink).toHaveAttribute('href', '/contact');
   });
 
-  it('renders language selector', () => {
-    render(<Navigation />);
-    
-    expect(screen.getByLabelText('Select language')).toBeInTheDocument();
-    expect(screen.getByText('DE')).toBeInTheDocument();
-  });
+  // Language selector is tested separately as it's part of Header component
 });

@@ -1,8 +1,10 @@
 ---
-title: "Learn Blender - 3D Design for Absolute Beginners (English)"
-description: "Master Blender 3D design from scratch. A comprehensive course for absolute beginners in English, guiding you through the fundamentals of 3D design."
+title: "Learn Blender - 3D Design for Absolute Beginners"
+description: "Master Blender 3D design from scratch. Available on Skillshare or direct purchase."
 excerpt: "The perfect introduction to Blender for English-speaking beginners. Learn 3D design from the very first minute."
 category: "3d-design"
+language: "en"
+categoryDisplay: "English - Beginner"
 image: "/images/Thumbnail_BlenderBeginnerClass.jpg"
 duration: "Several hours"
 difficulty: "beginner"

@@ -1,5 +1,62 @@
 ---
 import Button from '../common/Button.astro';
+
+// Language detection based on URL pathname
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Translation objects
+const translations = {
+  de: {
+    title: 'Kontakt',
+    subtitle: 'Haben Sie eine Schmuckidee? Benötigen Sie eine Beratung? Kontaktieren Sie uns für eine unverbindliche Anfrage.',
+    formTitle: 'Nachricht senden',
+    nameLabel: 'Name',
+    namePlaceholder: 'Ihr Name',
+    emailLabel: 'Email',
+    emailPlaceholder: 'ihre.email@example.com',
+    phoneLabel: 'Telefon',
+    phonePlaceholder: 'Ihre Telefonnummer',
+    messageLabel: 'Nachricht',
+    messagePlaceholder: 'Beschreiben Sie Ihr Projekt oder Ihre Anfrage...',
+    submitButton: 'Nachricht senden',
+    contactInfoTitle: 'Direkte Kontaktdaten',
+    emailLabel: 'Email',
+    locationLabel: 'Standort',
+    locationValue: 'Deutschland',
+    socialTitle: 'Folgen Sie uns',
+    instagramDescription: 'Portfolio auf Instagram',
+    youtubeDescription: 'Kostenlose Tutorials',
+    responseTime: 'Wir antworten normalerweise innerhalb von 24 Stunden',
+    subjectPrefix: 'Kontaktanfrage von',
+    successMessage: 'Ihr E-Mail-Client wird geöffnet. Vielen Dank für Ihre Nachricht!'
+  },
+  en: {
+    title: 'Contact',
+    subtitle: 'Have a jewelry idea? Need consultation? Contact us for a non-binding inquiry.',
+    formTitle: 'Send Message',
+    nameLabel: 'Name',
+    namePlaceholder: 'Your Name',
+    emailLabel: 'Email',
+    emailPlaceholder: 'your.email@example.com',
+    phoneLabel: 'Phone',
+    phonePlaceholder: 'Your phone number',
+    messageLabel: 'Message',
+    messagePlaceholder: 'Describe your project or inquiry...',
+    submitButton: 'Send Message',
+    contactInfoTitle: 'Direct Contact Information',
+    locationLabel: 'Location',
+    locationValue: 'Germany',
+    socialTitle: 'Follow Us',
+    instagramDescription: 'Portfolio on Instagram',
+    youtubeDescription: 'Free Tutorials',
+    responseTime: 'We typically respond within 24 hours',
+    subjectPrefix: 'Contact inquiry from',
+    successMessage: 'Your email client will open. Thank you for your message!'
+  }
+};
+
+const t = translations[isEnglish ? 'en' : 'de'];
 ---
 
 <section id="contact" class="py-24 bg-midnight text-white">
@@ -7,11 +64,10 @@ import Button from '../common/Button.astro';
     <!-- Section Header -->
     <div class="text-center mb-16">
       <h2 class="font-display text-4xl md:text-5xl font-medium mb-6">
-        Kontakt
+        {t.title}
       </h2>
       <p class="text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-        Haben Sie eine Schmuckidee? Benötigen Sie eine Beratung? 
-        Kontaktieren Sie uns für eine unverbindliche Anfrage.
+        {t.subtitle}
       </p>
     </div>
 
@@ -19,12 +75,12 @@ import Button from '../common/Button.astro';
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Contact Form -->
         <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-          <h3 class="font-display text-2xl font-medium mb-6">Nachricht senden</h3>
+          <h3 class="font-display text-2xl font-medium mb-6">{t.formTitle}</h3>
           
           <form id="contactForm" class="space-y-6">
             <div class="form-group">
               <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
-                Name *
+                {t.nameLabel} *
               </label>
               <input
                 type="text"
@@ -32,13 +88,13 @@ import Button from '../common/Button.astro';
                 name="name"
                 required
                 class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300"
-                placeholder="Ihr Name"
+                placeholder={t.namePlaceholder}
               />
             </div>
 
             <div class="form-group">
               <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-                Email *
+                {t.emailLabel} *
               </label>
               <input
                 type="email"
@@ -46,26 +102,26 @@ import Button from '../common/Button.astro';
                 name="email"
                 required
                 class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300"
-                placeholder="ihre.email@example.com"
+                placeholder={t.emailPlaceholder}
               />
             </div>
 
             <div class="form-group">
               <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">
-                Telefon
+                {t.phoneLabel}
               </label>
               <input
                 type="tel"
                 id="phone"
                 name="phone"
                 class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300"
-                placeholder="Ihre Telefonnummer"
+                placeholder={t.phonePlaceholder}
               />
             </div>
 
             <div class="form-group">
               <label for="message" class="block text-sm font-medium text-gray-300 mb-2">
-                Nachricht *
+                {t.messageLabel} *
               </label>
               <textarea
                 id="message"
@@ -73,7 +129,7 @@ import Button from '../common/Button.astro';
                 rows="5"
                 required
                 class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 resize-none"
-                placeholder="Beschreiben Sie Ihr Projekt oder Ihre Anfrage..."
+                placeholder={t.messagePlaceholder}
               ></textarea>
             </div>
 
@@ -84,7 +140,7 @@ import Button from '../common/Button.astro';
                 size="lg" 
                 class="w-full"
               >
-                Nachricht senden
+                {t.submitButton}
               </Button>
             </div>
           </form>
@@ -94,7 +150,7 @@ import Button from '../common/Button.astro';
         <div class="space-y-8">
           <!-- Direct Contact -->
           <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <h3 class="font-display text-2xl font-medium mb-6">Direkte Kontaktdaten</h3>
+            <h3 class="font-display text-2xl font-medium mb-6">{t.contactInfoTitle}</h3>
             
             <div class="space-y-4">
               <div class="flex items-center space-x-4">
@@ -104,7 +160,7 @@ import Button from '../common/Button.astro';
                   </svg>
                 </div>
                 <div>
-                  <p class="text-gray-300 text-sm">Email</p>
+                  <p class="text-gray-300 text-sm">{t.emailLabel}</p>
                   <a href="mailto:kontakt@phialo.de" class="text-gold hover:text-gold/80 transition-colors font-medium">
                     kontakt@phialo.de
                   </a>
@@ -119,8 +175,8 @@ import Button from '../common/Button.astro';
                   </svg>
                 </div>
                 <div>
-                  <p class="text-gray-300 text-sm">Standort</p>
-                  <p class="text-white">Deutschland</p>
+                  <p class="text-gray-300 text-sm">{t.locationLabel}</p>
+                  <p class="text-white">{t.locationValue}</p>
                 </div>
               </div>
             </div>
@@ -128,7 +184,7 @@ import Button from '../common/Button.astro';
 
           <!-- Social Links -->
           <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <h3 class="font-display text-2xl font-medium mb-6">Folgen Sie uns</h3>
+            <h3 class="font-display text-2xl font-medium mb-6">{t.socialTitle}</h3>
             
             <div class="space-y-4">
               <a 
@@ -144,7 +200,7 @@ import Button from '../common/Button.astro';
                 </div>
                 <div>
                   <p class="font-medium">Instagram</p>
-                  <p class="text-sm text-gray-400">Portfolio auf Instagram</p>
+                  <p class="text-sm text-gray-400">{t.instagramDescription}</p>
                 </div>
               </a>
 
@@ -161,7 +217,7 @@ import Button from '../common/Button.astro';
                 </div>
                 <div>
                   <p class="font-medium">YouTube</p>
-                  <p class="text-sm text-gray-400">Kostenlose Tutorials</p>
+                  <p class="text-sm text-gray-400">{t.youtubeDescription}</p>
                 </div>
               </a>
             </div>
@@ -170,7 +226,7 @@ import Button from '../common/Button.astro';
           <!-- Response Time -->
           <div class="text-center">
             <p class="text-gray-300 text-sm">
-              Wir antworten in der Regel innerhalb von 24 Stunden
+              {t.responseTime}
             </p>
           </div>
         </div>
@@ -186,7 +242,7 @@ import Button from '../common/Button.astro';
   }
 </style>
 
-<script>
+<script define:vars={{ t, isEnglish }}>
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('contactForm');
     
@@ -201,14 +257,17 @@ import Button from '../common/Button.astro';
         const phone = formData.get('phone');
         const message = formData.get('message');
         
-        // Create mailto link
-        const subject = encodeURIComponent(`Kontaktanfrage von ${name}`);
+        // Create mailto link with translated content
+        const subject = encodeURIComponent(`${t.subjectPrefix} ${name}`);
+        const phoneLabel = isEnglish ? 'Phone' : 'Telefon';
+        const messageLabel = isEnglish ? 'Message' : 'Nachricht';
+        
         const body = encodeURIComponent(`
 Name: ${name}
 Email: ${email}
-${phone ? `Telefon: ${phone}` : ''}
+${phone ? `${phoneLabel}: ${phone}` : ''}
 
-Nachricht:
+${messageLabel}:
 ${message}
         `);
         
@@ -218,7 +277,7 @@ ${message}
         window.location.href = mailtoLink;
         
         // Show success message
-        alert('Ihr E-Mail-Client wird geöffnet. Vielen Dank für Ihre Nachricht!');
+        alert(t.successMessage);
       });
     }
   });

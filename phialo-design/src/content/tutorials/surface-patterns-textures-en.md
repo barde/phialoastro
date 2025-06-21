@@ -3,13 +3,15 @@ title: "Create Unique Surface Patterns With Textures"
 description: "Learn to create stunning, unique surface patterns using Blender's texture system. Perfect for adding distinctive details to your 3D jewelry designs."
 excerpt: "Unlock the secrets of procedural texturing in Blender to create one-of-a-kind surface patterns that will make your designs stand out."
 category: "3d-design"
+language: "en"
+categoryDisplay: "3D-Design"
 image: "/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png"
 duration: "Several hours"
 difficulty: "intermediate"
 featured: true
 author: "Gesa Pickbrenner"
 tags: ["blender", "textures", "patterns", "surface-design", "intermediate"]
-publishedAt: 2025-06-04
+publishedAt: 2025-06-04T00:00:00.000Z
 link: "https://skl.sh/4bMkx3o"
 platform: "Skillshare"
 ---

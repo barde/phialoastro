@@ -62,17 +62,6 @@ src/
 
 ### Environment Variables
 
-#### Translation (Weglot)
-
-To enable automatic translation, set the Weglot API key in your `.env` file:
-
-```
-PUBLIC_WEGLOT_API_KEY=your_actual_weglot_api_key
-```
-
-Replace `your_actual_weglot_api_key` with your real Weglot API key.
-
-**Never commit your API key to source control.**
 
 ---
 
