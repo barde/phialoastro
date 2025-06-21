@@ -1,5 +1,7 @@
 # Phialo Design Cloudflare Worker
 
+<!-- Test change to trigger workflow -->
+
 This directory contains the Cloudflare Worker implementation for serving the Phialo Design website, migrating from Cloudflare Pages to Workers for enhanced control and features.
 
 ## Architecture
