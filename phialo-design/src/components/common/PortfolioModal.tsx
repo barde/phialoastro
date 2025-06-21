@@ -28,6 +28,16 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isEnglish = lang === 'en';
+  
+  // Debug logging
+  if (typeof window !== 'undefined' && portfolioItem) {
+    console.log('PortfolioModal Debug:', {
+      lang,
+      isEnglish,
+      category: portfolioItem.category,
+      pathname: window.location.pathname
+    });
+  }
 
   // Translations
   const translations = {
