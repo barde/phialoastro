@@ -7,6 +7,7 @@ A modern, high-performance website built with Astro, React, and Tailwind CSS, sh
 - **Modern Stack**: Built with Astro 4.x, React 18, and Tailwind CSS 3.x
 - **Performance Optimized**: Static site generation with partial hydration
 - **Responsive Design**: Mobile-first approach with elegant desktop scaling
+- **Multilingual Support**: German/English with proper content translations
 - **Accessibility**: WCAG 2.1 AA compliant with semantic HTML and ARIA labels
 - **SEO Optimized**: Structured data, meta tags, and optimized images
 - **Design System**: Comprehensive component library with consistent tokens
@@ -143,6 +144,13 @@ Optimized for excellent Core Web Vitals with static generation, partial hydratio
 ## 🛠️ Development
 
 Built with TypeScript, ESLint, and Prettier for maintainable, high-quality code following Astro and React best practices.
+
+### Recent Fixes
+
+- **Issue #22**: Fixed portfolio modal showing German text on English pages
+  - Implemented proper React hydration handling with `useMemo`
+  - Added comprehensive content translations for all portfolio items
+  - See [ISSUE-22-FIX.md](./ISSUE-22-FIX.md) for detailed solution
 
 ## 🚀 Deployment
 
