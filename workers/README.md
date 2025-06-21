@@ -91,15 +91,33 @@ npm run deploy:production
 
 ### PR Preview Deployments
 Pull requests automatically deploy preview URLs via GitHub Actions:
-- Preview URL: `https://phialo-design-preview-pr-{number}.workers.dev`
+- Each PR gets its own isolated environment
+- Preview URL format: `https://phialo-design-preview.<branch-name>.workers.dev`
 - Automatically updates on each commit
-- Comments preview URL on PR
+- Comments preview URL on PR with clickable link and deployment info
+- Uses Cloudflare's branch deployment feature for proper isolation
+
+#### Preview URL Comment Features
+- 🚀 Fancy emoji-enhanced formatting
+- 🔗 Direct clickable preview link
+- 📊 Deployment metadata (branch, commit, timestamp)
+- ℹ️ Helpful preview information in expandable section
 
 ## Configuration
 
+### GitHub Secrets Required
+For PR preview deployments to work, add these secrets to your GitHub repository:
+- `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token with Workers deployment permissions
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
+
+To create an API token:
+1. Go to https://dash.cloudflare.com/profile/api-tokens
+2. Create a token with "Cloudflare Workers Scripts:Edit" permission
+3. Add the token as a GitHub secret
+
 ### Environment Variables
 - `ENVIRONMENT`: Set to `development`, `preview`, or `production`
-- `BRANCH_NAME`: Used for PR preview deployments
+- `BRANCH_NAME`: Automatically set for PR deployments
 
 ### Wrangler Configuration
 Edit `wrangler.toml` to configure:
