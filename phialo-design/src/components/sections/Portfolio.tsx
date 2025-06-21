@@ -180,8 +180,8 @@ interface PortfolioProps {
 }
 
 export default function Portfolio({ lang = 'de' }: PortfolioProps) {
-  // Use lang prop instead of detecting from URL
   const isEnglish = lang === 'en';
+  
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState(portfolioItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
