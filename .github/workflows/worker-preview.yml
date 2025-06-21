@@ -1,6 +1,7 @@
+---
 name: Deploy Worker Preview
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -14,7 +15,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,26 +50,27 @@ jobs:
         run: |
           # Get the branch name from the PR
           BRANCH_NAME="${{ github.head_ref }}"
-          
+
           # Deploy to preview environment and capture output
           DEPLOY_OUTPUT=$(npx wrangler deploy --env preview 2>&1)
           echo "$DEPLOY_OUTPUT"
-          
+
           # Extract the deployment URL from the output
-          # Wrangler outputs: "Deployed phialo-design-preview triggers (X.XX sec)"
-          # followed by the URL on the next line
-          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "https://.*workers\.dev" | tail -1 | tr -d '[:space:]')
-          
+          # Wrangler outputs: "Deployed phialo-design-preview triggers
+          # (X.XX sec)" followed by the URL on the next line
+          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | \
+            grep -E "https://.*workers\.dev" | tail -1 | tr -d '[:space:]')
+
           # If we couldn't extract the URL, use default pattern
           if [ -z "$PREVIEW_URL" ]; then
             # Try to get subdomain from account ID
             SUBDOMAIN=$(echo "$CLOUDFLARE_ACCOUNT_ID" | cut -c1-8)
             PREVIEW_URL="https://phialo-design-preview.${SUBDOMAIN}.workers.dev"
           fi
-          
+
           echo "preview_url=${PREVIEW_URL}" >> $GITHUB_OUTPUT
           echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-          
+
           # Verify deployment succeeded
           if [ -z "$PREVIEW_URL" ]; then
             echo "::error::Failed to extract preview URL from deployment output"
@@ -78,7 +80,8 @@ jobs:
       - name: Verify deployment
         run: |
           echo "Testing preview URL: ${{ steps.deploy.outputs.preview_url }}"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.preview_url }}")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ steps.deploy.outputs.preview_url }}")
           if [ "$HTTP_CODE" -ne 200 ]; then
             echo "::error::Preview deployment returned HTTP $HTTP_CODE"
             exit 1
@@ -93,7 +96,7 @@ jobs:
             const branch_name = '${{ steps.deploy.outputs.branch_name }}';
             const pr_number = context.issue.number;
             const sha = context.sha.substring(0, 7);
-            
+
             // Find existing comment
             let botComment = null;
             try {
@@ -102,49 +105,50 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: pr_number,
               });
-              
-              botComment = comments.data.find(comment => 
-                comment.user && comment.user.type === 'Bot' && 
-                comment.body && comment.body.includes('Cloudflare Workers Preview')
+
+              botComment = comments.data.find(comment =>
+                comment.user && comment.user.type === 'Bot' &&
+                comment.body &&
+                comment.body.includes('Cloudflare Workers Preview')
               );
             } catch (error) {
               console.log('Could not fetch existing comments:', error.message);
             }
-            
+
             const body = `### 🚀 Cloudflare Workers Preview Deployed!
-            
-<table>
-<tr>
-<td><strong>🔗 Preview URL</strong></td>
-<td><a href="${preview_url}">${preview_url}</a></td>
-</tr>
-<tr>
-<td><strong>🌿 Branch</strong></td>
-<td><code>${branch_name}</code></td>
-</tr>
-<tr>
-<td><strong>📝 Commit</strong></td>
-<td><code>${sha}</code></td>
-</tr>
-<tr>
-<td><strong>🕐 Deployed</strong></td>
-<td>${new Date().toUTCString()}</td>
-</tr>
-</table>
 
----
+            <table>
+            <tr>
+            <td><strong>🔗 Preview URL</strong></td>
+            <td><a href="${preview_url}">${preview_url}</a></td>
+            </tr>
+            <tr>
+            <td><strong>🌿 Branch</strong></td>
+            <td><code>${branch_name}</code></td>
+            </tr>
+            <tr>
+            <td><strong>📝 Commit</strong></td>
+            <td><code>${sha}</code></td>
+            </tr>
+            <tr>
+            <td><strong>🕐 Deployed</strong></td>
+            <td>${new Date().toUTCString()}</td>
+            </tr>
+            </table>
 
-<details>
-<summary>ℹ️ <strong>Preview Information</strong></summary>
+            ---
 
-- 🔄 This preview will be automatically updated on each commit
-- 🌍 The preview runs on Cloudflare's global edge network
-- 🔒 Security headers and CSP policies are active
-- 💾 Edge caching is enabled for optimal performance
-- 🐛 Check browser DevTools for any console errors
+            <details>
+            <summary>ℹ️ <strong>Preview Information</strong></summary>
 
-</details>`;
-            
+            - 🔄 This preview will be automatically updated on each commit
+            - 🌍 The preview runs on Cloudflare's global edge network
+            - 🔒 Security headers and CSP policies are active
+            - 💾 Edge caching is enabled for optimal performance
+            - 🐛 Check browser DevTools for any console errors
+
+            </details>`;
+
             if (botComment) {
               // Update existing comment
               await github.rest.issues.updateComment({
