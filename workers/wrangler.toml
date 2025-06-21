@@ -1,0 +1,32 @@
+name = "phialo-design"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+[site]
+bucket = "../phialo-design/dist"
+
+[build]
+command = "npm run build"
+cwd = "../phialo-design"
+
+# Preview environment for branch deployments
+[env.preview]
+name = "phialo-design-preview"
+workers_dev = true
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+
+# Production environment
+[env.production]
+name = "phialo-design"
+route = "phialo.de/*"
+zone_id = "YOUR_ZONE_ID"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[vars]
+ENVIRONMENT = "development"
