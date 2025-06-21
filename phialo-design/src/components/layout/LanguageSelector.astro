@@ -59,29 +59,51 @@ const englishUrl = isEnglish ? currentPath : '/en' + currentPath;
   }
 
   function checkLanguagePreference() {
-    // Skip if user is already on their preferred language
+    // Check if user explicitly navigated to a different language version
     const currentPath = window.location.pathname;
     const currentLang = currentPath.startsWith('/en/') ? 'en' : 'de';
+    
+    // Check for explicit language override in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceLanguage = urlParams.get('lang');
+    
+    // If user explicitly set a language via URL param, respect it
+    if (forceLanguage && (forceLanguage === 'en' || forceLanguage === 'de')) {
+      try {
+        localStorage.setItem(STORAGE_KEY, forceLanguage);
+      } catch (error) {
+        console.warn('Could not save language preference:', error);
+      }
+    }
+    
+    // Check if this is the first visit or homepage
+    const isHomepage = currentPath === '/' || currentPath === '/en/' || currentPath === '/en';
     
     try {
       const preferredLang = localStorage.getItem(STORAGE_KEY) || DEFAULT_LANG;
       
-      // Only redirect if the preferred language differs from current
-      if (preferredLang !== currentLang) {
+      // Only auto-redirect on homepage, not on deep links
+      if (isHomepage && preferredLang !== currentLang) {
         let targetUrl;
         
         if (preferredLang === 'en' && currentLang === 'de') {
           // Switch to English
-          targetUrl = '/en' + currentPath;
+          targetUrl = '/en/';
         } else if (preferredLang === 'de' && currentLang === 'en') {
           // Switch to German
-          targetUrl = currentPath.replace(/^\/en/, '') || '/';
+          targetUrl = '/';
         }
         
         if (targetUrl) {
           window.location.replace(targetUrl);
           return;
         }
+      }
+      
+      // Update stored preference to match current language
+      // This allows users to explicitly navigate to a different language
+      if (!isHomepage && preferredLang !== currentLang) {
+        localStorage.setItem(STORAGE_KEY, currentLang);
       }
     } catch (error) {
       console.warn('Could not read language preference:', error);
