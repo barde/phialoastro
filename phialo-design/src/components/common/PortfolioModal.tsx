@@ -27,6 +27,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(true);
   
   // Use state to handle language detection properly
   const [detectedLang, setDetectedLang] = useState(lang);
@@ -133,6 +134,14 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, hasMultipleImages, currentImageIndex]);
 
+  // Reset states when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentImageIndex(0);
+      setImageLoading(true);
+    }
+  }, [isOpen]);
+
   // Focus management
   useEffect(() => {
     if (isOpen) {
@@ -190,6 +199,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   }, [isOpen]);
 
   const navigateImage = (direction: 'prev' | 'next') => {
+    setImageLoading(true);
     if (direction === 'prev') {
       setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
     } else {
@@ -250,15 +260,30 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
               {/* Image section */}
               <div className="relative flex-1 bg-gray-100 flex items-center justify-center p-8 lg:p-12">
+                {/* Loading spinner */}
+                {imageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <div className="w-8 h-8 border-2 border-gray-300 border-t-gold rounded-full animate-spin" />
+                  </div>
+                )}
+                
                 {/* Main image */}
                 <motion.img
                   key={currentImageIndex}
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  animate={{ opacity: imageLoading ? 0 : 1 }}
                   transition={{ duration: 0.3 }}
                   src={allImages[currentImageIndex]}
                   alt={portfolioItem.title}
                   className="max-w-full max-h-full object-contain rounded-lg"
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    // Set a fallback placeholder image
+                    target.src = '/images/placeholder.svg';
+                    target.alt = 'Image not available';
+                    setImageLoading(false);
+                  }}
                 />
 
                 {/* Gallery navigation */}
