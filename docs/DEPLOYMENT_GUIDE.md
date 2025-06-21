@@ -62,6 +62,7 @@ For automated deployments, configure these repository secrets:
    - Go to Settings → Secrets and variables → Actions
    - Add `CLOUDFLARE_API_TOKEN` with your API token
    - Add `CLOUDFLARE_ACCOUNT_ID` with your account ID
+   - Add `WEB3FORMS_ACCESS_KEY` with your Web3Forms access key (get at https://web3forms.com)
 
 See [CLOUDFLARE_SETUP.md](./CLOUDFLARE_SETUP.md) for detailed instructions.
 
@@ -143,8 +144,9 @@ npm run deploy:production
 
 ### Production Configuration
 
-Before deploying to production, update `workers/wrangler.toml`:
+Before deploying to production:
 
+1. **Update `workers/wrangler.toml`:**
 ```toml
 [env.production]
 name = "phialo-design"
@@ -152,6 +154,11 @@ route = "phialo.de/*"
 zone_id = "YOUR_ZONE_ID"  # Get from Cloudflare dashboard
 workers_dev = false
 ```
+
+2. **Set environment variables in Cloudflare:**
+   - Go to Workers & Pages → phialo-design → Settings → Variables
+   - Add `WEB3FORMS_ACCESS_KEY` with your access key
+   - This is required for the contact form to function
 
 ### Setting Up Custom Domain
 
@@ -259,8 +266,13 @@ phialoastro/
 
 3. **Content Security**
    - Worker implements security headers
-   - CSP configured for Weglot and YouTube
+   - CSP configured for Weglot, YouTube, and Web3Forms
    - X-Frame-Options prevents clickjacking
+
+4. **Environment Variables**
+   - `WEB3FORMS_ACCESS_KEY` is a public key (not secret)
+   - Required for contact form functionality
+   - Safe to expose in client-side code
 
 ## Additional Resources
 
