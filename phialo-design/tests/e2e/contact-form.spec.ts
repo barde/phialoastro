@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+// Test with actual Web3Forms API key from environment
+const WEB3FORMS_ACCESS_KEY = process.env.WEB3FORMS_ACCESS_KEY || '29a8504e-2d7e-44e2-8ec3-feaec6a03503';
+
 test.describe('Contact Form Integration', () => {
   test.describe('German Contact Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -52,20 +55,12 @@ test.describe('Contact Form Integration', () => {
     });
 
     test('should show success message on successful submission', async ({ page }) => {
-      // Mock the API response
-      await page.route('https://api.web3forms.com/submit', async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true })
-        });
-      });
-
+      // Test with real API using test access key
       // Fill out form
-      await page.fill('input[name="name"]', 'Test User');
-      await page.fill('input[name="email"]', 'test@example.com');
+      await page.fill('input[name="name"]', 'E2E Test User');
+      await page.fill('input[name="email"]', 'e2e-test@example.com');
       await page.fill('input[name="phone"]', '+49 123 456789');
-      await page.fill('textarea[name="message"]', 'Dies ist eine Testnachricht.');
+      await page.fill('textarea[name="message"]', 'Dies ist eine automatisierte E2E Testnachricht.');
       
       // Submit form
       await page.click('button[type="submit"]');
@@ -80,17 +75,13 @@ test.describe('Contact Form Integration', () => {
       await expect(page.locator('textarea[name="message"]')).toHaveValue('');
     });
 
-    test('should show error message on failed submission', async ({ page }) => {
-      // Mock the API error response
-      await page.route('https://api.web3forms.com/submit', async route => {
-        await route.fulfill({
-          status: 400,
-          contentType: 'application/json',
-          body: JSON.stringify({ 
-            success: false, 
-            message: 'Invalid access key' 
-          })
-        });
+    test('should show error message for invalid access key', async ({ page }) => {
+      // Override access key with invalid one
+      await page.evaluate(() => {
+        const accessKeyInput = document.querySelector('input[name="access_key"]') as HTMLInputElement;
+        if (accessKeyInput) {
+          accessKeyInput.value = 'invalid-key-12345';
+        }
       });
 
       // Fill out form
@@ -102,36 +93,45 @@ test.describe('Contact Form Integration', () => {
       await page.click('button[type="submit"]');
       
       // Check error message
-      await expect(page.locator('#form-result')).toContainText('Invalid access key');
+      await expect(page.locator('#form-result')).toContainText('Konfigurationsfehler: Der Web3Forms Access Key ist ungültig');
       await expect(page.locator('#form-result')).toHaveClass(/text-red-600/);
     });
 
     test('should show loading state during submission', async ({ page }) => {
-      // Mock slow API response
-      await page.route('https://api.web3forms.com/submit', async route => {
-        await page.waitForTimeout(1000); // Simulate delay
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true })
-        });
-      });
-
       // Fill out form
       await page.fill('input[name="name"]', 'Test User');
       await page.fill('input[name="email"]', 'test@example.com');
       await page.fill('textarea[name="message"]', 'Test message');
       
-      // Submit form
-      await page.click('button[type="submit"]');
+      // Submit form and immediately check loading state
+      const submitPromise = page.click('button[type="submit"]');
       
-      // Check loading state
-      await expect(page.locator('button[type="submit"]')).toContainText('Wird gesendet...');
+      // Check loading state appears quickly
+      await expect(page.locator('button[type="submit"]')).toContainText('Wird gesendet...', { timeout: 1000 });
       await expect(page.locator('button[type="submit"]')).toBeDisabled();
       
-      // Wait for completion
+      // Wait for submission to complete
+      await submitPromise;
+      
+      // Wait for button to return to normal state
       await expect(page.locator('button[type="submit"]')).toContainText('Nachricht senden');
       await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    });
+
+    test('should display warning if access key not configured', async ({ page }) => {
+      // Create a new page with no access key
+      await page.addInitScript(() => {
+        // Override the access key to simulate missing configuration
+        (window as any).__WEB3FORMS_ACCESS_KEY_OVERRIDE = 'YOUR_ACCESS_KEY_HERE';
+      });
+      
+      await page.goto('/contact');
+      
+      // Check for warning message
+      const warning = page.locator('.bg-yellow-50');
+      await expect(warning).toBeVisible();
+      await expect(warning).toContainText('Kontaktformular nicht konfiguriert');
+      await expect(warning).toContainText('WEB3FORMS_ACCESS_KEY');
     });
   });
 
@@ -165,19 +165,10 @@ test.describe('Contact Form Integration', () => {
     });
 
     test('should show English success message', async ({ page }) => {
-      // Mock the API response
-      await page.route('https://api.web3forms.com/submit', async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true })
-        });
-      });
-
       // Fill out form
-      await page.fill('input[name="name"]', 'Test User');
-      await page.fill('input[name="email"]', 'test@example.com');
-      await page.fill('textarea[name="message"]', 'This is a test message.');
+      await page.fill('input[name="name"]', 'E2E Test User');
+      await page.fill('input[name="email"]', 'e2e-test@example.com');
+      await page.fill('textarea[name="message"]', 'This is an automated E2E test message.');
       
       // Submit form
       await page.click('button[type="submit"]');
@@ -185,23 +176,36 @@ test.describe('Contact Form Integration', () => {
       // Check success message
       await expect(page.locator('#form-result')).toContainText('Thank you! Your message has been sent successfully.');
       
-      // Check loading state text
+      // Test loading state on second submission
       await page.fill('input[name="name"]', 'Another Test');
       await page.fill('input[name="email"]', 'another@example.com');
       await page.fill('textarea[name="message"]', 'Another message');
       
-      // Mock slow response
-      await page.route('https://api.web3forms.com/submit', async route => {
-        await page.waitForTimeout(500);
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true })
-        });
+      const submitPromise = page.click('button[type="submit"]');
+      await expect(page.locator('button[type="submit"]')).toContainText('Sending...', { timeout: 1000 });
+      await submitPromise;
+    });
+
+    test('should show English error message for invalid key', async ({ page }) => {
+      // Override access key with invalid one
+      await page.evaluate(() => {
+        const accessKeyInput = document.querySelector('input[name="access_key"]') as HTMLInputElement;
+        if (accessKeyInput) {
+          accessKeyInput.value = 'invalid-english-key';
+        }
       });
+
+      // Fill out form
+      await page.fill('input[name="name"]', 'Test User');
+      await page.fill('input[name="email"]', 'test@example.com');
+      await page.fill('textarea[name="message"]', 'Test message');
       
+      // Submit form
       await page.click('button[type="submit"]');
-      await expect(page.locator('button[type="submit"]')).toContainText('Sending...');
+      
+      // Check error message
+      await expect(page.locator('#form-result')).toContainText('Configuration error: Invalid Web3Forms access key');
+      await expect(page.locator('#form-result')).toHaveClass(/text-red-600/);
     });
   });
 
