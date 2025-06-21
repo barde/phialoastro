@@ -49,6 +49,7 @@
     "axe-playwright": "^2.1.0",
     "concurrently": "^9.1.2",
     "jsdom": "^26.1.0",
+    "rollup-plugin-visualizer": "^6.0.3",
     "vitest": "^3.2.3"
   }
 }
