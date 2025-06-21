@@ -12,15 +12,6 @@ vi.mock('../../../components/layout/LanguageSelector.astro', () => ({
   default: () => <div data-testid="language-selector">Language Selector</div>
 }));
 
-vi.mock('../../../components/common/ThemeToggle', () => ({
-  default: ({ size }: { size?: string }) => (
-    <button data-testid="theme-toggle" data-size={size}>Theme Toggle</button>
-  )
-}));
-
-vi.mock('../../../components/common/ThemeWrapper', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>
-}));
 
 // We'll need to create a testable version of the Header component
 // since the actual Header is an Astro component
@@ -54,7 +45,6 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
           {/* Desktop Navigation */}
           <div className="flex items-center space-x-4">
             <nav data-testid="navigation">Navigation</nav>
-            <button data-testid="theme-toggle" data-size="sm">Theme Toggle</button>
             <div data-testid="language-selector">Language Selector</div>
           </div>
 
@@ -139,15 +129,6 @@ describe('Header', () => {
     });
   });
 
-  describe('Theme Toggle Integration', () => {
-    it('should render theme toggle button', () => {
-      render(<Header />);
-      
-      const themeToggle = screen.getByTestId('theme-toggle');
-      expect(themeToggle).toBeInTheDocument();
-      expect(themeToggle).toHaveAttribute('data-size', 'sm');
-    });
-  });
 
   describe('Language Selector Integration', () => {
     it('should render language selector', () => {
