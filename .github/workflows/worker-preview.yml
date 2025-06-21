@@ -1,6 +1,7 @@
+---
 name: Deploy Worker Preview
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -11,10 +12,11 @@ on:
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
+    environment: cloudflare
     permissions:
       pull-requests: write
       contents: read
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,28 +49,73 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # Check if Cloudflare secrets are configured
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is not configured"
+            echo "::notice::Add CLOUDFLARE_API_TOKEN to repo secrets"
+            echo ""
+            echo "To fix this issue:"
+            echo "1. Go to repo settings > Secrets and variables > Actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: CLOUDFLARE_API_TOKEN"
+            echo "4. Value: Your Cloudflare API token"
+            echo ""
+            echo "To create a Cloudflare API token:"
+            echo "- Visit https://dash.cloudflare.com/profile/api-tokens"
+            echo "- Create token with these permissions:"
+            echo "  - Workers Scripts:Edit"
+            echo "  - Workers KV Storage:Edit"
+            exit 1
+          fi
+
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID secret is not configured"
+            echo "::notice::Add CLOUDFLARE_ACCOUNT_ID to repo secrets"
+            echo ""
+            echo "To fix this issue:"
+            echo "1. Go to repo settings > Secrets and variables > Actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: CLOUDFLARE_ACCOUNT_ID"
+            echo "4. Value: Your Cloudflare Account ID"
+            echo ""
+            echo "To find your Account ID:"
+            echo "- Visit https://dash.cloudflare.com/"
+            echo "- Select your account"
+            echo "- Find the Account ID in the right sidebar"
+            exit 1
+          fi
           # Get the branch name from the PR
           BRANCH_NAME="${{ github.head_ref }}"
-          
+
+          echo "Starting deployment..."
           # Deploy to preview environment and capture output
-          DEPLOY_OUTPUT=$(npx wrangler deploy --env preview 2>&1)
+          DEPLOY_OUTPUT=$(npx wrangler deploy --env preview 2>&1) || {
+            echo "Deployment failed with exit code: $?"
+            echo "Output:"
+            echo "$DEPLOY_OUTPUT"
+            exit 1
+          }
+          echo "Deployment output:"
           echo "$DEPLOY_OUTPUT"
-          
+
           # Extract the deployment URL from the output
-          # Wrangler outputs: "Deployed phialo-design-preview triggers (X.XX sec)"
-          # followed by the URL on the next line
-          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -E "https://.*workers\.dev" | tail -1 | tr -d '[:space:]')
-          
+          # Wrangler outputs: "Deployed phialo-design-preview triggers
+          # (X.XX sec)" followed by the URL on the next line
+          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | \
+            grep -E "https://.*workers\.dev" | tail -1 | tr -d '[:space:]')
+
           # If we couldn't extract the URL, use default pattern
           if [ -z "$PREVIEW_URL" ]; then
+            echo "Failed to extract URL from output, using default pattern"
             # Try to get subdomain from account ID
             SUBDOMAIN=$(echo "$CLOUDFLARE_ACCOUNT_ID" | cut -c1-8)
             PREVIEW_URL="https://phialo-design-preview.${SUBDOMAIN}.workers.dev"
           fi
-          
+
+          echo "Extracted preview URL: ${PREVIEW_URL}"
           echo "preview_url=${PREVIEW_URL}" >> $GITHUB_OUTPUT
           echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-          
+
           # Verify deployment succeeded
           if [ -z "$PREVIEW_URL" ]; then
             echo "::error::Failed to extract preview URL from deployment output"
@@ -77,13 +124,30 @@ jobs:
 
       - name: Verify deployment
         run: |
-          echo "Testing preview URL: ${{ steps.deploy.outputs.preview_url }}"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.preview_url }}")
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "::error::Preview deployment returned HTTP $HTTP_CODE"
-            exit 1
-          fi
-          echo "✅ Preview deployment is accessible (HTTP $HTTP_CODE)"
+          PREVIEW_URL="${{ steps.deploy.outputs.preview_url }}"
+          echo "Testing preview URL: $PREVIEW_URL"
+          
+          # Retry logic to handle propagation delays
+          MAX_RETRIES=5
+          RETRY_DELAY=3
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL")
+            
+            if [ "$HTTP_CODE" -eq 200 ]; then
+              echo "✅ Preview deployment is accessible (HTTP $HTTP_CODE)"
+              exit 0
+            else
+              echo "Attempt $i/$MAX_RETRIES: HTTP $HTTP_CODE"
+              if [ $i -lt $MAX_RETRIES ]; then
+                echo "Waiting ${RETRY_DELAY}s before retry..."
+                sleep $RETRY_DELAY
+              fi
+            fi
+          done
+          
+          echo "::error::Preview deployment returned HTTP $HTTP_CODE after $MAX_RETRIES attempts"
+          exit 1
 
       - name: Comment on PR
         uses: actions/github-script@v7
@@ -93,7 +157,7 @@ jobs:
             const branch_name = '${{ steps.deploy.outputs.branch_name }}';
             const pr_number = context.issue.number;
             const sha = context.sha.substring(0, 7);
-            
+
             // Find existing comment
             let botComment = null;
             try {
@@ -102,49 +166,50 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: pr_number,
               });
-              
-              botComment = comments.data.find(comment => 
-                comment.user && comment.user.type === 'Bot' && 
-                comment.body && comment.body.includes('Cloudflare Workers Preview')
+
+              botComment = comments.data.find(comment =>
+                comment.user && comment.user.type === 'Bot' &&
+                comment.body &&
+                comment.body.includes('Cloudflare Workers Preview')
               );
             } catch (error) {
               console.log('Could not fetch existing comments:', error.message);
             }
-            
+
             const body = `### 🚀 Cloudflare Workers Preview Deployed!
-            
-<table>
-<tr>
-<td><strong>🔗 Preview URL</strong></td>
-<td><a href="${preview_url}">${preview_url}</a></td>
-</tr>
-<tr>
-<td><strong>🌿 Branch</strong></td>
-<td><code>${branch_name}</code></td>
-</tr>
-<tr>
-<td><strong>📝 Commit</strong></td>
-<td><code>${sha}</code></td>
-</tr>
-<tr>
-<td><strong>🕐 Deployed</strong></td>
-<td>${new Date().toUTCString()}</td>
-</tr>
-</table>
 
----
+            <table>
+            <tr>
+            <td><strong>🔗 Preview URL</strong></td>
+            <td><a href="${preview_url}">${preview_url}</a></td>
+            </tr>
+            <tr>
+            <td><strong>🌿 Branch</strong></td>
+            <td><code>${branch_name}</code></td>
+            </tr>
+            <tr>
+            <td><strong>📝 Commit</strong></td>
+            <td><code>${sha}</code></td>
+            </tr>
+            <tr>
+            <td><strong>🕐 Deployed</strong></td>
+            <td>${new Date().toUTCString()}</td>
+            </tr>
+            </table>
 
-<details>
-<summary>ℹ️ <strong>Preview Information</strong></summary>
+            ---
 
-- 🔄 This preview will be automatically updated on each commit
-- 🌍 The preview runs on Cloudflare's global edge network
-- 🔒 Security headers and CSP policies are active
-- 💾 Edge caching is enabled for optimal performance
-- 🐛 Check browser DevTools for any console errors
+            <details>
+            <summary>ℹ️ <strong>Preview Information</strong></summary>
 
-</details>`;
-            
+            - 🔄 This preview will be automatically updated on each commit
+            - 🌍 The preview runs on Cloudflare's global edge network
+            - 🔒 Security headers and CSP policies are active
+            - 💾 Edge caching is enabled for optimal performance
+            - 🐛 Check browser DevTools for any console errors
+
+            </details>`;
+
             if (botComment) {
               // Update existing comment
               await github.rest.issues.updateComment({
