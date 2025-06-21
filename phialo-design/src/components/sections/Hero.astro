@@ -39,12 +39,12 @@ const t = isEnglish ? content.en : content.de;
   <!-- Background -->
   <div class="hero-bg absolute inset-0">
     <!-- Gradient overlay -->
-    <div class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/80 to-white/90 z-10"></div>      <!-- Profile image from old site -->
+    <div class="absolute inset-0 bg-gradient-to-br from-theme-background/95 via-theme-background/80 to-theme-background/90 z-10"></div>      <!-- Profile image from old site -->
     <div 
       class="hero-jewelry absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 opacity-30"
       data-parallax="0.3"
     >
-      <img src="/images/profile.png" alt="Phialo Design Profile" class="w-full h-full object-contain animate-float" />
+      <img src="/images/profile.png" alt="Phialo Design Profile" class="w-full h-full object-contain" />
     </div>
     
     <!-- Subtle pattern overlay -->
@@ -53,18 +53,18 @@ const t = isEnglish ? content.en : content.de;
   
   <!-- Content -->
   <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">    <AnimatedText client:load>
-      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-midnight mb-8 leading-tight">
+      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-theme-text-primary mb-8 leading-tight">
         {t.title.line1}
-        <span class="text-gold block md:inline"> {t.title.line2}</span>
+        <span class="text-theme-accent block md:inline"> {t.title.line2}</span>
         {t.title.line3}
       </h1>
     </AnimatedText>
     
     <div class="hero-subtext animate-fade-in-delay-1">
-      <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+      <p class="text-lg md:text-xl text-theme-text-secondary mb-6 max-w-2xl mx-auto leading-relaxed">
         {t.subtitle}
       </p>
-      <p class="text-lg md:text-xl text-midnight mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+      <p class="text-lg md:text-xl text-theme-text-primary mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
         <strong>kontakt@phialo.de</strong>
       </p>
     </div>
@@ -73,7 +73,7 @@ const t = isEnglish ? content.en : content.de;
         href={t.portfolioUrl} 
         variant="ghost"
         size="lg"
-        class="group magnetic-cursor"
+        class="group"
       >
         {t.cta}
         <svg 
@@ -95,8 +95,8 @@ const t = isEnglish ? content.en : content.de;
     
     <!-- Scroll indicator -->
     <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <div class="w-6 h-10 border-2 border-gray-300 rounded-full flex justify-center">
-        <div class="w-1 h-3 bg-gray-300 rounded-full mt-2 animate-pulse"></div>
+      <div class="w-6 h-10 border-2 border-theme-border rounded-full flex justify-center">
+        <div class="w-1 h-3 bg-theme-border rounded-full mt-2 animate-pulse"></div>
       </div>
     </div>
   </div>
@@ -105,11 +105,6 @@ const t = isEnglish ? content.en : content.de;
 <style>
   .hero {
     background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-  }
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(5deg); }
   }
   
   @keyframes fade-in-up {
@@ -123,32 +118,16 @@ const t = isEnglish ? content.en : content.de;
     }
   }
   
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  
   .animate-fade-in-delay-1 {
     animation: fade-in-up 0.8s ease-out 0.3s both;
   }
-    .animate-fade-in-delay-2 {
+  
+  .animate-fade-in-delay-2 {
     animation: fade-in-up 0.8s ease-out 0.6s both;
   }
   
   .animate-fade-in-delay-3 {
     animation: fade-in-up 0.8s ease-out 1.5s both;
-  }
-
-  .magnetic-cursor {
-    transition: transform 0.3s ease-out;
-  }
-
-  .magnetic-cursor:hover {
-    transform: scale(1.05);
-  }
-  
-  /* Subtle parallax effect */
-  .hero-jewelry {
-    animation: float 8s ease-in-out infinite;
   }
   
   /* Ensure hero takes up full viewport on mobile */
@@ -159,47 +138,3 @@ const t = isEnglish ? content.en : content.de;
   }
 </style>
 
-<script>
-  // Parallax effect for hero background
-  function initHeroParallax() {
-    const hero = document.querySelector('.hero');
-    const jewelry = document.querySelector('.hero-jewelry');
-    
-    if (!hero || !jewelry) return;
-    
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const heroHeight = hero.clientHeight;
-      const scrollPercent = scrollY / heroHeight;
-      
-      if (scrollPercent <= 1) {
-        // Subtle parallax movement
-        jewelry.style.transform = `translate(-50%, -50%) translateY(${scrollY * 0.3}px) rotate(${scrollY * 0.05}deg)`;
-      }
-    };
-    
-    // Throttle scroll events
-    let ticking = false;
-    const throttledScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    
-    window.addEventListener('scroll', throttledScroll, { passive: true });
-  }
-  
-  // Initialize on page load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeroParallax);
-  } else {
-    initHeroParallax();
-  }
-  
-  // Re-initialize on page transitions
-  document.addEventListener('astro:page-load', initHeroParallax);
-</script>

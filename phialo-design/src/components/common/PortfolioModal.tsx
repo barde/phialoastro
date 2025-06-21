@@ -26,11 +26,19 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isEnglish, setIsEnglish] = useState(false);
+  // Language detection - check immediately to avoid flash of wrong language
+  const getIsEnglish = () => {
+    if (typeof window !== 'undefined' && window.location) {
+      return window.location.pathname.startsWith('/en/');
+    }
+    return false; // Default to German
+  };
 
-  // Language detection
+  const [isEnglish, setIsEnglish] = useState(getIsEnglish);
+
+  // Update language if location changes
   useEffect(() => {
-    setIsEnglish(window.location.pathname.startsWith('/en/'));
+    setIsEnglish(getIsEnglish());
   }, []);
 
   // Translations
