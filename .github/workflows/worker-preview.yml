@@ -48,6 +48,39 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # Check if Cloudflare secrets are configured
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is not configured"
+            echo "::notice::Add CLOUDFLARE_API_TOKEN to repo secrets"
+            echo ""
+            echo "To fix this issue:"
+            echo "1. Go to repo settings > Secrets and variables > Actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: CLOUDFLARE_API_TOKEN"
+            echo "4. Value: Your Cloudflare API token"
+            echo ""
+            echo "To create a Cloudflare API token:"
+            echo "- Visit https://dash.cloudflare.com/profile/api-tokens"
+            echo "- Create token with Workers Scripts:Edit permission"
+            exit 1
+          fi
+
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID secret is not configured"
+            echo "::notice::Add CLOUDFLARE_ACCOUNT_ID to repo secrets"
+            echo ""
+            echo "To fix this issue:"
+            echo "1. Go to repo settings > Secrets and variables > Actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: CLOUDFLARE_ACCOUNT_ID"
+            echo "4. Value: Your Cloudflare Account ID"
+            echo ""
+            echo "To find your Account ID:"
+            echo "- Visit https://dash.cloudflare.com/"
+            echo "- Select your account"
+            echo "- Find the Account ID in the right sidebar"
+            exit 1
+          fi
           # Get the branch name from the PR
           BRANCH_NAME="${{ github.head_ref }}"
 

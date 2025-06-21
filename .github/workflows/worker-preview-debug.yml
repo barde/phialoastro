@@ -1,0 +1,32 @@
+---
+name: Debug Worker Preview
+
+'on':
+  workflow_dispatch:
+
+jobs:
+  debug-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Cloudflare secrets
+        run: |
+          echo "Checking CLOUDFLARE_API_TOKEN..."
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "❌ CLOUDFLARE_API_TOKEN is not set"
+          else
+            echo "✅ CLOUDFLARE_API_TOKEN is set (length: ${#CLOUDFLARE_API_TOKEN})"
+          fi
+          
+          echo ""
+          echo "Checking CLOUDFLARE_ACCOUNT_ID..."
+          if [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "❌ CLOUDFLARE_ACCOUNT_ID is not set"
+          else
+            echo "✅ CLOUDFLARE_ACCOUNT_ID is set (length: ${#CLOUDFLARE_ACCOUNT_ID})"
+          fi
+          
+          echo ""
+          echo "Summary:"
+          echo "- Repository: ${{ github.repository }}"
+          echo "- Actor: ${{ github.actor }}"
+          echo "- Event: ${{ github.event_name }}"
