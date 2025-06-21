@@ -1,36 +1,53 @@
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
 import { getMimeType } from '../utils/mime';
+
+// @ts-expect-error
+import manifestJSON from '__STATIC_CONTENT_MANIFEST';
+const assetManifest = JSON.parse(manifestJSON);
 
 export async function handleStatic(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
-  let pathname = url.pathname;
-  
-  // Default to index.html for directory requests
-  if (pathname === '/') {
-    pathname = '/index.html';
-  } else if (!pathname.includes('.') && !pathname.endsWith('/')) {
-    // Try adding .html extension for clean URLs
-    pathname = `${pathname}.html`;
-  }
   
   try {
-    // Use the ASSETS binding provided by Wrangler/Workers Sites
-    const asset = await env.ASSETS.fetch(new Request(new URL(pathname, url.origin).toString()));
-    
-    if (!asset || !asset.ok) {
-      // Try without .html extension if it was added
-      if (pathname.endsWith('.html') && !url.pathname.endsWith('.html')) {
-        const originalAsset = await env.ASSETS.fetch(new Request(url.toString()));
-        if (originalAsset && originalAsset.ok) {
-          return handleAssetResponse(originalAsset, pathname);
+    // Configure asset handling options
+    const options = {
+      ASSET_NAMESPACE: env.__STATIC_CONTENT,
+      ASSET_MANIFEST: assetManifest,
+      mapRequestToAsset: (req: Request) => {
+        const url = new URL(req.url);
+        let pathname = url.pathname;
+        
+        // Default to index.html for directory requests
+        if (pathname === '/') {
+          pathname = '/index.html';
+        } else if (pathname.endsWith('/')) {
+          pathname = pathname + 'index.html';
+        } else if (!pathname.includes('.')) {
+          // Check if it's a directory by looking for index.html
+          pathname = pathname + '/index.html';
         }
-      }
-      
-      // Return 404 page
-      return handle404(env, url);
+        
+        url.pathname = pathname;
+        return new Request(url.toString(), req);
+      },
+    };
+    
+    // Get the asset from KV
+    const response = await getAssetFromKV(
+      {
+        request,
+        waitUntil: ctx.waitUntil.bind(ctx),
+      },
+      options
+    );
+    
+    return handleAssetResponse(response, url.pathname);
+  } catch (error: any) {
+    // Handle 404 errors
+    if (error.status === 404) {
+      return handle404(env, url, ctx);
     }
     
-    return handleAssetResponse(asset, pathname);
-  } catch (error) {
     console.error('Error serving static asset:', error);
     return new Response('Internal Server Error', { status: 500 });
   }
@@ -61,13 +78,23 @@ function handleAssetResponse(response: Response, pathname: string): Response {
   });
 }
 
-async function handle404(env: any, url: URL): Promise<Response> {
+async function handle404(env: any, url: URL, ctx: ExecutionContext): Promise<Response> {
   try {
-    const notFoundResponse = await env.ASSETS.fetch(
-      new Request(new URL('/404.html', url.origin).toString())
+    const options = {
+      ASSET_NAMESPACE: env.__STATIC_CONTENT,
+      ASSET_MANIFEST: assetManifest,
+    };
+    
+    const request = new Request(new URL('/404.html', url.origin).toString());
+    const notFoundResponse = await getAssetFromKV(
+      {
+        request,
+        waitUntil: ctx.waitUntil.bind(ctx),
+      },
+      options
     );
     
-    if (notFoundResponse && notFoundResponse.ok) {
+    if (notFoundResponse) {
       return new Response(notFoundResponse.body, {
         status: 404,
         headers: notFoundResponse.headers,
