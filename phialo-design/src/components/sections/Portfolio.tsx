@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, useInView, type Variants } from 'framer-motion';
 import PortfolioGrid from '../portfolio/PortfolioGrid';
 import PortfolioFilter from '../portfolio/PortfolioFilter';
@@ -350,8 +350,8 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  // Get portfolio items with correct language
-  const portfolioItems = getPortfolioItems(actualLang);
+  // Get portfolio items with correct language using useMemo to recalculate when language changes
+  const portfolioItems = useMemo(() => getPortfolioItems(actualLang), [actualLang]);
   
   useEffect(() => {
     if (activeFilter === 'all') {
@@ -359,7 +359,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
     } else {
       setFilteredItems(portfolioItems.filter(item => item.category === activeFilter));
     }
-  }, [activeFilter, actualLang]);
+  }, [activeFilter, portfolioItems]);
 
   const handleItemClick = (item: PortfolioItemData) => {
     setSelectedItem(item);
