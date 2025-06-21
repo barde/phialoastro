@@ -4,7 +4,8 @@ import AnimatedText from '../components/common/AnimatedText.tsx';
 import Button from '../components/common/Button.astro';
 
 // Web3Forms access key - in production, use environment variable
-const WEB3FORMS_ACCESS_KEY = import.meta.env.WEB3FORMS_ACCESS_KEY || 'YOUR_ACCESS_KEY_HERE';
+// Note: In Astro, client-accessible env vars must be prefixed with PUBLIC_
+const WEB3FORMS_ACCESS_KEY = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY || import.meta.env.WEB3FORMS_ACCESS_KEY || 'YOUR_ACCESS_KEY_HERE';
 
 // Check if access key is properly configured
 const isAccessKeyConfigured = WEB3FORMS_ACCESS_KEY && WEB3FORMS_ACCESS_KEY !== 'YOUR_ACCESS_KEY_HERE';
