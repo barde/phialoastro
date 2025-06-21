@@ -204,9 +204,15 @@ wrangler deployments list
 - [ ] Set up monitoring and alerts
 - [ ] Implement edge-side includes for dynamic content
 
+## Documentation
+
+- [📚 Deployment Guide](../docs/DEPLOYMENT_GUIDE.md) - Complete setup and deployment instructions
+- [⚡ Quick Reference](../docs/DEPLOYMENT_QUICK_REFERENCE.md) - Common commands and tasks
+- [🔐 Cloudflare Setup](../docs/CLOUDFLARE_SETUP.md) - GitHub secrets configuration
+
 ## Resources
 
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Wrangler CLI Reference](https://developers.cloudflare.com/workers/wrangler/)
 - [Workers Sites Guide](https://developers.cloudflare.com/workers/platform/sites/)
-- [Issue #32: Migration Details](https://github.com/owner/repo/issues/32)
+- [Issue #32: Migration Details](https://github.com/barde/phialoastro/issues/32)
