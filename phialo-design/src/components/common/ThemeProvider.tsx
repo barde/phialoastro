@@ -61,10 +61,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const root = document.documentElement;
     
     // Remove existing theme classes
-    root.classList.remove('theme-light', 'theme-dark');
+    root.classList.remove('dark');
     
-    // Add new theme class
-    root.classList.add(`theme-${theme}`);
+    // Add dark class if dark theme
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    }
     
     // Set data attribute for CSS selectors
     root.setAttribute('data-theme', theme);

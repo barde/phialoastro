@@ -27,7 +27,7 @@
   --color-glass-border: rgba(229, 231, 235, 0.5);
 }
 
-.dark {
+:root.dark {
   /* Background colors */
   --color-theme-background: #0A192F;
   --color-theme-background-secondary: #112240;
@@ -88,32 +88,32 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.dark {
+:root.dark {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 /* Update scrollbar for dark theme */
-.dark ::-webkit-scrollbar-track {
+:root.dark ::-webkit-scrollbar-track {
   background: var(--color-theme-surface);
 }
 
-.dark ::-webkit-scrollbar-thumb {
+:root.dark ::-webkit-scrollbar-thumb {
   background: var(--color-theme-border);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
+:root.dark ::-webkit-scrollbar-thumb:hover {
   background: var(--color-theme-surface-hover);
 }
 
 /* Update selection colors for dark theme */
-.dark ::selection {
+:root.dark ::selection {
   background: var(--color-theme-accent);
   color: var(--color-theme-accent-text);
 }
 
-.dark ::-moz-selection {
+:root.dark ::-moz-selection {
   background: var(--color-theme-accent);
   color: var(--color-theme-accent-text);
 }
