@@ -14,7 +14,7 @@ const ThemeToggleSimple: React.FC<ThemeToggleSimpleProps> = ({
 
   useEffect(() => {
     // Get initial theme from DOM
-    const currentTheme = document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light';
+    const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     setTheme(currentTheme);
     setMounted(true);
   }, []);
@@ -23,12 +23,14 @@ const ThemeToggleSimple: React.FC<ThemeToggleSimpleProps> = ({
     const newTheme = theme === 'light' ? 'dark' : 'light';
     
     // Update DOM
-    document.documentElement.classList.remove('theme-light', 'theme-dark');
-    document.documentElement.classList.add(`theme-${newTheme}`);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     
     // Save to localStorage
-    localStorage.setItem('phialo-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
     
     // Update state
     setTheme(newTheme);
