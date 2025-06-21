@@ -14,7 +14,12 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name phialo-design",
-    "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview"
+    "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview",
+    "worker:dev": "cd ../workers && npm run dev",
+    "worker:deploy": "cd ../workers && npm run deploy",
+    "worker:deploy:preview": "cd ../workers && npm run deploy:preview",
+    "worker:deploy:production": "cd ../workers && npm run deploy:production",
+    "dev:full": "concurrently \"npm run dev\" \"npm run worker:dev\""
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
@@ -42,6 +47,7 @@
     "@vitejs/plugin-react": "^4.5.2",
     "@vitest/ui": "^3.2.3",
     "axe-playwright": "^2.1.0",
+    "concurrently": "^9.1.2",
     "jsdom": "^26.1.0",
     "vitest": "^3.2.3"
   }
