@@ -14,7 +14,10 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name phialo-design",
-    "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview"
+    "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview",
+    "deploy:worker": "npm run build && cd workers && npx wrangler deploy",
+    "deploy:worker:preview": "npm run build && cd workers && npx wrangler deploy --env preview",
+    "dev:worker": "cd workers && npx wrangler dev"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
