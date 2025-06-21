@@ -117,3 +117,11 @@ Tailwind configuration includes:
 ## CLI Tools
 
 - Use the `gh` command as a pre auth CLI command for github topics like issues, configuring agents
+
+## GitHub Workflow
+
+- Always solve issues from GitHub in branches and make PRs
+
+## Browser Automation
+
+- Use playwright and **NEVER** use pupeteer or other browser automation tools
