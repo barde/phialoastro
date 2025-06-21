@@ -6,9 +6,13 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",    "test": "vitest",
+    "astro": "astro",
+    "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name phialo-design",
     "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview"
   },
@@ -31,10 +35,12 @@
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@vitejs/plugin-react": "^4.5.2",
     "@vitest/ui": "^3.2.3",
+    "axe-playwright": "^2.1.0",
     "jsdom": "^26.1.0",
     "vitest": "^3.2.3"
   }
