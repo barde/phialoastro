@@ -27,12 +27,24 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const isEnglish = lang === 'en';
+  
+  // Detect language from URL during hydration
+  const detectLanguageFromURL = () => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      return pathname.startsWith('/en') ? 'en' : 'de';
+    }
+    return lang;
+  };
+  
+  const detectedLang = detectLanguageFromURL();
+  const isEnglish = detectedLang === 'en';
   
   // Debug logging
   if (typeof window !== 'undefined' && portfolioItem) {
     console.log('PortfolioModal Debug:', {
-      lang,
+      propLang: lang,
+      detectedLang,
       isEnglish,
       category: portfolioItem.category,
       pathname: window.location.pathname
