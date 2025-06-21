@@ -46,3 +46,6 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# Test results
+phialo-design/test-results/
