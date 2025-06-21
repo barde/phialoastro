@@ -90,8 +90,15 @@ jobs:
           # Get the branch name from the PR
           BRANCH_NAME="${{ github.head_ref }}"
 
+          echo "Starting deployment..."
           # Deploy to preview environment and capture output
-          DEPLOY_OUTPUT=$(npx wrangler deploy --env preview 2>&1)
+          DEPLOY_OUTPUT=$(npx wrangler deploy --env preview 2>&1) || {
+            echo "Deployment failed with exit code: $?"
+            echo "Output:"
+            echo "$DEPLOY_OUTPUT"
+            exit 1
+          }
+          echo "Deployment output:"
           echo "$DEPLOY_OUTPUT"
 
           # Extract the deployment URL from the output
