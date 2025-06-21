@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, useInView, type Variants } from 'framer-motion';
+import { motion, useInView, type Variants } from '../../lib/framer-motion';
 import PortfolioGrid from '../portfolio/PortfolioGrid';
 import PortfolioFilter from '../portfolio/PortfolioFilter';
 import PortfolioModal from '../common/PortfolioModal';
