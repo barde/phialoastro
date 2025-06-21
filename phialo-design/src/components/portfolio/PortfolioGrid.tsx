@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '../../lib/framer-motion';
 import PortfolioItem from './PortfolioItem';
 import type { PortfolioItemData } from '../sections/Portfolio';
 
