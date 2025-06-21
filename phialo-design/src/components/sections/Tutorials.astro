@@ -23,59 +23,128 @@ const content = {
 
 const t = isEnglish ? content.en : content.de;
 
-const tutorials = [
-  {
-    id: 1,
-    title: 'Lern Blender - 3D Design für absolute Anfänger',
-    description: 'Lernen Sie Blender 3D Design von Grund auf. Ein umfassender Kurs für absolute Anfänger auf Deutsch.',
-    image: '/images/Thumbnaildeutscherkurs.jpg',
-    duration: 'Mehrere Stunden',
-    category: 'Deutsch - Anfängerniveau',
-    featured: true,
-    link: 'https://skl.sh/3F2b3lj'
-  },
-  {
-    id: 2,
-    title: 'From Sketch To Model - Design for 3D Printing with Blender',
-    description: 'Transform your creative sketches into professional 3D models ready for printing.',
-    image: '/images/thumbnailSkillshare.jpg',
-    duration: 'Several hours',
-    category: 'English - Beginner',
-    featured: true,
-    link: 'https://skl.sh/2Xjn9BV'
-  },
-  {
-    id: 3,
-    title: 'Learn Blender - 3D Design for Absolute Beginners',
-    description: 'Master Blender 3D design from scratch. Available on Skillshare or direct purchase.',
-    image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
-    duration: 'Several hours',
-    category: 'English - Beginner',
-    featured: true,
-    link: 'https://skl.sh/3xw8S77',
-    directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
-  },
-  {
-    id: 4,
-    title: 'Learn All About Curves And Create A Dazzling Ring Design',
-    description: 'Master Blender\'s curve tools to create stunning ring designs with flowing patterns.',
-    image: '/images/BlenderDazzlingDesigns.jpg',
-    duration: 'Several hours',
-    category: 'English - All Levels',
-    featured: true,
-    link: 'https://skl.sh/419ltwx'
-  },
-  {
-    id: 5,
-    title: 'Create Unique Surface Patterns With Textures',
-    description: 'Learn to create stunning, unique surface patterns using Blender\'s texture system.',
-    image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
-    duration: 'Several hours',
-    category: 'English - Intermediate',
-    featured: true,
-    link: 'https://skl.sh/4bMkx3o'
-  }
-];
+// Multilingual tutorials data
+const tutorialsData = {
+  de: [
+    {
+      id: 1,
+      title: 'Lern Blender - 3D Design für absolute Anfänger',
+      description: 'Lernen Sie Blender 3D Design von Grund auf. Ein umfassender Kurs für absolute Anfänger auf Deutsch.',
+      image: '/images/Thumbnaildeutscherkurs.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'Deutsch - Anfängerniveau',
+      language: 'de',
+      featured: true,
+      link: 'https://skl.sh/3F2b3lj'
+    },
+    {
+      id: 2,
+      title: 'Von der Skizze zum Modell - Design für 3D-Druck mit Blender (Englischsprachiger Kurs)',
+      description: 'Verwandeln Sie Ihre kreativen Skizzen in professionelle 3D-Modelle, die druckfertig sind.',
+      image: '/images/thumbnailSkillshare.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/2Xjn9BV'
+    },
+    {
+      id: 3,
+      title: 'Blender lernen - 3D Design für absolute Anfänger (Englischsprachiger Kurs)',
+      description: 'Beherrschen Sie Blender 3D-Design von Grund auf. Verfügbar auf Skillshare oder als Direktkauf.',
+      image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/3xw8S77',
+      directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
+    },
+    {
+      id: 4,
+      title: 'Alles über Kurven lernen und ein atemberaubendes Ringdesign erstellen (Englischsprachiger Kurs)',
+      description: 'Beherrschen Sie Blenders Kurven-Werkzeuge, um atemberaubende Ringdesigns mit fließenden Mustern zu erstellen.',
+      image: '/images/BlenderDazzlingDesigns.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'English - All Levels',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/419ltwx'
+    },
+    {
+      id: 5,
+      title: 'Einzigartige Oberflächenmuster mit Texturen erstellen (Englischsprachiger Kurs)',
+      description: 'Lernen Sie, mit Blenders Textursystem atemberaubende, einzigartige Oberflächenmuster zu erstellen.',
+      image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
+      duration: 'Mehrere Stunden',
+      category: 'English - Intermediate',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/4bMkx3o'
+    }
+  ],
+  en: [
+    {
+      id: 1,
+      title: 'Learn Blender - 3D Design for Absolute Beginners',
+      description: 'Learn Blender 3D design from scratch. A comprehensive course for absolute beginners in German.',
+      image: '/images/Thumbnaildeutscherkurs.jpg',
+      duration: 'Several hours',
+      category: 'German - Beginner Level',
+      language: 'de',
+      featured: true,
+      link: 'https://skl.sh/3F2b3lj'
+    },
+    {
+      id: 2,
+      title: 'From Sketch To Model - Design for 3D Printing with Blender',
+      description: 'Transform your creative sketches into professional 3D models ready for printing.',
+      image: '/images/thumbnailSkillshare.jpg',
+      duration: 'Several hours',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/2Xjn9BV'
+    },
+    {
+      id: 3,
+      title: 'Learn Blender - 3D Design for Absolute Beginners',
+      description: 'Master Blender 3D design from scratch. Available on Skillshare or direct purchase.',
+      image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
+      duration: 'Several hours',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/3xw8S77',
+      directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
+    },
+    {
+      id: 4,
+      title: 'Learn All About Curves And Create A Dazzling Ring Design',
+      description: 'Master Blender\'s curve tools to create stunning ring designs with flowing patterns.',
+      image: '/images/BlenderDazzlingDesigns.jpg',
+      duration: 'Several hours',
+      category: 'English - All Levels',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/419ltwx'
+    },
+    {
+      id: 5,
+      title: 'Create Unique Surface Patterns With Textures',
+      description: 'Learn to create stunning, unique surface patterns using Blender\'s texture system.',
+      image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
+      duration: 'Several hours',
+      category: 'English - Intermediate',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/4bMkx3o'
+    }
+  ]
+};
+
+// Select tutorials based on current language
+const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
 ---
 
 <section id="tutorials" class="py-20 bg-neutral-50">
@@ -101,12 +170,23 @@ const tutorials = [
             data-tutorial-id={tutorial.id}
           >
             <!-- Image -->
-            <div class="relative h-48 bg-neutral-200">              <img 
+            <div class="relative h-48 bg-neutral-200">
+              <img 
                 src={tutorial.image} 
                 alt={tutorial.title}
                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 loading="lazy"
               />
+              <!-- Language Badge -->
+              <div class="absolute top-3 right-3">
+                <span class={`inline-flex items-center justify-center w-10 h-10 rounded-full text-xs font-bold backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-110 ${
+                  tutorial.language === 'de' 
+                    ? 'bg-neutral-900/85 text-white border-2 border-white/30 hover:bg-neutral-900/95' 
+                    : 'bg-white/85 text-neutral-900 border-2 border-neutral-900/20 hover:bg-white/95'
+                }`}>
+                  {tutorial.language === 'de' ? 'DE' : 'EN'}
+                </span>
+              </div>
             </div>            <!-- Content -->
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
