@@ -180,7 +180,19 @@ interface PortfolioProps {
 }
 
 export default function Portfolio({ lang = 'de' }: PortfolioProps) {
-  const isEnglish = lang === 'en';
+  // Debug: Log the received props
+  if (typeof window !== 'undefined') {
+    console.log('Portfolio Component Mounted:', {
+      receivedLang: lang,
+      typeOfLang: typeof lang,
+      isArray: Array.isArray(lang),
+      rawValue: lang
+    });
+  }
+  
+  // Handle if lang is passed as an array (Astro serialization)
+  const actualLang = Array.isArray(lang) ? lang[1] : lang;
+  const isEnglish = actualLang === 'en';
   
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState(portfolioItems);
@@ -290,7 +302,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
               setSelectedItem(null);
             }}
             portfolioItem={selectedItem}
-            lang={lang}
+            lang={actualLang}
           />
         )}
       </div>
