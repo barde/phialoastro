@@ -2,6 +2,7 @@
 title: "Möbius-Skulptur"
 description: "Eine handschmeichelnde Skulptur, ein dreidimensionaler Möbius in Form eines Unendlichkeitszeichens mit verschiedenen, dem Kunden persönlich wichtigen Symbolen versehen."
 category: "sculptures"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/moebius.jpg"

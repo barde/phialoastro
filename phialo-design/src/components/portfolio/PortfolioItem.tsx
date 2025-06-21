@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLink, Eye } from 'lucide-react';
 import MagneticCursor from '../common/MagneticCursor';
 import type { PortfolioItemData } from '../sections/Portfolio';
@@ -9,6 +9,15 @@ interface PortfolioItemProps {
 }
 
 export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
+  const [isEnglish, setIsEnglish] = useState(false);
+
+  // Language detection
+  useEffect(() => {
+    setIsEnglish(window.location.pathname.startsWith('/en/'));
+  }, []);
+
+  // Translations
+  const detailsText = isEnglish ? 'Details' : 'Ansehen';
   return (
     <MagneticCursor>
       <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with proper scaling */}
@@ -32,7 +41,7 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
                 className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
               >
                 <Eye size={16} className="mr-2" />
-                Details
+                {detailsText}
               </button>
               <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
                 <ExternalLink size={16} />

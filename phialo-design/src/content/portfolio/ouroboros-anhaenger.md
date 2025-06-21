@@ -2,6 +2,7 @@
 title: "Ouroboros Anhänger"
 description: "Ouroboros-Anhänger in Silber, inspiriert von der Science-Fiction Serie 'Altered Carbon'. Die Schlange, die sich in den Schwanz beißt."
 category: "pendants"
+language: "de"
 price: "Verfügbar auf Shapeways"
 featured: true
 image: "/images/portfolio/ouroboros-freigestellt-refl.jpg"

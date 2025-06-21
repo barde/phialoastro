@@ -12,9 +12,15 @@ export interface Props {
   lang?: string;
 }
 
+// Default descriptions based on language
+const defaultDescriptions = {
+  de: "Phialo Design - Wo Schmuck auf Innovation trifft. 3D Design, individuelle Kreationen und Expertise in der Schmuckherstellung.",
+  en: "Phialo Design - Where jewelry meets innovation. 3D design, individual creations and expertise in jewelry manufacturing."
+};
+
 const {
   title,
-  description = "Phialo Design - Wo Schmuck auf Innovation trifft. 3D Design, individuelle Kreationen und Expertise in der Schmuckherstellung.",
+  description = defaultDescriptions[lang as keyof typeof defaultDescriptions] || defaultDescriptions.de,
   image = "/social/og-default.jpg",
   noindex = false,
   lang = "de"
@@ -22,6 +28,13 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL(image, Astro.url).href;
+
+// Generate alternate language URLs for hreflang
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+const basePath = isEnglish ? currentPath.replace(/^\/en/, '') || '/' : currentPath;
+const germanUrl = new URL(basePath, Astro.site).href;
+const englishUrl = new URL('/en' + basePath, Astro.site).href;
 ---
 
 <!DOCTYPE html>
@@ -61,7 +74,10 @@ const socialImageURL = new URL(image, Astro.url).href;
       extend={{
         link: [
           { rel: "icon", href: "/favicon.ico" },
-          { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }
+          { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+          { rel: "alternate", hreflang: "de", href: germanUrl },
+          { rel: "alternate", hreflang: "en", href: englishUrl },
+          { rel: "alternate", hreflang: "x-default", href: germanUrl }
         ],
         meta: [
           { name: "twitter:image", content: socialImageURL },

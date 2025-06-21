@@ -1,0 +1,143 @@
+---
+// Language selector with persistence for Astro i18n
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Generate URLs for both languages
+const germanUrl = isEnglish ? currentPath.replace(/^\/en/, '') || '/' : currentPath;
+const englishUrl = isEnglish ? currentPath : '/en' + currentPath;
+---
+
+<div class="language-selector">
+  <button 
+    data-lang="de"
+    data-url={germanUrl}
+    class:list={["lang-link lang-button", { "active": !isEnglish }]}
+    aria-label="Deutsch"
+  >
+    DE
+  </button>
+  <span class="separator" aria-hidden="true">|</span>
+  <button 
+    data-lang="en"
+    data-url={englishUrl}
+    class:list={["lang-link lang-button", { "active": isEnglish }]}
+    aria-label="English"
+  >
+    EN
+  </button>
+</div>
+
+<script>
+  // Language preference persistence
+  const STORAGE_KEY = 'preferred-language';
+  const DEFAULT_LANG = 'de';
+
+  function initLanguageSelector() {
+    const langButtons = document.querySelectorAll('.lang-button');
+    
+    // Handle language switching with persistence
+    langButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lang = button.dataset.lang;
+        const url = button.dataset.url;
+        
+        if (lang && url) {
+          // Store language preference
+          try {
+            localStorage.setItem(STORAGE_KEY, lang);
+          } catch (error) {
+            console.warn('Could not save language preference:', error);
+          }
+          
+          // Navigate to the new URL
+          window.location.href = url;
+        }
+      });
+    });
+  }
+
+  function checkLanguagePreference() {
+    // Skip if user is already on their preferred language
+    const currentPath = window.location.pathname;
+    const currentLang = currentPath.startsWith('/en/') ? 'en' : 'de';
+    
+    try {
+      const preferredLang = localStorage.getItem(STORAGE_KEY) || DEFAULT_LANG;
+      
+      // Only redirect if the preferred language differs from current
+      if (preferredLang !== currentLang) {
+        let targetUrl;
+        
+        if (preferredLang === 'en' && currentLang === 'de') {
+          // Switch to English
+          targetUrl = '/en' + currentPath;
+        } else if (preferredLang === 'de' && currentLang === 'en') {
+          // Switch to German
+          targetUrl = currentPath.replace(/^\/en/, '') || '/';
+        }
+        
+        if (targetUrl) {
+          window.location.replace(targetUrl);
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not read language preference:', error);
+    }
+    
+    // Initialize the selector after preference check
+    initLanguageSelector();
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkLanguagePreference);
+  } else {
+    checkLanguagePreference();
+  }
+  
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', checkLanguagePreference);
+</script>
+
+<style>
+  .language-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .lang-link {
+    color: #6b7280;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+  }
+
+  .lang-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .lang-link:hover {
+    color: #1f2937;
+    background-color: #f3f4f6;
+  }
+
+  .lang-link.active {
+    color: #1f2937;
+    font-weight: 600;
+  }
+
+  .separator {
+    color: #d1d5db;
+    user-select: none;
+  }
+</style>

@@ -1,5 +1,61 @@
 ---
 import { Instagram, Linkedin, Youtube } from 'lucide-react';
+
+// Language-aware content
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Footer content translations
+const footerContent = {
+  de: {
+    description: 'Wo Schmuck auf Innovation trifft. Hochwertige 3D Designs und individuelle Kreationen für anspruchsvolle Kunden.',
+    navigation: 'Navigation',
+    contact: 'Kontakt',
+    copyright: '© 2024 Phialo Design. Alle Rechte vorbehalten.',
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+    imprint: 'Impressum',
+    country: 'Deutschland',
+    navItems: {
+      portfolio: 'Portfolio',
+      services: '3D für Sie',
+      tutorials: 'Tutorials',
+      about: 'Über uns',
+      contact: 'Kontakt'
+    },
+    socialLabels: {
+      linkedin: 'LinkedIn',
+      youtube: 'YouTube',
+      instagram: 'Instagram'
+    }
+  },
+  en: {
+    description: 'Where jewelry meets innovation. High-quality 3D designs and individual creations for discerning customers.',
+    navigation: 'Navigation',
+    contact: 'Contact',
+    copyright: '© 2024 Phialo Design. All rights reserved.',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    imprint: 'Legal Notice',
+    country: 'Germany',
+    navItems: {
+      portfolio: 'Portfolio',
+      services: '3D for You',
+      tutorials: 'Tutorials',
+      about: 'About Us',
+      contact: 'Contact'
+    },
+    socialLabels: {
+      linkedin: 'LinkedIn',
+      youtube: 'YouTube',
+      instagram: 'Instagram'
+    }
+  }
+};
+
+const content = isEnglish ? footerContent.en : footerContent.de;
+const logoHref = isEnglish ? '/en' : '/';
+const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
 ---
 
 <footer class="bg-off-white border-t border-gray-100">
@@ -8,39 +64,41 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
       <!-- Brand Column -->
       <div class="space-y-6">
         <a 
-          href="/" 
+          href={logoHref}
           class="inline-block font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
         >
           PHIALO
         </a>
         <p class="text-gray-600 text-sm leading-relaxed max-w-xs">
-          Wo Schmuck auf Innovation trifft. Hochwertige 3D Designs und individuelle Kreationen für anspruchsvolle Kunden.
+          {content.description}
         </p>
         <div class="flex items-center gap-2 text-xs">
-          <span class="px-2 py-1 bg-gold/10 text-gold rounded">Handgefertigt</span>
+          <span class="px-2 py-1 bg-gold/10 text-gold rounded">
+            {isEnglish ? 'Handcrafted' : 'Handgefertigt'}
+          </span>
         </div>
       </div>
       
       <!-- Quick Links -->
       <div class="space-y-6">
         <h3 class="font-sans text-sm font-semibold text-midnight uppercase tracking-wider">
-          Navigation
+          {content.navigation}
         </h3>
         <nav class="space-y-4">
-          <a href="/portfolio" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
-            Portfolio
+          <a href={getLocalizedHref('/portfolio')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.portfolio}
           </a>
-          <a href="/services" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
-            3D für Sie
+          <a href={getLocalizedHref('/services')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.services}
           </a>
-          <a href="/tutorials" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
-            Tutorials
+          <a href={getLocalizedHref('/tutorials')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.tutorials}
           </a>
-          <a href="/about" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
-            Über uns
+          <a href={getLocalizedHref('/about')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.about}
           </a>
-          <a href="/contact" class="block text-sm text-gray-600 hover:text-midnight transition-colors">
-            Kontakt
+          <a href={getLocalizedHref('/contact')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.contact}
           </a>
         </nav>
       </div>
@@ -48,7 +106,7 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
       <!-- Contact & Social -->
       <div class="space-y-6">
         <h3 class="font-sans text-sm font-semibold text-midnight uppercase tracking-wider">
-          Kontakt
+          {content.contact}
         </h3>
         <div class="space-y-4 text-sm text-gray-600">
           <a 
@@ -57,7 +115,7 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
           >
             kontakt@phialo.de
           </a>
-          <p class="text-gray-600">Deutschland</p>
+          <p class="text-gray-600">{content.country}</p>
         </div>
         
         <!-- Social Links -->
@@ -67,7 +125,7 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
             target="_blank" 
             rel="noopener noreferrer"
             class="p-2 text-gray-600 hover:text-midnight transition-colors"
-            aria-label="LinkedIn"
+            aria-label={content.socialLabels.linkedin}
           >
             <Linkedin size={20} />
           </a>
@@ -76,7 +134,7 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
             target="_blank" 
             rel="noopener noreferrer"
             class="p-2 text-gray-600 hover:text-midnight transition-colors"
-            aria-label="YouTube"
+            aria-label={content.socialLabels.youtube}
           >
             <Youtube size={20} />
           </a>
@@ -85,7 +143,7 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
             target="_blank" 
             rel="noopener noreferrer"
             class="p-2 text-gray-600 hover:text-midnight transition-colors"
-            aria-label="Instagram"
+            aria-label={content.socialLabels.instagram}
           >
             <Instagram size={20} />
           </a>
@@ -96,17 +154,17 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
     <!-- Bottom Bar -->
     <div class="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
       <p class="text-xs text-gray-500">
-        © 2024 Phialo Design. Alle Rechte vorbehalten.
+        {content.copyright}
       </p>
       <div class="flex items-center gap-6 text-xs text-gray-500">
-        <a href="/privacy" class="hover:text-gray-700 transition-colors">
-          Datenschutz
+        <a href={getLocalizedHref('/privacy')} class="hover:text-gray-700 transition-colors">
+          {content.privacy}
         </a>
-        <a href="/terms" class="hover:text-gray-700 transition-colors">
-          AGB
+        <a href={getLocalizedHref('/terms')} class="hover:text-gray-700 transition-colors">
+          {content.terms}
         </a>
-        <a href="/imprint" class="hover:text-gray-700 transition-colors">
-          Impressum
+        <a href={getLocalizedHref('/imprint')} class="hover:text-gray-700 transition-colors">
+          {content.imprint}
         </a>
       </div>
     </div>

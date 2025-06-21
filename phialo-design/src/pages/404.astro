@@ -2,11 +2,78 @@
 import PageLayout from '../layouts/PageLayout.astro';
 import Button from '../components/common/Button.astro';
 
-const title = '404 - Page Not Found | Phialo Design';
-const description = 'The page you are looking for could not be found. Explore our luxury jewelry collections and discover exceptional pieces.';
+// Language detection from URL
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Language-aware content
+const content = {
+  de: {
+    title: '404 - Seite nicht gefunden | Phialo Design',
+    description: 'Die gesuchte Seite konnte nicht gefunden werden. Entdecken Sie unsere luxuriösen Schmuckkollektionen und außergewöhnliche Stücke.',
+    heading: 'Seite nicht gefunden',
+    message: 'Es scheint, als ob die Seite, die Sie suchen, verschoben wurde oder nicht existiert. Vielleicht ist sie so selten wie unsere kostbarsten Edelsteine.',
+    subMessage: 'Keine Sorge, unsere Kollektion wunderschöner Schmuckstücke wartet noch immer auf Sie.',
+    homeButton: 'Zur Startseite',
+    portfolioButton: 'Kollektion durchsuchen',
+    popularPages: 'Beliebte Seiten',
+    pages: {
+      portfolio: {
+        title: 'Portfolio',
+        description: 'Entdecken Sie unsere luxuriöse Schmuckkollektion'
+      },
+      about: {
+        title: 'Über uns',
+        description: 'Erfahren Sie mehr über unser Erbe und unsere Handwerkskunst'
+      },
+      tutorials: {
+        title: 'Tutorials',
+        description: 'Lernen Sie über Edelsteine und Schmuckpflege'
+      },
+      contact: {
+        title: 'Kontakt',
+        description: 'Nehmen Sie Kontakt mit unserem Team auf'
+      }
+    }
+  },
+  en: {
+    title: '404 - Page Not Found | Phialo Design',
+    description: 'The page you are looking for could not be found. Explore our luxury jewelry collections and discover exceptional pieces.',
+    heading: 'Page Not Found',
+    message: 'It seems the page you\'re looking for has been moved or doesn\'t exist. Perhaps it\'s as rare as our most precious gemstones.',
+    subMessage: 'Don\'t worry, our collection of beautiful jewelry is still here waiting for you.',
+    homeButton: 'Return Home',
+    portfolioButton: 'Browse Collection',
+    popularPages: 'Popular Pages',
+    pages: {
+      portfolio: {
+        title: 'Portfolio',
+        description: 'Explore our luxury jewelry collection'
+      },
+      about: {
+        title: 'About Us',
+        description: 'Learn about our heritage and craftsmanship'
+      },
+      tutorials: {
+        title: 'Tutorials',
+        description: 'Learn about gemstones and jewelry care'
+      },
+      contact: {
+        title: 'Contact',
+        description: 'Get in touch with our team'
+      }
+    }
+  }
+};
+
+const pageContent = isEnglish ? content.en : content.de;
+const title = pageContent.title;
+const description = pageContent.description;
+const lang = isEnglish ? 'en' : 'de';
+const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
 ---
 
-<PageLayout title={title} description={description}>
+<PageLayout title={title} description={description} lang={lang}>
   <section class="min-h-screen flex items-center justify-center py-20">
     <div class="container mx-auto px-6 text-center">
       <div class="max-w-2xl mx-auto">
@@ -31,37 +98,36 @@ const description = 'The page you are looking for could not be found. Explore ou
 
         <!-- Error Message -->
         <h1 class="text-4xl md:text-5xl font-light text-neutral-900 mb-6">
-          Page Not Found
+          {pageContent.heading}
         </h1>
         
         <p class="text-xl text-neutral-600 mb-8 leading-relaxed">
-          It seems the page you're looking for has been moved or doesn't exist. 
-          Perhaps it's as rare as our most precious gemstones.
+          {pageContent.message}
         </p>
 
         <p class="text-neutral-500 mb-12">
-          Don't worry, our collection of beautiful jewelry is still here waiting for you.
+          {pageContent.subMessage}
         </p>
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button href="/" variant="primary" size="lg">
-            Return Home
+          <Button href={getLocalizedHref('/')} variant="primary" size="lg">
+            {pageContent.homeButton}
           </Button>
-          <Button href="/portfolio" variant="outline" size="lg">
-            Browse Collection
+          <Button href={getLocalizedHref('/portfolio')} variant="outline" size="lg">
+            {pageContent.portfolioButton}
           </Button>
         </div>
 
         <!-- Quick Links -->
         <div class="mt-16 pt-16 border-t border-neutral-200">
           <h2 class="text-xl font-medium text-neutral-900 mb-8">
-            Popular Pages
+            {pageContent.popularPages}
           </h2>
           
           <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <a 
-              href="/portfolio" 
+              href={getLocalizedHref('/portfolio')} 
               class="group p-6 bg-white border border-neutral-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all duration-300"
             >
               <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
@@ -69,12 +135,12 @@ const description = 'The page you are looking for could not be found. Explore ou
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                 </svg>
               </div>
-              <h3 class="font-semibold text-neutral-900 mb-2">Portfolio</h3>
-              <p class="text-sm text-neutral-600">Explore our luxury jewelry collection</p>
+              <h3 class="font-semibold text-neutral-900 mb-2">{pageContent.pages.portfolio.title}</h3>
+              <p class="text-sm text-neutral-600">{pageContent.pages.portfolio.description}</p>
             </a>
 
             <a 
-              href="/about" 
+              href={getLocalizedHref('/about')} 
               class="group p-6 bg-white border border-neutral-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all duration-300"
             >
               <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
@@ -82,12 +148,12 @@ const description = 'The page you are looking for could not be found. Explore ou
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
               </div>
-              <h3 class="font-semibold text-neutral-900 mb-2">About Us</h3>
-              <p class="text-sm text-neutral-600">Learn about our heritage and craftsmanship</p>
+              <h3 class="font-semibold text-neutral-900 mb-2">{pageContent.pages.about.title}</h3>
+              <p class="text-sm text-neutral-600">{pageContent.pages.about.description}</p>
             </a>
 
             <a 
-              href="/tutorials" 
+              href={getLocalizedHref('/tutorials')} 
               class="group p-6 bg-white border border-neutral-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all duration-300"
             >
               <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
@@ -95,12 +161,12 @@ const description = 'The page you are looking for could not be found. Explore ou
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
               </div>
-              <h3 class="font-semibold text-neutral-900 mb-2">Tutorials</h3>
-              <p class="text-sm text-neutral-600">Learn about gemstones and jewelry care</p>
+              <h3 class="font-semibold text-neutral-900 mb-2">{pageContent.pages.tutorials.title}</h3>
+              <p class="text-sm text-neutral-600">{pageContent.pages.tutorials.description}</p>
             </a>
 
             <a 
-              href="/contact" 
+              href={getLocalizedHref('/contact')} 
               class="group p-6 bg-white border border-neutral-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all duration-300"
             >
               <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
@@ -108,8 +174,8 @@ const description = 'The page you are looking for could not be found. Explore ou
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
               </div>
-              <h3 class="font-semibold text-neutral-900 mb-2">Contact</h3>
-              <p class="text-sm text-neutral-600">Get in touch with our team</p>
+              <h3 class="font-semibold text-neutral-900 mb-2">{pageContent.pages.contact.title}</h3>
+              <p class="text-sm text-neutral-600">{pageContent.pages.contact.description}</p>
             </a>
           </div>
         </div>
