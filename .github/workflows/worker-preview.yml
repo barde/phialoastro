@@ -36,6 +36,8 @@ jobs:
 
       - name: Build Astro site
         working-directory: phialo-design
+        env:
+          PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
         run: npm run build
 
       - name: Install dependencies (workers)
