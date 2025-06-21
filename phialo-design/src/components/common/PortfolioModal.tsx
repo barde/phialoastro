@@ -26,6 +26,42 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isEnglish, setIsEnglish] = useState(false);
+
+  // Language detection
+  useEffect(() => {
+    setIsEnglish(window.location.pathname.startsWith('/en/'));
+  }, []);
+
+  // Translations
+  const translations = {
+    de: {
+      closeModal: 'Modal schließen',
+      previousImage: 'Vorheriges Bild',
+      nextImage: 'Nächstes Bild',
+      goToImage: 'Zu Bild',
+      materials: 'Materialien',
+      client: 'Kunde',
+      projectDate: 'Projektdatum',
+      availability: 'Verfügbarkeit',
+      price: 'Preis',
+      tags: 'Tags'
+    },
+    en: {
+      closeModal: 'Close modal',
+      previousImage: 'Previous image',
+      nextImage: 'Next image',
+      goToImage: 'Go to image',
+      materials: 'Materials',
+      client: 'Client',
+      projectDate: 'Project Date',
+      availability: 'Availability',
+      price: 'Price',
+      tags: 'Tags'
+    }
+  };
+
+  const t = isEnglish ? translations.en : translations.de;
   
   // Get all images (main image + gallery)
   const allImages = portfolioItem.gallery?.length 
@@ -168,7 +204,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
               ref={closeButtonRef}
               onClick={onClose}
               className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
-              aria-label="Close modal"
+              aria-label={t.closeModal}
             >
               <X size={24} className="text-gray-700" />
             </button>
@@ -194,14 +230,14 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     <button
                       onClick={() => navigateImage('prev')}
                       className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
-                      aria-label="Previous image"
+                      aria-label={t.previousImage}
                     >
                       <ChevronLeft size={24} className="text-gray-700" />
                     </button>
                     <button
                       onClick={() => navigateImage('next')}
                       className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
-                      aria-label="Next image"
+                      aria-label={t.nextImage}
                     >
                       <ChevronRight size={24} className="text-gray-700" />
                     </button>
@@ -217,7 +253,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                               ? 'bg-gold w-8'
                               : 'bg-gray-400 hover:bg-gray-600'
                           }`}
-                          aria-label={`Go to image ${index + 1}`}
+                          aria-label={`${t.goToImage} ${index + 1}`}
                         />
                       ))}
                     </div>
@@ -252,7 +288,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     {/* Materials */}
                     {portfolioItem.materials && portfolioItem.materials.length > 0 && (
                       <div>
-                        <h3 className="font-semibold text-midnight mb-2">Materials</h3>
+                        <h3 className="font-semibold text-midnight mb-2">{t.materials}</h3>
                         <div className="flex flex-wrap gap-2">
                           {portfolioItem.materials.map((material, index) => (
                             <span
@@ -270,25 +306,25 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {portfolioItem.client && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Client</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.client}</h4>
                           <p className="text-midnight">{portfolioItem.client}</p>
                         </div>
                       )}
                       {portfolioItem.projectDate && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Project Date</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
                           <p className="text-midnight">{portfolioItem.projectDate}</p>
                         </div>
                       )}
                       {portfolioItem.availability && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Availability</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
                           <p className="text-midnight capitalize">{portfolioItem.availability}</p>
                         </div>
                       )}
                       {portfolioItem.price && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Price</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.price}</h4>
                           <p className="text-midnight">{portfolioItem.price}</p>
                         </div>
                       )}
@@ -297,7 +333,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                     {/* Tags */}
                     {portfolioItem.tags && portfolioItem.tags.length > 0 && (
                       <div>
-                        <h3 className="font-semibold text-midnight mb-2">Tags</h3>
+                        <h3 className="font-semibold text-midnight mb-2">{t.tags}</h3>
                         <div className="flex flex-wrap gap-2">
                           {portfolioItem.tags.map((tag, index) => (
                             <span

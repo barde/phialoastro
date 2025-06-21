@@ -2,6 +2,7 @@
 title: "DNA-Spirale Ohrhänger"
 description: "DNA-Spirale als Ohrhänger, als 3D-Model gestaltet, in Wachs gedruckt und in Platin gegossen. Eingefasst mit Brillanten in einem speziellen Farbcode."
 category: "earrings"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/dna_spirale_freigestellt_refl.jpg"

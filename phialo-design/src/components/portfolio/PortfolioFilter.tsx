@@ -1,15 +1,17 @@
 interface Category {
   id: string;
   label: string;
+  labelEn?: string;
 }
 
 interface PortfolioFilterProps {
   categories: Category[];
   activeFilter: string;
   onFilterChange: (filter: string) => void;
+  isEnglish?: boolean;
 }
 
-export default function PortfolioFilter({ categories, activeFilter, onFilterChange }: PortfolioFilterProps) {
+export default function PortfolioFilter({ categories, activeFilter, onFilterChange, isEnglish = false }: PortfolioFilterProps) {
   return (
     <div className="flex flex-wrap justify-center gap-4">
       {categories.map((category) => (
@@ -22,7 +24,7 @@ export default function PortfolioFilter({ categories, activeFilter, onFilterChan
               : 'text-gray-600 hover:text-midnight hover:bg-gray-100'
           }`}
         >
-          {category.label}
+          {isEnglish && category.labelEn ? category.labelEn : category.label}
         </button>
       ))}
     </div>

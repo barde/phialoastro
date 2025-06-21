@@ -2,21 +2,91 @@
 import { Image } from 'astro:assets';
 import Button from '../common/Button.astro';
 import { Palette, Eye, Cog } from 'lucide-react';
+
+// Language detection
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Language-specific content
+const content = {
+  de: {
+    title: "3D für Sie",
+    subtitle1: "Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen.",
+    subtitle2: "Fotorealistische Renderings, die beeindrucken und überzeugen.",
+    description: "Möchten Sie Ihr Schmuckstück besonders gut einschätzen, Ihrem Kunden präsentieren oder für eine Werbeaktion darstellen lassen? Wir erstellen für Sie vor dem Guss auf Wunsch eine hochwertige fotorealistische Vorschau.",
+    tutorialInfo1: "Wir bieten Design Tutorials in Deutsch und Englisch!",
+    tutorialInfo2: "We offer Design Tutorials in German and English!",
+    tutorialsLink: "#tutorials",
+    service1: {
+      title: "3D Design & CAD",
+      description: "Erfahrene Goldschmiede erschaffen Ihre Idee mit CAD-Software. Die perfekte Umsetzbarkeit als Guss oder Druck in vielfältigen Materialien ist garantiert. Wir liefern Ihnen druckfähige, wasserdicht vorbereitete Dateien jeglicher Komplexität.",
+      cta: "Anfrage stellen"
+    },
+    service2: {
+      title: "Guss & 3D-Druck",
+      description: "Brauchen Sie Güsse oder ein Wachsmodell? In Zusammenarbeit mit kompetenten Partnern wie 3D-Druckereien und Gießereien erschaffen wir Ihr ideales Juwel.",
+      advantages: "Ihre Vorteile: Persönlicher Ansprechpartner während des gesamten Designprozesses. Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckbarkeit.",
+      cta: "Kontakt aufnehmen"
+    },
+    service3: {
+      title: "Beratung & Support",
+      description: "Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern und stehen Ihnen während des gesamten Projekts zur Seite.",
+      cta: "Beratung anfragen"
+    },
+    ctaSection: {
+      title: "Kontaktieren Sie uns jetzt!",
+      description: "Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern.",
+      cta: "Jetzt Kontakt aufnehmen"
+    },
+    contactUrl: "/contact"
+  },
+  en: {
+    title: "3D for You",
+    subtitle1: "Benefit from our experience in 3D design of jewelry and sculptures.",
+    subtitle2: "Photorealistic renderings that impress and convince.",
+    description: "Would you like to better assess your jewelry piece, present it to your customer, or have it displayed for an advertising campaign? We create high-quality photorealistic previews for you before casting upon request.",
+    tutorialInfo1: "We offer Design Tutorials in German and English!",
+    tutorialInfo2: "Wir bieten Design Tutorials in Deutsch und Englisch!",
+    tutorialsLink: "#tutorials",
+    service1: {
+      title: "3D Design & CAD",
+      description: "Experienced goldsmiths bring your ideas to life with CAD software. Perfect implementation as casting or printing in various materials is guaranteed. We deliver print-ready, watertight prepared files of any complexity.",
+      cta: "Make Inquiry"
+    },
+    service2: {
+      title: "Casting & 3D Printing",
+      description: "Do you need castings or a wax model? In collaboration with competent partners such as 3D printing companies and foundries, we create your ideal jewel.",
+      advantages: "Your Benefits: Personal contact person throughout the entire design process. Fast implementation, within one day if desired. Guaranteed printability.",
+      cta: "Get in Touch"
+    },
+    service3: {
+      title: "Consultation & Support",
+      description: "Do you need more information? Do you have a specific inquiry? We are happy to advise you and support you throughout the entire project.",
+      cta: "Request Consultation"
+    },
+    ctaSection: {
+      title: "Contact us now!",
+      description: "Do you need more information? Do you have a specific inquiry? We are happy to advise you.",
+      cta: "Contact us now"
+    },
+    contactUrl: "/en/contact"
+  }
+};
+
+const t = isEnglish ? content.en : content.de;
 ---
 
 <section id="services" class="services-section py-24 bg-off-white">
   <div class="container mx-auto px-6">    <!-- Section Header -->
     <div class="text-center mb-20">
       <h2 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
-        3D für Sie
+        {t.title}
       </h2>
       <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-        <strong>Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen.</strong>
+        <strong>{t.subtitle1}</strong>
       </p>
       <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-        <strong>Fotorealistische Renderings, die beeindrucken und überzeugen.</strong> Möchten Sie Ihr Schmuckstück besonders gut einschätzen, 
-        Ihrem Kunden präsentieren oder für eine Werbeaktion darstellen lassen? 
-        Wir erstellen für Sie vor dem Guss auf Wunsch eine hochwertige fotorealistische Vorschau.
+        <strong>{t.subtitle2}</strong> {t.description}
       </p>
       
       <!-- YouTube Video Embed -->      <div class="mb-12 flex justify-center">
@@ -35,10 +105,10 @@ import { Palette, Eye, Cog } from 'lucide-react';
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto mb-12">
         <div class="text-left">
           <p class="text-gray-600 mb-4">
-            Wir bieten <a href="#tutorials" class="text-gold hover:underline">Design Tutorials</a> in Deutsch und Englisch!
+            {isEnglish ? 'We offer' : 'Wir bieten'} <a href={t.tutorialsLink} class="text-gold hover:underline">Design Tutorials</a> {isEnglish ? 'in German and English!' : 'in Deutsch und Englisch!'}
           </p>
           <p class="text-gray-600">
-            We offer <a href="#tutorials" class="text-gold hover:underline">Design Tutorials</a> in German and English!
+            {isEnglish ? 'Wir bieten' : 'We offer'} <a href={t.tutorialsLink} class="text-gold hover:underline">Design Tutorials</a> {isEnglish ? 'in Deutsch und Englisch!' : 'in German and English!'}
           </p>
         </div>
         <div class="flex justify-center">
@@ -54,18 +124,17 @@ import { Palette, Eye, Cog } from 'lucide-react';
           <Palette className="w-8 h-8 text-gold" />
         </div>
         <h3 class="service-title">
-          3D Design & CAD
+          {t.service1.title}
         </h3>
         <p class="service-description">
-          Erfahrene Goldschmiede erschaffen Ihre Idee mit CAD-Software. Die perfekte Umsetzbarkeit als
-          Guss oder Druck in vielfältigen Materialien ist garantiert. Wir liefern Ihnen druckfähige, wasserdicht vorbereitete Dateien jeglicher Komplexität.
+          {t.service1.description}
         </p>
         <div class="flex justify-center mb-6">
           <img src="/images/3DfuerSie/3dzuSchmuck.jpg" alt="3D zu Schmuck" class="rounded-lg shadow-md max-w-full" />
         </div>
         <div class="service-cta">
-          <Button href="/contact" variant="outline" size="sm">
-            Anfrage stellen
+          <Button href={t.contactUrl} variant="outline" size="sm">
+            {t.service1.cta}
           </Button>
         </div>
       </div>
@@ -76,19 +145,17 @@ import { Palette, Eye, Cog } from 'lucide-react';
           <Cog className="w-8 h-8 text-gold" />
         </div>
         <h3 class="service-title">
-          Guss & 3D-Druck
+          {t.service2.title}
         </h3>
         <p class="service-description">
-          Brauchen Sie Güsse oder ein Wachsmodell? In Zusammenarbeit mit kompetenten Partnern wie 3D-Druckereien 
-          und Gießereien erschaffen wir Ihr ideales Juwel.
+          {t.service2.description}
         </p>
         <p class="text-sm font-medium text-midnight mb-4">
-          <strong>Ihre Vorteile:</strong> Persönlicher Ansprechpartner während des gesamten Designprozesses. 
-          Schnelle Umsetzung, auf Wunsch innerhalb eines Tages. Garantierte Druckbarkeit.
+          <strong>{isEnglish ? 'Your Benefits:' : 'Ihre Vorteile:'}</strong> {t.service2.advantages.replace(/^.*?: /, '')}
         </p>
         <div class="service-cta">
-          <Button href="/contact" variant="primary" size="sm">
-            Kontakt aufnehmen
+          <Button href={t.contactUrl} variant="primary" size="sm">
+            {t.service2.cta}
           </Button>
         </div>
       </div>
@@ -99,18 +166,17 @@ import { Palette, Eye, Cog } from 'lucide-react';
           <Eye className="w-8 h-8 text-gold" />
         </div>
         <h3 class="service-title">
-          Beratung & Support
+          {t.service3.title}
         </h3>
         <p class="service-description">
-          Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern 
-          und stehen Ihnen während des gesamten Projekts zur Seite.
+          {t.service3.description}
         </p>
         <div class="flex justify-center mb-6">
           <img src="/images/engRing2_1.jpg" alt="Engagement Ring Design" class="rounded-lg shadow-md max-w-full" />
         </div>
         <div class="service-cta">
-          <Button href="/contact" variant="outline" size="sm">
-            Beratung anfragen
+          <Button href={t.contactUrl} variant="outline" size="sm">
+            {t.service3.cta}
           </Button>
         </div>
       </div>
@@ -118,13 +184,13 @@ import { Palette, Eye, Cog } from 'lucide-react';
     <div class="text-center mt-20">
       <div class="max-w-2xl mx-auto">
         <h3 class="font-display text-2xl font-medium text-midnight mb-4">
-          Kontaktieren Sie uns jetzt!
+          {t.ctaSection.title}
         </h3>
         <p class="text-gray-600 mb-8">
-          Benötigen Sie mehr Informationen? Haben Sie eine konkrete Anfrage? Wir beraten Sie gern.
+          {t.ctaSection.description}
         </p>
         <Button href="#contact" variant="primary" size="lg">
-          Jetzt Kontakt aufnehmen
+          {t.ctaSection.cta}
         </Button>
       </div>
     </div>

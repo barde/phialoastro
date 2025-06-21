@@ -1,6 +1,28 @@
 ---
 import Button from '../common/Button.astro';
 
+// Language detection
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Language-specific content
+const content = {
+  de: {
+    title: "Tutorials",
+    subtitle: "Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.",
+    skillshareLabel: "Auf Skillshare ansehen",
+    directPurchaseLabel: "Direkt kaufen (ohne Mitgliedschaft)"
+  },
+  en: {
+    title: "Tutorials", 
+    subtitle: "Learn 3D design with Blender! Courses for beginners and advanced users in German and English.",
+    skillshareLabel: "View on Skillshare",
+    directPurchaseLabel: "Direct purchase (no membership required)"
+  }
+};
+
+const t = isEnglish ? content.en : content.de;
+
 const tutorials = [
   {
     id: 1,
@@ -60,10 +82,10 @@ const tutorials = [
   <div class="container mx-auto px-6">    <!-- Section Header -->
     <div class="text-center mb-16">
       <h2 class="text-4xl md:text-5xl font-light text-neutral-900 mb-6">
-        Tutorials
+        {t.title}
       </h2>
       <p class="text-lg text-neutral-600 max-w-2xl mx-auto">
-        Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.
+        {t.subtitle}
       </p>
     </div>
 
@@ -108,7 +130,7 @@ const tutorials = [
                   rel="noopener noreferrer"
                   class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
                 >
-                  Auf Skillshare ansehen
+                  {t.skillshareLabel}
                   <svg 
                     class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
                     fill="none" 
@@ -127,7 +149,7 @@ const tutorials = [
                       rel="noopener noreferrer"
                       class="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors group text-sm"
                     >
-                      Direkt kaufen (ohne Mitgliedschaft)
+                      {t.directPurchaseLabel}
                       <svg 
                         class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
                         fill="none" 

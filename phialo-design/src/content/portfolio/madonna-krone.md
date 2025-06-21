@@ -2,6 +2,7 @@
 title: "Silberne Madonna-Krone"
 description: "Silberne Krone mit Edelsteinen und Diamanten sowie goldenen Details, gestaltet für eine japanische Madonnenfigur."
 category: "sculptures"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/crown.jpg"
