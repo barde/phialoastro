@@ -69,6 +69,26 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
     }
   };
 
+  // Category translations
+  const categoryTranslations: { [key: string]: string } = {
+    'Ringe': 'Rings',
+    'Ohrringe': 'Earrings',
+    'Anhänger': 'Pendants',
+    'Skulpturen': 'Sculptures',
+    'Anstecker': 'Pins',
+    // Add any other categories that might exist
+    'Schmuck': 'Jewelry',
+    '3D Design': '3D Design'
+  };
+
+  // Availability translations
+  const availabilityTranslations: { [key: string]: string } = {
+    'available': isEnglish ? 'Available' : 'Verfügbar',
+    'custom': isEnglish ? 'Custom Order' : 'Auf Bestellung',
+    'sold': isEnglish ? 'Sold' : 'Verkauft',
+    'exhibition': isEnglish ? 'Exhibition Only' : 'Nur Ausstellung'
+  };
+
   const t = isEnglish ? translations.en : translations.de;
   
   // Get all images (main image + gallery)
@@ -278,7 +298,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                 >
                   {/* Category badge */}
                   <span className="inline-block px-3 py-1 text-xs font-medium text-gold bg-gold/10 rounded-full mb-4 uppercase tracking-wider">
-                    {portfolioItem.category}
+                    {isEnglish && categoryTranslations[portfolioItem.category] 
+                      ? categoryTranslations[portfolioItem.category] 
+                      : portfolioItem.category}
                   </span>
 
                   {/* Title */}
@@ -327,7 +349,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                       {portfolioItem.availability && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
-                          <p className="text-midnight capitalize">{portfolioItem.availability}</p>
+                          <p className="text-midnight capitalize">
+                            {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
+                          </p>
                         </div>
                       )}
                       {portfolioItem.price && (
