@@ -167,15 +167,21 @@ const portfolioItems: PortfolioItemData[] = [
 ];
 
 const categories = [
-  { id: 'all', label: 'Alle Arbeiten' },
-  { id: 'Ringe', label: 'Ringe' },
-  { id: 'Ohrringe', label: 'Ohrringe' },
-  { id: 'Anhänger', label: 'Anhänger' },
-  { id: 'Skulpturen', label: 'Skulpturen' },
-  { id: 'Anstecker', label: 'Anstecker' }
+  { id: 'all', label: 'Alle Arbeiten', labelEn: 'All Works' },
+  { id: 'Ringe', label: 'Ringe', labelEn: 'Rings' },
+  { id: 'Ohrringe', label: 'Ohrringe', labelEn: 'Earrings' },
+  { id: 'Anhänger', label: 'Anhänger', labelEn: 'Pendants' },
+  { id: 'Skulpturen', label: 'Skulpturen', labelEn: 'Sculptures' },
+  { id: 'Anstecker', label: 'Anstecker', labelEn: 'Pins' }
 ];
 
 export default function Portfolio() {
+  // Detect current language from URL
+  const [isEnglish, setIsEnglish] = useState(false);
+  
+  useEffect(() => {
+    setIsEnglish(window.location.pathname.startsWith('/en/'));
+  }, []);
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState(portfolioItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -232,7 +238,10 @@ export default function Portfolio() {
             Portfolio
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
-            Entdecken Sie unsere handgefertigten 3D-Designs und realisierten Schmuckstücke.
+            {isEnglish 
+              ? "Discover our handcrafted 3D designs and realized jewelry pieces."
+              : "Entdecken Sie unsere handgefertigten 3D-Designs und realisierten Schmuckstücke."
+            }
           </p>
           <div className="text-center">
             <a 
@@ -241,7 +250,7 @@ export default function Portfolio() {
               rel="noopener noreferrer"
               className="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors"
             >
-              Portfolio auf Instagram
+              {isEnglish ? "Portfolio on Instagram" : "Portfolio auf Instagram"}
               <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
               </svg>            </a>
@@ -259,6 +268,7 @@ export default function Portfolio() {
             categories={categories}
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
+            isEnglish={isEnglish}
           />
         </motion.div>
 

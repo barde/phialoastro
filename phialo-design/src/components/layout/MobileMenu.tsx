@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
-import LanguageSelector from './LanguageSelector';
 
 interface NavItem {
   href: string;
   label: string;
+  labelEn?: string;
 }
 
 interface MobileMenuProps {
@@ -12,10 +12,10 @@ interface MobileMenuProps {
   onClose: () => void;
   navItems: NavItem[];
   currentPath: string;
-  weglotApiKey?: string | null;
+  isEnglish?: boolean;
 }
 
-export default function MobileMenu({ isOpen, onClose, navItems, currentPath, weglotApiKey }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isEnglish = false }: MobileMenuProps) {
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -47,8 +47,11 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, weg
   }, [isOpen, onClose]);
 
   const isActiveLink = (href: string) => {
-    if (href === '/') return currentPath === '/';
-    return currentPath.startsWith(href);
+    const localizedHref = isEnglish ? `/en${href}` : href;
+    if (localizedHref === '/' || localizedHref === '/en') {
+      return currentPath === localizedHref;
+    }
+    return currentPath.startsWith(localizedHref);
   };
 
   if (!isOpen) return null;
@@ -66,11 +69,13 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, weg
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
-            <h2 className="font-display text-xl font-medium text-midnight">Menü</h2>
+            <h2 className="font-display text-xl font-medium text-midnight">
+              {isEnglish ? 'Menu' : 'Menü'}
+            </h2>
             <button
               onClick={onClose}
               className="p-2 text-gray-600 hover:text-midnight transition-colors"
-              aria-label="Menü schließen"
+              aria-label={isEnglish ? 'Close menu' : 'Menü schließen'}
             >
               <X size={24} />
             </button>
@@ -79,40 +84,38 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, weg
           {/* Navigation */}
           <nav className="flex-1 px-6 py-8">
             <ul className="space-y-6">
-              {navItems.map(({ href, label }) => (
-                <li key={href}>
-                  <a
-                    href={href}
-                    onClick={onClose}
-                    className={`block text-lg font-medium transition-colors duration-200 ${
-                      isActiveLink(href)
-                        ? 'text-gold'
-                        : 'text-midnight hover:text-gold'
-                    }`}
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
+              {navItems.map(({ href, label, labelEn }) => {
+                const displayLabel = isEnglish && labelEn ? labelEn : label;
+                const localizedHref = isEnglish ? `/en${href}` : href;
+                
+                return (
+                  <li key={href}>
+                    <a
+                      href={localizedHref}
+                      onClick={onClose}
+                      className={`block text-lg font-medium transition-colors duration-200 ${
+                        isActiveLink(href)
+                          ? 'text-gold'
+                          : 'text-midnight hover:text-gold'
+                      }`}
+                    >
+                      {displayLabel}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
             
-            {/* Language Selector for Mobile */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Language</span>
-                <LanguageSelector weglotApiKey={weglotApiKey} />
-              </div>
-            </div>
           </nav>
           
           {/* CTA */}
           <div className="p-6 border-t border-gray-100">
             <a
-              href="/contact"
+              href={isEnglish ? '/en/contact' : '/contact'}
               onClick={onClose}
               className="block w-full text-center px-6 py-3 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white transition-all duration-200"
             >
-              Projekt anfragen
+              {isEnglish ? 'Request Project' : 'Projekt anfragen'}
             </a>
           </div>
         </div>
