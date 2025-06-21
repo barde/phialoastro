@@ -20,26 +20,35 @@ interface PortfolioModalProps {
   isOpen: boolean;
   onClose: () => void;
   portfolioItem: PortfolioItem;
+  lang?: 'en' | 'de';
 }
 
-export default function PortfolioModal({ isOpen, onClose, portfolioItem }: PortfolioModalProps) {
+export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 'de' }: PortfolioModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // Language detection - check immediately to avoid flash of wrong language
-  const getIsEnglish = () => {
-    if (typeof window !== 'undefined' && window.location) {
-      return window.location.pathname.startsWith('/en/');
-    }
-    return false; // Default to German
-  };
-
-  const [isEnglish, setIsEnglish] = useState(getIsEnglish);
-
-  // Update language if location changes
+  
+  // Use state to handle language detection properly
+  const [detectedLang, setDetectedLang] = useState(lang);
+  
+  // Detect language from URL AFTER hydration to avoid mismatches
   useEffect(() => {
-    setIsEnglish(getIsEnglish());
-  }, []);
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
+      setDetectedLang(urlLang);
+      
+      // Debug logging
+      console.log('PortfolioModal Language Detection:', {
+        propLang: lang,
+        urlLang,
+        pathname,
+        category: portfolioItem.category
+      });
+    }
+  }, [lang, portfolioItem.category]); // Re-run when props change
+  
+  const isEnglish = detectedLang === 'en';
 
   // Translations
   const translations = {
@@ -67,6 +76,26 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
       price: 'Price',
       tags: 'Tags'
     }
+  };
+
+  // Category translations
+  const categoryTranslations: { [key: string]: string } = {
+    'Ringe': 'Rings',
+    'Ohrringe': 'Earrings',
+    'Anhänger': 'Pendants',
+    'Skulpturen': 'Sculptures',
+    'Anstecker': 'Pins',
+    // Add any other categories that might exist
+    'Schmuck': 'Jewelry',
+    '3D Design': '3D Design'
+  };
+
+  // Availability translations
+  const availabilityTranslations: { [key: string]: string } = {
+    'available': isEnglish ? 'Available' : 'Verfügbar',
+    'custom': isEnglish ? 'Custom Order' : 'Auf Bestellung',
+    'sold': isEnglish ? 'Sold' : 'Verkauft',
+    'exhibition': isEnglish ? 'Exhibition Only' : 'Nur Ausstellung'
   };
 
   const t = isEnglish ? translations.en : translations.de;
@@ -278,7 +307,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                 >
                   {/* Category badge */}
                   <span className="inline-block px-3 py-1 text-xs font-medium text-gold bg-gold/10 rounded-full mb-4 uppercase tracking-wider">
-                    {portfolioItem.category}
+                    {isEnglish && categoryTranslations[portfolioItem.category] 
+                      ? categoryTranslations[portfolioItem.category] 
+                      : portfolioItem.category}
                   </span>
 
                   {/* Title */}
@@ -327,7 +358,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem }: Portf
                       {portfolioItem.availability && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
-                          <p className="text-midnight capitalize">{portfolioItem.availability}</p>
+                          <p className="text-midnight capitalize">
+                            {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
+                          </p>
                         </div>
                       )}
                       {portfolioItem.price && (
