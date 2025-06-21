@@ -175,13 +175,13 @@ const categories = [
   { id: 'Anstecker', label: 'Anstecker', labelEn: 'Pins' }
 ];
 
-export default function Portfolio() {
-  // Detect current language from URL
-  const [isEnglish, setIsEnglish] = useState(false);
-  
-  useEffect(() => {
-    setIsEnglish(window.location.pathname.startsWith('/en/'));
-  }, []);
+interface PortfolioProps {
+  lang?: 'en' | 'de';
+}
+
+export default function Portfolio({ lang = 'de' }: PortfolioProps) {
+  // Use lang prop instead of detecting from URL
+  const isEnglish = lang === 'en';
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState(portfolioItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -290,6 +290,7 @@ export default function Portfolio() {
               setSelectedItem(null);
             }}
             portfolioItem={selectedItem}
+            lang={lang}
           />
         )}
       </div>

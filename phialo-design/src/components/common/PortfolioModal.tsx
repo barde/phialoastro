@@ -20,26 +20,14 @@ interface PortfolioModalProps {
   isOpen: boolean;
   onClose: () => void;
   portfolioItem: PortfolioItem;
+  lang?: 'en' | 'de';
 }
 
-export default function PortfolioModal({ isOpen, onClose, portfolioItem }: PortfolioModalProps) {
+export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 'de' }: PortfolioModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // Language detection - check immediately to avoid flash of wrong language
-  const getIsEnglish = () => {
-    if (typeof window !== 'undefined' && window.location) {
-      return window.location.pathname.startsWith('/en/');
-    }
-    return false; // Default to German
-  };
-
-  const [isEnglish, setIsEnglish] = useState(getIsEnglish);
-
-  // Update language if location changes
-  useEffect(() => {
-    setIsEnglish(getIsEnglish());
-  }, []);
+  const isEnglish = lang === 'en';
 
   // Translations
   const translations = {
