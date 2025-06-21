@@ -38,6 +38,7 @@
     "@playwright/test": "^1.53.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.5.2",
     "@vitest/ui": "^3.2.3",
     "axe-playwright": "^2.1.0",
