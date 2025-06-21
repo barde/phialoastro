@@ -1,6 +1,5 @@
-/* Theme Variables */
-:root,
-.theme-light {
+/* Theme Variables - Light mode only */
+:root {
   /* Background colors */
   --color-theme-background: #ffffff;
   --color-theme-background-secondary: #f9fafb;
@@ -23,54 +22,11 @@
   --color-theme-accent-hover: #B8941F;
   --color-theme-accent-text: #ffffff;
   
-  /* Glass effect for light theme */
+  /* Glass effect */
   --color-glass-bg: rgba(255, 255, 255, 0.8);
   --color-glass-border: rgba(229, 231, 235, 0.5);
-}
-
-.theme-dark {
-  /* Background colors */
-  --color-theme-background: #0A192F;
-  --color-theme-background-secondary: #112240;
-  --color-theme-surface: #1e293b;
-  --color-theme-surface-hover: #334155;
-  --color-theme-surface-active: #475569;
   
-  /* Border colors */
-  --color-theme-border: #334155;
-  --color-theme-border-light: #1e293b;
-  
-  /* Text colors */
-  --color-theme-text-primary: #f1f5f9;
-  --color-theme-text-secondary: #cbd5e1;
-  --color-theme-text-tertiary: #94a3b8;
-  --color-theme-text-inverse: #0f172a;
-  
-  /* Accent colors */
-  --color-theme-accent: #D4AF37;
-  --color-theme-accent-hover: #f5d365;
-  --color-theme-accent-text: #0f172a;
-  
-  /* Glass effect for dark theme */
-  --color-glass-bg: rgba(15, 23, 42, 0.8);
-  --color-glass-border: rgba(51, 65, 85, 0.5);
-}
-
-/* Apply theme transitions to all elements */
-* {
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
-              border-color 0.3s ease;
-}
-
-/* Prevent transitions on initial load */
-.theme-loading * {
-  transition: none !important;
-}
-
-/* Update existing CSS variables to use theme colors */
-:root {
-  /* Map existing color variables to theme-aware colors */
+  /* Map existing color variables */
   --color-bg-primary: var(--color-theme-background);
   --color-bg-secondary: var(--color-theme-background-secondary);
   --color-text-primary: var(--color-theme-text-primary);
@@ -83,38 +39,19 @@
   --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #f6d365 100%);
   --gradient-gold-subtle: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(246, 211, 101, 0.1) 100%);
   
-  /* Shadows for dark theme */
+  /* Shadows */
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.theme-dark {
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-}
-
-/* Update scrollbar for dark theme */
-.theme-dark ::-webkit-scrollbar-track {
-  background: var(--color-theme-surface);
-}
-
-.theme-dark ::-webkit-scrollbar-thumb {
-  background: var(--color-theme-border);
-}
-
-.theme-dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-theme-surface-hover);
-}
-
-/* Update selection colors for dark theme */
-.theme-dark ::selection {
+/* Selection colors */
+::selection {
   background: var(--color-theme-accent);
   color: var(--color-theme-accent-text);
 }
 
-.theme-dark ::-moz-selection {
+::-moz-selection {
   background: var(--color-theme-accent);
   color: var(--color-theme-accent-text);
 }
