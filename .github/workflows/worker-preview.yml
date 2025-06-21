@@ -67,7 +67,9 @@ jobs:
             echo ""
             echo "To create a Cloudflare API token:"
             echo "- Visit https://dash.cloudflare.com/profile/api-tokens"
-            echo "- Create token with Workers Scripts:Edit permission"
+            echo "- Create token with these permissions:"
+            echo "  - Workers Scripts:Edit"
+            echo "  - Workers KV Storage:Edit"
             exit 1
           fi
 
