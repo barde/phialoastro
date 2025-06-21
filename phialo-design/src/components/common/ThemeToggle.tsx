@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from './ThemeProvider';
+import { useTheme } from 'astro-themes/react';
 
 interface ThemeToggleProps {
   className?: string;

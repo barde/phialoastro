@@ -13,14 +13,14 @@ test.describe('Dark Mode Tests (Issue #12)', () => {
     
     // Check initial light mode
     const html = page.locator('html');
-    await expect(html).toHaveClass(/theme-light/);
+    await expect(html).toHaveAttribute('data-theme', 'light');
     
     // Click theme toggle
     const themeToggle = page.locator('button[aria-label*="mode"], button[aria-label*="Mode"]');
     await themeToggle.click();
     
     // Check dark mode is applied
-    await expect(html).toHaveClass(/theme-dark/);
+    await expect(html).toHaveAttribute('data-theme', 'dark');
     
     // Check that dark mode colors are applied
     const body = page.locator('body');
@@ -40,11 +40,11 @@ test.describe('Dark Mode Tests (Issue #12)', () => {
     await themeToggle.click();
     
     const html = page.locator('html');
-    await expect(html).toHaveClass(/theme-dark/);
+    await expect(html).toHaveAttribute('data-theme', 'dark');
     
     // Then switch back to light mode
     await themeToggle.click();
-    await expect(html).toHaveClass(/theme-light/);
+    await expect(html).toHaveAttribute('data-theme', 'light');
     
     // Check that light mode colors are applied
     const body = page.locator('body');
@@ -64,13 +64,13 @@ test.describe('Dark Mode Tests (Issue #12)', () => {
     await themeToggle.click();
     
     const html = page.locator('html');
-    await expect(html).toHaveClass(/theme-dark/);
+    await expect(html).toHaveAttribute('data-theme', 'dark');
     
     // Navigate to another page
     await page.goto('/portfolio');
     
     // Check dark mode is still active
-    await expect(html).toHaveClass(/theme-dark/);
+    await expect(html).toHaveAttribute('data-theme', 'dark');
   });
 
   test('Theme toggle should show correct icon for current theme', async ({ page }) => {
@@ -142,7 +142,7 @@ test.describe('Dark Mode Tests (Issue #12)', () => {
     await page.goto('/');
     
     const html = page.locator('html');
-    await expect(html).toHaveClass(/theme-dark/);
+    await expect(html).toHaveAttribute('data-theme', 'dark');
     
     await context.close();
   });
