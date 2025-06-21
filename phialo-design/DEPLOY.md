@@ -28,7 +28,6 @@ npm run deploy:preview
 
 Set in Cloudflare Pages dashboard:
 ```
-PUBLIC_WEGLOT_API_KEY=your_api_key
 PUBLIC_SITE_URL=https://phialo.de
 ```
 

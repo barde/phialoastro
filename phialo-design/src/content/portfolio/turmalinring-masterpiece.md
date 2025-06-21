@@ -2,6 +2,7 @@
 title: "Turmalinring Masterpiece"
 description: "Masterpiece-Ring mit grünem Turmalin, 750/- Gelbgold und Brillanten. Ein elegantes Design, das die natürliche Schönheit des Turmalins hervorhebt."
 category: "rings"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/turmalinring_refl.jpg"

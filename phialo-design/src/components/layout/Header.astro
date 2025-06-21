@@ -1,14 +1,20 @@
 ---
-
 import Navigation from './Navigation';
-
-const weglotApiKey = import.meta.env.PUBLIC_WEGLOT_API_KEY || null;
+import LanguageSelector from './LanguageSelector.astro';
 
 export interface Props {
   transparent?: boolean;
 }
 
 const { transparent = false } = Astro.props;
+
+// Language-aware URLs and labels
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+const logoHref = isEnglish ? '/en' : '/';
+const ctaHref = isEnglish ? '/en/contact' : '/contact';
+const ctaLabel = isEnglish ? 'Request Project' : 'Projekt anfragen';
+const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Startseite';
 ---
 
 <header 
@@ -21,22 +27,25 @@ const { transparent = false } = Astro.props;
     <div class="flex items-center justify-between h-20">
       <!-- Logo -->
       <a 
-        href="/" 
+        href={logoHref}
         class="font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
-        aria-label="Phialo Design Startseite"
+        aria-label={logoAriaLabel}
       >
         PHIALO
       </a>
       
       <!-- Desktop Navigation -->
-      <Navigation client:load weglotApiKey={weglotApiKey} />
+      <div class="flex items-center space-x-6">
+        <Navigation client:load />
+        <LanguageSelector />
+      </div>
       
       <!-- CTA Button -->
       <a 
-        href="/contact" 
+        href={ctaHref}
         class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white transition-all duration-200"
       >
-        Projekt anfragen
+        {ctaLabel}
       </a>
     </div>
   </div>

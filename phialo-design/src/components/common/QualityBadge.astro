@@ -6,23 +6,43 @@ interface Props {
 
 const { type, className = '' } = Astro.props;
 
+// Language detection
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Language-specific content
+const badgeTranslations = {
+  handmade: {
+    de: 'Handgefertigt',
+    en: 'Handcrafted'
+  },
+  limited: {
+    de: 'Limitierte Auflage',
+    en: 'Limited Edition'
+  },
+  custom: {
+    de: 'Individuelle Kreation',
+    en: 'Custom Creation'
+  }
+};
+
 const badges = {
   handmade: {
-    text: 'Handgefertigt',
+    text: isEnglish ? badgeTranslations.handmade.en : badgeTranslations.handmade.de,
     icon: '✨',
     bg: 'bg-gold/10',
     border: 'border-gold/20',
     text_color: 'text-gold'
   },
   limited: {
-    text: 'Limited Edition',
+    text: isEnglish ? badgeTranslations.limited.en : badgeTranslations.limited.de,
     icon: '💎',
     bg: 'bg-platinum/20',
     border: 'border-platinum',
     text_color: 'text-charcoal'
   },
   custom: {
-    text: 'Individuelle Kreation',
+    text: isEnglish ? badgeTranslations.custom.en : badgeTranslations.custom.de,
     icon: '👑',
     bg: 'bg-gold/10',
     border: 'border-gold/20',

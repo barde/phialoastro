@@ -2,6 +2,7 @@
 title: "Tansanit Ring"
 description: "Orientalisch angehauchter gelbgoldener Tansanitring mit über 100 kleinen Diamanten, von Hand eingefasst. Ein außergewöhnliches Design für exklusive Kunden."
 category: "rings"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/tansanit_1.jpg"

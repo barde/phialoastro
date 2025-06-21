@@ -2,6 +2,7 @@
 title: "Meisen-Anstecker"
 description: "Meisenmodell aus rhodiniertem Silber, mit Ansteckerpin am Revers getragen. Ein individuelles Modell nach Kundenwunsch gestaltet."
 category: "pins"
+language: "de"
 price: "Auf Anfrage"
 featured: false
 image: "/images/portfolio/bartmeise_reflect.jpg"

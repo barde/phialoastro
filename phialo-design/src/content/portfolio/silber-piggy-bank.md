@@ -2,6 +2,7 @@
 title: "Silbernes Schloss-Münzkästchen"
 description: "Ein Silberkästchen mit goldenem Detail, zum Öffnen, nach einem Schloss modelliert. Ein außergewöhnliches Projekt mit Münzschlitz im Schornstein."
 category: "sculptures"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/silver_piggy_bank.jpg"
