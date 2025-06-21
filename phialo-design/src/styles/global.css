@@ -3,6 +3,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 
+@import './theme.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,8 +18,10 @@
   }
 
   body {
-    @apply text-neutral-900 bg-white antialiased;
+    @apply antialiased;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    background-color: var(--color-theme-background);
+    color: var(--color-theme-text-primary);
   }
 
   /* Headings */
