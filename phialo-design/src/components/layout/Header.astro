@@ -1,6 +1,8 @@
 ---
 import Navigation from './Navigation';
 import LanguageSelector from './LanguageSelector.astro';
+import ThemeToggle from '../common/ThemeToggle';
+import ThemeWrapper from '../common/ThemeWrapper';
 
 export interface Props {
   transparent?: boolean;
@@ -10,8 +12,8 @@ const { transparent = false } = Astro.props;
 
 // Language-aware URLs and labels
 const currentPath = Astro.url.pathname;
-const isEnglish = currentPath.startsWith('/en/');
-const logoHref = isEnglish ? '/en' : '/';
+const isEnglish = currentPath.startsWith('/en');
+const logoHref = isEnglish ? '/en/' : '/';
 const ctaHref = isEnglish ? '/en/contact' : '/contact';
 const ctaLabel = isEnglish ? 'Request Project' : 'Projekt anfragen';
 const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Startseite';
@@ -20,7 +22,7 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
 <header 
   id="main-header" 
   class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-    transparent ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-100'
+    transparent ? 'bg-transparent' : 'bg-theme-background/95 backdrop-blur-sm border-b border-theme-border'
   }`}
 >
   <div class="container mx-auto px-6">
@@ -28,22 +30,23 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       <!-- Logo -->
       <a 
         href={logoHref}
-        class="font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
+        class="font-display text-2xl font-medium text-theme-text-primary hover:text-theme-accent transition-colors"
         aria-label={logoAriaLabel}
       >
         PHIALO
       </a>
       
       <!-- Desktop Navigation -->
-      <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-4">
         <Navigation client:load />
+        <ThemeToggle client:idle size="sm" />
         <LanguageSelector />
       </div>
       
       <!-- CTA Button -->
       <a 
         href={ctaHref}
-        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white transition-all duration-200"
+        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-theme-accent border border-theme-accent rounded-full hover:bg-theme-accent hover:text-theme-accent-text transition-all duration-200"
       >
         {ctaLabel}
       </a>
@@ -66,10 +69,10 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       // Add background on scroll
       if (currentScrollY > 50) {
         header.classList.remove('bg-transparent');
-        header.classList.add('bg-white/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100');
+        header.classList.add('bg-theme-background/95', 'backdrop-blur-sm', 'border-b', 'border-theme-border');
       } else if (header.dataset.transparent === 'true') {
         header.classList.add('bg-transparent');
-        header.classList.remove('bg-white/95', 'backdrop-blur-sm', 'border-b', 'border-gray-100');
+        header.classList.remove('bg-theme-background/95', 'backdrop-blur-sm', 'border-b', 'border-theme-border');
       }
       
       // Hide/show header on scroll direction
