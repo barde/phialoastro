@@ -1,5 +1,5 @@
 ---
-import { Instagram, Linkedin, Youtube } from 'lucide-react';
+import { Instagram, Linkedin, Youtube, Phone } from 'lucide-react';
 
 // Language-aware content
 const currentPath = Astro.url.pathname;
@@ -11,6 +11,7 @@ const footerContent = {
     description: 'Wo Schmuck auf Innovation trifft. Hochwertige 3D Designs und individuelle Kreationen für anspruchsvolle Kunden.',
     navigation: 'Navigation',
     contact: 'Kontakt',
+    phoneLabel: 'Telefon',
     copyright: '© 2024 Phialo Design. Alle Rechte vorbehalten.',
     privacy: 'Datenschutz',
     terms: 'AGB',
@@ -33,6 +34,7 @@ const footerContent = {
     description: 'Where jewelry meets innovation. High-quality 3D designs and individual creations for discerning customers.',
     navigation: 'Navigation',
     contact: 'Contact',
+    phoneLabel: 'Phone',
     copyright: '© 2024 Phialo Design. All rights reserved.',
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
@@ -81,7 +83,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
       
       <!-- Quick Links -->
       <div class="space-y-6">
-        <h3 class="font-sans text-sm font-semibold text-midnight uppercase tracking-wider">
+        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider">
           {content.navigation}
         </h3>
         <nav class="space-y-4">
@@ -97,7 +99,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
           <a href={getLocalizedHref('/about')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
             {content.navItems.about}
           </a>
-          <a href={getLocalizedHref('/contact')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+          <a href={getLocalizedHref('/contact')} class="block text-sm text-theme-text-secondary hover:text-theme-text-primary transition-colors">
             {content.navItems.contact}
           </a>
         </nav>
@@ -105,17 +107,23 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
       
       <!-- Contact & Social -->
       <div class="space-y-6">
-        <h3 class="font-sans text-sm font-semibold text-midnight uppercase tracking-wider">
+        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider">
           {content.contact}
         </h3>
-        <div class="space-y-4 text-sm text-gray-600">
+        <div class="space-y-4 text-sm text-theme-text-secondary">
           <a 
             href="mailto:kontakt@phialo.de" 
-            class="block hover:text-midnight transition-colors"
+            class="block hover:text-theme-text-primary transition-colors"
           >
             kontakt@phialo.de
           </a>
-          <p class="text-gray-600">{content.country}</p>
+          <a 
+            href="tel:+4915785664700" 
+            class="block hover:text-theme-text-primary transition-colors"
+          >
+            (+49) 1578 566 47 00
+          </a>
+          <p class="text-theme-text-secondary">{content.country}</p>
         </div>
         
         <!-- Social Links -->
@@ -124,7 +132,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             href="https://linkedin.com/company/phialo-design" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="p-2 text-gray-600 hover:text-midnight transition-colors"
+            class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
             aria-label={content.socialLabels.linkedin}
           >
             <Linkedin size={20} />
@@ -133,7 +141,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             href="https://youtube.com/@phialodesign" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="p-2 text-gray-600 hover:text-midnight transition-colors"
+            class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
             aria-label={content.socialLabels.youtube}
           >
             <Youtube size={20} />
@@ -142,7 +150,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             href="https://instagram.com/phialodesign" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="p-2 text-gray-600 hover:text-midnight transition-colors"
+            class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
             aria-label={content.socialLabels.instagram}
           >
             <Instagram size={20} />
@@ -152,18 +160,18 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
     </div>
     
     <!-- Bottom Bar -->
-    <div class="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-      <p class="text-xs text-gray-500">
+    <div class="mt-12 pt-8 border-t border-theme-border flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-theme-text-tertiary">
         {content.copyright}
       </p>
-      <div class="flex items-center gap-6 text-xs text-gray-500">
-        <a href={getLocalizedHref('/privacy')} class="hover:text-gray-700 transition-colors">
+      <div class="flex items-center gap-6 text-xs text-theme-text-tertiary">
+        <a href={getLocalizedHref('/privacy')} class="hover:text-theme-text-secondary transition-colors">
           {content.privacy}
         </a>
-        <a href={getLocalizedHref('/terms')} class="hover:text-gray-700 transition-colors">
+        <a href={getLocalizedHref('/terms')} class="hover:text-theme-text-secondary transition-colors">
           {content.terms}
         </a>
-        <a href={getLocalizedHref('/imprint')} class="hover:text-gray-700 transition-colors">
+        <a href={getLocalizedHref('/imprint')} class="hover:text-theme-text-secondary transition-colors">
           {content.imprint}
         </a>
       </div>

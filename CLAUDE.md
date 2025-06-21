@@ -27,6 +27,7 @@ npm run deploy:preview     # Deploy to Cloudflare Pages preview
 ## Development Environment
 
 - The developer instance is running locally in another shell with "npm run dev" at http://localhost:4321/
+- If dev server is not on http://localhost:4321/, run the website on http://localhost:4322/ for dev purposes. If the site is not reachable then interrupt and get it from the user.
 
 ## Architecture Overview
 
@@ -108,3 +109,11 @@ Tailwind configuration includes:
 - `src/content/config.ts`: Content collections schema
 - `src/components/layout/LanguageSelector.tsx`: Critical for multilingual functionality
 - `public/_headers`: Security and caching configuration
+
+## AI Development Guidelines
+
+- Use parallel sub agents as much and as effectively as possible
+
+## CLI Tools
+
+- Use the `gh` command as a pre auth CLI command for github topics like issues, configuring agents

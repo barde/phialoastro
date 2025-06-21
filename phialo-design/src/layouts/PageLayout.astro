@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import ThemeWrapper from '../components/common/ThemeWrapper';
 
 export interface Props {
   title: string;
@@ -29,11 +30,13 @@ const {
   noindex={noindex}
   lang={lang}
 >
-  <Header transparent={headerTransparent} />
-  <main>
-    <slot />
-  </main>
-  <Footer />
+  <ThemeWrapper client:load>
+    <Header transparent={headerTransparent} />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </ThemeWrapper>
 </BaseLayout>
 
 <style>

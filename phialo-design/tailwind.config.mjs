@@ -59,6 +59,24 @@ export default {
         gold: '#D4AF37',
         platinum: '#E5E4E2',
         charcoal: '#2B2B2B',
+        
+        // Theme-aware colors using CSS custom properties
+        theme: {
+          background: 'var(--color-theme-background)',
+          'background-secondary': 'var(--color-theme-background-secondary)',
+          surface: 'var(--color-theme-surface)',
+          'surface-hover': 'var(--color-theme-surface-hover)',
+          'surface-active': 'var(--color-theme-surface-active)',
+          border: 'var(--color-theme-border)',
+          'border-light': 'var(--color-theme-border-light)',
+          'text-primary': 'var(--color-theme-text-primary)',
+          'text-secondary': 'var(--color-theme-text-secondary)',
+          'text-tertiary': 'var(--color-theme-text-tertiary)',
+          'text-inverse': 'var(--color-theme-text-inverse)',
+          accent: 'var(--color-theme-accent)',
+          'accent-hover': 'var(--color-theme-accent-hover)',
+          'accent-text': 'var(--color-theme-accent-text)',
+        },
       },
 
       // Typography
@@ -217,13 +235,16 @@ export default {
         },
         '.glass-effect': {
           'backdrop-filter': 'blur(10px)',
-          'background-color': 'rgba(255, 255, 255, 0.1)',
-          'border': '1px solid rgba(255, 255, 255, 0.2)',
+          'background-color': 'var(--color-glass-bg)',
+          'border': '1px solid var(--color-glass-border)',
         },
         '.glass-dark': {
           'backdrop-filter': 'blur(10px)',
           'background-color': 'rgba(0, 0, 0, 0.1)',
           'border': '1px solid rgba(255, 255, 255, 0.1)',
+        },
+        '.theme-transition': {
+          'transition': 'background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease',
         },
       };
       
