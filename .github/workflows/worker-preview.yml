@@ -12,6 +12,7 @@ name: Deploy Worker Preview
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
+    environment: cloudflare
     permissions:
       pull-requests: write
       contents: read
