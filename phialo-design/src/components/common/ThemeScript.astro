@@ -1,0 +1,22 @@
+---
+// This component adds the theme initialization script
+---
+
+<script is:inline>
+  // Theme initialization script - runs before page renders to prevent flash
+  (function() {
+    // Get saved theme or use system preference
+    const savedTheme = localStorage.getItem('phialo-theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const theme = savedTheme || systemTheme;
+    
+    // Apply theme immediately
+    document.documentElement.classList.add(`theme-${theme}`);
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Save system preference if no saved theme
+    if (!savedTheme) {
+      localStorage.setItem('phialo-theme', theme);
+    }
+  })();
+</script>
