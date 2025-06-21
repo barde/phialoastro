@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '../../lib/framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PortfolioItem {
