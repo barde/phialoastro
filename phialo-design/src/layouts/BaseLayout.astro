@@ -44,6 +44,12 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     
+    <!-- Font Preloading for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style" />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" as="style" />
+    
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" />
@@ -95,8 +101,8 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <SmoothScroll client:load />
     <slot />
     
-    <!-- Analytics placeholder -->
-    <!-- <script is:inline src="/scripts/analytics.js"></script> -->
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "YOUR_ANALYTICS_TOKEN"}'></script>
     
     <!-- Performance hints -->
     <script>
