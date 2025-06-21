@@ -29,7 +29,7 @@ npm run deploy:preview
 Set in Cloudflare Pages dashboard:
 ```
 PUBLIC_SITE_URL=https://phialo.de
-WEB3FORMS_ACCESS_KEY=your-web3forms-access-key
+PUBLIC_WEB3FORMS_ACCESS_KEY=your-web3forms-access-key
 ```
 
 #### Getting Web3Forms Access Key:
