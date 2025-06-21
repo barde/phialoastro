@@ -21,6 +21,7 @@ The GitHub Actions workflow requires two secrets to deploy Workers:
 3. Click **Create Token**
 4. Use the **Custom token** template with these permissions:
    - **Account** → Cloudflare Workers Scripts:Edit
+   - **Account** → Workers KV Storage:Edit
    - **Zone** → Zone:Read (if you plan to use custom domains)
 5. Set **Account Resources** to include your specific account
 6. Optionally set an expiration date and IP filtering for security
