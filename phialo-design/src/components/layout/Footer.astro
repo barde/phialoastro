@@ -13,8 +13,6 @@ const footerContent = {
     contact: 'Kontakt',
     phoneLabel: 'Telefon',
     copyright: '© 2024 Phialo Design. Alle Rechte vorbehalten.',
-    privacy: 'Datenschutz',
-    terms: 'AGB',
     imprint: 'Impressum',
     country: 'Deutschland',
     navItems: {
@@ -36,8 +34,6 @@ const footerContent = {
     contact: 'Contact',
     phoneLabel: 'Phone',
     copyright: '© 2024 Phialo Design. All rights reserved.',
-    privacy: 'Privacy Policy',
-    terms: 'Terms of Service',
     imprint: 'Legal Notice',
     country: 'Germany',
     navItems: {
@@ -165,12 +161,6 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
         {content.copyright}
       </p>
       <div class="flex items-center gap-6 text-xs text-theme-text-tertiary">
-        <a href={getLocalizedHref('/privacy')} class="hover:text-theme-text-secondary transition-colors">
-          {content.privacy}
-        </a>
-        <a href={getLocalizedHref('/terms')} class="hover:text-theme-text-secondary transition-colors">
-          {content.terms}
-        </a>
         <a href={getLocalizedHref('/imprint')} class="hover:text-theme-text-secondary transition-colors">
           {content.imprint}
         </a>
