@@ -72,6 +72,12 @@ The site uses **Weglot API** for German/English translation:
 - Weglot integration is configured in the layout templates
 - Never implement Google Translate or other translation services - use Weglot only
 
+### Important Notes on React Hydration
+- Portfolio and other React components use URL-based language detection
+- Always handle hydration mismatches with useState/useEffect pattern
+- Use `useMemo` for language-dependent data that needs to be reactive
+- See [ISSUE-22-FIX.md](./phialo-design/ISSUE-22-FIX.md) for detailed example
+
 ## Design System
 
 Tailwind configuration includes:
