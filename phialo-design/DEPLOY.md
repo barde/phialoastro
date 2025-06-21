@@ -29,7 +29,16 @@ npm run deploy:preview
 Set in Cloudflare Pages dashboard:
 ```
 PUBLIC_SITE_URL=https://phialo.de
+PUBLIC_WEB3FORMS_ACCESS_KEY=your-web3forms-access-key
 ```
+
+#### Getting Web3Forms Access Key:
+1. Visit [https://web3forms.com](https://web3forms.com)
+2. Enter your email address (kontakt@phialo.de)
+3. You'll receive an access key via email
+4. Add it to Cloudflare Pages environment variables
+
+**Note**: The access key is public (not secret) and required for the contact form to work.
 
 ## Domain Setup
 
