@@ -101,7 +101,7 @@ describe('PortfolioModal', () => {
       // Check additional details
       expect(screen.getByText(mockPortfolioItem.client)).toBeInTheDocument();
       expect(screen.getByText(mockPortfolioItem.projectDate)).toBeInTheDocument();
-      expect(screen.getByText(mockPortfolioItem.availability)).toBeInTheDocument();
+      expect(screen.getByText('Available')).toBeInTheDocument(); // Translated from 'available'
       expect(screen.getByText(mockPortfolioItem.price)).toBeInTheDocument();
       
       // Check tags
