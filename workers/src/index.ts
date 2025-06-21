@@ -5,7 +5,7 @@ import { handleRedirects } from './handlers/redirects';
 import { withCache } from './utils/cache';
 
 export interface Env {
-  ASSETS: Fetcher;
+  __STATIC_CONTENT: any;
   BRANCH_NAME?: string;
 }
 
