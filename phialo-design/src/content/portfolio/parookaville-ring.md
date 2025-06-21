@@ -2,6 +2,7 @@
 title: "ParookaVille Jubiläumsring"
 description: "Jubiläumsring für das 5-jährige Bestehen des Techno-Festivals 'ParookaVille' mit dem Logo des Festivals. Ein Unisex-Ring der Dynamik und Rhythmus verkörpert."
 category: "rings"
+language: "de"
 price: "Auf Anfrage"
 featured: true
 image: "/images/portfolio/parookavillering.jpg"

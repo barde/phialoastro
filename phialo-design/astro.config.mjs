@@ -14,6 +14,16 @@ export default defineConfig({
   // SEO and performance optimizations
   site: 'https://phialo.de',
   
+  // Internationalization configuration
+  i18n: {
+    defaultLocale: 'de',
+    locales: ['de', 'en'],
+    routing: {
+      prefixDefaultLocale: false, // German URLs without /de prefix
+      fallbackType: 'redirect'
+    }
+  },
+  
   
   // Build configuration
   build: {

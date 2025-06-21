@@ -162,7 +162,7 @@ describe('Portfolio Component', () => {
       });
       
       // Open modal
-      const detailsButtons = screen.getAllByText('Details');
+      const detailsButtons = screen.getAllByText('Ansehen');
       fireEvent.click(detailsButtons[0]);
       
       await waitFor(() => {
@@ -170,7 +170,7 @@ describe('Portfolio Component', () => {
       });
       
       // Close modal
-      const closeButton = screen.getByLabelText('Close modal');
+      const closeButton = screen.getByLabelText('Modal schließen');
       fireEvent.click(closeButton);
       
       // Modal should disappear
@@ -187,7 +187,7 @@ describe('Portfolio Component', () => {
       });
       
       // Open modal
-      const detailsButtons = screen.getAllByText('Details');
+      const detailsButtons = screen.getAllByText('Ansehen');
       fireEvent.click(detailsButtons[0]);
       
       await waitFor(() => {
@@ -211,7 +211,7 @@ describe('Portfolio Component', () => {
       });
       
       // Open modal
-      const detailsButtons = screen.getAllByText('Details');
+      const detailsButtons = screen.getAllByText('Ansehen');
       fireEvent.click(detailsButtons[0]);
       
       await waitFor(() => {
@@ -236,7 +236,7 @@ describe('Portfolio Component', () => {
       });
       
       // Open first item
-      const detailsButtons = screen.getAllByText('Details');
+      const detailsButtons = screen.getAllByText('Ansehen');
       fireEvent.click(detailsButtons[0]);
       
       await waitFor(() => {
@@ -274,7 +274,7 @@ describe('Portfolio Component', () => {
       });
       
       // Open item with gallery
-      const detailsButtons = screen.getAllByText('Details');
+      const detailsButtons = screen.getAllByText('Ansehen');
       fireEvent.click(detailsButtons[0]); // Turmalinring has gallery
       
       await waitFor(() => {
@@ -282,8 +282,8 @@ describe('Portfolio Component', () => {
       });
       
       // Check navigation buttons exist
-      const nextButton = screen.getByLabelText('Next image');
-      const prevButton = screen.getByLabelText('Previous image');
+      const nextButton = screen.getByLabelText('Nächstes Bild');
+      const prevButton = screen.getByLabelText('Vorheriges Bild');
       
       expect(nextButton).toBeInTheDocument();
       expect(prevButton).toBeInTheDocument();
@@ -294,7 +294,7 @@ describe('Portfolio Component', () => {
       // Wait for navigation to complete
       await waitFor(() => {
         // Check that we have multiple image indicators
-        const indicators = screen.getAllByRole('button', { name: /Go to image/i });
+        const indicators = screen.getAllByRole('button', { name: /Zu Bild/i });
         expect(indicators.length).toBeGreaterThan(1);
       });
     });
@@ -316,7 +316,7 @@ describe('Portfolio Component', () => {
     });
     
     // Open modal
-    const detailsButtons = screen.getAllByText('Details');
+    const detailsButtons = screen.getAllByText('Ansehen');
     fireEvent.click(detailsButtons[0]);
     
     await waitFor(() => {
@@ -337,7 +337,7 @@ describe('Portfolio Component', () => {
     expect(document.body.style.overflow).toBe('');
     
     // Open modal
-    const detailsButtons = screen.getAllByText('Details');
+    const detailsButtons = screen.getAllByText('Ansehen');
     fireEvent.click(detailsButtons[0]);
     
     await waitFor(() => {

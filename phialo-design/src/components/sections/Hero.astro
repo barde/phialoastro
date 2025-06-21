@@ -3,6 +3,36 @@ import { Image } from 'astro:assets';
 import AnimatedText from '../common/AnimatedText';
 import Button from '../common/Button.astro';
 import QualityBadge from '../common/QualityBadge.astro';
+
+// Language detection
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Language-specific content
+const content = {
+  de: {
+    title: {
+      line1: "3D Design",
+      line2: "Schmuck",
+      line3: "Tutorials"
+    },
+    subtitle: "Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen",
+    cta: "Portfolio entdecken",
+    portfolioUrl: "/portfolio"
+  },
+  en: {
+    title: {
+      line1: "3D Design",
+      line2: "Jewelry",
+      line3: "Tutorials"
+    },
+    subtitle: "Benefit from our experience in 3D design of jewelry and sculptures",
+    cta: "Explore Portfolio",
+    portfolioUrl: "/en/portfolio"
+  }
+};
+
+const t = isEnglish ? content.en : content.de;
 ---
 
 <section class="hero relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -24,15 +54,15 @@ import QualityBadge from '../common/QualityBadge.astro';
   <!-- Content -->
   <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">    <AnimatedText client:load>
       <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-midnight mb-8 leading-tight">
-        3D Design
-        <span class="text-gold block md:inline"> Schmuck</span>
-        Tutorials
+        {t.title.line1}
+        <span class="text-gold block md:inline"> {t.title.line2}</span>
+        {t.title.line3}
       </h1>
     </AnimatedText>
     
     <div class="hero-subtext animate-fade-in-delay-1">
       <p class="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-        Profitieren Sie von unserer Erfahrung im 3D-Design von Schmuckstücken und Skulpturen
+        {t.subtitle}
       </p>
       <p class="text-lg md:text-xl text-midnight mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
         <strong>kontakt@phialo.de</strong>
@@ -40,12 +70,12 @@ import QualityBadge from '../common/QualityBadge.astro';
     </div>
       <div class="hero-cta animate-fade-in-delay-2">
       <Button 
-        href="/portfolio" 
+        href={t.portfolioUrl} 
         variant="ghost"
         size="lg"
         class="group magnetic-cursor"
       >
-        Portfolio entdecken
+        {t.cta}
         <svg 
           class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" 
           fill="none" 
