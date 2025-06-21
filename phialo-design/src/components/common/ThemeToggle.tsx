@@ -1,5 +1,4 @@
-import React from 'react';
-import { useTheme } from 'astro-themes/react';
+import React, { useState, useEffect } from 'react';
 
 interface ThemeToggleProps {
   className?: string;
@@ -10,7 +9,35 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className = '', 
   size = 'md' 
 }) => {
-  const { theme, toggleTheme } = useTheme();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Get initial theme
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(currentTheme as 'light' | 'dark');
+    setMounted(true);
+
+    // Listen for theme changes
+    const handleThemeChange = () => {
+      const newTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(newTheme as 'light' | 'dark');
+    };
+
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ['data-theme'] 
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    document.dispatchEvent(new CustomEvent('set-theme', { detail: newTheme }));
+    localStorage.setItem('phialo-theme', newTheme);
+  };
 
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -23,6 +50,11 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     md: 'w-5 h-5',
     lg: 'w-6 h-6'
   };
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return <div className={`${sizeClasses[size]} ${className}`} />;
+  }
 
   return (
     <button
