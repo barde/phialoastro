@@ -2,7 +2,6 @@
 import { SEO } from "astro-seo";
 import { ViewTransitions } from "astro:transitions";
 import SmoothScroll from '../components/common/SmoothScroll';
-import Themes from 'astro-themes';
 import '../styles/global.css';
 
 export interface Props {
@@ -44,9 +43,6 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    
-    <!-- Theme initialization with astro-themes -->
-    <Themes defaultTheme="light" />
     
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />

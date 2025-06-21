@@ -28,7 +28,6 @@
     "@types/react-dom": "^19.1.6",
     "astro": "^5.9.3",
     "astro-seo": "^0.8.4",
-    "astro-themes": "^0.2.6",
     "framer-motion": "^12.18.1",
     "lucide-react": "^0.515.0",
     "react": "^19.1.0",

@@ -1,7 +1,6 @@
 ---
 import Navigation from './Navigation';
 import LanguageSelector from './LanguageSelector.astro';
-import ThemeToggle from '../common/ThemeToggle';
 
 export interface Props {
   transparent?: boolean;
@@ -38,7 +37,6 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       <!-- Desktop Navigation -->
       <div class="flex items-center space-x-4">
         <Navigation client:load />
-        <ThemeToggle client:idle size="sm" />
         <LanguageSelector />
       </div>
       
