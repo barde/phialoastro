@@ -190,9 +190,7 @@ const getPortfolioItems = (lang: 'en' | 'de'): PortfolioItemData[] => {
       techniques: content[1].techniques,
       details: content[1].details,
       gallery: [
-        "/images/portfolio/turmalinring_refl.jpg",
-        "/images/portfolio/square_tourmaline1_square.jpg",
-        "/images/portfolio/square_tourmaline3.jpg"
+        "/images/portfolio/turmalinring_refl.jpg"
       ]
     },
     {
