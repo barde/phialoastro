@@ -5,6 +5,9 @@ import Button from '../../components/common/Button.astro';
 
 // Web3Forms access key - in production, use environment variable
 const WEB3FORMS_ACCESS_KEY = import.meta.env.WEB3FORMS_ACCESS_KEY || 'YOUR_ACCESS_KEY_HERE';
+
+// Check if access key is properly configured
+const isAccessKeyConfigured = WEB3FORMS_ACCESS_KEY && WEB3FORMS_ACCESS_KEY !== 'YOUR_ACCESS_KEY_HERE';
 ---
 
 <PageLayout title="Contact - Gesa Pickbrenner | Phialo Design" description="Contact Gesa Pickbrenner for your 3D Design projects, jewelry design or Blender tutorials.">
@@ -24,6 +27,17 @@ const WEB3FORMS_ACCESS_KEY = import.meta.env.WEB3FORMS_ACCESS_KEY || 'YOUR_ACCES
         <div class="space-y-6 px-5 md:px-0">
           <form id="contactForm" class="space-y-6">
             <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+            <!-- Warning message if access key not configured -->
+            {!isAccessKeyConfigured && (
+              <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-yellow-800 text-sm font-medium">
+                  ⚠️ Contact form not configured
+                </p>
+                <p class="text-yellow-700 text-sm mt-1">
+                  Web3Forms access key is missing. Please set <code class="bg-yellow-100 px-1 py-0.5 rounded">WEB3FORMS_ACCESS_KEY</code> in your .env file.
+                </p>
+              </div>
+            )}
             <input type="hidden" name="subject" value="New Contact Request - Phialo Design" />
             <input type="checkbox" name="botcheck" class="hidden" style="display: none;" />
             <div>
@@ -168,7 +182,25 @@ const WEB3FORMS_ACCESS_KEY = import.meta.env.WEB3FORMS_ACCESS_KEY || 'YOUR_ACCES
             result.className = 'mt-4 text-center text-green-600 font-medium';
             form.reset();
           } else {
-            result.innerHTML = data.message || 'Something went wrong. Please try again.';
+            console.error('Web3Forms Error:', data);
+            
+            // Provide specific error messages based on status code
+            let errorMessage = 'Something went wrong. Please try again.';
+            
+            if (response.status === 400) {
+              // Check for specific error messages from Web3Forms
+              if (data.message && data.message.includes('Invalid access')) {
+                errorMessage = 'Configuration error: Invalid Web3Forms access key. Please contact the administrator.';
+              } else if (data.message && data.message.includes('required')) {
+                errorMessage = 'Please fill in all required fields.';
+              } else {
+                errorMessage = data.message || 'Invalid request. Please check your input.';
+              }
+            } else if (response.status === 500) {
+              errorMessage = 'Server error: Unable to send form at this time. Please try again later or contact us directly via email.';
+            }
+            
+            result.innerHTML = errorMessage;
             result.className = 'mt-4 text-center text-red-600';
           }
         } catch (error) {
