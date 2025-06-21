@@ -45,23 +45,40 @@ jobs:
         working-directory: workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          PREVIEW_NAME="phialo-design-preview-pr-${PR_NUMBER}"
+          # Get the branch name from the PR
+          BRANCH_NAME="${{ github.head_ref }}"
           
-          # Deploy with preview environment
-          npx wrangler deploy --env preview --name "${PREVIEW_NAME}" --var BRANCH_NAME="pr-${PR_NUMBER}"
+          # Deploy to branch-specific environment
+          npx wrangler deploy --env preview
           
-          # Get the preview URL
-          PREVIEW_URL="https://${PREVIEW_NAME}.workers.dev"
+          # Get the deployment URL from wrangler output
+          # Wrangler outputs the URL in the format: https://<worker-name>.<subdomain>.workers.dev
+          DEPLOYMENT_OUTPUT=$(npx wrangler deployments list --env preview | grep -E "https://.*workers\.dev" | head -1 | awk '{print $2}')
+          
+          # If we can't get the URL from deployments, construct it
+          if [ -z "$DEPLOYMENT_OUTPUT" ]; then
+            # Use the branch-specific URL format
+            WORKER_NAME="phialo-design-preview"
+            SUBDOMAIN="${BRANCH_NAME//\//-}" # Replace slashes with dashes
+            SUBDOMAIN="${SUBDOMAIN,,}" # Convert to lowercase
+            PREVIEW_URL="https://${WORKER_NAME}.${SUBDOMAIN}.workers.dev"
+          else
+            PREVIEW_URL="$DEPLOYMENT_OUTPUT"
+          fi
+          
           echo "preview_url=${PREVIEW_URL}" >> $GITHUB_OUTPUT
+          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         uses: actions/github-script@v7
         with:
           script: |
             const preview_url = '${{ steps.deploy.outputs.preview_url }}';
+            const branch_name = '${{ steps.deploy.outputs.branch_name }}';
             const pr_number = context.issue.number;
+            const sha = context.sha.substring(0, 7);
             
             // Find existing comment
             const comments = await github.rest.issues.listComments({
@@ -72,16 +89,42 @@ jobs:
             
             const botComment = comments.data.find(comment => 
               comment.user.type === 'Bot' && 
-              comment.body.includes('🚀 Cloudflare Worker Preview Deployed')
+              comment.body.includes('Cloudflare Workers Preview')
             );
             
-            const body = `🚀 **Cloudflare Worker Preview Deployed**
+            const body = `### 🚀 Cloudflare Workers Preview Deployed!
             
-Preview URL: ${preview_url}
-Branch: \`pr-${pr_number}\`
-            
+<table>
+<tr>
+<td><strong>🔗 Preview URL</strong></td>
+<td><a href="${preview_url}">${preview_url}</a></td>
+</tr>
+<tr>
+<td><strong>🌿 Branch</strong></td>
+<td><code>${branch_name}</code></td>
+</tr>
+<tr>
+<td><strong>📝 Commit</strong></td>
+<td><code>${sha}</code></td>
+</tr>
+<tr>
+<td><strong>🕐 Deployed</strong></td>
+<td>${new Date().toUTCString()}</td>
+</tr>
+</table>
+
 ---
-*This preview will be automatically updated on each commit.*`;
+
+<details>
+<summary>ℹ️ <strong>Preview Information</strong></summary>
+
+- 🔄 This preview will be automatically updated on each commit
+- 🌍 The preview runs on Cloudflare's global edge network
+- 🔒 Security headers and CSP policies are active
+- 💾 Edge caching is enabled for optimal performance
+- 🐛 Check browser DevTools for any console errors
+
+</details>`;
             
             if (botComment) {
               // Update existing comment
