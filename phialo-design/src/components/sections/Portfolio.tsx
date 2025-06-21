@@ -180,29 +180,26 @@ interface PortfolioProps {
 }
 
 export default function Portfolio({ lang = 'de' }: PortfolioProps) {
-  // Detect language from URL during hydration
-  const detectLanguageFromURL = () => {
+  // Use state to handle language detection properly
+  const [actualLang, setActualLang] = useState(lang);
+  
+  // Detect language from URL AFTER hydration to avoid mismatches
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname;
-      return pathname.startsWith('/en') ? 'en' : 'de';
+      const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
+      setActualLang(urlLang);
+      
+      // Debug logging
+      console.log('Portfolio Language Detection:', {
+        propLang: lang,
+        urlLang,
+        pathname
+      });
     }
-    return lang;
-  };
+  }, []); // Run once after mount
   
-  const detectedLang = detectLanguageFromURL();
-  const actualLang = detectedLang;
   const isEnglish = actualLang === 'en';
-  
-  // Debug: Log the received props
-  if (typeof window !== 'undefined') {
-    console.log('Portfolio Component Mounted:', {
-      propLang: lang,
-      detectedLang,
-      actualLang,
-      isEnglish,
-      pathname: window.location.pathname
-    });
-  }
   
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState(portfolioItems);
