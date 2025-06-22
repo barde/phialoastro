@@ -9,12 +9,12 @@ export function applyHeaders(response: Response, request: Request): Response {
   
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.weglot.com https://www.youtube.com https://www.youtube-nocookie.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
     "media-src 'self' https:",
-    "connect-src 'self' https://api.weglot.com https://cdn.weglot.com wss://api.weglot.com",
+    "connect-src 'self'",
     "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
     "object-src 'none'",
     "base-uri 'self'",
