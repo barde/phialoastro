@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
 // Mock the components used in Header
-vi.mock('../../../components/layout/Navigation', () => ({
+vi.mock('../../../shared/navigation/Navigation', () => ({
   default: () => <nav data-testid="navigation">Navigation</nav>
 }));
 

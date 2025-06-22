@@ -1,0 +1,38 @@
+---
+import PageLayout from '../../../shared/layouts/PageLayout.astro';
+
+const title = 'Impressum | Phialo Design';
+const description = 'Impressum von Phialo Design - Rechtliche Angaben und Kontaktinformationen.';
+---
+
+<PageLayout title={title} description={description}>
+  <section class="py-20">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-light text-midnight mb-8">
+          Impressum
+        </h1>
+        
+        <div class="prose prose-lg max-w-none">
+          <div class="bg-gray-50 p-8 rounded-lg mb-8">
+            <p class="text-gray-700 leading-relaxed whitespace-pre-line">Phialo Design Gesa Pickbrenner
+Goldschmiedin und 3D-Designerin
+Riesebusch 40e
+23611 Bad Schwartau
+USt-IdNr. DE305591170
+(+49)1578 566 47 00
+kontakt(at)phialo(punkt)de</p>
+          </div>
+          
+          <div class="mt-8">
+            <p class="text-gray-600">
+              <a href="/privacy" class="text-gold hover:underline">Datenschutzerklärung</a>
+              <span class="mx-2">·</span>
+              <a href="/AVG-Phialo-Design.pdf" target="_blank" rel="noopener noreferrer" class="text-gold hover:underline">AVG</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>
