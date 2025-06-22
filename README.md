@@ -26,7 +26,6 @@ npm run test
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety
 - **[Tailwind CSS](https://tailwindcss.com/)** - Styling with custom design system
 - **[Cloudflare Pages](https://pages.cloudflare.com/)** - Hosting and edge functions
-- **[Weglot](https://www.weglot.com/)** - Multilingual support (DE/EN)
 
 ## 📁 Project Structure
 
