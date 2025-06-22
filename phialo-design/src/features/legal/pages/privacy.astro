@@ -1,0 +1,111 @@
+---
+import PageLayout from '../../../shared/layouts/PageLayout.astro';
+
+const title = 'Datenschutz | Phialo Design';
+const description = 'Datenschutzerklärung von Phialo Design - Informationen über die Verarbeitung personenbezogener Daten.';
+---
+
+<PageLayout title={title} description={description}>
+  <section class="py-20">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-light text-midnight mb-8">
+          Datenschutzerklärung
+        </h1>
+        
+        <div class="prose prose-lg max-w-none">
+          <h2 class="text-2xl font-medium text-midnight mb-4">Google Analytics</h2>
+          
+          <p class="text-gray-600 mb-4">
+            Diese Website benutzt Google Analytics, einen Webanalysedienst der Google Inc. („Google"). Google verwendet
+            Cookies. Die durch das Cookie erzeugten Informationen über die Benutzung des Onlineangebotes durch die Nutzer werden in
+            der Regel an einen Server von Google in den USA übertragen und dort gespeichert.
+          </p>
+          
+          <p class="text-gray-600 mb-4">
+            Google wird diese Informationen in unserem Auftrag benutzen, um die Nutzung unseres Onlineangebotes durch die Nutzer
+            auszuwerten, um Reports über die Aktivitäten innerhalb dieses Onlineangebotes zusammenzustellen und um weitere mit der
+            Nutzung dieses Onlineangebotes und der Internetnutzung verbundene Dienstleistungen uns gegenüber zu
+            erbringen. Dabei können aus den verarbeiteten Daten pseudonyme Nutzungsprofile der Nutzer erstellt werden.
+          </p>
+          
+          <p class="text-gray-600 mb-4">
+            Wir setzen Google Analytics nur mit aktivierter IP-Anonymisierung ein. Das bedeutet, die IP-Adresse der Nutzer wird
+            von Google innerhalb von Mitgliedstaaten der Europäischen Union oder in anderen Vertragsstaaten des Abkommens über den
+            Europäischen Wirtschaftsraum gekürzt. Nur in Ausnahmefällen wird die volle IP-Adresse an einen Server von Google in den
+            USA übertragen und dort gekürzt. Die von dem Browser des Nutzers übermittelte IP-Adresse wird nicht mit anderen Daten
+            von Google zusammengeführt.
+          </p>
+          
+          <p class="text-gray-600 mb-4">
+            Die Nutzer können die Speicherung der Cookies durch eine entsprechende Einstellung ihrer Browser-Software
+            verhindern; die Nutzer können darüber hinaus die Erfassung der durch das Cookie erzeugten und auf ihre Nutzung des
+            Onlineangebotes bezogenen Daten an Google sowie die Verarbeitung dieser Daten durch Google verhindern, indem sie das
+            unter dem folgenden Link verfügbare Browser-Plugin herunterladen und installieren: 
+            <a href="https://tools.google.com/dlpage/gaoptout?hl=de" class="text-gold hover:underline" target="_blank" rel="noopener noreferrer">
+              http://tools.google.com/dlpage/gaoptout?hl=de
+            </a>.
+          </p>
+          
+          <p class="text-gray-600 mb-6">
+            Weitere Informationen zur Datennutzung zu Werbezwecken durch Google, Einstellungs- und
+            Widerspruchsmöglichkeiten erfahren Sie auf den Webseiten von Google:
+          </p>
+          
+          <ul class="list-disc list-inside text-gray-600 mb-8 space-y-2">
+            <li>
+              <a href="https://www.google.com/intl/de/policies/privacy/partners/" class="text-gold hover:underline" target="_blank" rel="noopener noreferrer">
+                https://www.google.com/intl/de/policies/privacy/partners/
+              </a>
+              („Datennutzung durch Google bei Ihrer Nutzung von Websites oder Apps unserer Partner")
+            </li>
+            <li>
+              <a href="https://www.google.com/policies/technologies/ads" class="text-gold hover:underline" target="_blank" rel="noopener noreferrer">
+                http://www.google.com/policies/technologies/ads
+              </a>
+              („Datennutzung zu Werbezwecken")
+            </li>
+            <li>
+              <a href="https://www.google.de/settings/ads" class="text-gold hover:underline" target="_blank" rel="noopener noreferrer">
+                http://www.google.de/settings/ads
+              </a>
+              („Informationen verwalten, die Google verwendet, um Ihnen Werbung einzublenden")
+            </li>
+            <li>
+              <a href="https://www.google.com/ads/preferences/" class="text-gold hover:underline" target="_blank" rel="noopener noreferrer">
+                http://www.google.com/ads/preferences/
+              </a>
+              („Bestimmen Sie, welche Werbung Google Ihnen zeigt")
+            </li>
+          </ul>
+          
+          <div class="bg-gray-50 p-6 rounded-lg mb-8">
+            <button 
+              onclick="gaOptout(); alert('Google Analytics wurde deaktiviert');"
+              class="text-gold hover:text-gold-light underline"
+            >
+              Google Analytics deaktivieren
+            </button>
+          </div>
+          
+          <script>
+            // Set to the same value as the web property used on the site
+            var gaProperty = 'UA-103082696-1';
+            
+            // Disable tracking if the opt-out cookie exists.
+            var disableStr = 'ga-disable-' + gaProperty;
+            if (document.cookie.indexOf(disableStr + '=true') > -1) {
+              window[disableStr] = true;
+            }
+            
+            // Opt-out function
+            function gaOptout() {
+              document.cookie = disableStr + '=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/';
+              window[disableStr] = true;
+            }
+          </script>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>

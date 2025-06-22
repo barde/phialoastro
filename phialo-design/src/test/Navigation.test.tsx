@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import Navigation from '../components/layout/Navigation';
+import Navigation from '../shared/navigation/Navigation';
 
 describe('Navigation Component', () => {
   it('renders navigation links', () => {
