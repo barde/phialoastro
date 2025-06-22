@@ -38,26 +38,50 @@ npm run deploy:preview     # Deploy to Cloudflare Pages preview
 - **TypeScript**: Strict configuration with Astro defaults
 - **Vitest**: Testing with React Testing Library
 
+### Feature-Based Architecture
+The project follows a feature-based architecture where functionality is organized by business domain rather than technical layers. Each feature is self-contained with its own components, pages, types, and styles. This improves maintainability, scalability, and team collaboration.
+
 ### Directory Structure
 ```
-phialo-design/src/
-├── components/
-│   ├── common/          # Shared UI components (AnimatedText, Button)
-│   ├── layout/          # Layout components (Header, Footer, Navigation, LanguageSelector)
-│   ├── portfolio/       # Portfolio-specific components
-│   └── sections/        # Page sections (Hero, Services, Tutorials)
-├── content/             # Content collections (portfolio, tutorials)
-├── layouts/             # Astro layout templates
-├── pages/               # File-based routing
-├── styles/              # Global styles and design system
-└── test/                # Comprehensive test suite
+phialoastro/
+├── phialo-design/                  # Main application
+│   ├── src/
+│   │   ├── features/              # Feature-based modules
+│   │   │   ├── portfolio/         # Portfolio feature
+│   │   │   ├── services/          # Services feature
+│   │   │   ├── tutorials/         # Tutorials feature
+│   │   │   ├── contact/           # Contact feature
+│   │   │   ├── about/             # About feature
+│   │   │   ├── legal/             # Legal pages
+│   │   │   └── home/              # Home page components
+│   │   ├── shared/                # Shared resources
+│   │   │   ├── components/        # Reusable UI components
+│   │   │   ├── navigation/        # Header, Footer, Navigation
+│   │   │   └── layouts/           # Page layouts
+│   │   ├── content/               # Content collections
+│   │   ├── pages/                 # File-based routing
+│   │   ├── styles/                # Global styles
+│   │   └── test/                  # Test suite
+│   ├── public/                    # Static assets
+│   └── tests/                     # E2E tests
+├── docs/                          # Project documentation
+│   ├── architecture/              # System design & concepts
+│   ├── decisions/                 # Architectural decisions
+│   ├── getting-started/           # Tutorials
+│   └── how-to/                    # Guides
+├── mockups/                       # Design mockups
+│   ├── v1-v3/                    # Original versions
+│   └── learning-portal/           # Learning portal designs
+└── workers/                       # Cloudflare Workers
 ```
 
 ### Component Patterns
 - **`.astro` files**: Use for static, SEO-critical content that doesn't require interactivity
 - **`.tsx` files**: Use for interactive features requiring client-side JavaScript
-- Components in `components/common/` are shared across the site
-- Layout components handle site structure and navigation
+- Feature-specific components live in `src/features/[feature]/components/`
+- Shared UI components are in `src/shared/components/ui/`
+- Navigation components are in `src/shared/navigation/`
+- Layout templates are in `src/shared/layouts/`
 
 ### Content Management
 - Content collections defined in `src/content/config.ts` provide type-safe content
@@ -76,7 +100,7 @@ The site uses a custom URL-based multilingual system for German/English support:
 - Portfolio and other React components use URL-based language detection
 - Always handle hydration mismatches with useState/useEffect pattern
 - Use `useMemo` for language-dependent data that needs to be reactive
-- See [ISSUE-22-FIX.md](./phialo-design/ISSUE-22-FIX.md) for detailed example
+- See [ISSUE-22-FIX.md](./docs/decisions/ISSUE-22-FIX.md) for detailed example
 
 ## Design System
 
@@ -103,7 +127,7 @@ Tailwind configuration includes:
 ## Deployment
 
 - Deployed on **Cloudflare Pages** with automatic builds from git
-- Also possible to deploy via instructions from `DEPLOY.md` to get more debug data via web browsing
+- Also possible to deploy via instructions from [DEPLOY.md](./docs/how-to/DEPLOY.md) to get more debug data via web browsing
 - Security headers configured in `public/_headers`
 - CSP allows YouTube embeds
 - Both production and preview environments available
@@ -113,8 +137,16 @@ Tailwind configuration includes:
 - `astro.config.mjs`: Core Astro configuration with React/Tailwind integration
 - `tailwind.config.mjs`: Complete design system definition
 - `src/content/config.ts`: Content collections schema
-- `src/components/layout/LanguageSelector.astro`: Handles language switching
+- `src/shared/navigation/LanguageSelector.astro`: Handles language switching
 - `public/_headers`: Security and caching configuration
+
+## Documentation
+
+Project documentation is organized in the `docs/` directory:
+- **`architecture/`**: System design, project structure, and design concepts
+- **`decisions/`**: Architectural decision records and issue resolutions
+- **`getting-started/`**: Tutorials and onboarding guides
+- **`how-to/`**: Step-by-step guides for common tasks
 
 ## AI Development Guidelines
 
