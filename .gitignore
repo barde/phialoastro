@@ -52,6 +52,12 @@ temp/
 
 # Test results
 phialo-design/test-results/
+coverage/
+.nyc_output/
+*.lcov
+*.coverage
+
+# Archives and binaries
 *.zip
 *.tar
 *.tar.gz
@@ -72,3 +78,24 @@ phialo-design/test-results/
 *.backup
 *.old
 *.orig
+
+# Package manager locks (keep package-lock.json for npm)
+yarn.lock
+pnpm-lock.yaml
+
+# Debug files
+*.map
+*.map.json
+
+# Astro specific
+.astro/
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# Cloudflare
+.wrangler/
+wrangler.toml.tmp
