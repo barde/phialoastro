@@ -52,3 +52,23 @@ temp/
 
 # Test results
 phialo-design/test-results/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.dmg
+*.iso
+*.jar
+*.war
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.dat
+*.bak
+*.backup
+*.old
+*.orig
