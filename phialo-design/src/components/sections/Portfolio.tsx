@@ -352,11 +352,17 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   const portfolioItems = useMemo(() => getPortfolioItems(actualLang), [actualLang]);
   
   useEffect(() => {
-    if (activeFilter === 'all') {
-      setFilteredItems(portfolioItems);
-    } else {
-      setFilteredItems(portfolioItems.filter(item => item.category === activeFilter));
+    let items = portfolioItems;
+    
+    // Apply category filter
+    if (activeFilter !== 'all') {
+      items = items.filter(item => item.category === activeFilter);
     }
+    
+    // Sort by year (newest first)
+    items = [...items].sort((a, b) => b.year - a.year);
+    
+    setFilteredItems(items);
   }, [activeFilter, portfolioItems]);
 
   const handleItemClick = (item: PortfolioItemData) => {
