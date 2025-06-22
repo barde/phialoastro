@@ -79,9 +79,9 @@ coverage/
 *.old
 *.orig
 
-# Package manager locks (keep package-lock.json for npm)
+# Package manager locks (keep pnpm-lock.yaml for pnpm)
 yarn.lock
-pnpm-lock.yaml
+package-lock.json
 
 # Debug files
 *.map

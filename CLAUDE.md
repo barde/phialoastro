@@ -167,6 +167,7 @@ Project documentation is organized in the `docs/` directory:
 - Always solve issues from GitHub in branches and make PRs
 - Work with feature branches preferably linking them to GitHub issues using the `gh` command
 - Leave clean git status results after work by pushing open files in their respective branches
+- Always check the post push build run results on feature branches by using the gh cli. don't report successful work until the build passes.
 
 ## Browser Automation
 
