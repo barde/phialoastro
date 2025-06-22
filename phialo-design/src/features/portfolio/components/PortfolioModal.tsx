@@ -233,6 +233,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="relative w-full max-w-6xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
+            data-testid="portfolio-modal"
           >
             {/* Close button */}
             <button
@@ -240,6 +241,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
               onClick={onClose}
               className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
               aria-label={t.closeModal}
+              data-testid="modal-close"
             >
               <X size={24} className="text-gray-700" />
             </button>

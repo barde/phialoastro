@@ -13,14 +13,16 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
 
   // Language detection
   useEffect(() => {
-    setIsEnglish(window.location.pathname.startsWith('/en/'));
+    if (typeof window !== 'undefined') {
+      setIsEnglish(window.location.pathname.startsWith('/en'));
+    }
   }, []);
 
   // Translations
   const detailsText = isEnglish ? 'Details' : 'Ansehen';
   return (
     <MagneticCursor>
-      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full">        {/* Image with proper scaling */}
+      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full" data-testid="portfolio-item">        {/* Image with proper scaling */}
         <img
           src={item.image}
           alt={item.title}
@@ -39,6 +41,7 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
               <button
                 onClick={() => onItemClick && onItemClick(item)}
                 className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
+                data-testid="portfolio-details-button"
               >
                 <Eye size={16} className="mr-2" />
                 {detailsText}
