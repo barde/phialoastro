@@ -1,0 +1,336 @@
+---
+import Button from '../../../shared/components/ui/Button.astro';
+
+// Language detection
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+// Language-specific content
+const content = {
+  de: {
+    title: "Tutorials",
+    subtitle: "Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.",
+    skillshareLabel: "Auf Skillshare ansehen",
+    directPurchaseLabel: "Direkt kaufen (ohne Mitgliedschaft)"
+  },
+  en: {
+    title: "Tutorials", 
+    subtitle: "Learn 3D design with Blender! Courses for beginners and advanced users in German and English.",
+    skillshareLabel: "View on Skillshare",
+    directPurchaseLabel: "Direct purchase (no membership required)"
+  }
+};
+
+const t = isEnglish ? content.en : content.de;
+
+// Multilingual tutorials data
+const tutorialsData = {
+  de: [
+    {
+      id: 1,
+      title: 'Lern Blender - 3D Design für absolute Anfänger',
+      description: 'Lernen Sie Blender 3D Design von Grund auf. Ein umfassender Kurs für absolute Anfänger auf Deutsch.',
+      image: '/images/Thumbnaildeutscherkurs.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'Deutsch - Anfängerniveau',
+      language: 'de',
+      featured: true,
+      link: 'https://skl.sh/3F2b3lj'
+    },
+    {
+      id: 2,
+      title: 'Von der Skizze zum Modell - Design für 3D-Druck mit Blender (Englischsprachiger Kurs)',
+      description: 'Verwandeln Sie Ihre kreativen Skizzen in professionelle 3D-Modelle, die druckfertig sind.',
+      image: '/images/thumbnailSkillshare.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/2Xjn9BV'
+    },
+    {
+      id: 3,
+      title: 'Blender lernen - 3D Design für absolute Anfänger (Englischsprachiger Kurs)',
+      description: 'Beherrschen Sie Blender 3D-Design von Grund auf. Verfügbar auf Skillshare oder als Direktkauf.',
+      image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/3xw8S77',
+      directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
+    },
+    {
+      id: 4,
+      title: 'Alles über Kurven lernen und ein atemberaubendes Ringdesign erstellen (Englischsprachiger Kurs)',
+      description: 'Beherrschen Sie Blenders Kurven-Werkzeuge, um atemberaubende Ringdesigns mit fließenden Mustern zu erstellen.',
+      image: '/images/BlenderDazzlingDesigns.jpg',
+      duration: 'Mehrere Stunden',
+      category: 'English - All Levels',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/419ltwx'
+    },
+    {
+      id: 5,
+      title: 'Einzigartige Oberflächenmuster mit Texturen erstellen (Englischsprachiger Kurs)',
+      description: 'Lernen Sie, mit Blenders Textursystem atemberaubende, einzigartige Oberflächenmuster zu erstellen.',
+      image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
+      duration: 'Mehrere Stunden',
+      category: 'English - Intermediate',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/4bMkx3o'
+    }
+  ],
+  en: [
+    {
+      id: 1,
+      title: 'Learn Blender - 3D Design for Absolute Beginners',
+      description: 'Learn Blender 3D design from scratch. A comprehensive course for absolute beginners in German.',
+      image: '/images/Thumbnaildeutscherkurs.jpg',
+      duration: 'Several hours',
+      category: 'German - Beginner Level',
+      language: 'de',
+      featured: true,
+      link: 'https://skl.sh/3F2b3lj'
+    },
+    {
+      id: 2,
+      title: 'From Sketch To Model - Design for 3D Printing with Blender',
+      description: 'Transform your creative sketches into professional 3D models ready for printing.',
+      image: '/images/thumbnailSkillshare.jpg',
+      duration: 'Several hours',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/2Xjn9BV'
+    },
+    {
+      id: 3,
+      title: 'Learn Blender - 3D Design for Absolute Beginners',
+      description: 'Master Blender 3D design from scratch. Available on Skillshare or direct purchase.',
+      image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
+      duration: 'Several hours',
+      category: 'English - Beginner',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/3xw8S77',
+      directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
+    },
+    {
+      id: 4,
+      title: 'Learn All About Curves And Create A Dazzling Ring Design',
+      description: 'Master Blender\'s curve tools to create stunning ring designs with flowing patterns.',
+      image: '/images/BlenderDazzlingDesigns.jpg',
+      duration: 'Several hours',
+      category: 'English - All Levels',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/419ltwx'
+    },
+    {
+      id: 5,
+      title: 'Create Unique Surface Patterns With Textures',
+      description: 'Learn to create stunning, unique surface patterns using Blender\'s texture system.',
+      image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
+      duration: 'Several hours',
+      category: 'English - Intermediate',
+      language: 'en',
+      featured: true,
+      link: 'https://skl.sh/4bMkx3o'
+    }
+  ]
+};
+
+// Select tutorials based on current language
+const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
+---
+
+<section id="tutorials" class="py-20 bg-neutral-50">
+  <div class="container mx-auto px-6">    <!-- Section Header -->
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-light text-neutral-900 mb-6">
+        {t.title}
+      </h2>
+      <p class="text-lg text-neutral-600 max-w-2xl mx-auto">
+        {t.subtitle}
+      </p>
+    </div>
+
+    <!-- Horizontal Scroll Container -->
+    <div class="relative">
+      <div 
+        class="flex gap-8 overflow-x-auto scrollbar-hide pb-6 snap-x snap-mandatory"
+        style="scroll-padding-left: 1.5rem;"
+      >
+        {tutorials.map((tutorial) => (
+          <article 
+            class="flex-none w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start tutorial-card"
+            data-tutorial-id={tutorial.id}
+          >
+            <!-- Image -->
+            <div class="relative h-48 bg-neutral-200">
+              <img 
+                src={tutorial.image} 
+                alt={tutorial.title}
+                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
+              <!-- Language Badge -->
+              <div class="absolute top-3 right-3">
+                <span class={`inline-flex items-center justify-center w-10 h-10 rounded-full text-xs font-bold backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-110 ${
+                  tutorial.language === 'de' 
+                    ? 'bg-neutral-900/85 text-white border-2 border-white/30 hover:bg-neutral-900/95' 
+                    : 'bg-white/85 text-neutral-900 border-2 border-neutral-900/20 hover:bg-white/95'
+                }`}>
+                  {tutorial.language === 'de' ? 'DE' : 'EN'}
+                </span>
+              </div>
+            </div>            <!-- Content -->
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-neutral-100 text-neutral-700">
+                  {tutorial.category}
+                </span>
+              </div>
+              
+              <h3 class="text-xl font-semibold text-neutral-900 mb-3 line-clamp-2">
+                {tutorial.title}
+              </h3>
+              
+              <p class="text-neutral-600 mb-6 line-clamp-3">
+                {tutorial.description}
+              </p>
+
+              <div class="space-y-3">
+                <a 
+                  href={tutorial.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
+                >
+                  {t.skillshareLabel}
+                  <svg 
+                    class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                
+                {tutorial.directLink && (
+                  <div>
+                    <a 
+                      href={tutorial.directLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors group text-sm"
+                    >
+                      {t.directPurchaseLabel}
+                      <svg 
+                        class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <!-- Scroll Indicators -->
+      <div class="flex justify-center mt-8 gap-2">
+        {tutorials.map((_, index) => (
+          <button
+            class="w-2 h-2 rounded-full bg-neutral-300 transition-all duration-300 scroll-indicator"
+            data-index={index}
+            aria-label={`Go to tutorial ${index + 1}`}
+          ></button>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  // Scroll indicator functionality
+  function initTutorialScrollIndicators() {
+    const scrollContainer = document.querySelector('.flex.gap-8.overflow-x-auto');
+    const indicators = document.querySelectorAll('.scroll-indicator');
+    
+    if (!scrollContainer || !indicators.length) return;
+
+    function updateIndicators() {
+      const scrollLeft = scrollContainer.scrollLeft;
+      const cardWidth = 320 + 32; // card width + gap
+      const activeIndex = Math.round(scrollLeft / cardWidth);
+      
+      indicators.forEach((indicator, index) => {
+        if (index === activeIndex) {
+          indicator.classList.add('bg-primary-600');
+          indicator.classList.remove('bg-neutral-300');
+        } else {
+          indicator.classList.remove('bg-primary-600');
+          indicator.classList.add('bg-neutral-300');
+        }
+      });
+    }
+
+    function scrollToCard(index: number) {
+      const cardWidth = 320 + 32; // card width + gap
+      const scrollLeft = index * cardWidth;
+      scrollContainer.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+    }
+
+    // Add click handlers to indicators
+    indicators.forEach((indicator, index) => {
+      indicator.addEventListener('click', () => scrollToCard(index));
+    });
+
+    // Update indicators on scroll
+    scrollContainer.addEventListener('scroll', updateIndicators);
+    
+    // Initialize
+    updateIndicators();
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', initTutorialScrollIndicators);
+</script>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import Portfolio from '../components/sections/Portfolio';
+import Portfolio from '../features/portfolio/components/PortfolioSection';
 
 // Mock the content module
 vi.mock('astro:content', () => ({
