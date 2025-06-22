@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import PortfolioGrid from '../../../components/portfolio/PortfolioGrid';
-import type { PortfolioItemData } from '../../../components/sections/Portfolio';
+import PortfolioGrid from '../../../features/portfolio/components/PortfolioGrid';
+import type { PortfolioItemData } from '../../../features/portfolio/components/PortfolioSection';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
