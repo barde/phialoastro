@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Portfolio from '../../../components/sections/Portfolio';
+import Portfolio from '../../../features/portfolio/components/PortfolioSection';
 import '@testing-library/jest-dom';
 
 // Mock framer-motion
