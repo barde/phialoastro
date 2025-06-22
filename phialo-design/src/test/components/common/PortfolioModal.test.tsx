@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import PortfolioModal from '../../../components/common/PortfolioModal';
+import PortfolioModal from '../../../features/portfolio/components/PortfolioModal';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({

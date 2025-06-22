@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import Navigation from '../../../components/layout/Navigation';
+import Navigation from '../../../shared/navigation/Navigation';
 
 // Mock usePathname from Astro
 vi.mock('@astrojs/react', () => ({
