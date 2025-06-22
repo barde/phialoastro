@@ -26,10 +26,10 @@ export CLOUDFLARE_API_TOKEN="your-api-token-here"
 cd workers
 
 # Deploy to preview environment
-npm run deploy:preview
+pnpm run deploy:preview
 
 # Deploy to production (after testing)
-npm run deploy:production
+pnpm run deploy:production
 ```
 
 ### Option 2: Using Wrangler Login
@@ -42,10 +42,10 @@ cd workers
 npx wrangler login
 
 # Deploy to preview environment
-npm run deploy:preview
+pnpm run deploy:preview
 
 # Deploy to production (after testing)
-npm run deploy:production
+pnpm run deploy:production
 ```
 
 ## Update Configuration

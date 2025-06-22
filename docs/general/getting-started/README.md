@@ -5,18 +5,18 @@ A luxury jewelry portfolio website built with Astro, React, and TypeScript. Feat
 ## 🚀 Quick Start
 
 ```bash
-# Install dependencies
+# Install dependencies (using pnpm for efficiency)
 cd phialo-design
-npm install
+pnpm install
 
 # Start development server
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 
 # Run tests
-npm run test
+pnpm run test
 ```
 
 ## 🛠️ Tech Stack
@@ -59,13 +59,13 @@ phialoastro/
 
 ```bash
 # Run unit tests
-npm run test
+pnpm run test
 
 # Run tests with UI
-npm run test:ui
+pnpm run test:ui
 
 # Run E2E tests
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 ## 🚀 Deployment
@@ -74,10 +74,10 @@ The site is automatically deployed to Cloudflare Pages on push to main branch.
 
 ```bash
 # Deploy to production
-npm run deploy
+pnpm run deploy
 
 # Deploy preview
-npm run deploy:preview
+pnpm run deploy:preview
 ```
 
 ## 📚 Documentation

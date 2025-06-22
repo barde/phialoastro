@@ -25,24 +25,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: |
-            phialo-design/package-lock.json
-            workers/package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Install dependencies (main project)
         working-directory: phialo-design
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build Astro site
         working-directory: phialo-design
         env:
           PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
-        run: npm run build
+        run: pnpm run build
 
       - name: Install dependencies (workers)
         working-directory: workers
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy Worker Preview
         id: deploy

@@ -58,7 +58,7 @@ src/
 ### Prerequisites
 
 - Node.js 18.x or higher
-- npm or yarn package manager
+- pnpm package manager (recommended for faster installs and better disk usage)
 
 
 ### Environment Variables
@@ -86,12 +86,12 @@ PUBLIC_SITE_URL=https://phialo.de
 
 1. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Start development server**
    ```bash
-   npm run dev
+   pnpm run dev
    ```
 
 3. **Open in browser**
@@ -99,11 +99,11 @@ PUBLIC_SITE_URL=https://phialo.de
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run test` - Run tests
-- `npm run astro` - Run Astro CLI commands
+- `pnpm run dev` - Start development server
+- `pnpm run build` - Build for production
+- `pnpm run preview` - Preview production build
+- `pnpm run test` - Run tests
+- `pnpm run astro` - Run Astro CLI commands
 
 ## 🎯 Key Components
 

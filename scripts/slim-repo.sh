@@ -75,10 +75,10 @@ if [ -d "node_modules" ] || [ -d "phialo-design/node_modules" ] || [ -d "workers
     echo ""
     echo "💡 Recommendation: Switch to pnpm for better deduplication"
     echo "   Commands:"
-    echo "   npm install -g pnpm"
-    echo "   pnpm import"
+    echo "   npm install -g pnpm  # Install pnpm globally"
+    echo "   pnpm import       # Import from package-lock.json"
     echo "   rm -rf node_modules package-lock.json"
-    echo "   pnpm install"
+    echo "   pnpm install      # Install with pnpm"
 fi
 echo ""
 

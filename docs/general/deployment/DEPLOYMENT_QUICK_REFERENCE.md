@@ -5,34 +5,34 @@
 ### Local Development
 ```bash
 # Astro only (recommended for development)
-cd phialo-design && npm run dev
+cd phialo-design && pnpm run dev
 
 # Worker + Astro (production-like)
-cd phialo-design && npm run dev:full
+cd phialo-design && pnpm run dev:full
 
 # Worker only (after building Astro)
-cd workers && npm run dev
+cd workers && pnpm run dev
 ```
 
 ### Deployment
 ```bash
 # Deploy preview (from workers/)
-npm run deploy:preview
+pnpm run deploy:preview
 
 # Deploy production (⚠️ be careful!)
-npm run deploy:production
+pnpm run deploy:production
 
 # View logs
-npm run tail
+pnpm run tail
 ```
 
 ### Building
 ```bash
 # Build Astro site
-cd phialo-design && npm run build
+cd phialo-design && pnpm run build
 
 # Build Worker
-cd workers && npm run build
+cd workers && pnpm run build
 ```
 
 ## 📋 Pre-Deployment Checklist
@@ -59,7 +59,7 @@ npx wrangler deployments list
 ### View Error Logs
 ```bash
 # Real-time logs
-cd workers && npm run tail
+cd workers && pnpm run tail
 
 # GitHub Actions logs
 gh run list --workflow=worker-preview.yml
@@ -69,8 +69,8 @@ gh run view <run-id> --log-failed
 ### Test Locally
 ```bash
 # Test with production build
-cd phialo-design && npm run build
-cd ../workers && npm run preview
+cd phialo-design && pnpm run build
+cd ../workers && pnpm run preview
 ```
 
 ## 🔗 Important URLs
@@ -90,8 +90,8 @@ npx wrangler rollback --env production
 
 # Or deploy a specific commit
 git checkout <commit-hash>
-cd phialo-design && npm run build
-cd ../workers && npm run deploy:production
+cd phialo-design && pnpm run build
+cd ../workers && pnpm run deploy:production
 ```
 
 ## 📝 Notes

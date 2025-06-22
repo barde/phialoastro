@@ -23,7 +23,7 @@ if ! command -v sharp &> /dev/null; then
     echo -e "${RED}Error: sharp-cli is not installed${NC}"
     echo ""
     echo "Please install sharp-cli globally:"
-    echo "  npm install -g sharp-cli"
+    echo "  pnpm add -g sharp-cli"
     echo ""
     exit 1
 fi
@@ -86,7 +86,7 @@ echo -e "Estimated total savings: ${GREEN}$(echo "scale=2; ($total_original_size
 echo -e "Estimated reduction: ${GREEN}$(echo "scale=0; (($total_original_size - $total_new_size) * 100) / $total_original_size" | bc)%${NC}"
 echo ""
 echo -e "${YELLOW}Note: This is a dry run. To actually convert images:${NC}"
-echo "1. Install sharp-cli: npm install -g sharp-cli"
+echo "1. Install sharp-cli: pnpm add -g sharp-cli"
 echo "2. Run this script with the --convert flag (not implemented yet)"
 echo "3. Update your HTML/Astro files to use .webp extensions"
 echo "4. Consider keeping original images as fallbacks"

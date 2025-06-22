@@ -9,19 +9,22 @@ This is **Phialo Design**, a luxury jewelry portfolio website built with Astro 5
 ## Common Development Commands
 
 ```bash
+# Install dependencies (use pnpm for faster, more efficient installs)
+pnpm install               # Install all dependencies
+
 # Development
-npm run dev                 # Start dev server on localhost:4321
-npm run build              # Build for production
-npm run preview            # Preview production build locally
+pnpm run dev               # Start dev server on localhost:4321
+pnpm run build             # Build for production
+pnpm run preview           # Preview production build locally
 
 # Testing
-npm run test               # Run tests in watch mode
-npm run test:run           # Run tests once
-npm run test:ui            # Run tests with UI
+pnpm run test              # Run tests in watch mode
+pnpm run test:run          # Run tests once
+pnpm run test:ui           # Run tests with UI
 
 # Deployment
-npm run deploy             # Deploy to Cloudflare Pages production
-npm run deploy:preview     # Deploy to Cloudflare Pages preview
+pnpm run deploy            # Deploy to Cloudflare Pages production
+pnpm run deploy:preview    # Deploy to Cloudflare Pages preview
 
 # Maintenance
 ./scripts/clean-project.sh # Remove .DS_Store and other junk files
@@ -29,7 +32,7 @@ npm run deploy:preview     # Deploy to Cloudflare Pages preview
 
 ## Development Environment
 
-- The developer instance is running locally in another shell with "npm run dev" at http://localhost:4321/
+- The developer instance is running locally in another shell with "pnpm run dev" at http://localhost:4321/
 - If dev server is not on http://localhost:4321/, run the website on http://localhost:4322/ for dev purposes. If the site is not reachable then interrupt and get it from the user.
 
 ## Architecture Overview
