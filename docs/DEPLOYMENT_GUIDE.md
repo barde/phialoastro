@@ -266,7 +266,7 @@ phialoastro/
 
 3. **Content Security**
    - Worker implements security headers
-   - CSP configured for Weglot, YouTube, and Web3Forms
+   - CSP configured for YouTube and Web3Forms
    - X-Frame-Options prevents clickjacking
 
 4. **Environment Variables**
