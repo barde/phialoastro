@@ -1,0 +1,128 @@
+name: File Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, master, develop]
+
+jobs:
+  check-files:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for prohibited files
+        run: |
+          echo "Checking for prohibited file types..."
+          
+          PROHIBITED_PATTERNS="\.zip$|\.tar$|\.tar\.gz$|\.tgz$|\.rar$|\.7z$|\.exe$|\.dll$|\.so$|\.dylib$|\.dmg$|\.iso$"
+          
+          prohibited_files=$(git ls-files | grep -E "$PROHIBITED_PATTERNS" || true)
+          
+          if [ -n "$prohibited_files" ]; then
+            echo "❌ Found prohibited file types:"
+            echo "$prohibited_files"
+            echo ""
+            echo "Please remove these files from the repository."
+            exit 1
+          fi
+          
+          echo "✅ No prohibited files found"
+
+      - name: Check for large files
+        run: |
+          echo "Checking for large files..."
+          
+          MAX_SIZE=5242880  # 5MB in bytes
+          large_files=""
+          
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null)
+              if [ "$size" -gt "$MAX_SIZE" ]; then
+                size_mb=$((size / 1048576))
+                large_files="${large_files}${file} (${size_mb}MB)\n"
+              fi
+            fi
+          done < <(git ls-files)
+          
+          if [ -n "$large_files" ]; then
+            echo "❌ Found files larger than 5MB:"
+            echo -e "$large_files"
+            echo ""
+            echo "Consider using Git LFS or excluding these files."
+            exit 1
+          fi
+          
+          echo "✅ No large files found"
+
+      - name: Check for sensitive information
+        run: |
+          echo "Checking for potential sensitive information..."
+          
+          SENSITIVE_PATTERNS="password=|api_key=|secret=|private_key|BEGIN RSA|BEGIN DSA|BEGIN EC|BEGIN OPENSSH|BEGIN PGP"
+          
+          sensitive_files=$(git grep -l -E -i "$SENSITIVE_PATTERNS" || true)
+          
+          if [ -n "$sensitive_files" ]; then
+            echo "⚠️  Warning: Potential sensitive information detected in:"
+            echo "$sensitive_files"
+            echo ""
+            echo "Please review these files for sensitive data."
+            # This is a warning, not a failure
+          fi
+
+      - name: Check for log files
+        run: |
+          echo "Checking for log files..."
+          
+          LOG_PATTERNS="\.log$|\.log\.[0-9]+$"
+          
+          log_files=$(git ls-files | grep -E "$LOG_PATTERNS" || true)
+          
+          if [ -n "$log_files" ]; then
+            echo "❌ Found log files:"
+            echo "$log_files"
+            echo ""
+            echo "Log files should not be committed to the repository."
+            exit 1
+          fi
+          
+          echo "✅ No log files found"
+
+      - name: Repository size check
+        run: |
+          echo "Checking repository size..."
+          
+          # Get size in KB
+          repo_size=$(du -sk . | cut -f1)
+          repo_size_mb=$((repo_size / 1024))
+          
+          echo "Repository size: ${repo_size_mb}MB"
+          
+          # Warn if over 100MB
+          if [ "$repo_size_mb" -gt 100 ]; then
+            echo "⚠️  Warning: Repository is larger than 100MB"
+            echo "Consider cleaning up unnecessary files"
+          fi
+
+      - name: File statistics
+        run: |
+          echo "📊 Repository file statistics:"
+          echo ""
+          
+          # Count files by extension
+          echo "Top 10 file types by count:"
+          git ls-files | sed -n 's/.*\.\([^.]*\)$/\1/p' | sort | uniq -c | sort -nr | head -10
+          
+          echo ""
+          echo "Top 10 largest files:"
+          git ls-files -z | xargs -0 ls -la | sort -k5 -nr | head -10 | awk '{print $5 " " $9}' | while read size file; do
+            size_mb=$(echo "scale=2; $size / 1048576" | bc)
+            printf "%6.2f MB  %s\n" "$size_mb" "$file"
+          done
