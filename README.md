@@ -33,16 +33,24 @@ npm run test
 phialoastro/
 ├── phialo-design/          # Main application
 │   ├── src/               # Source code
-│   │   ├── components/    # UI components
+│   │   ├── features/      # Feature-based modules
+│   │   ├── shared/        # Shared components
 │   │   ├── content/       # Content collections
-│   │   ├── layouts/       # Page layouts
 │   │   ├── pages/         # Routes
 │   │   └── styles/        # Global styles
 │   ├── public/            # Static assets
 │   ├── tests/             # E2E tests
-│   └── workers/           # Edge functions
-├── workers/               # Cloudflare Workers
-└── docs/                  # Documentation
+│   └── dist/              # Build output
+├── docs/                  # Project documentation
+│   ├── getting-started/   # Tutorials
+│   ├── how-to/           # Guides
+│   ├── architecture/      # Design docs
+│   └── decisions/         # ADRs
+├── mockups/               # Design mockups
+├── tests/                 # Project-wide tests
+├── scripts/               # Build scripts
+├── config/                # Configuration
+└── workers/               # Cloudflare Workers
 
 ```
 
@@ -82,8 +90,9 @@ npm run deploy:preview
 
 ## 📚 Documentation
 
+- [Project Structure](./docs/architecture/project-structure.md) - Architecture overview
 - [Development Guide](./phialo-design/README.md) - Detailed development instructions
-- [Deployment Instructions](./phialo-design/DEPLOY.md) - Deployment configuration
+- [Deployment Instructions](./docs/how-to/DEPLOYMENT_INSTRUCTIONS.md) - Deployment configuration
 - [AI Development Guide](./CLAUDE.md) - Guidelines for AI-assisted development
 
 ## 🤝 Contributing
