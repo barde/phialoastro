@@ -31,7 +31,7 @@ describe('Headers Handler', () => {
     const csp = result.headers.get('Content-Security-Policy');
 
     expect(csp).toContain("default-src 'self'");
-    expect(csp).toContain("script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.weglot.com");
+    expect(csp).toContain("script-src 'self' 'unsafe-inline' 'unsafe-eval'");
     expect(csp).toContain("style-src 'self' 'unsafe-inline' https://fonts.googleapis.com");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain('upgrade-insecure-requests');
