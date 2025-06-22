@@ -414,7 +414,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   };
 
   return (
-    <section id="portfolio" className="portfolio-section py-24 bg-white" ref={ref}>
+    <section id="portfolio" className="portfolio-section py-24 bg-white" ref={ref} aria-label="Portfolio">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <motion.div

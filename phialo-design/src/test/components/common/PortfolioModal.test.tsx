@@ -397,8 +397,12 @@ describe('PortfolioModal', () => {
     });
 
     it('defaults to German when window.location is not available', () => {
-      // Ensure window.location is undefined
-      delete (window as any).location;
+      // Mock window.location with undefined pathname
+      Object.defineProperty(window, 'location', {
+        value: { pathname: undefined },
+        writable: true,
+        configurable: true
+      });
 
       render(
         <PortfolioModal
