@@ -13,8 +13,8 @@ import {
   TEST_TRANSLATIONS,
   type LanguageContext
 } from '../utils/i18n-test-utils';
-import Navigation from '../../components/layout/Navigation';
-import MobileMenu from '../../components/layout/MobileMenu';
+import Navigation from '../../shared/navigation/Navigation';
+import MobileMenu from '../../shared/navigation/MobileMenu';
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
