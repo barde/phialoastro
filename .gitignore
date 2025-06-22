@@ -37,6 +37,9 @@ Thumbs.db
 logs
 *.log
 
+# Backups
+backup/
+
 # Runtime data
 pids
 *.pid
