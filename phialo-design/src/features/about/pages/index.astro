@@ -1,0 +1,58 @@
+---
+import PageLayout from '../../../shared/layouts/PageLayout.astro';
+import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
+---
+
+<PageLayout title="Über mich - Gesa Pickbrenner | Phialo Design" description="Erfahren Sie mehr über Gesa Pickbrenner - von traditioneller Goldschmiedekunst zu 3D-Design und Bildung.">
+  <section class="py-24 bg-white">
+    <div class="container mx-auto px-6 md:px-8 max-w-6xl">
+      <!-- Title -->
+      <div class="text-center mb-16">
+        <AnimatedText client:visible>
+          <h1 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
+            Über mich
+          </h1>
+        </AnimatedText>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <!-- Text content on the left -->
+        <div class="space-y-6 px-5 md:px-0">
+          <p class="text-lg leading-relaxed text-gray-700">
+            Hallo! Ich bin Gesa Pickbrenner.
+          </p>
+
+          <p class="text-lg leading-relaxed text-gray-700">
+            Schon von klein auf war ich fasziniert von allem Künstlerischen. Zeichnen, Malen und Bildhauerei waren schon immer meine Art, mich auszudrücken.
+          </p>
+
+          <p class="text-lg leading-relaxed text-gray-700">
+            2015 schloss ich meine Ausbildung in der traditionellen Goldschmiedekunst als Jahrgangsbeste in ganz Norddeutschland ab. Die Ausbildung von Lehrlingen war für mich immer einer der schöneren Aspekte des Handwerks, daher habe ich auch einen offiziellen Abschluss als Ausbilderin im Kunsthandwerk. Dies hat mir dabei geholfen, der Community zu dienen, indem ich über 8 Online-Kurse erstellt habe, die rund 10.000 Studierende erreichen, sowie unzählige 1:1-Sessions mit meinen engagiertesten Studierenden weltweit.
+          </p>
+
+          <p class="text-lg leading-relaxed text-gray-700">
+            Ich bin Autodidaktin im 3D-Design und in der Illustration. Seit über 10 Jahren bringe ich mir selbst bei, wie man kreative Ideen mit 3D zum Leben erweckt und sie mit 3D-Druck und Goldschmiedekunst in die reale Welt bringt. Ich habe zahlreiche Kunden von der Idee bis zum fertigen Projekt begleitet und verschiedene Schmuckkollektionen sowie einzigartige Einzelstücke geschaffen.
+          </p>
+
+          <p class="text-lg leading-relaxed text-gray-700">
+            2023 schloss ich mein Studium mit einem Bachelor in Wirtschaftswissenschaften ab. Ich verbinde eine künstlerische Vision mit einem hohen Bildungsstandard sowie einem ausgeprägten Sinn für den rationalsten und effizientesten Ansatz.
+          </p>
+
+          <p class="text-lg leading-relaxed text-gray-700">
+            Ich setze mich dafür ein, dass jeder seinen eigenen einzigartigen kreativen Ausdruck und seine Stimme findet, sowie eine tiefe Wissensbasis über die verwendete komplexe Technologie aufbaut, wie 3D-Programme, 3D-Druck, Goldschmiedekunst und sogar KI-Kreation.
+          </p>
+        </div>
+
+        <!-- Image on the right -->
+        <div class="relative px-5 md:px-0">
+          <img 
+            src="/gesa-portrait.jpg" 
+            alt="Gesa Pickbrenner"
+            class="w-full h-auto rounded-lg shadow-xl"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-midnight/10 to-transparent rounded-lg pointer-events-none"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>
