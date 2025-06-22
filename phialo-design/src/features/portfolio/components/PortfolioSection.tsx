@@ -419,10 +419,11 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
         {/* Section Header */}
         <motion.div
           variants={itemVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          initial="visible"
+          animate="visible"
           className="text-center mb-16"
-        >          <h2 className="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
+        >
+          <h2 className="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
             Portfolio
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
@@ -448,8 +449,8 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
         {/* Filter */}
         <motion.div
           variants={itemVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          initial="visible"
+          animate="visible"
           className="mb-12"
         >
           <PortfolioFilter
@@ -463,8 +464,8 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
         {/* Portfolio Grid */}
         <motion.div
           variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          initial="visible"
+          animate="visible"
         >
           <PortfolioGrid items={filteredItems} onItemClick={handleItemClick} />
         </motion.div>
