@@ -22,6 +22,18 @@ vi.mock('lucide-react', () => ({
 }));
 
 describe('PortfolioGrid', () => {
+  beforeEach(() => {
+    // Mock window.location for German (default)
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/',
+        href: 'http://localhost/'
+      },
+      configurable: true,
+      writable: true
+    });
+  });
+
   const mockItems: PortfolioItemData[] = [
     {
       id: 1,
@@ -75,8 +87,8 @@ describe('PortfolioGrid', () => {
     const mockOnItemClick = vi.fn();
     render(<PortfolioGrid items={mockItems} onItemClick={mockOnItemClick} />);
 
-    // Find the first details button
-    const detailsButtons = screen.getAllByText('Details');
+    // Find the first details button (German text by default)
+    const detailsButtons = screen.getAllByText('Ansehen');
     fireEvent.click(detailsButtons[0]);
 
     expect(mockOnItemClick).toHaveBeenCalledTimes(1);
@@ -87,7 +99,7 @@ describe('PortfolioGrid', () => {
     const mockOnItemClick = vi.fn();
     render(<PortfolioGrid items={mockItems} onItemClick={mockOnItemClick} />);
 
-    const detailsButtons = screen.getAllByText('Details');
+    const detailsButtons = screen.getAllByText('Ansehen');
     
     // Click first item
     fireEvent.click(detailsButtons[0]);
@@ -103,7 +115,7 @@ describe('PortfolioGrid', () => {
   it('renders without onItemClick prop', () => {
     render(<PortfolioGrid items={mockItems} />);
     
-    const detailsButtons = screen.getAllByText('Details');
+    const detailsButtons = screen.getAllByText('Ansehen');
     
     // Should not throw error when clicking without handler
     expect(() => fireEvent.click(detailsButtons[0])).not.toThrow();
@@ -136,5 +148,23 @@ describe('PortfolioGrid', () => {
     // Check for overlay that appears on hover
     const overlay = portfolioItems?.querySelector('.group-hover\\:opacity-100');
     expect(overlay).toBeInTheDocument();
+  });
+
+  it('shows English text when on English path', () => {
+    // Mock window.location for English
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/en/',
+        href: 'http://localhost/en/'
+      },
+      configurable: true,
+      writable: true
+    });
+
+    render(<PortfolioGrid items={mockItems} />);
+
+    // Should show English text
+    const detailsButtons = screen.getAllByText('Details');
+    expect(detailsButtons).toHaveLength(mockItems.length);
   });
 });
