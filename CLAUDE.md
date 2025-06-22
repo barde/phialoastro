@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **Phialo Design**, a luxury jewelry portfolio website built with Astro 5.9.3 using Islands Architecture. The site features German/English multilingual support via Weglot API and is deployed on Cloudflare Pages at `phialo.de`.
+This is **Phialo Design**, a luxury jewelry portfolio website built with Astro 5.9.3 using Islands Architecture. The site features German/English multilingual support and is deployed on Cloudflare Pages at `phialo.de`.
 
 ## Common Development Commands
 
@@ -66,11 +66,11 @@ phialo-design/src/
 
 ## Multilingual System
 
-The site uses **Weglot API** for German/English translation:
-- LanguageSelector component handles language switching with persistence
-- Language state persists during page navigation
-- Weglot integration is configured in the layout templates
-- Never implement Google Translate or other translation services - use Weglot only
+The site uses a custom URL-based multilingual system for German/English support:
+- LanguageSelector component handles language switching with localStorage persistence
+- German is the default language (served at root `/`)
+- English content is served under `/en/` prefix
+- Language preference persists across page navigation
 
 ### Important Notes on React Hydration
 - Portfolio and other React components use URL-based language detection
@@ -105,7 +105,7 @@ Tailwind configuration includes:
 - Deployed on **Cloudflare Pages** with automatic builds from git
 - Also possible to deploy via instructions from `DEPLOY.md` to get more debug data via web browsing
 - Security headers configured in `public/_headers`
-- CSP allows YouTube embeds and Weglot integration
+- CSP allows YouTube embeds
 - Both production and preview environments available
 
 ## Key Files to Understand
@@ -113,7 +113,7 @@ Tailwind configuration includes:
 - `astro.config.mjs`: Core Astro configuration with React/Tailwind integration
 - `tailwind.config.mjs`: Complete design system definition
 - `src/content/config.ts`: Content collections schema
-- `src/components/layout/LanguageSelector.tsx`: Critical for multilingual functionality
+- `src/components/layout/LanguageSelector.astro`: Handles language switching
 - `public/_headers`: Security and caching configuration
 
 ## AI Development Guidelines
@@ -127,6 +127,8 @@ Tailwind configuration includes:
 ## GitHub Workflow
 
 - Always solve issues from GitHub in branches and make PRs
+- Work with feature branches preferably linking them to GitHub issues using the `gh` command
+- Leave clean git status results after work by pushing open files in their respective branches
 
 ## Browser Automation
 
