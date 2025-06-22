@@ -2,24 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from '../../../lib/framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface PortfolioItem {
-  title: string;
-  description: string;
-  category: string;
-  image: string;
-  gallery?: string[];
-  materials?: string[];
-  client?: string;
-  projectDate?: string;
-  availability?: string;
-  price?: string;
-  tags?: string[];
-}
+import type { PortfolioItemData } from './PortfolioSection';
 
 interface PortfolioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  portfolioItem: PortfolioItem;
+  portfolioItem: PortfolioItemData;
   lang?: 'en' | 'de';
 }
 
@@ -34,8 +22,8 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   
   // Detect language from URL AFTER hydration to avoid mismatches
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const pathname = window.location.pathname;
+    if (typeof window !== 'undefined' && window.location) {
+      const pathname = window.location.pathname || '';
       const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
       setDetectedLang(urlLang);
       

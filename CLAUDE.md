@@ -68,10 +68,10 @@ phialoastro/
 │   ├── architecture/              # System design & concepts
 │   ├── decisions/                 # Architectural decisions
 │   ├── getting-started/           # Tutorials
-│   └── how-to/                    # Guides
-├── mockups/                       # Design mockups
-│   ├── v1-v3/                    # Original versions
-│   └── learning-portal/           # Learning portal designs
+│   ├── how-to/                    # Guides
+│   └── mockups/                   # Design mockups
+│       ├── initial-designs/       # Original v1-v3 designs
+│       └── issue-47-learning-portal/ # Learning portal mockups
 └── workers/                       # Cloudflare Workers
 ```
 
