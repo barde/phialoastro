@@ -46,7 +46,6 @@ phialoastro/
 │   ├── how-to/           # Guides
 │   ├── architecture/      # Design docs
 │   └── decisions/         # ADRs
-├── mockups/               # Design mockups
 ├── tests/                 # Project-wide tests
 ├── scripts/               # Build scripts
 ├── config/                # Configuration
