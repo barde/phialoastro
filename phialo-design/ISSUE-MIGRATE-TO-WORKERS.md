@@ -31,7 +31,7 @@ Currently, Phialo Design is deployed using Cloudflare Pages, which provides exce
 **Architecture:**
 - Static site built with Astro 5.9.3
 - React components with selective hydration (Islands Architecture)
-- Multilingual support via Weglot API
+- Multilingual support via URL-based routing
 - Deployed via `wrangler pages deploy`
 
 **Key Files:**
@@ -118,7 +118,7 @@ phialo-design/
    - [ ] Handle 404/error pages
 
 5. **Multilingual Support**
-   - [ ] Ensure Weglot integration works
+   - [ ] Ensure language switching works
    - [ ] Handle language detection and routing
    - [ ] Test cookie persistence
 
@@ -271,7 +271,7 @@ npm run worker:dev
 
 ### Functional Requirements
 - [ ] All pages load correctly in both languages
-- [ ] Weglot integration functions properly
+- [ ] Language switching functions properly
 - [ ] Security headers present on all responses
 - [ ] Preview deployments work for PRs
 - [ ] Local development experience maintained
