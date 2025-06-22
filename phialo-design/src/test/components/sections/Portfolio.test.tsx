@@ -208,4 +208,72 @@ describe('Portfolio Component Language Handling', () => {
       expect(modalContent).not.toContain('Materialien');
     }
   });
+
+  it('should sort portfolio items by year (newest first)', async () => {
+    render(<Portfolio />);
+    
+    // Wait for component to render
+    await waitFor(() => {
+      const portfolioButtons = screen.getAllByRole('button').filter(btn => 
+        !btn.textContent?.includes('All') &&
+        !btn.textContent?.includes('Alle') &&
+        !btn.textContent?.includes('Rings') &&
+        !btn.textContent?.includes('Ringe') &&
+        !btn.textContent?.includes('Earrings') &&
+        !btn.textContent?.includes('Ohrringe') &&
+        !btn.textContent?.includes('Pendants') &&
+        !btn.textContent?.includes('Anhänger') &&
+        !btn.textContent?.includes('Sculptures') &&
+        !btn.textContent?.includes('Skulpturen') &&
+        !btn.textContent?.includes('Pins') &&
+        !btn.textContent?.includes('Anstecker')
+      );
+      
+      // Check that ParookaVille Ring (2024) appears first
+      expect(portfolioButtons[0].textContent).toContain('ParookaVille');
+      
+      // The order should be: 2024 items first, then 2023, then 2022
+      // We can't check exact order without knowing all titles, but we can verify
+      // that ParookaVille (2024) comes before Silver Crown (2022)
+      const parookaIndex = portfolioButtons.findIndex(btn => 
+        btn.textContent?.includes('ParookaVille')
+      );
+      const crownIndex = portfolioButtons.findIndex(btn => 
+        btn.textContent?.includes('Madonna-Krone') || btn.textContent?.includes('Madonna Crown')
+      );
+      
+      expect(parookaIndex).toBeLessThan(crownIndex);
+    });
+  });
+
+  it('should maintain sorting when filtering by category', async () => {
+    render(<Portfolio />);
+    
+    // Wait for initial render
+    await waitFor(() => {
+      expect(screen.getByText(/Ringe|Rings/)).toBeInTheDocument();
+    });
+    
+    // Click on Rings filter
+    const ringsFilter = screen.getByText(/Ringe|Rings/);
+    fireEvent.click(ringsFilter);
+    
+    // Wait for filtered items
+    await waitFor(() => {
+      const portfolioButtons = screen.getAllByRole('button').filter(btn => 
+        btn.textContent?.includes('Ring') &&
+        !btn.textContent?.includes('Rings') &&
+        !btn.textContent?.includes('Ringe')
+      );
+      
+      // ParookaVille Ring (2024) should still appear before other rings
+      const ringTitles = portfolioButtons.map(btn => btn.textContent);
+      const parookaIndex = ringTitles.findIndex(title => 
+        title?.includes('ParookaVille')
+      );
+      
+      // Should be at or near the beginning (allowing for potential other 2024 rings)
+      expect(parookaIndex).toBeLessThanOrEqual(1);
+    });
+  });
 });
