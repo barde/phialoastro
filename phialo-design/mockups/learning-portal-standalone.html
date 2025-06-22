@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phialo Academy - Premium Jewelry Design Education (Standalone Platform)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --academy-gold: #C9A961;
+            --academy-black: #0A0A0A;
+            --academy-gray: #F5F5F7;
+            --academy-white: #FFFFFF;
+            --gradient-1: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --gradient-2: linear-gradient(135deg, #C9A961 0%, #E4C688 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--academy-black);
+            color: var(--academy-white);
+        }
+
+        /* Platform Header */
+        .platform-header {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .academy-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--academy-black);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .platform-nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .platform-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .platform-link:hover {
+            color: var(--academy-gold);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background: #FF3B30;
+            border-radius: 50%;
+            border: 2px solid var(--academy-black);
+        }
+
+        /* Dashboard Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .sidebar {
+            background: rgba(20, 20, 20, 0.5);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+            padding: 0 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(201, 169, 97, 0.1);
+            color: var(--academy-gold);
+        }
+
+        .sidebar-link.active {
+            background: rgba(201, 169, 97, 0.2);
+            color: var(--academy-gold);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            margin-bottom: 3rem;
+        }
+
+        .welcome-message {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        /* Progress Overview */
+        .progress-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .progress-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .progress-card-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--academy-gold);
+        }
+
+        /* Current Courses */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .active-courses {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .course-progress-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+        }
+
+        .course-progress-thumbnail {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #333, #444);
+        }
+
+        .course-progress-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .course-progress-header {
+            margin-bottom: 1rem;
+        }
+
+        .course-progress-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-progress-lesson {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            color: var(--academy-gold);
+        }
+
+        .continue-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--gradient-2);
+            color: var(--academy-black);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(201, 169, 97, 0.3);
+        }
+
+        /* Learning Path */
+        .learning-path {
+            margin-top: 3rem;
+        }
+
+        .path-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .path-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .path-milestone {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+
+        .path-milestone::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 0.5rem;
+            width: 16px;
+            height: 16px;
+            background: var(--academy-black);
+            border: 2px solid var(--academy-gold);
+            border-radius: 50%;
+        }
+
+        .path-milestone.completed::before {
+            background: var(--academy-gold);
+        }
+
+        .milestone-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .milestone-description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .platform-nav {
+                display: none;
+            }
+        }
+
+        /* Placeholder */
+        .placeholder {
+            background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Platform Header -->
+    <header class="platform-header">
+        <div class="header-container">
+            <div class="academy-logo">
+                <div class="logo-mark">PA</div>
+                <div class="logo-text">Phialo Academy</div>
+            </div>
+            
+            <nav class="platform-nav">
+                <a href="#" class="platform-link">Kurse</a>
+                <a href="#" class="platform-link">Live Sessions</a>
+                <a href="#" class="platform-link">Community</a>
+                <a href="#" class="platform-link">Zertifikate</a>
+            </nav>
+            
+            <div class="user-menu">
+                <div class="notification-icon">
+                    <svg width="20" height="20" fill="currentColor">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                        <path d="M10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                    </svg>
+                    <div class="notification-badge"></div>
+                </div>
+                <div class="user-avatar" style="width: 40px; height: 40px; background: var(--gradient-2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--academy-black);">
+                    MB
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Hauptmenü</h3>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link active">
+                            <span>📊</span>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <span>📚</span>
+                            <span>Meine Kurse</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <span>🎯</span>
+                            <span>Lernpfad</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <span>📅</span>
+                            <span>Kalender</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Community</h3>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <span>💬</span>
+                            <span>Diskussionen</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <span>🏆</span>
+                            <span>Challenges</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <span>👥</span>
+                            <span>Mentoren</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="dashboard-header">
+                <h1 class="welcome-message">Willkommen zurück, Marie!</h1>
+                <p class="dashboard-subtitle">Sie haben diese Woche bereits 4 Stunden gelernt</p>
+            </div>
+
+            <!-- Progress Overview -->
+            <div class="progress-cards">
+                <div class="progress-card">
+                    <div class="progress-card-icon">📚</div>
+                    <div class="progress-card-title">Aktive Kurse</div>
+                    <div class="progress-card-value">3</div>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-card-icon">✅</div>
+                    <div class="progress-card-title">Abgeschlossene Kurse</div>
+                    <div class="progress-card-value">7</div>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-card-icon">🏅</div>
+                    <div class="progress-card-title">Zertifikate</div>
+                    <div class="progress-card-value">5</div>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-card-icon">⏱️</div>
+                    <div class="progress-card-title">Lernzeit (Gesamt)</div>
+                    <div class="progress-card-value">124h</div>
+                </div>
+            </div>
+
+            <!-- Active Courses -->
+            <section>
+                <h2 class="section-title">Ihre aktuellen Kurse</h2>
+                <div class="active-courses">
+                    <div class="course-progress-card">
+                        <div class="course-progress-thumbnail placeholder">3D Design Course</div>
+                        <div class="course-progress-content">
+                            <div class="course-progress-header">
+                                <h3 class="course-progress-title">3D-Design mit Blender</h3>
+                                <p class="course-progress-lesson">Aktuelle Lektion: UV-Mapping für Schmuck</p>
+                            </div>
+                            <div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 65%"></div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span class="progress-percentage">65% abgeschlossen</span>
+                                    <button class="continue-btn">Weiter lernen</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="course-progress-card">
+                        <div class="course-progress-thumbnail placeholder">Stone Setting Course</div>
+                        <div class="course-progress-content">
+                            <div class="course-progress-header">
+                                <h3 class="course-progress-title">Edelsteinfassung Meisterklasse</h3>
+                                <p class="course-progress-lesson">Aktuelle Lektion: Pavé-Fassung Techniken</p>
+                            </div>
+                            <div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 40%"></div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span class="progress-percentage">40% abgeschlossen</span>
+                                    <button class="continue-btn">Weiter lernen</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Learning Path -->
+            <section class="learning-path">
+                <h2 class="section-title">Ihr Lernpfad zum Schmuckdesign-Experten</h2>
+                <div class="path-timeline">
+                    <div class="path-milestone completed">
+                        <h4 class="milestone-title">✅ Grundlagen gemeistert</h4>
+                        <p class="milestone-description">Sie haben die Basis-Kurse erfolgreich abgeschlossen</p>
+                    </div>
+                    <div class="path-milestone completed">
+                        <h4 class="milestone-title">✅ Erste eigene Designs</h4>
+                        <p class="milestone-description">5 eigene Schmuckstücke entworfen und umgesetzt</p>
+                    </div>
+                    <div class="path-milestone">
+                        <h4 class="milestone-title">🔄 Fortgeschrittene Techniken</h4>
+                        <p class="milestone-description">Aktuell: Komplexe Fassungen und 3D-Modellierung</p>
+                    </div>
+                    <div class="path-milestone">
+                        <h4 class="milestone-title">🔒 Meisterprüfung</h4>
+                        <p class="milestone-description">Abschlussprojekt und Zertifizierung</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background: rgba(20, 20, 20, 0.8); padding: 2rem; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">© 2024 Phialo Academy - Standalone Platform Mockup</p>
+    </footer>
+</body>
+</html>

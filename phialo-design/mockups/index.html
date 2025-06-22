@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phialo Design Learning Portal - Mockup Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --midnight: #1a1a2e;
+            --pearl: #F8F6F3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--pearl);
+            color: var(--midnight);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--midnight);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .reference-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .reference-link {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .reference-link:hover {
+            color: #B8941F;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .mockup-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .mockup-preview {
+            height: 250px;
+            background: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mockup-preview iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            transform: scale(0.42);
+            transform-origin: top left;
+            pointer-events: none;
+        }
+
+        .mockup-content {
+            padding: 2rem;
+        }
+
+        .mockup-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--midnight);
+        }
+
+        .mockup-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--gold);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .mockup-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .mockup-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .mockup-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .mockup-features li::before {
+            content: "✓";
+            color: var(--gold);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .view-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--midnight);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .view-btn:hover {
+            background: #2a2a3e;
+        }
+
+        .comparison-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table th {
+            font-weight: 600;
+            background: var(--pearl);
+        }
+
+        .comparison-table td:first-child {
+            font-weight: 500;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, var(--gold) 0%, #E4C688 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .recommendation h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Learning Portal Mockups</h1>
+            <p class="subtitle">Three design approaches for the Phialo Design video learning platform</p>
+            
+            <div class="reference-links">
+                <a href="https://github.com/barde/phialoastro/issues/41" target="_blank" class="reference-link">
+                    <svg width="16" height="16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    Issue #41: Architecture Proposal
+                </a>
+                <a href="https://github.com/barde/phialoastro/issues/47" target="_blank" class="reference-link">
+                    <svg width="16" height="16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    Issue #47: UI/UX Design Analysis
+                </a>
+            </div>
+        </header>
+
+        <div class="recommendation">
+            <h2>🏆 Recommended: Hybrid Solution</h2>
+            <p>Based on comprehensive analysis, the hybrid approach offers the best balance of brand consistency, cost-efficiency, and growth potential.</p>
+        </div>
+
+        <div class="mockup-grid">
+            <!-- Integrated Approach -->
+            <div class="mockup-card">
+                <div class="mockup-preview">
+                    <iframe src="learning-portal-integrated.html"></iframe>
+                </div>
+                <div class="mockup-content">
+                    <h2 class="mockup-title">Integrated Approach</h2>
+                    <p class="mockup-description">
+                        Learning portal seamlessly embedded within the existing Phialo Design website, 
+                        maintaining complete brand consistency.
+                    </p>
+                    <ul class="mockup-features">
+                        <li>Unified navigation and user accounts</li>
+                        <li>Consistent luxury aesthetic</li>
+                        <li>Minimal context switching</li>
+                        <li>Cost-effective implementation</li>
+                    </ul>
+                    <a href="learning-portal-integrated.html" class="view-btn" target="_blank">View Full Mockup</a>
+                </div>
+            </div>
+
+            <!-- Standalone Platform -->
+            <div class="mockup-card">
+                <div class="mockup-preview">
+                    <iframe src="learning-portal-standalone.html"></iframe>
+                </div>
+                <div class="mockup-content">
+                    <h2 class="mockup-title">Standalone Platform</h2>
+                    <p class="mockup-description">
+                        Dedicated learning platform at learn.phialo.de with specialized LMS features 
+                        and independent branding.
+                    </p>
+                    <ul class="mockup-features">
+                        <li>Advanced learning management system</li>
+                        <li>Full community features</li>
+                        <li>Independent scaling capabilities</li>
+                        <li>Professional academy branding</li>
+                    </ul>
+                    <a href="learning-portal-standalone.html" class="view-btn" target="_blank">View Full Mockup</a>
+                </div>
+            </div>
+
+            <!-- Hybrid Solution -->
+            <div class="mockup-card">
+                <div class="mockup-preview">
+                    <iframe src="learning-portal-hybrid.html"></iframe>
+                </div>
+                <div class="mockup-content">
+                    <span class="mockup-badge">RECOMMENDED</span>
+                    <h2 class="mockup-title">Hybrid Solution</h2>
+                    <p class="mockup-description">
+                        Semi-integrated approach at phialo.de/academy combining the best of both worlds 
+                        with dedicated learning space.
+                    </p>
+                    <ul class="mockup-features">
+                        <li>Strong brand connection</li>
+                        <li>Flexible architecture</li>
+                        <li>Progressive enhancement ready</li>
+                        <li>Optimal cost-benefit ratio</li>
+                    </ul>
+                    <a href="learning-portal-hybrid.html" class="view-btn" target="_blank">View Full Mockup</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-section">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem;">Quick Comparison</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Integrated</th>
+                        <th>Standalone</th>
+                        <th>Hybrid (Recommended)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Development Cost</td>
+                        <td>€120-140k</td>
+                        <td>€180-200k</td>
+                        <td>€150-170k</td>
+                    </tr>
+                    <tr>
+                        <td>Time to Market</td>
+                        <td>3-4 months</td>
+                        <td>5-6 months</td>
+                        <td>4-5 months</td>
+                    </tr>
+                    <tr>
+                        <td>Brand Consistency</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Scalability</td>
+                        <td>⭐⭐</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>User Experience</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="footer">
+            <p>© 2024 Phialo Design - Learning Portal Mockups</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                Created for architectural decision-making • View 
+                <a href="../LEARNING-PORTAL-MOCKUPS.md" style="color: var(--gold);">Full Analysis</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
