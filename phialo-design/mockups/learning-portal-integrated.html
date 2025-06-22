@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phialo Design - Lernportal (Integrated Approach)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --midnight: #1a1a2e;
+            --pearl: #F8F6F3;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--pearl);
+            color: var(--midnight);
+        }
+
+        /* Existing Site Header */
+        .site-header {
+            background: white;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--midnight);
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--midnight);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--gold);
+        }
+
+        .nav-link.active {
+            color: var(--gold);
+            position: relative;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gold);
+        }
+
+        /* Learning Portal Specific */
+        .learning-hero {
+            background: linear-gradient(135deg, var(--midnight) 0%, #2a2a3e 100%);
+            color: white;
+            padding: 4rem 2rem;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--gold);
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--midnight);
+        }
+
+        .btn-primary:hover {
+            background: #C19B2C;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .hero-video {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #333;
+            aspect-ratio: 16/9;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: rgba(212, 175, 55, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .play-button:hover {
+            background: var(--gold);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* Course Grid */
+        .courses-section {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--midnight);
+        }
+
+        .course-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--pearl);
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: var(--gold);
+            color: white;
+        }
+
+        .course-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .course-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #ddd, #eee);
+        }
+
+        .course-content {
+            padding: 1.5rem;
+        }
+
+        .course-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--pearl);
+            color: var(--midnight);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 15px;
+            margin-bottom: 0.75rem;
+        }
+
+        .course-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--midnight);
+        }
+
+        .course-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .course-price {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid var(--pearl);
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* User Dashboard Widget */
+        .user-widget {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--pearl);
+            border-radius: 25px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-progress {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .main-nav {
+                display: none;
+            }
+        }
+
+        /* Placeholder for images */
+        .placeholder {
+            background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Existing Site Header with Learning Portal Integration -->
+    <header class="site-header">
+        <nav class="nav-container">
+            <div class="logo">PHIALO</div>
+            <div class="main-nav">
+                <a href="#" class="nav-link">Portfolio</a>
+                <a href="#" class="nav-link">Über Mich</a>
+                <a href="#" class="nav-link">Services</a>
+                <a href="#" class="nav-link active">Lernportal</a>
+                <a href="#" class="nav-link">Kontakt</a>
+                
+                <!-- User Dashboard Widget -->
+                <div class="user-widget">
+                    <div class="user-avatar">MB</div>
+                    <div>
+                        <div style="font-weight: 600;">Marie B.</div>
+                        <div class="user-progress">3 Kurse aktiv</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Learning Portal Hero -->
+    <section class="learning-hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Meistern Sie die Kunst des Schmuckdesigns</h1>
+                <p>Lernen Sie von Experten die Geheimnisse der Schmuckherstellung – von traditionellen Techniken bis zu modernem 3D-Design.</p>
+                <div class="cta-group">
+                    <a href="#" class="btn btn-primary">Kurse entdecken</a>
+                    <a href="#" class="btn btn-secondary">Kostenlose Probe</a>
+                </div>
+            </div>
+            <div class="hero-video">
+                <div class="video-thumbnail placeholder">Video Preview</div>
+                <div class="play-button">
+                    <svg width="30" height="30" fill="white">
+                        <path d="M10 5v20l15-10z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Course Grid -->
+    <section class="courses-section">
+        <div class="section-header">
+            <h2>Ihre Lernreise beginnt hier</h2>
+            <p>Wählen Sie aus unseren sorgfältig kuratierten Kursen</p>
+        </div>
+
+        <div class="course-filters">
+            <button class="filter-btn active">Alle Kurse</button>
+            <button class="filter-btn">Anfänger</button>
+            <button class="filter-btn">Fortgeschritten</button>
+            <button class="filter-btn">Meisterklasse</button>
+        </div>
+
+        <div class="course-grid">
+            <div class="course-card">
+                <div class="course-thumbnail placeholder" style="height: 200px;">Ring Crafting Course</div>
+                <div class="course-content">
+                    <span class="course-badge">BESTSELLER</span>
+                    <h3 class="course-title">Grundlagen der Ringherstellung</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 12 Stunden</span>
+                        <span>📚 24 Lektionen</span>
+                        <span>⭐ 4.9 (127)</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem;">Lernen Sie die fundamentalen Techniken der Ringherstellung von der Skizze bis zum fertigen Schmuckstück.</p>
+                    <div class="course-price">
+                        <span class="price">€149</span>
+                        <button class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Jetzt starten</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="course-card">
+                <div class="course-thumbnail placeholder" style="height: 200px;">3D Jewelry Design</div>
+                <div class="course-content">
+                    <span class="course-badge">NEU</span>
+                    <h3 class="course-title">3D-Design mit Blender</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 20 Stunden</span>
+                        <span>📚 35 Lektionen</span>
+                        <span>⭐ 5.0 (43)</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem;">Moderne Schmuckgestaltung mit 3D-Software. Vom digitalen Entwurf zum 3D-Druck.</p>
+                    <div class="course-price">
+                        <span class="price">€249</span>
+                        <button class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Jetzt starten</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="course-card">
+                <div class="course-thumbnail placeholder" style="height: 200px;">Stone Setting Mastery</div>
+                <div class="course-content">
+                    <span class="course-badge">FORTGESCHRITTEN</span>
+                    <h3 class="course-title">Edelsteinfassung Meisterklasse</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 15 Stunden</span>
+                        <span>📚 20 Lektionen</span>
+                        <span>⭐ 4.8 (89)</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem;">Perfektionieren Sie Ihre Fasstechniken für verschiedene Edelsteinformen und -größen.</p>
+                    <div class="course-price">
+                        <span class="price">€199</span>
+                        <button class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Jetzt starten</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Preview -->
+    <footer style="background: var(--midnight); color: white; padding: 3rem 2rem; text-align: center; margin-top: 5rem;">
+        <p style="opacity: 0.7;">© 2024 Phialo Design - Integrated Learning Portal Mockup</p>
+    </footer>
+</body>
+</html>
