@@ -22,6 +22,9 @@ npm run test:ui            # Run tests with UI
 # Deployment
 npm run deploy             # Deploy to Cloudflare Pages production
 npm run deploy:preview     # Deploy to Cloudflare Pages preview
+
+# Maintenance
+./scripts/clean-project.sh # Remove .DS_Store and other junk files
 ```
 
 ## Development Environment
@@ -169,3 +172,11 @@ Project documentation is organized in the `docs/` directory:
 ## Script Development Best Practices
 
 - Always use a linter when editing deployment scripts, e.g. yml files for github workflows
+
+## Project Maintenance & Cleanliness
+
+- **No junk files**: The project must be kept clean of system files (.DS_Store, Thumbs.db, etc.)
+- **No empty directories**: Remove any empty folders that serve no purpose
+- **Use cleanup script**: Run `./scripts/clean-project.sh` regularly to maintain cleanliness
+- **Gitignore enforcement**: All system/temporary files must be in .gitignore
+- **Clean structure**: Follow the documented directory structure strictly
