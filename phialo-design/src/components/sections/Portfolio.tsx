@@ -306,6 +306,15 @@ const getPortfolioItems = (lang: 'en' | 'de'): PortfolioItemData[] => {
   ];
 };
 
+// Category mapping to handle language differences
+const categoryMap = {
+  'Rings': 'Ringe',
+  'Earrings': 'Ohrringe',
+  'Pendants': 'Anhänger',
+  'Sculptures': 'Skulpturen',
+  'Pins': 'Anstecker'
+} as const;
+
 const categories = [
   { id: 'all', label: 'Alle Arbeiten', labelEn: 'All Works' },
   { id: 'Rings', label: 'Ringe', labelEn: 'Rings' },
@@ -352,12 +361,29 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   const portfolioItems = useMemo(() => getPortfolioItems(actualLang), [actualLang]);
   
   useEffect(() => {
-    if (activeFilter === 'all') {
-      setFilteredItems(portfolioItems);
-    } else {
-      setFilteredItems(portfolioItems.filter(item => item.category === activeFilter));
+    let items = portfolioItems;
+    
+    // Apply category filter
+    if (activeFilter !== 'all') {
+      items = items.filter(item => {
+        // For English items, compare directly
+        if (item.category === activeFilter) return true;
+        
+        // For German items, check if the active filter (English) maps to the item's German category
+        if (actualLang === 'de' && categoryMap[activeFilter as keyof typeof categoryMap] === item.category) return true;
+        
+        // For English page with German filter IDs
+        if (actualLang === 'en' && item.category === activeFilter) return true;
+        
+        return false;
+      });
     }
-  }, [activeFilter, portfolioItems]);
+    
+    // Sort by year (newest first)
+    items = [...items].sort((a, b) => b.year - a.year);
+    
+    setFilteredItems(items);
+  }, [activeFilter, portfolioItems, actualLang]);
 
   const handleItemClick = (item: PortfolioItemData) => {
     setSelectedItem(item);
