@@ -120,8 +120,11 @@ describe('Portfolio Component', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
       
-      // Check that some portfolio content is displayed (first item is DNA-Spirale)
-      expect(screen.getByText(/Elegante Ohrhänger inspiriert von der DNA-Doppelhelix-Struktur/)).toBeInTheDocument();
+      // Check that modal content is displayed - first item after sorting by year is ParookaVille
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      // The modal should contain item details
+      const modalContent = screen.getByRole('dialog');
+      expect(modalContent).toHaveTextContent('ParookaVille Jubiläumsring');
     });
 
     it('displays correct item data in modal', async () => {
@@ -146,7 +149,7 @@ describe('Portfolio Component', () => {
         expect(titles).toHaveLength(2);
         
         // Check description
-        expect(screen.getByText(/Elegante Ohrhänger inspiriert von der DNA-Doppelhelix-Struktur/)).toBeInTheDocument();
+        expect(screen.getByText('Elegante Ohrhänger inspiriert von der DNA-Doppelhelix-Struktur. Diese einzigartigen Schmuckstücke verbinden wissenschaftliche Ästhetik mit kunstvoller Handwerkskunst.')).toBeInTheDocument();
         
         // Check materials
         expect(screen.getByText('925er Silber')).toBeInTheDocument();
@@ -243,9 +246,9 @@ describe('Portfolio Component', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
       
-      // Check first item content is displayed
+      // Check first item content is displayed - ParookaVille is the newest (2024)
       const firstModalContent = screen.getByRole('dialog');
-      expect(firstModalContent).toHaveTextContent(/DNA-Spirale|Turmalinring/);
+      expect(firstModalContent).toHaveTextContent('ParookaVille Jubiläumsring');
       
       // Close modal
       fireEvent.keyDown(document, { key: 'Escape' });
@@ -270,12 +273,13 @@ describe('Portfolio Component', () => {
       render(<Portfolio />);
       
       await waitFor(() => {
-        expect(screen.getByText('Turmalinring Masterpiece')).toBeInTheDocument();
+        expect(screen.getByText('DNA-Spirale Ohrhänger')).toBeInTheDocument();
       });
       
-      // Open item with gallery
-      const detailsButtons = screen.getAllByText('Ansehen');
-      fireEvent.click(detailsButtons[0]); // Turmalinring has gallery
+      // Find and open DNA-Spirale item which has a gallery with 2 images
+      const dnaItem = screen.getByText('DNA-Spirale Ohrhänger').closest('.portfolio-item-container');
+      const detailsButton = dnaItem?.querySelector('button');
+      fireEvent.click(detailsButton!);
       
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -295,7 +299,7 @@ describe('Portfolio Component', () => {
       await waitFor(() => {
         // Check that we have multiple image indicators
         const indicators = screen.getAllByRole('button', { name: /Zu Bild/i });
-        expect(indicators.length).toBeGreaterThan(1);
+        expect(indicators.length).toBe(2); // DNA-Spirale has 2 images in gallery
       });
     });
   });
