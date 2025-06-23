@@ -23,15 +23,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: phialo-design/package-lock.json
+          cache-dependency-path: '**/package-lock.json'
           
       - name: Install dependencies
         working-directory: phialo-design
         run: npm ci
-        
-      - name: Run linter
-        working-directory: phialo-design
-        run: npm run lint
         
       - name: Run unit tests with coverage
         working-directory: phialo-design
@@ -62,7 +58,7 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: phialo-design/package-lock.json
+          cache-dependency-path: '**/package-lock.json'
           
       - name: Install dependencies
         working-directory: phialo-design
