@@ -8,7 +8,25 @@ The `playwright.pr.config.ts` file is specifically designed to run a subset of c
 
 ## Running PR Tests
 
-### Locally
+### Quick Method - Simulate Full PR Check
+
+The easiest way to run PR tests locally is using the dedicated script:
+
+```bash
+# Run the same checks that GitHub Actions runs during PR
+./scripts/test-pr-local.sh
+```
+
+This script will:
+- Run linting checks
+- Run TypeScript type checking  
+- Run unit tests (single Node version)
+- Run core E2E tests (5 critical test files)
+- Build the project
+- Display timing information and colored output
+- Show which tests are being skipped vs run
+
+### Manual Method - Individual Commands
 
 ```bash
 # Run all tests marked as @critical
@@ -206,3 +224,19 @@ npx playwright test
 # Or use nightly config for maximum coverage
 npx playwright test --config=playwright.nightly.config.ts
 ```
+
+## Script Comparison
+
+### Available Test Scripts
+
+| Script | Purpose | What it runs | When to use |
+|--------|---------|--------------|-------------|
+| `./scripts/test-pr-local.sh` | Simulate PR checks | Lint, typecheck, unit tests, 5 core E2E tests, build | Before creating a PR |
+| `./scripts/test-pr.sh` | Basic PR test runner | Unit tests, core E2E tests, build | Quick PR validation |
+| `./scripts/run-nightly-tests.sh` | Full test suite | All unit tests with coverage, all E2E tests, performance tests | Comprehensive testing |
+
+### Key Differences
+
+- **test-pr-local.sh**: Most comprehensive PR simulation with linting and type checking
+- **test-pr.sh**: Simpler version without lint/typecheck steps
+- **run-nightly-tests.sh**: Full suite including performance testing and all browser combinations
