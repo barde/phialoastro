@@ -75,13 +75,23 @@ npm run test:e2e
 
 ## 🚀 Deployment
 
-The site is automatically deployed to Cloudflare Pages on push to main branch.
+### Environments
+
+- **Production**: [phialo.de](https://phialo.de) - Custom domain
+- **Master Preview**: [phialo-design-preview.meise.workers.dev](https://phialo-design-preview.meise.workers.dev) - Latest master branch
+- **PR Previews**: Coming soon - Ephemeral environments per PR (see [#99](https://github.com/barde/phialoastro/issues/99))
+
+The site uses automatic deployments:
+- Master branch deploys to preview environment
+- Production deployments are manual
+
+### Deploy Commands
 
 ```bash
-# Deploy to production
+# Deploy to production (requires zone permissions)
 npm run deploy
 
-# Deploy preview
+# Deploy to preview (workers.dev)
 npm run deploy:preview
 ```
 

@@ -1,0 +1,27 @@
+# Path filters for GitHub Actions workflows
+# Used by dorny/paths-filter to conditionally run tests based on changed files
+
+frontend:
+  - 'phialo-design/src/**'
+  - 'phialo-design/public/**'
+  - '!phialo-design/src/test/**'
+
+tests:
+  - 'phialo-design/tests/**'
+  - 'phialo-design/**/*.test.ts'
+  - 'phialo-design/**/*.test.tsx'
+  - 'phialo-design/src/test/**'
+  - 'phialo-design/vitest.config.ts'
+  - 'phialo-design/src/test-utils.ts'
+
+e2e:
+  - 'phialo-design/tests/e2e/**'
+  - 'phialo-design/playwright.config.ts'
+
+config:
+  - 'phialo-design/*.config.*'
+  - 'phialo-design/package.json'
+  - 'phialo-design/pnpm-lock.yaml'
+  - 'phialo-design/tsconfig.json'
+  - '.github/workflows/**'
+  - '.github/path-filters.yml'
