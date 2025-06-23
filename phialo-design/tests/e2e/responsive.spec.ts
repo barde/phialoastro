@@ -20,8 +20,11 @@ test.describe('Responsive Design Tests', () => {
       // Wait for menu animation
       await page.waitForTimeout(300);
       
-      // Check navigation items are visible
-      const navItems = page.locator('nav a');
+      // Check navigation items are visible - specifically mobile nav
+      const mobileNav = page.locator('nav.lg\\:hidden, div[class*="fixed"][class*="inset"] nav');
+      await expect(mobileNav).toBeVisible();
+      
+      const navItems = mobileNav.locator('a');
       const navCount = await navItems.count();
       expect(navCount).toBeGreaterThan(0);
       

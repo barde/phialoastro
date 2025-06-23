@@ -17,7 +17,15 @@ test.describe('Critical User Journeys', () => {
     
     // Check critical elements are visible
     await expect(page.locator('header')).toBeVisible();
-    await expect(page.locator('nav')).toBeVisible();
+    // Check that at least one nav is visible (desktop or mobile button)
+    const desktopNav = page.locator('nav.hidden.lg\\:flex');
+    const mobileMenuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]');
+    
+    // Either desktop nav or mobile menu button should be visible
+    const isDesktopNavVisible = await desktopNav.isVisible();
+    const isMobileButtonVisible = await mobileMenuButton.first().isVisible();
+    expect(isDesktopNavVisible || isMobileButtonVisible).toBeTruthy();
+    
     await expect(page.locator('h1')).toBeVisible();
     
     // Verify language selector exists
@@ -25,16 +33,21 @@ test.describe('Critical User Journeys', () => {
   });
 
   test('@critical Navigation menu works on desktop and mobile', async ({ page, viewport }) => {
-    // Test desktop navigation
-    const navLinks = page.locator('nav a');
-    await expect(navLinks).toHaveCount(5); // Adjust based on actual nav items
+    // Test desktop navigation - be specific about which nav
+    const desktopNavLinks = page.locator('nav.hidden.lg\\:flex a');
+    await expect(desktopNavLinks).toHaveCount(5); // Adjust based on actual nav items
     
     // Test mobile navigation if viewport is mobile
     if (viewport && viewport.width < 768) {
-      const menuButton = page.locator('[data-mobile-menu-button]');
+      // On mobile, desktop nav should be hidden
+      await expect(page.locator('nav.hidden.lg\\:flex')).not.toBeVisible();
+      
+      // Check for mobile menu button
+      const menuButton = page.locator('button[aria-label*="Menü"], button[aria-label*="menu"]');
       if (await menuButton.isVisible()) {
         await menuButton.click();
-        await expect(page.locator('[data-mobile-menu]')).toBeVisible();
+        // Wait for mobile menu to open
+        await expect(page.locator('nav.lg\\:hidden, div[class*="fixed"][class*="inset"]')).toBeVisible();
       }
     }
   });
