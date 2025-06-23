@@ -4,14 +4,18 @@ import PortfolioGrid from '../../../features/portfolio/components/PortfolioGrid'
 import type { PortfolioItemData } from '../../../features/portfolio/components/PortfolioSection';
 
 // Mock framer-motion
-vi.mock('framer-motion', () => ({
+vi.mock('../../../lib/framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, layout, ...props }: any) => {
+      // Filter out non-DOM props
+      const { variants, initial, animate, exit, transition, ...domProps } = props;
+      return <div {...domProps}>{children}</div>;
+    },
   },
 }));
 
 // Mock MagneticCursor component
-vi.mock('../../../components/common/MagneticCursor', () => ({
+vi.mock('../../../shared/components/effects/MagneticCursor', () => ({
   default: ({ children }: any) => <div>{children}</div>
 }));
 
