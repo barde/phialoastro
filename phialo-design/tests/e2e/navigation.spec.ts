@@ -39,11 +39,9 @@ test.describe('Navigation Tests', () => {
     test('@critical Should switch from German to English', async ({ page }) => {
       await page.goto('/');
       
-      const langSelector = page.locator('[data-language-selector]');
-      await langSelector.click();
-      
-      const englishOption = page.locator('a[href="/en/"]');
-      await englishOption.click();
+      // Click the English button in the language selector
+      const englishButton = page.locator('[data-language-selector] button[data-lang="en"]');
+      await englishButton.click();
       
       await expect(page).toHaveURL('/en/');
     });
@@ -51,11 +49,9 @@ test.describe('Navigation Tests', () => {
     test('Should switch from English to German', async ({ page }) => {
       await page.goto('/en/');
       
-      const langSelector = page.locator('[data-language-selector]');
-      await langSelector.click();
-      
-      const germanOption = page.locator('a[href="/"]');
-      await germanOption.click();
+      // Click the German button in the language selector
+      const germanButton = page.locator('[data-language-selector] button[data-lang="de"]');
+      await germanButton.click();
       
       await expect(page).toHaveURL('/');
     });
@@ -63,11 +59,9 @@ test.describe('Navigation Tests', () => {
     test('@critical Should maintain path when switching languages', async ({ page }) => {
       await page.goto('/portfolio');
       
-      const langSelector = page.locator('[data-language-selector]');
-      await langSelector.click();
-      
-      const englishOption = page.locator('a[href="/en/portfolio"]');
-      await englishOption.click();
+      // Click the English button in the language selector
+      const englishButton = page.locator('[data-language-selector] button[data-lang="en"]');
+      await englishButton.click();
       
       await expect(page).toHaveURL('/en/portfolio');
     });
