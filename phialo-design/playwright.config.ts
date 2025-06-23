@@ -20,7 +20,13 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'html',
+  /* Timeout for each test */
+  timeout: 30 * 1000,
+  /* Timeout for each assertion */
+  expect: {
+    timeout: 10 * 1000,
+  },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -31,6 +37,15 @@ export default defineConfig({
 
     /* Screenshots on failure */
     screenshot: 'only-on-failure',
+    
+    /* Video on failure in CI */
+    video: process.env.CI ? 'retain-on-failure' : 'off',
+    
+    /* Action timeout */
+    actionTimeout: 10 * 1000,
+    
+    /* Navigation timeout */
+    navigationTimeout: 30 * 1000,
   },
 
   /* Configure projects for major browsers */
