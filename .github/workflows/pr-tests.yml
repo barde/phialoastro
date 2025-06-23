@@ -5,10 +5,17 @@ on:
     types: [opened, synchronize, reopened]
   merge_group:
 
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+
 jobs:
   test:
     name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
@@ -64,6 +71,8 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     continue-on-error: true  # Non-blocking initially while we fix E2E tests
     
     steps:
@@ -117,6 +126,9 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     needs: [test, e2e]
     if: always()
     
