@@ -62,10 +62,11 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
       <div 
         className="fixed inset-0 bg-midnight/20 backdrop-blur-sm"
         onClick={onClose}
+        data-testid="mobile-menu-backdrop"
       />
       
       {/* Menu Panel */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl">
+      <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl" data-testid="mobile-menu-panel">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
@@ -76,6 +77,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
               onClick={onClose}
               className="p-2 text-gray-600 hover:text-midnight transition-colors"
               aria-label={isEnglish ? 'Close menu' : 'Menü schließen'}
+              data-testid="mobile-menu-close"
             >
               <X size={24} />
             </button>
@@ -98,6 +100,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
                           ? 'text-gold'
                           : 'text-midnight hover:text-gold'
                       }`}
+                      data-testid={`mobile-nav-${href.replace(/\//g, '') || 'home'}`}
                     >
                       {displayLabel}
                     </a>

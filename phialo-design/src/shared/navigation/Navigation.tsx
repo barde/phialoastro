@@ -80,6 +80,7 @@ export default function Navigation({}: NavigationProps) {
           ? (isEnglish ? 'Close menu' : 'Menü schließen')
           : (isEnglish ? 'Open menu' : 'Menü öffnen')
         }
+        data-testid="mobile-menu-button"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>

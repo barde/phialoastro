@@ -69,8 +69,7 @@ test.describe('Portfolio Modal Tests (Issue #22)', () => {
     await expect(modal).not.toBeVisible();
   });
 
-  test.skip('Modal should close when clicking outside', async ({ page }) => {
-    // TODO: Fix this test - the click outside functionality might not be working properly
+  test('Modal should close when clicking outside', async ({ page }) => {
     await page.goto('/portfolio');
     await waitForHydration(page);
     
@@ -80,16 +79,8 @@ test.describe('Portfolio Modal Tests (Issue #22)', () => {
     const modal = page.locator('[data-testid="portfolio-modal"]');
     await expect(modal).toBeVisible();
     
-    // Click outside modal (on backdrop)
-    // Get viewport size to click at edge
-    const viewport = page.viewportSize();
-    if (viewport) {
-      // Click at far right edge to ensure we're outside the modal
-      await page.mouse.click(viewport.width - 5, viewport.height / 2);
-    } else {
-      // Fallback: click at a position that should be outside the modal
-      await page.mouse.click(50, 50);
-    }
+    // Click on backdrop at a specific position (top-left corner) to avoid modal content
+    await page.mouse.click(10, 10);
     
     await expect(modal).not.toBeVisible();
   });
