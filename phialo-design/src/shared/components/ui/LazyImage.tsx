@@ -13,7 +13,7 @@ export default function LazyImage({
   src, 
   alt, 
   className = '', 
-  placeholder = '/images/profile.png', // Use existing profile image as fallback
+  placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect width="400" height="400" fill="%23f0f0f0"/%3E%3C/svg%3E', // Simple gray placeholder
   aspectRatio = '1/1',
   objectFit = 'cover'
 }: LazyImageProps) {
