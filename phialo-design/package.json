@@ -15,6 +15,8 @@
     "test:e2e:debug": "playwright test --debug",
     "test:pr": "./scripts/test-pr.sh",
     "test:e2e:pr": "playwright test --config=playwright.config.pr.ts",
+    "test:e2e:critical": "playwright test --config=playwright.config.pr.ts",
+    "test:e2e:nightly": "playwright test --workers=8",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name phialo-design",
     "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name phialo-design --env preview",
     "worker:dev": "cd ../workers && npm run dev",

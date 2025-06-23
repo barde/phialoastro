@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Integration Tests - All Fixes', () => {
-  test('Complete user journey in German', async ({ page }) => {
+  test('@critical Complete user journey in German', async ({ page }) => {
     // Start at homepage
     await page.goto('/');
     
@@ -110,7 +110,7 @@ test.describe('Integration Tests - All Fixes', () => {
     await expect(page.locator('html')).toHaveClass(/theme-dark/);
   });
 
-  test('Mobile responsiveness with all features', async ({ page }) => {
+  test('@critical Mobile responsiveness with all features', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
     

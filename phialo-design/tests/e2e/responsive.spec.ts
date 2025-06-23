@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Responsive Design Tests', () => {
   test.describe('Mobile Navigation', () => {
-    test('Mobile menu should be functional @mobile', async ({ page, isMobile }) => {
+    test('@critical Mobile menu should be functional @mobile', async ({ page, isMobile }) => {
       // Set mobile viewport
       await page.setViewportSize({ width: 390, height: 844 }); // iPhone 12 dimensions
       await page.goto('/');
@@ -31,7 +31,7 @@ test.describe('Responsive Design Tests', () => {
       }
     });
     
-    test('Theme toggle should work on mobile @mobile', async ({ page }) => {
+    test('@critical Theme toggle should work on mobile @mobile', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto('/');
       

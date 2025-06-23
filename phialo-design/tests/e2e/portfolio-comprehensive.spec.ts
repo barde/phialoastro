@@ -6,7 +6,7 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     await page.waitForSelector('.portfolio-section', { timeout: 10000 });
   });
 
-  test('portfolio items should be sorted by year (newest first)', async ({ page }) => {
+  test('@critical portfolio items should be sorted by year (newest first)', async ({ page }) => {
     // Wait for portfolio grid
     await page.waitForSelector('.portfolio-grid');
     
@@ -133,7 +133,7 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     expect(itemCount).toBe(9);
   });
 
-  test('portfolio modal should open with correct item', async ({ page }) => {
+  test('@critical portfolio modal should open with correct item', async ({ page }) => {
     // Click on the first item (ParookaVille Ring)
     await page.click('.portfolio-item:first-child');
     
@@ -181,7 +181,7 @@ test.describe('Portfolio English Version Tests', () => {
     await page.waitForSelector('.portfolio-section', { timeout: 10000 });
   });
 
-  test('should display English category names', async ({ page }) => {
+  test('@critical should display English category names', async ({ page }) => {
     // Check that English category names are displayed
     await expect(page.locator('button:has-text("All Works")')).toBeVisible();
     await expect(page.locator('button:has-text("Rings")')).toBeVisible();
