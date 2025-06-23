@@ -26,8 +26,8 @@ jobs:
       
       - name: Install dependencies
         run: |
-          npm ci --prefix phialo-design
-          npm ci --prefix workers
+          npm install --prefix phialo-design
+          npm install --prefix workers
       
       - name: Build Astro site
         env:
