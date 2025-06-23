@@ -11,7 +11,7 @@ test.describe('Critical User Journeys', () => {
     await page.goto('/');
   });
 
-  test('@critical Homepage loads and displays key elements', async ({ page }) => {
+  test('Homepage loads and displays key elements', async ({ page }) => {
     // Verify the page loads
     await expect(page).toHaveTitle(/Phialo Design/);
     
@@ -32,7 +32,7 @@ test.describe('Critical User Journeys', () => {
     await expect(page.locator('[data-language-selector]')).toBeVisible();
   });
 
-  test('@critical Navigation menu works on desktop and mobile', async ({ page, viewport }) => {
+  test('Navigation menu works on desktop and mobile', async ({ page, viewport }) => {
     // Test desktop navigation - be specific about which nav
     const desktopNavLinks = page.locator('nav.hidden.lg\\:flex a');
     await expect(desktopNavLinks).toHaveCount(5); // Adjust based on actual nav items
@@ -52,7 +52,7 @@ test.describe('Critical User Journeys', () => {
     }
   });
 
-  test('@critical Language switching preserves current page', async ({ page }) => {
+  test('Language switching preserves current page', async ({ page }) => {
     // Start on German portfolio page
     await page.goto('/portfolio');
     await expect(page).toHaveURL('/portfolio');
@@ -69,7 +69,7 @@ test.describe('Critical User Journeys', () => {
     await expect(page.locator('h1')).toContainText(/Portfolio|Works|Gallery/i);
   });
 
-  test('@critical Contact form displays and accepts input', async ({ page }) => {
+  test('Contact form displays and accepts input', async ({ page }) => {
     // Navigate to contact page
     await page.goto('/contact');
     
@@ -89,7 +89,7 @@ test.describe('Critical User Journeys', () => {
     // Note: Don't actually submit in PR tests to avoid sending emails
   });
 
-  test('@critical Portfolio page loads and displays items', async ({ page }) => {
+  test('Portfolio page loads and displays items', async ({ page }) => {
     await page.goto('/portfolio');
     
     // Wait for portfolio items to load
@@ -106,7 +106,7 @@ test.describe('Critical User Journeys', () => {
     await expect(firstItem.locator('h3, h4')).toBeVisible(); // Title
   });
 
-  test('@critical Site is responsive on mobile devices', async ({ page }) => {
+  test('Site is responsive on mobile devices', async ({ page }) => {
     // This test only runs on mobile devices due to PR config
     const viewport = page.viewportSize();
     if (viewport && viewport.width < 768) {
