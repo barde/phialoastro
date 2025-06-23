@@ -1,0 +1,115 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Maintain dependencies for npm in the root
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+    assignees:
+      - "barde"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+    ignore:
+      # Ignore major versions for critical packages to avoid breaking changes
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@astrojs/*"
+        update-types: ["version-update:semver-major"]
+
+  # Maintain dependencies for npm in phialo-design
+  - package-ecosystem: "npm"
+    directory: "/phialo-design"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+      - "phialo-design"
+    assignees:
+      - "barde"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+    ignore:
+      # Ignore major versions for critical packages
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@astrojs/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
+
+  # Maintain dependencies for npm in workers
+  - package-ecosystem: "npm"
+    directory: "/workers"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
+      - "cloudflare-workers"
+    assignees:
+      - "barde"
+    groups:
+      cloudflare-dependencies:
+        patterns:
+          - "@cloudflare/*"
+          - "wrangler"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Be careful with Cloudflare Workers runtime updates
+      - dependency-name: "@cloudflare/workers-types"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "wrangler"
+        update-types: ["version-update:semver-major"]
+
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    assignees:
+      - "barde"
