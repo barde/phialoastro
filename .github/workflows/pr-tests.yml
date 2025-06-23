@@ -1,0 +1,198 @@
+name: PR Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  merge_group:
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run unit tests with coverage
+        working-directory: phialo-design
+        run: pnpm run test:run -- --coverage
+        
+      - name: Upload coverage reports
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: phialo-design/coverage
+          
+      - name: Build project
+        working-directory: phialo-design
+        run: pnpm run build
+        
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    continue-on-error: true  # Non-blocking initially while we fix E2E tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+        
+      - name: Install Playwright browsers
+        working-directory: phialo-design
+        run: npx playwright install --with-deps
+        
+      - name: Run E2E tests
+        working-directory: phialo-design
+        run: pnpm run test:e2e
+        
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: phialo-design/test-results
+          retention-days: 7
+          
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    needs: [test, e2e]
+    if: always()
+    
+    steps:
+      - name: Check test results
+        run: |
+          echo "Unit Tests: ${{ needs.test.result }}"
+          echo "E2E Tests: ${{ needs.e2e.result }}"
+          
+          # Fail if unit tests failed (E2E allowed to fail for now)
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Unit tests failed!"
+            exit 1
+          fi
+          
+          echo "✅ All required tests passed!"
+          
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const unitResult = '${{ needs.test.result }}';
+            const e2eResult = '${{ needs.e2e.result }}';
+            
+            const unitIcon = unitResult === 'success' ? '✅' : '❌';
+            const e2eIcon = e2eResult === 'success' ? '✅' : '⚠️';
+            
+            const comment = `## Test Results
+            
+            | Test Suite | Status |
+            |------------|--------|
+            | Unit Tests | ${unitIcon} ${unitResult} |
+            | E2E Tests | ${e2eIcon} ${e2eResult} (non-blocking) |
+            
+            ${unitResult !== 'success' ? '⚠️ **Unit tests must pass before merging!**' : ''}
+            ${e2eResult !== 'success' ? '📝 E2E tests are currently non-blocking while we stabilize them.' : ''}
+            `;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('## Test Results')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
