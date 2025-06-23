@@ -91,9 +91,8 @@ test.describe('Integration Tests - All Fixes', () => {
     await expect(page.locator('html')).toHaveClass(/theme-dark/);
     
     // Switch to English
-    const langSelector = page.locator('[data-language-selector]');
-    await langSelector.click();
-    await page.locator('a[href="/en/"]').click();
+    const englishButton = page.locator('[data-language-selector] button[data-lang="en"]');
+    await englishButton.click();
     
     // Dark mode should be preserved
     await expect(page.locator('html')).toHaveClass(/theme-dark/);
@@ -103,8 +102,8 @@ test.describe('Integration Tests - All Fixes', () => {
     await expect(page.locator('html')).toHaveClass(/theme-dark/);
     
     // Switch back to German
-    await langSelector.click();
-    await page.locator('a[href="/portfolio"]').click();
+    const germanButton = page.locator('[data-language-selector] button[data-lang="de"]');
+    await germanButton.click();
     
     // Dark mode should still be active
     await expect(page.locator('html')).toHaveClass(/theme-dark/);

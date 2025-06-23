@@ -8,7 +8,7 @@ const germanUrl = isEnglish ? currentPath.replace(/^\/en/, '') || '/' : currentP
 const englishUrl = isEnglish ? currentPath : '/en' + currentPath;
 ---
 
-<div class="language-selector">
+<div class="language-selector" data-language-selector>
   <button 
     data-lang="de"
     data-url={germanUrl}
