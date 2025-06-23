@@ -74,39 +74,91 @@ test.describe('Navigation Tests', () => {
   });
 
   test.describe('Main Navigation', () => {
-    test('@critical Should navigate to all main sections in German', async ({ page }) => {
+    test('@critical Should navigate to all main sections in German', async ({ page, isMobile }) => {
       await page.goto('/');
       
-      // Portfolio
-      await page.locator('nav a[href="/portfolio"]').click();
+      // Open mobile menu if on mobile
+      if (isMobile) {
+        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        await menuButton.click();
+        await page.waitForTimeout(300); // Wait for menu animation
+      }
+      
+      // Portfolio - use appropriate selector based on device
+      const portfolioLink = isMobile 
+        ? page.locator('nav a[href="/portfolio"], div[class*="fixed"] a[href="/portfolio"]').first()
+        : page.locator('nav.hidden.lg\\:flex a[href="/portfolio"]');
+      await portfolioLink.click();
       await expect(page).toHaveURL('/portfolio');
       
       // Services
       await page.goto('/');
-      await page.locator('nav a[href="/services"]').click();
+      if (isMobile) {
+        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        await menuButton.click();
+        await page.waitForTimeout(300);
+      }
+      const servicesLink = isMobile
+        ? page.locator('nav a[href="/services"], div[class*="fixed"] a[href="/services"]').first()
+        : page.locator('nav.hidden.lg\\:flex a[href="/services"]');
+      await servicesLink.click();
       await expect(page).toHaveURL('/services');
       
       // Tutorials
       await page.goto('/');
-      await page.locator('nav a[href="/tutorials"]').click();
+      if (isMobile) {
+        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        await menuButton.click();
+        await page.waitForTimeout(300);
+      }
+      const tutorialsLink = isMobile
+        ? page.locator('nav a[href="/tutorials"], div[class*="fixed"] a[href="/tutorials"]').first()
+        : page.locator('nav.hidden.lg\\:flex a[href="/tutorials"]');
+      await tutorialsLink.click();
       await expect(page).toHaveURL('/tutorials');
     });
 
-    test('Should navigate to all main sections in English', async ({ page }) => {
+    test('Should navigate to all main sections in English', async ({ page, isMobile }) => {
       await page.goto('/en/');
       
-      // Portfolio
-      await page.locator('nav a[href="/en/portfolio"]').click();
+      // Open mobile menu if on mobile
+      if (isMobile) {
+        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        await menuButton.click();
+        await page.waitForTimeout(300); // Wait for menu animation
+      }
+      
+      // Portfolio - use appropriate selector based on device
+      const portfolioLink = isMobile 
+        ? page.locator('nav a[href="/en/portfolio"], div[class*="fixed"] a[href="/en/portfolio"]').first()
+        : page.locator('nav.hidden.lg\\:flex a[href="/en/portfolio"]');
+      await portfolioLink.click();
       await expect(page).toHaveURL('/en/portfolio');
       
       // Services
       await page.goto('/en/');
-      await page.locator('nav a[href="/en/services"]').click();
+      if (isMobile) {
+        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        await menuButton.click();
+        await page.waitForTimeout(300);
+      }
+      const servicesLink = isMobile
+        ? page.locator('nav a[href="/en/services"], div[class*="fixed"] a[href="/en/services"]').first()
+        : page.locator('nav.hidden.lg\\:flex a[href="/en/services"]');
+      await servicesLink.click();
       await expect(page).toHaveURL('/en/services');
       
       // Tutorials
       await page.goto('/en/');
-      await page.locator('nav a[href="/en/tutorials"]').click();
+      if (isMobile) {
+        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        await menuButton.click();
+        await page.waitForTimeout(300);
+      }
+      const tutorialsLink = isMobile
+        ? page.locator('nav a[href="/en/tutorials"], div[class*="fixed"] a[href="/en/tutorials"]').first()
+        : page.locator('nav.hidden.lg\\:flex a[href="/en/tutorials"]');
+      await tutorialsLink.click();
       await expect(page).toHaveURL('/en/tutorials');
     });
   });
