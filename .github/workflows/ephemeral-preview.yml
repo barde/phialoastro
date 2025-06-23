@@ -52,7 +52,6 @@ jobs:
           npx wrangler deploy \
             --name "$WORKER_NAME" \
             --compatibility-date "2024-01-01" \
-            --no-bundle \
             --var ENVIRONMENT:preview \
             --var PR_NUMBER:${{ github.event.pull_request.number }}
           
