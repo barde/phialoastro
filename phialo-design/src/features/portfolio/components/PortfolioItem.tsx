@@ -37,16 +37,16 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
             <p className="text-sm text-white/80 mb-4">{item.category}</p>
             
             {/* Action buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-4">
               <button
                 onClick={() => onItemClick && onItemClick(item)}
-                className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
+                className="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
                 data-testid="portfolio-details-button"
               >
-                <Eye size={16} className="mr-2" />
+                <Eye size={16} className="mr-2.5" />
                 {detailsText}
               </button>
-              <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
+              <button className="p-2.5 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
                 <ExternalLink size={16} />
               </button>
             </div>
