@@ -33,7 +33,7 @@
     "@types/react-dom": "^19.1.6",
     "astro": "^5.9.3",
     "astro-seo": "^0.8.4",
-    "framer-motion": "^12.18.1",
+    "framer-motion": "^12.19.1",
     "lucide-react": "^0.515.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
