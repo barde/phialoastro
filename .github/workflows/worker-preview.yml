@@ -1,13 +1,19 @@
 ---
-name: Deploy Worker Preview
+name: Deploy Preview from Master
 
 'on':
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
     paths:
       - 'workers/**'
       - 'phialo-design/**'
-      - '.github/workflows/worker-preview.yml'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy to preview'
+        required: false
+        default: 'master'
 
 jobs:
   deploy-preview:
@@ -20,6 +26,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'master' }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -82,8 +90,8 @@ jobs:
             echo "- Find the Account ID in the right sidebar"
             exit 1
           fi
-          # Get the branch name from the PR
-          BRANCH_NAME="${{ github.head_ref }}"
+          # Get the branch name
+          BRANCH_NAME="${{ github.event.inputs.branch || 'master' }}"
 
           echo "Starting deployment..."
           # Deploy to preview environment and capture output
@@ -147,81 +155,16 @@ jobs:
           echo "::error::Preview deployment returned HTTP $HTTP_CODE after $MAX_RETRIES attempts"
           exit 1
 
-      - name: Comment on PR
+      - name: Create deployment status
         uses: actions/github-script@v7
         with:
           script: |
             const preview_url = '${{ steps.deploy.outputs.preview_url }}';
             const branch_name = '${{ steps.deploy.outputs.branch_name }}';
-            const pr_number = context.issue.number;
             const sha = context.sha.substring(0, 7);
 
-            // Find existing comment
-            let botComment = null;
-            try {
-              const comments = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr_number,
-              });
-
-              botComment = comments.data.find(comment =>
-                comment.user && comment.user.type === 'Bot' &&
-                comment.body &&
-                comment.body.includes('Cloudflare Workers Preview')
-              );
-            } catch (error) {
-              console.log('Could not fetch existing comments:', error.message);
-            }
-
-            const body = `### 🚀 Cloudflare Workers Preview Deployed!
-
-            <table>
-            <tr>
-            <td><strong>🔗 Preview URL</strong></td>
-            <td><a href="${preview_url}">${preview_url}</a></td>
-            </tr>
-            <tr>
-            <td><strong>🌿 Branch</strong></td>
-            <td><code>${branch_name}</code></td>
-            </tr>
-            <tr>
-            <td><strong>📝 Commit</strong></td>
-            <td><code>${sha}</code></td>
-            </tr>
-            <tr>
-            <td><strong>🕐 Deployed</strong></td>
-            <td>${new Date().toUTCString()}</td>
-            </tr>
-            </table>
-
-            ---
-
-            <details>
-            <summary>ℹ️ <strong>Preview Information</strong></summary>
-
-            - 🔄 This preview will be automatically updated on each commit
-            - 🌍 The preview runs on Cloudflare's global edge network
-            - 🔒 Security headers and CSP policies are active
-            - 💾 Edge caching is enabled for optimal performance
-            - 🐛 Check browser DevTools for any console errors
-
-            </details>`;
-
-            if (botComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: body
-              });
-            } else {
-              // Create new comment
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr_number,
-                body: body
-              });
-            }
+            // Create a deployment status
+            console.log(`✅ Preview deployed to ${preview_url}`);
+            console.log(`   Branch: ${branch_name}`);
+            console.log(`   Commit: ${sha}`);
+            console.log(`   Time: ${new Date().toUTCString()}`);
