@@ -63,31 +63,28 @@ test.describe('Navigation Tests', () => {
       const englishButton = page.locator('[data-language-selector] button[data-lang="en"]');
       await englishButton.click();
       
-      await expect(page).toHaveURL('/en/portfolio');
+      await expect(page).toHaveURL(/\/en\/portfolio\/?/);
     });
   });
 
   test.describe('Main Navigation', () => {
     test('@critical Should navigate to all main sections in German', async ({ page, isMobile }) => {
-      // Skip mobile browsers due to menu interaction issues
-      // TODO: Fix mobile menu interaction in E2E tests
-      test.skip(isMobile, 'Mobile menu interaction needs fixing');
       await page.goto('/');
       
       // Open mobile menu if on mobile
       if (isMobile) {
-        // Look for the visible hamburger menu button (lg:hidden class)
-        const menuButton = page.locator('button.lg\\:hidden').first();
+        // Use data-testid for reliable selection
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await expect(menuButton).toBeVisible();
         await menuButton.click();
-        // Wait for mobile menu to open
-        await page.waitForTimeout(1000); // Give the menu time to fully open
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
       }
       
-      // Portfolio - use more flexible selectors for mobile
+      // Portfolio - use data-testid for mobile
       if (isMobile) {
-        // For mobile, find the portfolio link in the mobile menu
-        const portfolioLink = page.locator('a[href="/portfolio"]').first();
+        // For mobile, use data-testid
+        const portfolioLink = page.locator('[data-testid="mobile-nav-portfolio"]');
         await portfolioLink.click();
       } else {
         // For desktop, use the nav link
@@ -99,14 +96,13 @@ test.describe('Navigation Tests', () => {
       // Services
       await page.goto('/');
       if (isMobile) {
-        // Look for menu button with specific aria-label
-        const menuButton = page.locator('button[aria-label="Menü öffnen"], button[aria-label="Open menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('.fixed.inset-y-0.right-0', { state: 'visible', timeout: 5000 });
-        await page.waitForTimeout(300);
-        // For mobile, find the services link in the mobile menu
-        const servicesLink = page.locator('a[href="/services"]').first();
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const servicesLink = page.locator('[data-testid="mobile-nav-services"]');
         await servicesLink.click();
       } else {
         // For desktop, use the nav link
@@ -118,14 +114,13 @@ test.describe('Navigation Tests', () => {
       // Tutorials
       await page.goto('/');
       if (isMobile) {
-        // Look for menu button with specific aria-label
-        const menuButton = page.locator('button[aria-label="Menü öffnen"], button[aria-label="Open menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('.fixed.inset-y-0.right-0', { state: 'visible', timeout: 5000 });
-        await page.waitForTimeout(300);
-        // For mobile, find the tutorials link in the mobile menu
-        const tutorialsLink = page.locator('a[href="/tutorials"]').first();
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
         await tutorialsLink.click();
       } else {
         // For desktop, use the nav link
@@ -140,18 +135,18 @@ test.describe('Navigation Tests', () => {
       
       // Open mobile menu if on mobile
       if (isMobile) {
-        // Look for the visible hamburger menu button (lg:hidden class)
-        const menuButton = page.locator('button.lg\\:hidden').first();
+        // Use data-testid for reliable selection
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await expect(menuButton).toBeVisible();
         await menuButton.click();
-        // Wait for mobile menu to open
-        await page.waitForTimeout(1000); // Give the menu time to fully open
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
       }
       
-      // Portfolio - use appropriate selector based on device
+      // Portfolio - use data-testid for mobile
       if (isMobile) {
-        // For mobile, find the portfolio link in the mobile menu
-        const portfolioLink = page.locator('a[href="/en/portfolio"]').first();
+        // For mobile, use data-testid
+        const portfolioLink = page.locator('[data-testid="mobile-nav-portfolio"]');
         await portfolioLink.click();
       } else {
         // For desktop, use the nav link
@@ -163,14 +158,13 @@ test.describe('Navigation Tests', () => {
       // Services
       await page.goto('/en/');
       if (isMobile) {
-        // Look for menu button with specific aria-label
-        const menuButton = page.locator('button[aria-label="Menü öffnen"], button[aria-label="Open menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('.fixed.inset-y-0.right-0', { state: 'visible', timeout: 5000 });
-        await page.waitForTimeout(300);
-        // For mobile, find the services link in the mobile menu
-        const servicesLink = page.locator('a[href="/en/services"]').first();
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const servicesLink = page.locator('[data-testid="mobile-nav-services"]');
         await servicesLink.click();
       } else {
         // For desktop, use the nav link
@@ -182,14 +176,13 @@ test.describe('Navigation Tests', () => {
       // Tutorials
       await page.goto('/en/');
       if (isMobile) {
-        // Look for menu button with specific aria-label
-        const menuButton = page.locator('button[aria-label="Menü öffnen"], button[aria-label="Open menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('.fixed.inset-y-0.right-0', { state: 'visible', timeout: 5000 });
-        await page.waitForTimeout(300);
-        // For mobile, find the tutorials link in the mobile menu
-        const tutorialsLink = page.locator('a[href="/en/tutorials"]').first();
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
         await tutorialsLink.click();
       } else {
         // For desktop, use the nav link
