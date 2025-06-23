@@ -11,7 +11,7 @@ test.describe('Responsive Design Tests', () => {
       await page.waitForLoadState('networkidle');
       
       // Check if mobile menu button is visible
-      const menuButton = page.locator('button[aria-label*="Menu"], button[aria-label*="menu"]');
+      const menuButton = page.locator('button[aria-label*="öffnen"], button[aria-label*="Open menu"]');
       await expect(menuButton).toBeVisible();
       
       // Open mobile menu
@@ -58,7 +58,7 @@ test.describe('Responsive Design Tests', () => {
       await expect(desktopNav).toBeVisible();
       
       // Mobile menu button should not be visible
-      const menuButton = page.locator('button[aria-label*="Menu"], button[aria-label*="menu"]');
+      const menuButton = page.locator('button[aria-label*="öffnen"], button[aria-label*="Open menu"]');
       await expect(menuButton).not.toBeVisible();
     });
   });
