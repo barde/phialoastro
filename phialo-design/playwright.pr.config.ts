@@ -131,14 +131,16 @@ export default defineConfig({
   // Web server configuration optimized for speed
   webServer: {
     ...baseConfig.webServer,
-    // Shorter timeout for server startup
-    timeout: 60 * 1000, // 60 seconds
-    // Kill any existing process on the port
-    reuseExistingServer: true,
-    // Add startup optimization flags
-    command: process.env.CI 
-      ? 'npm run build && npm run preview -- --port 4322'
-      : 'npm run dev -- --port 4322',
+    // Use dev server in CI for faster startup (no build required)
+    command: 'npm run dev -- --port 4322',
+    // Ensure server is ready before running tests
+    url: 'http://localhost:4322',
+    // Longer timeout to ensure server starts properly
+    timeout: 120 * 1000, // 2 minutes
+    // Don't reuse existing server in CI to ensure clean state
+    reuseExistingServer: !process.env.CI,
+    // Ignore HTTPS errors
+    ignoreHTTPSErrors: true,
     env: {
       NODE_ENV: 'test',
       // Disable telemetry and analytics in tests
