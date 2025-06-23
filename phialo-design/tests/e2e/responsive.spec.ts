@@ -34,11 +34,8 @@ test.describe('Responsive Design Tests', () => {
       }
     });
     
-    // Theme toggle test removed - feature not yet implemented
-    // TODO: Add theme toggle test when dark mode feature is implemented
-    test.skip('@critical Theme toggle should work on mobile @mobile', async ({ page }) => {
-      // Skipped: Theme toggle feature not yet implemented
-    });
+    // Theme toggle test moved to tests/future/dark-mode.spec.ts
+    // Will be implemented when dark mode feature is added (Issue #12)
   });
 
   test.describe('Tablet View', () => {

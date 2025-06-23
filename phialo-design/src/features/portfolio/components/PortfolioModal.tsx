@@ -222,6 +222,8 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-midnight/90 backdrop-blur-sm"
             aria-hidden="true"
+            onClick={onClose}
+            data-testid="modal-backdrop"
           />
 
           {/* Modal container */}

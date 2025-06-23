@@ -9,11 +9,8 @@ test.describe('Integration Tests - All Fixes', () => {
     const floatingElements = await page.locator('.animate-float, .floating-logo').count();
     expect(floatingElements).toBe(0);
     
-    // Dark mode toggle not yet implemented - skip for now
-    // TODO: Uncomment when theme toggle is implemented (Issue #12)
-    // const themeToggle = page.locator('button[aria-label*="mode"]');
-    // await themeToggle.click();
-    // await expect(page.locator('html')).toHaveClass(/theme-dark/);
+    // Dark mode tests moved to tests/future/dark-mode.spec.ts
+    // Will be implemented when dark mode feature is added (Issue #12)
     
     // Navigate to portfolio using logo (Issue #21)
     await page.goto('/portfolio');
@@ -53,9 +50,7 @@ test.describe('Integration Tests - All Fixes', () => {
     await expect(phoneLink).toBeVisible();
     await expect(phoneLink).toContainText('(+49) 1578 566 47 00');
     
-    // Theme should still be dark
-    // TODO: Uncomment when dark mode is implemented
-    // await expect(page.locator('html')).toHaveClass(/theme-dark/);
+    // Dark mode persistence test moved to tests/future/dark-mode.spec.ts
   });
 
   test('Complete user journey in English', async ({ page }) => {
@@ -104,9 +99,7 @@ test.describe('Integration Tests - All Fixes', () => {
   });
 
   // Dark mode test removed - feature not yet implemented
-  test.skip('Language switching preserves dark mode', async ({ page }) => {
-    // Skipped: Dark mode feature not yet implemented
-  });
+  // Language switching with dark mode test moved to tests/future/dark-mode.spec.ts
 
   test('@critical Mobile responsiveness with all features', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
@@ -115,10 +108,7 @@ test.describe('Integration Tests - All Fixes', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle');
     
-    // Theme toggle not yet implemented - skip for now
-    // TODO: Uncomment when theme toggle is implemented
-    // const themeToggle = page.locator('button[aria-label*="mode"]');
-    // await expect(themeToggle).toBeVisible();
+    // Mobile theme toggle test moved to tests/future/dark-mode.spec.ts
     
     // Language selector should be accessible
     const langSelector = page.locator('[data-language-selector]');
@@ -164,8 +154,7 @@ test.describe('Integration Tests - All Fixes', () => {
     // Page should load reasonably fast
     expect(performanceTiming.domContentLoaded).toBeLessThan(3000);
     
-    // Theme transition test removed - feature not yet implemented
-    // TODO: Add theme transition test when dark mode is implemented
+    // Theme transition test moved to tests/future/dark-mode.spec.ts
     
     // Navigate and ensure smooth page transitions
     const isMobile = await page.evaluate(() => window.innerWidth < 1024);
