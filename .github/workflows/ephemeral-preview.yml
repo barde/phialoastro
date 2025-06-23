@@ -76,7 +76,31 @@ jobs:
           script: |
             const preview_url = '${{ steps.deploy.outputs.preview_url }}';
             const pr_number = context.issue.number;
-            const pr_author = context.payload.pull_request.user.login;
+            
+            // Get the PR details to find linked issues
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr_number
+            });
+            
+            // Extract issue number from PR body or title
+            const issueMatch = pr.body?.match(/#(\d+)/) || pr.title?.match(/#(\d+)/);
+            let issueOwner = null;
+            
+            if (issueMatch) {
+              const issueNumber = issueMatch[1];
+              try {
+                const { data: issue } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: parseInt(issueNumber)
+                });
+                issueOwner = issue.user.login;
+              } catch (e) {
+                console.log(`Could not fetch issue #${issueNumber}: ${e.message}`);
+              }
+            }
             
             // Find and update existing comment or create new one
             const { data: comments } = await github.rest.issues.listComments({
@@ -90,9 +114,11 @@ jobs:
               comment.body.includes('Preview Deployment')
             );
             
+            const mentionLine = issueOwner ? `@${issueOwner} Your preview is ready at: ${preview_url}` : `Your preview is ready at: ${preview_url}`;
+            
             const body = `## 🚀 Preview Deployment
             
-            @${pr_author} Your preview is ready at: ${preview_url}
+            ${mentionLine}
             
             **Environment Details:**
             - Worker: \`phialo-pr-${pr_number}\`
