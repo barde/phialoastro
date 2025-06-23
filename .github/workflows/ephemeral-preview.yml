@@ -48,24 +48,31 @@ jobs:
           # Create unique worker name
           WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
           
-          # Deploy with dynamic worker name
-          npx wrangler deploy \
+          # Deploy with dynamic worker name and capture output
+          DEPLOY_OUTPUT=$(npx wrangler deploy \
             --name "$WORKER_NAME" \
             --compatibility-date "2024-01-01" \
             --var ENVIRONMENT:preview \
-            --var PR_NUMBER:${{ github.event.pull_request.number }}
+            --var PR_NUMBER:${{ github.event.pull_request.number }} 2>&1)
           
-          # Get the actual deployed URL from wrangler output
-          # The URL will be in format: https://phialo-pr-123.meise.workers.dev
-          PREVIEW_URL=$(npx wrangler deployments list --name "$WORKER_NAME" --json | jq -r '.[0].url // empty')
+          echo "Deploy output:"
+          echo "$DEPLOY_OUTPUT"
           
-          # Fallback if the above doesn't work
+          # Extract the URL from deployment output
+          # Wrangler outputs: "Published phialo-pr-106 (version = ...) https://phialo-pr-106.subdomain.workers.dev"
+          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE 'https://[^ ]+\.workers\.dev' | tail -1)
+          
+          # If we couldn't extract the URL, try another method
           if [ -z "$PREVIEW_URL" ]; then
-            # Get account subdomain from Cloudflare API
-            SUBDOMAIN=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID" \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              -H "Content-Type: application/json" | jq -r '.result.name' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
-            PREVIEW_URL="https://${WORKER_NAME}.${SUBDOMAIN}.workers.dev"
+            echo "Failed to extract URL from deployment output, trying wrangler deployments list"
+            PREVIEW_URL=$(npx wrangler deployments list --name "$WORKER_NAME" --json 2>/dev/null | jq -r '.[0].url // empty' || echo "")
+          fi
+          
+          # Final fallback - construct URL using known pattern
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "Still no URL, using fallback pattern"
+            # For this account, the subdomain appears to be a complex string, so let's use a known pattern
+            PREVIEW_URL="https://${WORKER_NAME}.meise.workers.dev"
           fi
           
           echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
