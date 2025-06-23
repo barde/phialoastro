@@ -79,9 +79,10 @@ npm run test:e2e
 
 - **Production**: [phialo.de](https://phialo.de) - Custom domain
 - **Master Preview**: [phialo-design-preview.meise.workers.dev](https://phialo-design-preview.meise.workers.dev) - Latest master branch
-- **PR Previews**: Coming soon - Ephemeral environments per PR (see [#99](https://github.com/barde/phialoastro/issues/99))
+- **PR Previews**: `https://phialo-pr-{number}.meise.workers.dev` - Ephemeral per PR
 
 The site uses automatic deployments:
+- PRs get temporary preview environments
 - Master branch deploys to preview environment
 - Production deployments are manual
 

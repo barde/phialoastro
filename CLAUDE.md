@@ -333,12 +333,40 @@ npm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
 
 ## Deployment
 
-- Deployed on **Cloudflare Workers** with automatic builds from git
-- Also possible to deploy via instructions from [DEPLOY.md](./docs/how-to/DEPLOY.md) to get more debug data via web browsing
+### Deployment Environments
+
+#### Production (`phialo-design`)
+- **URL**: https://phialo.de (custom domain)
+- **Deployment**: Manual via GitHub UI or CLI
+- **Branch**: Tagged releases only
+- **Note**: Requires zone permissions for custom domain
+
+#### Preview (`phialo-design-preview`) 
+- **URL**: https://phialo-design-preview.meise.workers.dev
+- **Deployment**: Automatic on merge to master
+- **Purpose**: Latest master branch preview
+- **Manual Deploy**: Available via GitHub Actions UI
+
+#### Ephemeral PR Previews (`phialo-pr-{number}`)
+- **URL**: https://phialo-pr-{number}.meise.workers.dev
+- **Deployment**: Automatic on PR creation/update
+- **Cleanup**: Automatic on PR close/merge
+- **Purpose**: Isolated testing for each PR
+
+### Cloudflare API Requirements
+
+For workers.dev deployments (preview & PR environments):
+- Account: Workers Scripts:Edit, Workers KV Storage:Edit
+
+For custom domain deployment (production only):
+- Account: Workers Scripts:Edit, Workers KV Storage:Edit
+- Zone (phialo.de): Workers Routes:Edit, Zone:Read
+
+### Technical Details
 - Security headers configured in Workers script
 - CSP allows YouTube embeds
-- Both production and preview environments available
 - Workers handle static asset serving and dynamic routing
+- Also possible to deploy via instructions from [DEPLOY.md](./docs/how-to/DEPLOY.md) to get more debug data via web browsing
 
 ## Key Files to Understand
 
