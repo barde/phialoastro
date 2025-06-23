@@ -49,3 +49,4 @@ playwright-report/
 
 # Build artifacts
 *.log
+node_modules/
