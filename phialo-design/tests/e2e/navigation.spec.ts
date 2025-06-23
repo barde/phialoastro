@@ -36,7 +36,7 @@ test.describe('Navigation Tests', () => {
   });
 
   test.describe('Language Selector', () => {
-    test('Should switch from German to English', async ({ page }) => {
+    test('@critical Should switch from German to English', async ({ page }) => {
       await page.goto('/');
       
       const langSelector = page.locator('[data-language-selector]');
@@ -60,7 +60,7 @@ test.describe('Navigation Tests', () => {
       await expect(page).toHaveURL('/');
     });
 
-    test('Should maintain path when switching languages', async ({ page }) => {
+    test('@critical Should maintain path when switching languages', async ({ page }) => {
       await page.goto('/portfolio');
       
       const langSelector = page.locator('[data-language-selector]');
@@ -74,7 +74,7 @@ test.describe('Navigation Tests', () => {
   });
 
   test.describe('Main Navigation', () => {
-    test('Should navigate to all main sections in German', async ({ page }) => {
+    test('@critical Should navigate to all main sections in German', async ({ page }) => {
       await page.goto('/');
       
       // Portfolio

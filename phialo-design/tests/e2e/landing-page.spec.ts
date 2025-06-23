@@ -30,7 +30,7 @@ test.describe('Landing Page Tests (Issue #4)', () => {
     expect(indicatorCount).toBe(0);
   });
 
-  test('Hero section should have clean, minimal design', async ({ page }) => {
+  test('@critical Hero section should have clean, minimal design', async ({ page }) => {
     await page.goto('/');
     
     const heroSection = page.locator('.hero, section').first();

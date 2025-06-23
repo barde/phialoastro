@@ -1,0 +1,550 @@
+name: Nightly Comprehensive Tests
+
+on:
+  schedule:
+    # Run at 2 AM UTC every night
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Enable debug mode'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      create_issues:
+        description: 'Create GitHub issues for failures'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: write
+
+env:
+  # Performance thresholds
+  LIGHTHOUSE_PERFORMANCE_THRESHOLD: 90
+  LIGHTHOUSE_ACCESSIBILITY_THRESHOLD: 95
+  LIGHTHOUSE_BEST_PRACTICES_THRESHOLD: 90
+  LIGHTHOUSE_SEO_THRESHOLD: 90
+
+jobs:
+  e2e-full-matrix:
+    name: E2E Tests - Full Matrix (${{ matrix.project }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: ['20.x']
+        project:
+          - chromium
+          - firefox
+          - webkit
+          - 'Mobile Chrome'
+          - 'Mobile Safari'
+          - 'Desktop Chrome'
+          - 'Desktop Firefox'
+          - 'Desktop Safari'
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: phialo-design
+        run: npx playwright install --with-deps ${{ matrix.project }}
+
+      - name: Run E2E tests for ${{ matrix.project }}
+        working-directory: phialo-design
+        run: |
+          if [ "${{ inputs.debug_enabled }}" = "true" ]; then
+            echo "Running in debug mode with extended timeouts"
+            npx playwright test --config=playwright.nightly.config.ts --project="${{ matrix.project }}" --timeout=90000 --workers=1
+          else
+            npx playwright test --config=playwright.nightly.config.ts --project="${{ matrix.project }}"
+          fi
+        env:
+          PLAYWRIGHT_HTML_REPORT: playwright-report-${{ matrix.project }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}-${{ matrix.os }}
+          path: |
+            phialo-design/test-results
+            phialo-design/playwright-report-${{ matrix.project }}
+          retention-days: 30
+
+      - name: Upload test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos-${{ matrix.project }}-${{ matrix.os }}
+          path: phialo-design/test-results/**/video.webm
+          retention-days: 7
+          if-no-files-found: ignore
+
+  performance-testing:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        working-directory: phialo-design
+        run: pnpm run build
+
+      - name: Start preview server
+        working-directory: phialo-design
+        run: |
+          pnpm run preview --port 4322 &
+          echo $! > preview.pid
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:4322 > /dev/null; then
+              echo "Preview server is ready"
+              break
+            fi
+            echo "Waiting for preview server... ($i/30)"
+            sleep 2
+          done
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse tests
+        id: lighthouse
+        working-directory: phialo-design
+        continue-on-error: true
+        run: |
+          # Run Lighthouse CI with the configuration
+          lhci autorun --config=.lighthouserc.json || echo "LIGHTHOUSE_FAILED=true" >> $GITHUB_OUTPUT
+
+      - name: Stop preview server
+        if: always()
+        working-directory: phialo-design
+        run: |
+          if [ -f preview.pid ]; then
+            kill $(cat preview.pid) || true
+            rm preview.pid
+          fi
+
+      - name: Parse Lighthouse results
+        if: always()
+        working-directory: phialo-design
+        run: |
+          echo "## Lighthouse Performance Report" > lighthouse-summary.md
+          echo "" >> lighthouse-summary.md
+
+          if [ -d .lighthouseci ]; then
+            # Extract scores from the report
+            echo "### Scores by Page" >> lighthouse-summary.md
+            echo "" >> lighthouse-summary.md
+            echo "| Page | Performance | Accessibility | Best Practices | SEO |" >> lighthouse-summary.md
+            echo "|------|-------------|---------------|----------------|-----|" >> lighthouse-summary.md
+
+            # Install jq if not available
+            if ! command -v jq &> /dev/null; then
+              sudo apt-get update && sudo apt-get install -y jq
+            fi
+
+            # Parse JSON reports
+            for report in .lighthouseci/lhr-*.json; do
+              if [ -f "$report" ]; then
+                url=$(jq -r '.finalUrl // .requestedUrl // "Unknown"' "$report" 2>/dev/null || echo "Unknown")
+                perf=$(jq -r '(.categories.performance.score // 0) * 100 | floor' "$report" 2>/dev/null || echo "N/A")
+                a11y=$(jq -r '(.categories.accessibility.score // 0) * 100 | floor' "$report" 2>/dev/null || echo "N/A")
+                bp=$(jq -r '(.categories["best-practices"].score // 0) * 100 | floor' "$report" 2>/dev/null || echo "N/A")
+                seo=$(jq -r '(.categories.seo.score // 0) * 100 | floor' "$report" 2>/dev/null || echo "N/A")
+
+                # Clean up URL for display
+                url=${url#http://localhost:4322}
+                [ -z "$url" ] && url="/"
+
+                echo "| $url | $perf% | $a11y% | $bp% | $seo% |" >> lighthouse-summary.md
+              fi
+            done
+          fi
+
+          echo "" >> lighthouse-summary.md
+          echo "Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> lighthouse-summary.md
+
+      - name: Upload Lighthouse summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-summary
+          path: phialo-design/lighthouse-summary.md
+          retention-days: 30
+
+  comprehensive-unit-tests:
+    name: Unit Tests - All Node Versions
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests with coverage
+        working-directory: phialo-design
+        run: pnpm run test:run -- --coverage --reporter=json --reporter=html
+
+      - name: Upload coverage reports
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-full
+          path: phialo-design/coverage
+          retention-days: 30
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm audit
+        working-directory: phialo-design
+        continue-on-error: true
+        run: |
+          npm audit --json > npm-audit.json || true
+
+      - name: Run Snyk scan
+        continue-on-error: true
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json-file-output=snyk-report.json
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            phialo-design/npm-audit.json
+            phialo-design/snyk-report.json
+          retention-days: 30
+
+  test-summary:
+    name: Nightly Test Summary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    needs: [e2e-full-matrix, performance-testing, comprehensive-unit-tests, security-scan]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: test-artifacts
+
+      - name: Generate test report
+        id: report
+        run: |
+          echo "## Nightly Test Summary - $(date -u +"%Y-%m-%d")" > nightly-report.md
+          echo "" >> nightly-report.md
+
+          # Check overall status
+          E2E_STATUS="${{ needs.e2e-full-matrix.result }}"
+          PERF_STATUS="${{ needs.performance-testing.result }}"
+          UNIT_STATUS="${{ needs.comprehensive-unit-tests.result }}"
+          SEC_STATUS="${{ needs.security-scan.result }}"
+
+          echo "### Overall Status" >> nightly-report.md
+          echo "" >> nightly-report.md
+          echo "| Test Suite | Status |" >> nightly-report.md
+          echo "|------------|--------|" >> nightly-report.md
+          echo "| E2E Tests (Full Matrix) | $E2E_STATUS |" >> nightly-report.md
+          echo "| Performance Tests | $PERF_STATUS |" >> nightly-report.md
+          echo "| Unit Tests (All Platforms) | $UNIT_STATUS |" >> nightly-report.md
+          echo "| Security Scan | $SEC_STATUS |" >> nightly-report.md
+          echo "" >> nightly-report.md
+
+          # Determine if we need to create issues
+          SHOULD_CREATE_ISSUES="false"
+          if [[ "$E2E_STATUS" == "failure" ]] || [[ "$PERF_STATUS" == "failure" ]] || [[ "$UNIT_STATUS" == "failure" ]]; then
+            SHOULD_CREATE_ISSUES="true"
+          fi
+
+          echo "SHOULD_CREATE_ISSUES=$SHOULD_CREATE_ISSUES" >> $GITHUB_OUTPUT
+          echo "E2E_STATUS=$E2E_STATUS" >> $GITHUB_OUTPUT
+          echo "PERF_STATUS=$PERF_STATUS" >> $GITHUB_OUTPUT
+          echo "UNIT_STATUS=$UNIT_STATUS" >> $GITHUB_OUTPUT
+
+          # Add Lighthouse summary if available
+          if [ -f test-artifacts/lighthouse-summary/lighthouse-summary.md ]; then
+            echo "" >> nightly-report.md
+            cat test-artifacts/lighthouse-summary/lighthouse-summary.md >> nightly-report.md
+          fi
+
+          # Add test failure details
+          echo "" >> nightly-report.md
+          echo "### Test Details" >> nightly-report.md
+          echo "" >> nightly-report.md
+          echo "For detailed test results, please check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> nightly-report.md
+
+      - name: Upload nightly report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-report
+          path: nightly-report.md
+          retention-days: 90
+
+      - name: Create E2E failure issue
+        if: steps.report.outputs.E2E_STATUS == 'failure' && inputs.create_issues != 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const title = `🚨 Nightly E2E Tests Failed - ${date}`;
+
+            // Check if issue already exists
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'nightly-test-failure,e2e'
+            });
+
+            const existingIssue = issues.find(issue => issue.title.includes(date));
+
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `## Nightly E2E Test Failure Report
+
+                The nightly E2E test suite failed on ${date}.
+
+                ### Failed Test Matrix
+                Please review the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+
+                ### Action Items
+                - [ ] Review test failure logs
+                - [ ] Identify root cause
+                - [ ] Create fix PR
+                - [ ] Verify fix in next nightly run
+
+                ### Test Artifacts
+                - [Download all test artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+                - Videos and screenshots are available for failed tests
+
+                cc: @phialo-team`,
+                labels: ['nightly-test-failure', 'e2e', 'high-priority']
+              });
+            }
+
+      - name: Create Performance failure issue
+        if: steps.report.outputs.PERF_STATUS == 'failure' && inputs.create_issues != 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const title = `⚡ Nightly Performance Tests Failed - ${date}`;
+
+            // Check if issue already exists
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'nightly-test-failure,performance'
+            });
+
+            const existingIssue = issues.find(issue => issue.title.includes(date));
+
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `## Nightly Performance Test Failure Report
+
+                The nightly performance test suite failed on ${date}.
+
+                ### Performance Metrics Below Threshold
+                - Performance threshold: ${process.env.LIGHTHOUSE_PERFORMANCE_THRESHOLD}
+                - Accessibility threshold: ${process.env.LIGHTHOUSE_ACCESSIBILITY_THRESHOLD}
+                - Best Practices threshold: ${process.env.LIGHTHOUSE_BEST_PRACTICES_THRESHOLD}
+                - SEO threshold: ${process.env.LIGHTHOUSE_SEO_THRESHOLD}
+
+                ### Action Items
+                - [ ] Review Lighthouse reports
+                - [ ] Identify performance regressions
+                - [ ] Optimize affected pages
+                - [ ] Re-run performance tests
+
+                ### Test Artifacts
+                - [Lighthouse Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+                cc: @phialo-team`,
+                labels: ['nightly-test-failure', 'performance', 'high-priority']
+              });
+            }
+
+  cleanup-old-artifacts:
+    name: Cleanup Old Test Artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    needs: [test-summary]
+    if: always()
+
+    steps:
+      - name: Delete old workflow runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const days = 30;
+            const ms_per_day = 86400000;
+            const now = Date.now();
+            const workflow_id = 'nightly-tests.yml';
+
+            // List workflow runs older than 30 days
+            const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflow_id,
+              per_page: 100
+            });
+
+            for (const run of workflow_runs) {
+              const created_at = Date.parse(run.created_at);
+              const age_days = (now - created_at) / ms_per_day;
+
+              if (age_days > days) {
+                console.log(`Deleting run ${run.id} from ${run.created_at}`);
+                await github.rest.actions.deleteWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                });
+              }
+            }
