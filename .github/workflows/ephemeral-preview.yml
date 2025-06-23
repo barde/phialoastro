@@ -76,6 +76,7 @@ jobs:
           script: |
             const preview_url = '${{ steps.deploy.outputs.preview_url }}';
             const pr_number = context.issue.number;
+            const pr_author = context.payload.pull_request.user.login;
             
             // Find and update existing comment or create new one
             const { data: comments } = await github.rest.issues.listComments({
@@ -91,7 +92,7 @@ jobs:
             
             const body = `## 🚀 Preview Deployment
             
-            Your preview is ready at: ${preview_url}
+            @${pr_author} Your preview is ready at: ${preview_url}
             
             **Environment Details:**
             - Worker: \`phialo-pr-${pr_number}\`
