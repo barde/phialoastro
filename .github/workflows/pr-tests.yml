@@ -11,31 +11,55 @@ permissions:
   actions: write
 
 jobs:
-  test:
-    name: Test (Node ${{ matrix.node-version }})
+  # Determine which tests to run based on changed files
+  changes:
+    name: Detect Changes
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-      fail-fast: false
-    
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      tests: ${{ steps.filter.outputs.tests }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+      config: ${{ steps.filter.outputs.config }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Setup Node.js ${{ matrix.node-version }}
+
+      - name: Detect file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: .github/path-filters.yml
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    # Run if: tests changed, frontend changed, config changed, or if it's a merge queue event
+    if: |
+      needs.changes.outputs.tests == 'true' ||
+      needs.changes.outputs.frontend == 'true' ||
+      needs.changes.outputs.config == 'true' ||
+      github.event_name == 'merge_group'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          
+          node-version: '20.x'
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
-          
+
       - name: Get pnpm store directory
         shell: bash
         run: |
@@ -48,48 +72,54 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-            
+
       - name: Install dependencies
         working-directory: phialo-design
         run: pnpm install --frozen-lockfile
-        
+
       - name: Run unit tests with coverage
         working-directory: phialo-design
         run: pnpm run test:run -- --coverage
-        
+
       - name: Upload coverage reports
-        if: matrix.node-version == '20.x'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: phialo-design/coverage
-          
+
       - name: Build project
         working-directory: phialo-design
         run: pnpm run build
-        
+
   e2e:
-    name: E2E Tests
+    name: E2E Tests - Core Scenarios
     runs-on: ubuntu-latest
+    needs: changes
+    # Run if: e2e changed, frontend changed, config changed, or if it's a merge queue event
+    if: |
+      needs.changes.outputs.e2e == 'true' ||
+      needs.changes.outputs.frontend == 'true' ||
+      needs.changes.outputs.config == 'true' ||
+      github.event_name == 'merge_group'
     permissions:
       contents: read
     continue-on-error: true  # Non-blocking initially while we fix E2E tests
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
-          
+
       - name: Get pnpm store directory
         shell: bash
         run: |
@@ -102,19 +132,41 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-            
+
       - name: Install dependencies
         working-directory: phialo-design
         run: pnpm install --frozen-lockfile
-        
+
+      # Cache Playwright browsers
+      - name: Get Playwright version
+        id: playwright-version
+        working-directory: phialo-design
+        run: echo "version=$(npm ls @playwright/test --json | jq -r '.dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: phialo-design
-        run: npx playwright install --with-deps
-        
-      - name: Run E2E tests
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Install Playwright dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
         working-directory: phialo-design
-        run: pnpm run test:e2e
-        
+        run: npx playwright install-deps
+
+      # Run only core E2E tests for PRs
+      - name: Run core E2E tests
+        working-directory: phialo-design
+        run: npx playwright test --config=playwright.pr.config.ts
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -122,65 +174,107 @@ jobs:
           name: playwright-report
           path: phialo-design/test-results
           retention-days: 7
-          
+
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    needs: [test, e2e]
+    needs: [changes, test, e2e]
     if: always()
-    
+
     steps:
       - name: Check test results
         run: |
-          echo "Unit Tests: ${{ needs.test.result }}"
-          echo "E2E Tests: ${{ needs.e2e.result }}"
-          
-          # Fail if unit tests failed (E2E allowed to fail for now)
-          if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "Unit tests failed!"
+          echo "Changes detected:"
+          echo "  Frontend: ${{ needs.changes.outputs.frontend }}"
+          echo "  Tests: ${{ needs.changes.outputs.tests }}"
+          echo "  E2E: ${{ needs.changes.outputs.e2e }}"
+          echo "  Config: ${{ needs.changes.outputs.config }}"
+          echo ""
+          echo "Test Results:"
+          echo "  Unit Tests: ${{ needs.test.result }}"
+          echo "  E2E Tests: ${{ needs.e2e.result }}"
+
+          # Unit tests are required if they ran
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "❌ Unit tests failed!"
             exit 1
           fi
-          
+
+          # Check if any required tests were skipped when they should have run
+          if [ "${{ needs.changes.outputs.config }}" == "true" ] || [ "${{ github.event_name }}" == "merge_group" ]; then
+            if [ "${{ needs.test.result }}" == "skipped" ]; then
+              echo "❌ Unit tests were skipped but should have run!"
+              exit 1
+            fi
+          fi
+
           echo "✅ All required tests passed!"
-          
+
       - name: Comment PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         continue-on-error: true
         with:
           script: |
+            const changes = {
+              frontend: '${{ needs.changes.outputs.frontend }}' === 'true',
+              tests: '${{ needs.changes.outputs.tests }}' === 'true',
+              e2e: '${{ needs.changes.outputs.e2e }}' === 'true',
+              config: '${{ needs.changes.outputs.config }}' === 'true'
+            };
+
             const unitResult = '${{ needs.test.result }}';
             const e2eResult = '${{ needs.e2e.result }}';
-            
-            const unitIcon = unitResult === 'success' ? '✅' : '❌';
-            const e2eIcon = e2eResult === 'success' ? '✅' : '⚠️';
-            
+
+            const unitIcon = unitResult === 'success' ? '✅' : unitResult === 'skipped' ? '⏭️' : '❌';
+            const e2eIcon = e2eResult === 'success' ? '✅' : e2eResult === 'skipped' ? '⏭️' : '⚠️';
+
+            let changesText = '### Changes Detected\n';
+            if (!changes.frontend && !changes.tests && !changes.e2e && !changes.config) {
+              changesText += '📄 Documentation or workflow changes only\n';
+            } else {
+              if (changes.frontend) changesText += '- 🎨 Frontend code\n';
+              if (changes.tests) changesText += '- 🧪 Test files\n';
+              if (changes.e2e) changesText += '- 🔍 E2E tests\n';
+              if (changes.config) changesText += '- ⚙️ Configuration\n';
+            }
+
             const comment = `## Test Results
-            
-            | Test Suite | Status |
-            |------------|--------|
-            | Unit Tests | ${unitIcon} ${unitResult} |
-            | E2E Tests | ${e2eIcon} ${e2eResult} (non-blocking) |
-            
-            ${unitResult !== 'success' ? '⚠️ **Unit tests must pass before merging!**' : ''}
-            ${e2eResult !== 'success' ? '📝 E2E tests are currently non-blocking while we stabilize them.' : ''}
+
+            ${changesText}
+
+            ### Test Execution
+            | Test Suite | Status | Note |
+            |------------|--------|------|
+            | Unit Tests | ${unitIcon} ${unitResult} | ${unitResult === 'skipped' ? 'No relevant changes' : unitResult === 'success' ? 'Node 20.x only' : 'Required'} |
+            | E2E Tests (Core) | ${e2eIcon} ${e2eResult} | ${e2eResult === 'skipped' ? 'No relevant changes' : 'Chrome, Firefox, Mobile Safari/Chrome'} |
+
+            ${unitResult === 'failure' ? '⚠️ **Unit tests must pass before merging!**' : ''}
+            ${e2eResult === 'failure' ? '📝 E2E tests are currently non-blocking while we stabilize them.' : ''}
+
+            💡 **Optimization Details:**
+            - Running on Node 20.x only (reduced from 3 versions)
+            - E2E uses 4 parallel workers (increased from 1)
+            - Running only tests tagged with @critical for PR speed
+            - Reduced browser matrix: Chrome, Firefox, Mobile Safari/Chrome
+            - Playwright browsers are cached for faster runs
             `;
-            
+
             // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
               comment.body.includes('## Test Results')
             );
-            
+
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -196,3 +290,4 @@ jobs:
                 body: comment
               });
             }
+

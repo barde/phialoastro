@@ -36,7 +36,7 @@ test.describe('Contact Form Integration', () => {
       await expect(page.locator('input[name="botcheck"]')).toBeHidden();
     });
 
-    test('should validate required fields', async ({ page }) => {
+    test('@critical should validate required fields', async ({ page }) => {
       // Try to submit empty form
       await page.locator('button[type="submit"]').click();
       
@@ -51,7 +51,7 @@ test.describe('Contact Form Integration', () => {
       await expect(messageInput).toHaveAttribute('required', '');
     });
 
-    test('should show success message on successful submission', async ({ page }) => {
+    test('@critical should show success message on successful submission', async ({ page }) => {
       // Mock the API response to avoid sending real emails
       await page.route('**/api.web3forms.com/submit', async route => {
         await route.fulfill({
@@ -174,7 +174,7 @@ test.describe('Contact Form Integration', () => {
       await expect(page.locator('input[name="subject"]')).toHaveValue('New Contact Request - Phialo Design');
     });
 
-    test('should show English success message', async ({ page }) => {
+    test('@critical should show English success message', async ({ page }) => {
       // Mock the API response
       await page.route('**/api.web3forms.com/submit', async route => {
         await route.fulfill({
@@ -248,7 +248,7 @@ test.describe('Contact Form Integration', () => {
   test.describe('Mobile Responsiveness', () => {
     test.use({ viewport: { width: 375, height: 667 } });
     
-    test('should stack form and image on mobile', async ({ page }) => {
+    test('@critical should stack form and image on mobile', async ({ page }) => {
       await page.goto('/contact');
       
       // Check that form and image are stacked (not side by side)

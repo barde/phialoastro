@@ -6,7 +6,7 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     await page.waitForSelector('.portfolio-section', { timeout: 10000 });
   });
 
-  test('portfolio items should be sorted by year (newest first)', async ({ page }) => {
+  test('@critical portfolio items should be sorted by year (newest first)', async ({ page }) => {
     // Wait for portfolio grid
     await page.waitForSelector('.portfolio-grid');
     
@@ -68,8 +68,8 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     for (const test of categoryTests) {
       console.log(`Testing ${test.buttonText} category...`);
       
-      // Click the category button
-      await page.click(`button:has-text("${test.buttonText}")`);
+      // Click the category button - be more specific to avoid duplicates
+      await page.locator(`button:has-text("${test.buttonText}")`).first().click();
       await page.waitForTimeout(300);
       
       // Count items
@@ -86,8 +86,8 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
   });
 
   test('sorting should be maintained when filtering categories', async ({ page }) => {
-    // Click on Rings category
-    await page.click('button:has-text("Ringe")');
+    // Click on Rings category - use first() to avoid duplicates
+    await page.locator('button:has-text("Ringe")').first().click();
     await page.waitForTimeout(300);
     
     // Get ring items
@@ -106,8 +106,8 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     const allWorksButton = page.locator('button:has-text("Alle Arbeiten")');
     await expect(allWorksButton).toHaveClass(/bg-gold/);
     
-    // Click on Ringe
-    await page.click('button:has-text("Ringe")');
+    // Click on Ringe - use first() to avoid duplicates
+    await page.locator('button:has-text("Ringe")').first().click();
     await page.waitForTimeout(300);
     
     // Now Ringe should be active
@@ -124,7 +124,7 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     
     for (let i = 0; i < 10; i++) {
       const filter = filters[i % filters.length];
-      await page.click(`button:has-text("${filter}")`);
+      await page.locator(`button:has-text("${filter}")`).first().click();
       await page.waitForTimeout(100);
     }
     
@@ -133,9 +133,9 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     expect(itemCount).toBe(9);
   });
 
-  test('portfolio modal should open with correct item', async ({ page }) => {
-    // Click on the first item (ParookaVille Ring)
-    await page.click('.portfolio-item:first-child');
+  test('@critical portfolio modal should open with correct item', async ({ page }) => {
+    // Click on the first item (ParookaVille Ring) - be specific
+    await page.locator('.portfolio-item').first().click();
     
     // Wait for modal
     await page.waitForSelector('[role="dialog"]');
@@ -166,7 +166,7 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     };
     
     for (const [category, expectedCount] of Object.entries(expectedCounts)) {
-      await page.click(`button:has-text("${category}")`);
+      await page.locator(`button:has-text("${category}")`).first().click();
       await page.waitForTimeout(300);
       
       const count = await page.locator('.portfolio-item').count();
@@ -181,7 +181,7 @@ test.describe('Portfolio English Version Tests', () => {
     await page.waitForSelector('.portfolio-section', { timeout: 10000 });
   });
 
-  test('should display English category names', async ({ page }) => {
+  test('@critical should display English category names', async ({ page }) => {
     // Check that English category names are displayed
     await expect(page.locator('button:has-text("All Works")')).toBeVisible();
     await expect(page.locator('button:has-text("Rings")')).toBeVisible();
@@ -192,8 +192,8 @@ test.describe('Portfolio English Version Tests', () => {
   });
 
   test('filtering should work on English page', async ({ page }) => {
-    // Click on Rings
-    await page.click('button:has-text("Rings")');
+    // Click on Rings - use first() to avoid duplicates
+    await page.locator('button:has-text("Rings")').first().click();
     await page.waitForTimeout(300);
     
     // Should show 3 rings
