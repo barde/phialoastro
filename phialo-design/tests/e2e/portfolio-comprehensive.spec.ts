@@ -134,24 +134,32 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
   });
 
   test('@critical portfolio modal should open with correct item', async ({ page }) => {
-    // Click on the first item (ParookaVille Ring) - be specific
-    await page.locator('.portfolio-item').first().click();
+    // Hover over the first portfolio item to reveal buttons
+    const firstItem = page.locator('[data-testid="portfolio-item"]').first();
+    await firstItem.hover();
     
-    // Wait for modal
-    await page.waitForSelector('[role="dialog"]');
+    // Wait for the details button to be visible and click it
+    await page.waitForTimeout(300); // Wait for hover animation
+    const detailsButton = firstItem.locator('[data-testid="portfolio-details-button"]');
+    await expect(detailsButton).toBeVisible();
+    await detailsButton.click();
+    
+    // Wait for modal to appear
+    const modal = page.locator('[data-testid="portfolio-modal"]');
+    await expect(modal).toBeVisible({ timeout: 10000 });
     
     // Check modal content
-    const modalTitle = await page.locator('[role="dialog"] h2').textContent();
+    const modalTitle = await modal.locator('h2').textContent();
     expect(modalTitle).toContain('ParookaVille');
     
     // Check that materials are displayed
-    const modalContent = await page.locator('[role="dialog"]').textContent();
+    const modalContent = await modal.textContent();
     expect(modalContent).toContain('925');
     expect(modalContent).toContain('Silber');
     
-    // Close modal
+    // Close modal with Escape key
     await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+    await expect(modal).not.toBeVisible();
   });
 
   test('should show correct items count for each category', async ({ page }) => {
@@ -182,13 +190,13 @@ test.describe('Portfolio English Version Tests', () => {
   });
 
   test('@critical should display English category names', async ({ page }) => {
-    // Check that English category names are displayed
-    await expect(page.locator('button:has-text("All Works")')).toBeVisible();
-    await expect(page.locator('button:has-text("Rings")')).toBeVisible();
-    await expect(page.locator('button:has-text("Earrings")')).toBeVisible();
-    await expect(page.locator('button:has-text("Pendants")')).toBeVisible();
-    await expect(page.locator('button:has-text("Sculptures")')).toBeVisible();
-    await expect(page.locator('button:has-text("Pins")')).toBeVisible();
+    // Check that English category names are displayed - use exact text matching
+    await expect(page.getByRole('button', { name: 'All Works', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Rings', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Earrings', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pendants', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sculptures', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pins', exact: true })).toBeVisible();
   });
 
   test('filtering should work on English page', async ({ page }) => {
