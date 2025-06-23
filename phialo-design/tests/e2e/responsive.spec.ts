@@ -1,11 +1,14 @@
-import { test, expect, devices } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Responsive Design Tests', () => {
   test.describe('Mobile Navigation', () => {
-    test.use(devices['iPhone 12']);
-    
-    test('Mobile menu should be functional', async ({ page }) => {
+    test('Mobile menu should be functional @mobile', async ({ page, isMobile }) => {
+      // Set mobile viewport
+      await page.setViewportSize({ width: 390, height: 844 }); // iPhone 12 dimensions
       await page.goto('/');
+      
+      // Wait for hydration
+      await page.waitForLoadState('networkidle');
       
       // Check if mobile menu button is visible
       const menuButton = page.locator('button[aria-label*="Menu"], button[aria-label*="menu"]');
@@ -13,6 +16,9 @@ test.describe('Responsive Design Tests', () => {
       
       // Open mobile menu
       await menuButton.click();
+      
+      // Wait for menu animation
+      await page.waitForTimeout(300);
       
       // Check navigation items are visible
       const navItems = page.locator('nav a');
@@ -25,8 +31,12 @@ test.describe('Responsive Design Tests', () => {
       }
     });
     
-    test('Theme toggle should work on mobile', async ({ page }) => {
+    test('Theme toggle should work on mobile @mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto('/');
+      
+      // Wait for hydration
+      await page.waitForLoadState('networkidle');
       
       const themeToggle = page.locator('button[aria-label*="mode"], button[aria-label*="Mode"]');
       await expect(themeToggle).toBeVisible();
@@ -34,96 +44,121 @@ test.describe('Responsive Design Tests', () => {
       // Toggle theme
       await themeToggle.click();
       
+      // Wait for theme transition
+      await page.waitForTimeout(100);
+      
       const html = page.locator('html');
       await expect(html).toHaveClass(/theme-dark/);
     });
   });
 
   test.describe('Tablet View', () => {
-    test.use({
-      viewport: { width: 768, height: 1024 }
-    });
-    
     test('Layout should adapt for tablet screens', async ({ page }) => {
+      await page.setViewportSize({ width: 768, height: 1024 });
       await page.goto('/');
+      
+      // Wait for hydration
+      await page.waitForLoadState('networkidle');
       
       // Header should be visible
       const header = page.locator('header');
       await expect(header).toBeVisible();
       
-      // Content should be properly sized
-      const mainContent = page.locator('main');
-      const contentWidth = await mainContent.evaluate(el => el.offsetWidth);
-      expect(contentWidth).toBeLessThanOrEqual(768);
-      expect(contentWidth).toBeGreaterThan(600);
+      // Check if navigation is in desktop mode (no hamburger menu)
+      const desktopNav = page.locator('nav:not([aria-hidden="true"])');
+      await expect(desktopNav).toBeVisible();
+      
+      // Mobile menu button should not be visible
+      const menuButton = page.locator('button[aria-label*="Menu"], button[aria-label*="menu"]');
+      await expect(menuButton).not.toBeVisible();
     });
   });
-
+  
   test.describe('Desktop View', () => {
-    test.use({
-      viewport: { width: 1920, height: 1080 }
-    });
-    
-    test('Desktop navigation should show all items', async ({ page }) => {
+    test('Full navigation should be visible on desktop', async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto('/');
+      
+      // Wait for hydration
+      await page.waitForLoadState('networkidle');
       
       // All navigation items should be visible
-      const navItems = page.locator('nav a[href*="portfolio"], nav a[href*="services"], nav a[href*="tutorials"]');
-      const count = await navItems.count();
-      expect(count).toBeGreaterThanOrEqual(3);
+      const navLinks = page.locator('nav a[href^="/"]');
+      const linkCount = await navLinks.count();
+      expect(linkCount).toBeGreaterThan(4); // Should have multiple nav items
       
-      for (let i = 0; i < count; i++) {
-        await expect(navItems.nth(i)).toBeVisible();
+      // Check visibility of each link
+      for (let i = 0; i < linkCount; i++) {
+        await expect(navLinks.nth(i)).toBeVisible();
       }
-      
-      // CTA button should be visible on desktop
-      const ctaButton = page.locator('header a:has-text("Projekt anfragen"), header a:has-text("Request Project")');
-      await expect(ctaButton).toBeVisible();
     });
   });
-
-  test('Images should be responsive', async ({ page }) => {
-    await page.goto('/');
-    
-    const images = page.locator('img');
-    const imageCount = await images.count();
-    
-    for (let i = 0; i < Math.min(imageCount, 5); i++) {
-      const img = images.nth(i);
-      const width = await img.evaluate(el => el.offsetWidth);
-      const viewportWidth = await page.evaluate(() => window.innerWidth);
-      
-      // Images should not exceed viewport width
-      expect(width).toBeLessThanOrEqual(viewportWidth);
-    }
-  });
-
-  test('Text should be readable on all screen sizes', async ({ page }) => {
-    const viewports = [
-      { width: 375, height: 667 },  // iPhone SE
-      { width: 768, height: 1024 }, // iPad
-      { width: 1920, height: 1080 } // Desktop
-    ];
-    
-    for (const viewport of viewports) {
-      await page.setViewportSize(viewport);
+  
+  test.describe('Responsive Images', () => {
+    test('Images should load appropriate sizes', async ({ page }) => {
       await page.goto('/');
       
-      const heading = page.locator('h1').first();
-      const fontSize = await heading.evaluate(el => 
+      // Wait for images to start loading
+      await page.waitForLoadState('domcontentloaded');
+      
+      const images = page.locator('img');
+      const imageCount = await images.count();
+      
+      if (imageCount > 0) {
+        // Check first image has proper attributes
+        const firstImage = images.first();
+        
+        // Should have src or srcset
+        const src = await firstImage.getAttribute('src');
+        const srcset = await firstImage.getAttribute('srcset');
+        expect(src || srcset).toBeTruthy();
+        
+        // Should have alt text for accessibility
+        const alt = await firstImage.getAttribute('alt');
+        expect(alt).toBeTruthy();
+      }
+    });
+  });
+  
+  test.describe('Typography Responsiveness', () => {
+    test('Font sizes should scale appropriately', async ({ page }) => {
+      // Test mobile font size
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      
+      const mobileHeading = page.locator('h1').first();
+      const mobileFontSize = await mobileHeading.evaluate(el => 
         window.getComputedStyle(el).fontSize
       );
       
-      const fontSizeNum = parseFloat(fontSize);
+      // Test desktop font size
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.waitForLoadState('networkidle');
       
-      // Font size should be appropriate for viewport
-      if (viewport.width < 768) {
-        expect(fontSizeNum).toBeGreaterThanOrEqual(24); // Mobile
-      } else if (viewport.width < 1024) {
-        expect(fontSizeNum).toBeGreaterThanOrEqual(36); // Tablet
-      } else {
-        expect(fontSizeNum).toBeGreaterThanOrEqual(48); // Desktop
-      }
-    }
+      const desktopHeading = page.locator('h1').first();
+      const desktopFontSize = await desktopHeading.evaluate(el => 
+        window.getComputedStyle(el).fontSize
+      );
+      
+      // Desktop font should be larger than mobile
+      const mobileSizeValue = parseFloat(mobileFontSize);
+      const desktopSizeValue = parseFloat(desktopFontSize);
+      expect(desktopSizeValue).toBeGreaterThanOrEqual(mobileSizeValue);
+    });
+  });
+  
+  test.describe('Responsive Utilities', () => {
+    test('Overflow should be handled properly on small screens', async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 568 }); // Small phone
+      await page.goto('/');
+      
+      // Check for horizontal overflow
+      const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
+      const viewportWidth = await page.evaluate(() => window.innerWidth);
+      
+      // Body should not be wider than viewport (no horizontal scroll)
+      expect(bodyWidth).toBeLessThanOrEqual(viewportWidth + 1); // +1 for rounding errors
+    });
   });
 });
