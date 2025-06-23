@@ -40,10 +40,13 @@ test.describe('Integration Tests - All Fixes', () => {
     
     const modal = page.locator('[data-testid="portfolio-modal"]');
     await expect(modal).toBeVisible();
-    await expect(modal.locator('h3:has-text("Materialien")')).toBeVisible();
+    // Check for "Materialien" text in any h3 element within the modal
+    const materialsHeading = modal.locator('h3').filter({ hasText: 'Materialien' });
+    await expect(materialsHeading).toBeVisible();
     
     // Close modal
     await page.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
     
     // Check footer for phone number (Issue #7)
     const phoneLink = page.locator('footer a[href="tel:+4915785664700"]');
@@ -87,10 +90,13 @@ test.describe('Integration Tests - All Fixes', () => {
     
     const modal = page.locator('[data-testid="portfolio-modal"]');
     await expect(modal).toBeVisible();
-    await expect(modal.locator('h3:has-text("Materials")')).toBeVisible();
+    // Check for "Materials" text in any h3 element within the modal
+    const materialsHeading = modal.locator('h3').filter({ hasText: 'Materials' });
+    await expect(materialsHeading).toBeVisible();
     
     // Close modal
     await modal.locator('[data-testid="modal-close"]').click();
+    await expect(modal).not.toBeVisible();
     
     // Check footer for phone number (Issue #7)
     const phoneLink = page.locator('footer a[href="tel:+4915785664700"]');
