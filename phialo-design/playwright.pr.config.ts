@@ -128,27 +128,21 @@ export default defineConfig({
   // Update snapshots only locally, never in CI
   updateSnapshots: process.env.CI ? 'none' : 'missing',
   
-  // Web server configuration optimized for speed
-  webServer: {
+  // Web server configuration - inherit from base config
+  webServer: baseConfig.webServer ? {
     ...baseConfig.webServer,
-    // Use dev server in CI for faster startup (no build required)
-    command: 'npm run dev -- --port 4322',
-    // Ensure server is ready before running tests
-    url: 'http://localhost:4322',
-    // Longer timeout to ensure server starts properly
-    timeout: 120 * 1000, // 2 minutes
-    // Don't reuse existing server in CI to ensure clean state
-    reuseExistingServer: !process.env.CI,
-    // Ignore HTTPS errors
-    ignoreHTTPSErrors: true,
+    // Override only specific settings for PR tests
+    timeout: 120 * 1000, // 2 minutes for safety
+    reuseExistingServer: !process.env.CI, // Clean state in CI
     env: {
+      ...baseConfig.webServer.env,
       NODE_ENV: 'test',
       // Disable telemetry and analytics in tests
       ASTRO_TELEMETRY_DISABLED: '1',
       // Use faster builds
       ASTRO_OPTIMIZE: '1',
     },
-  },
+  } : undefined,
 });
 
 /**
