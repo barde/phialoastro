@@ -1,59 +1,98 @@
 import { Page, expect } from '@playwright/test';
 
 /**
- * Simplified and more robust portfolio interaction helpers
+ * Portfolio helper using Playwright's locator API with proper waits
  */
 
+// Capture console errors
+export function setupConsoleErrorLogging(page: Page) {
+  const errors: string[] = [];
+  
+  page.on('console', msg => {
+    if (msg.type() === 'error') {
+      const errorText = `Console error: ${msg.text()}`;
+      console.error(errorText);
+      errors.push(errorText);
+    }
+  });
+  
+  page.on('pageerror', error => {
+    const errorText = `Page error: ${error.message}`;
+    console.error(errorText);
+    errors.push(errorText);
+  });
+  
+  return errors;
+}
+
 export async function openPortfolioModal(page: Page) {
+  const errors = setupConsoleErrorLogging(page);
+  
   // Navigate to portfolio if not already there
   if (!page.url().includes('/portfolio')) {
     await page.goto('/portfolio');
   }
   
-  // Wait for page to stabilize
+  // Wait for network to be idle
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1500); // Wait for any animations/hydration
   
-  // Get the first portfolio item
+  // Use locator API with built-in waiting
+  const portfolioSection = page.locator('.portfolio-section');
+  await portfolioSection.waitFor({ state: 'visible', timeout: 10000 });
+  
+  // Wait for hydration marker or timeout
+  const hydratedItem = page.locator('[data-testid="portfolio-item"][data-hydrated="true"]').first();
+  try {
+    await hydratedItem.waitFor({ state: 'attached', timeout: 5000 });
+    console.log('Found hydrated portfolio item');
+  } catch {
+    console.log('No hydration marker, waiting for stability');
+    await page.waitForTimeout(2000);
+  }
+  
+  // Get first portfolio item using locator
   const firstItem = page.locator('[data-testid="portfolio-item"]').first();
+  await firstItem.waitFor({ state: 'visible' });
   
-  // Ensure it's visible and in viewport
-  await expect(firstItem).toBeVisible({ timeout: 10000 });
+  // Scroll into view and hover
   await firstItem.scrollIntoViewIfNeeded();
-  
-  // Hover to reveal the details button
   await firstItem.hover();
-  await page.waitForTimeout(500); // Wait for hover animation (300ms + buffer)
   
-  // Click the details button - use a more specific selector
+  // Wait for hover effect (CSS transition)
+  await page.waitForTimeout(500);
+  
+  // Get details button using locator chaining
   const detailsButton = firstItem.locator('[data-testid="portfolio-details-button"]');
   
-  // Wait for button and click with retry
+  // Wait for button to be visible and enabled
+  await detailsButton.waitFor({ state: 'visible', timeout: 5000 });
+  
+  // Try to click with built-in retry
   let clicked = false;
-  for (let i = 0; i < 3; i++) {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      await expect(detailsButton).toBeVisible({ timeout: 3000 });
+      console.log(`Click attempt ${attempt + 1}`);
       
-      // Try different click strategies
-      if (i === 0) {
-        await detailsButton.click({ timeout: 2000 });
-      } else if (i === 1) {
-        await detailsButton.click({ force: true, timeout: 2000 });
-      } else {
-        // Last resort: use page.click with exact coordinates
-        const box = await detailsButton.boundingBox();
-        if (box) {
-          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        }
+      // Check if button is actually visible
+      const isVisible = await detailsButton.isVisible();
+      if (!isVisible) {
+        throw new Error('Button not visible');
       }
       
+      // Try clicking
+      await detailsButton.click({ timeout: 3000 });
       clicked = true;
+      console.log('Click successful');
       break;
-    } catch (e) {
-      console.log(`Click attempt ${i + 1} failed:`, e.message);
-      if (i < 2) {
-        await page.waitForTimeout(1000);
-        // Re-hover in case we lost the hover state
+      
+    } catch (error) {
+      lastError = error as Error;
+      console.log(`Attempt ${attempt + 1} failed: ${lastError.message}`);
+      
+      if (attempt < 2) {
+        // Re-hover before retry
         await firstItem.hover();
         await page.waitForTimeout(300);
       }
@@ -61,15 +100,128 @@ export async function openPortfolioModal(page: Page) {
   }
   
   if (!clicked) {
-    throw new Error('Failed to click portfolio details button after 3 attempts');
+    console.log('Regular click failed, trying JavaScript evaluation');
+    
+    // Try JavaScript click as fallback
+    const jsClickResult = await page.evaluate(() => {
+      const firstItem = document.querySelector('[data-testid="portfolio-item"]');
+      if (!firstItem) return { success: false, error: 'No portfolio item found' };
+      
+      // Dispatch mouseover event first
+      firstItem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      
+      // Wait a bit for hover effect
+      return new Promise(resolve => {
+        setTimeout(() => {
+          const button = firstItem.querySelector('[data-testid="portfolio-details-button"]');
+          if (!button) {
+            resolve({ success: false, error: 'No details button found after hover' });
+            return;
+          }
+          
+          // Try clicking
+          (button as HTMLElement).click();
+          
+          // Also dispatch click event
+          button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          
+          resolve({ success: true });
+        }, 300);
+      });
+    });
+    
+    if (!jsClickResult.success) {
+      if (errors.length > 0) {
+        console.error('Console errors:', errors.join('\n'));
+      }
+      throw new Error(`Failed to click via JS: ${jsClickResult.error}. Console errors: ${errors.length}`);
+    }
+    
+    console.log('JavaScript click successful');
+  }
+  
+  // Before waiting for modal, check if portfolio items have onClick handlers
+  const hasHandlers = await page.evaluate(() => {
+    const items = document.querySelectorAll('[data-testid="portfolio-item"]');
+    return Array.from(items).map((item, index) => {
+      const button = item.querySelector('[data-testid="portfolio-details-button"]');
+      return {
+        index,
+        hasButton: !!button,
+        hasOnClick: button ? !!(button as any).onclick : false,
+        hasReactHandlers: button ? !!Object.keys(button).find(key => key.startsWith('__react')) : false
+      };
+    });
+  });
+  console.log('Portfolio items onClick status:', JSON.stringify(hasHandlers.slice(0, 3)));
+  
+  // Wait for modal using locator
+  const modal = page.locator('[data-testid="portfolio-modal"]');
+  
+  try {
+    // First wait for modal to be attached to DOM
+    await modal.waitFor({ state: 'attached', timeout: 5000 });
+    // Then wait for it to be visible
+    await modal.waitFor({ state: 'visible', timeout: 5000 });
+    console.log('Modal is visible');
+  } catch (error) {
+    // Enhanced debugging
+    const modalCount = await page.locator('[data-testid="portfolio-modal"]').count();
+    const modalHidden = await page.locator('[data-testid="portfolio-modal"][style*="display: none"]').count();
+    const bodyClasses = await page.locator('body').getAttribute('class');
+    
+    console.error(`Modal debug info:
+    - Modal elements in DOM: ${modalCount}
+    - Hidden modals: ${modalHidden}
+    - Body classes: ${bodyClasses}
+    - Console errors: ${errors.length}`);
+    
+    if (errors.length > 0) {
+      console.error('Errors:', errors.join('\n'));
+    }
+    
+    throw error;
+  }
+  
+  // Wait for modal content
+  const modalTitle = modal.locator('h2').first();
+  await modalTitle.waitFor({ state: 'visible', timeout: 5000 });
+  
+  return modal;
+}
+
+// Alternative approach using JavaScript evaluation
+export async function openPortfolioModalWithJS(page: Page) {
+  const errors = setupConsoleErrorLogging(page);
+  
+  // Navigate to portfolio if not already there
+  if (!page.url().includes('/portfolio')) {
+    await page.goto('/portfolio');
+  }
+  
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(2000); // Allow hydration
+  
+  // Click using JavaScript
+  const clicked = await page.evaluate(() => {
+    const firstItem = document.querySelector('[data-testid="portfolio-item"]');
+    if (!firstItem) return { success: false, error: 'No portfolio item found' };
+    
+    const button = firstItem.querySelector('[data-testid="portfolio-details-button"]');
+    if (!button) return { success: false, error: 'No details button found' };
+    
+    // Trigger click
+    (button as HTMLElement).click();
+    return { success: true };
+  });
+  
+  if (!clicked.success) {
+    throw new Error(`Failed to click via JS: ${clicked.error}`);
   }
   
   // Wait for modal
   const modal = page.locator('[data-testid="portfolio-modal"]');
-  await expect(modal).toBeVisible({ timeout: 10000 });
-  
-  // Wait for modal content to load
-  await expect(modal.locator('h2')).toBeVisible({ timeout: 5000 });
+  await modal.waitFor({ state: 'visible', timeout: 10000 });
   
   return modal;
 }

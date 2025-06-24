@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { openPortfolioModal } from './helpers/portfolio-helpers';
+import { openPortfolioModal, setupConsoleErrorLogging } from './helpers/portfolio-helpers';
 
 test.describe('Integration Tests - All Fixes', () => {
   test('@critical Complete user journey in German', async ({ page }) => {
+    // Set up console error logging
+    setupConsoleErrorLogging(page);
+    
     // Start at homepage
     await page.goto('/');
     

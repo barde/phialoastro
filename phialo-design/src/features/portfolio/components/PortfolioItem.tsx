@@ -11,10 +11,20 @@ interface PortfolioItemProps {
 export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
   const [isEnglish, setIsEnglish] = useState(false);
 
-  // Language detection
+  // Language detection and hydration marker
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsEnglish(window.location.pathname.startsWith('/en'));
+      
+      // Mark component as hydrated for testing
+      const element = document.querySelector(`[data-testid="portfolio-item"]`);
+      if (element && element.contains(document.activeElement)) {
+        element.setAttribute('data-hydrated', 'true');
+      }
+      // Mark all portfolio items as hydrated
+      document.querySelectorAll('[data-testid="portfolio-item"]').forEach(el => {
+        el.setAttribute('data-hydrated', 'true');
+      });
     }
   }, []);
 

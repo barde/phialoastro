@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { openPortfolioModal } from './helpers/portfolio-helpers';
+import { openPortfolioModal, setupConsoleErrorLogging } from './helpers/portfolio-helpers';
 
 test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
   test.beforeEach(async ({ page }) => {
+    setupConsoleErrorLogging(page);
     await page.goto('/portfolio');
     await page.waitForSelector('.portfolio-section', { timeout: 10000 });
   });
