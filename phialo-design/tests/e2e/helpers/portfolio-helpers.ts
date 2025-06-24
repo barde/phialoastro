@@ -13,7 +13,13 @@ export function setupConsoleErrorLogging(page: Page) {
     if (msg.type() === 'error') {
       const errorText = msg.text();
       // Filter out known CORS errors from Cloudflare Insights
-      if (!errorText.includes('cloudflareinsights.com') && !errorText.includes('CORS')) {
+      // Use a more specific check to avoid security issues
+      const isCloudflareError = errorText.includes('https://cloudflareinsights.com/') || 
+                                errorText.includes('http://cloudflareinsights.com/') ||
+                                errorText.includes('//cloudflareinsights.com/');
+      const isCORSError = errorText.includes('CORS') || errorText.includes('Cross-Origin');
+      
+      if (!isCloudflareError && !isCORSError) {
         console.error(`Console error: ${errorText}`);
         errors.push(errorText);
       }
