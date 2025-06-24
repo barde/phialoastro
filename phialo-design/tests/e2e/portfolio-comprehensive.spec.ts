@@ -108,12 +108,12 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     const allWorksButton = page.locator('button:has-text("Alle Arbeiten")');
     await expect(allWorksButton).toHaveClass(/bg-gold/);
     
-    // Click on Ringe - use first() to avoid duplicates
-    await page.locator('button:has-text("Ringe")').first().click();
+    // Click on Ringe - use exact match to avoid matching "Ohrringe"
+    await page.locator('button', { hasText: /^Ringe$/ }).click();
     await page.waitForTimeout(300);
     
-    // Now Ringe should be active
-    const ringeButton = page.locator('button:has-text("Ringe")');
+    // Now Ringe should be active - use exact match
+    const ringeButton = page.locator('button', { hasText: /^Ringe$/ });
     await expect(ringeButton).toHaveClass(/bg-gold/);
     
     // And Alle Arbeiten should not be active
@@ -122,17 +122,33 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
 
   test('should handle rapid filter switching', async ({ page }) => {
     // Rapidly switch between filters
-    const filters = ['Ringe', 'Ohrringe', 'Skulpturen', 'Alle Arbeiten'];
+    const filters = [
+      { text: 'Ringe', pattern: /^Ringe$/ },
+      { text: 'Ohrringe', pattern: /^Ohrringe$/ },
+      { text: 'Skulpturen', pattern: /^Skulpturen$/ },
+      { text: 'Alle Arbeiten', pattern: /^Alle Arbeiten$/ }
+    ];
     
-    for (let i = 0; i < 10; i++) {
+    // Do rapid switching
+    for (let i = 0; i < 8; i++) {
       const filter = filters[i % filters.length];
-      await page.locator(`button:has-text("${filter}")`).first().click();
+      await page.locator('button', { hasText: filter.pattern }).click();
       await page.waitForTimeout(100);
     }
     
-    // Should end on "Alle Arbeiten" and show all items
-    const itemCount = await page.locator('.portfolio-item').count();
-    expect(itemCount).toBe(9);
+    // Finally, explicitly click "Alle Arbeiten" to show all items
+    await page.locator('button', { hasText: /^Alle Arbeiten$/ }).click();
+    
+    // Wait for the filtering animation to complete
+    await page.waitForTimeout(1000);
+    
+    // Count visible portfolio items
+    const visibleItems = await page.locator('[data-testid="portfolio-item"]').all();
+    const visibleCount = (await Promise.all(
+      visibleItems.map(item => item.isVisible())
+    )).filter(visible => visible).length;
+    
+    expect(visibleCount).toBe(9);
   });
 
   test('@critical portfolio modal should open with correct item', async ({ page }) => {

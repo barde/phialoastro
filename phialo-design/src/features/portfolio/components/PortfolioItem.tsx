@@ -9,30 +9,38 @@ interface PortfolioItemProps {
 }
 
 export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
+  // Initialize with false to match SSR (German is default)
   const [isEnglish, setIsEnglish] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Language detection and hydration marker
+  // Language detection after hydration
   useEffect(() => {
+    // Mark as hydrated
+    setIsHydrated(true);
+    
     if (typeof window !== 'undefined') {
-      setIsEnglish(window.location.pathname.startsWith('/en'));
+      const pathname = window.location.pathname;
+      const shouldBeEnglish = pathname.startsWith('/en');
+      setIsEnglish(shouldBeEnglish);
       
       // Mark component as hydrated for testing
-      const element = document.querySelector(`[data-testid="portfolio-item"]`);
-      if (element && element.contains(document.activeElement)) {
+      const element = document.querySelector(`[data-testid="portfolio-item"][data-item-id="${item.id}"]`);
+      if (element) {
         element.setAttribute('data-hydrated', 'true');
       }
-      // Mark all portfolio items as hydrated
-      document.querySelectorAll('[data-testid="portfolio-item"]').forEach(el => {
-        el.setAttribute('data-hydrated', 'true');
-      });
     }
-  }, []);
+  }, [item.id]);
 
-  // Translations
-  const detailsText = isEnglish ? 'Details' : 'Ansehen';
+  // Translations - use German as default during SSR
+  const detailsText = isHydrated && isEnglish ? 'Details' : 'Ansehen';
   return (
     <MagneticCursor>
-      <div className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full" data-testid="portfolio-item">        {/* Image with proper scaling */}
+      <div 
+        className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full" 
+        data-testid="portfolio-item"
+        data-item-id={item.id}
+      >
+        {/* Image with proper scaling */}
         <img
           src={item.image}
           alt={item.title}

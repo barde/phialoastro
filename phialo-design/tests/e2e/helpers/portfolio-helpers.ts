@@ -1,18 +1,22 @@
 import { Page, expect } from '@playwright/test';
 
 /**
- * Portfolio helper using Playwright's locator API with proper waits
+ * Sets up console error logging for a given Playwright page.
+ * Filters out known CORS errors from Cloudflare Insights.
+ * @param page The Playwright page object.
+ * @returns An array to which console errors will be pushed.
  */
-
-// Capture console errors
 export function setupConsoleErrorLogging(page: Page) {
   const errors: string[] = [];
   
   page.on('console', msg => {
     if (msg.type() === 'error') {
-      const errorText = `Console error: ${msg.text()}`;
-      console.error(errorText);
-      errors.push(errorText);
+      const errorText = msg.text();
+      // Filter out known CORS errors from Cloudflare Insights
+      if (!errorText.includes('cloudflareinsights.com') && !errorText.includes('CORS')) {
+        console.error(`Console error: ${errorText}`);
+        errors.push(errorText);
+      }
     }
   });
   
@@ -25,203 +29,147 @@ export function setupConsoleErrorLogging(page: Page) {
   return errors;
 }
 
+/**
+ * Waits for React hydration to complete by checking for React internals.
+ * @param page The Playwright page object.
+ * @param selector The selector to check for hydration.
+ */
+async function waitForHydration(page: Page, selector: string) {
+  await page.waitForFunction(
+    (sel) => {
+      const element = document.querySelector(sel);
+      if (!element) return false;
+      
+      // Check if React has attached its internal properties
+      const reactProps = Object.keys(element).find(key => 
+        key.startsWith('__reactInternalInstance') || 
+        key.startsWith('__reactFiber')
+      );
+      
+      return !!reactProps;
+    },
+    selector,
+    { timeout: 10000 }
+  );
+}
+
+/**
+ * A robust helper to open the portfolio modal.
+ * Uses proper waiting strategies and avoids race conditions.
+ * @param page The Playwright page object.
+ * @returns The locator for the portfolio modal.
+ */
 export async function openPortfolioModal(page: Page) {
   const errors = setupConsoleErrorLogging(page);
-  
-  // Navigate to portfolio if not already there
+
+  // Navigate to the portfolio page if not already there
   if (!page.url().includes('/portfolio')) {
-    await page.goto('/portfolio');
+    console.log('Navigating to portfolio page...');
+    await page.goto('/portfolio', { waitUntil: 'networkidle' });
   }
+
+  // Wait for the portfolio section to be visible
+  const portfolioSection = page.locator('.portfolio-section, [data-testid="portfolio-section"]');
+  await expect(portfolioSection).toBeVisible({ timeout: 20000 });
+  console.log('Portfolio section is visible.');
+
+  // Wait for portfolio items to be loaded
+  const portfolioItems = page.locator('[data-testid="portfolio-item"]');
+  await expect(portfolioItems.first()).toBeVisible({ timeout: 20000 });
   
-  // Wait for network to be idle
-  await page.waitForLoadState('networkidle');
+  // Count the number of items to ensure they're loaded
+  const itemCount = await portfolioItems.count();
+  console.log(`Found ${itemCount} portfolio items.`);
   
-  // Use locator API with built-in waiting
-  const portfolioSection = page.locator('.portfolio-section');
-  await portfolioSection.waitFor({ state: 'visible', timeout: 10000 });
+  // Get the first portfolio item
+  const firstItem = portfolioItems.first();
   
-  // Wait for hydration marker or timeout
-  const hydratedItem = page.locator('[data-testid="portfolio-item"][data-hydrated="true"]').first();
-  try {
-    await hydratedItem.waitFor({ state: 'attached', timeout: 5000 });
-    console.log('Found hydrated portfolio item');
-  } catch {
-    console.log('No hydration marker, waiting for stability');
-    await page.waitForTimeout(2000);
-  }
-  
-  // Get first portfolio item using locator
-  const firstItem = page.locator('[data-testid="portfolio-item"]').first();
-  await firstItem.waitFor({ state: 'visible' });
-  
-  // Scroll into view and hover
-  await firstItem.scrollIntoViewIfNeeded();
+  // Wait for React hydration on the first item
+  await waitForHydration(page, '[data-testid="portfolio-item"]');
+  console.log('Portfolio items are hydrated.');
+
+  // Wait for any animations to complete
+  await page.waitForTimeout(1000);
+
+  // Hover over the item and wait for the overlay to appear
   await firstItem.hover();
-  
-  // Wait for hover effect (CSS transition)
-  await page.waitForTimeout(500);
-  
-  // Get details button using locator chaining
+  console.log('Hovered over the first portfolio item.');
+
+  // Wait for the details button to be visible within the hovered item
   const detailsButton = firstItem.locator('[data-testid="portfolio-details-button"]');
-  
-  // Wait for button to be visible and enabled
-  await detailsButton.waitFor({ state: 'visible', timeout: 5000 });
-  
-  // Try to click with built-in retry
-  let clicked = false;
-  let lastError: Error | null = null;
-  
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      console.log(`Click attempt ${attempt + 1}`);
-      
-      // Check if button is actually visible
-      const isVisible = await detailsButton.isVisible();
-      if (!isVisible) {
-        throw new Error('Button not visible');
-      }
-      
-      // Try clicking
-      await detailsButton.click({ timeout: 3000 });
-      clicked = true;
-      console.log('Click successful');
-      break;
-      
-    } catch (error) {
-      lastError = error as Error;
-      console.log(`Attempt ${attempt + 1} failed: ${lastError.message}`);
-      
-      if (attempt < 2) {
-        // Re-hover before retry
-        await firstItem.hover();
-        await page.waitForTimeout(300);
-      }
-    }
-  }
-  
-  if (!clicked) {
-    console.log('Regular click failed, trying JavaScript evaluation');
-    
-    // Try JavaScript click as fallback
-    const jsClickResult = await page.evaluate(() => {
-      const firstItem = document.querySelector('[data-testid="portfolio-item"]');
-      if (!firstItem) return { success: false, error: 'No portfolio item found' };
-      
-      // Dispatch mouseover event first
-      firstItem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-      
-      // Wait a bit for hover effect
-      return new Promise(resolve => {
-        setTimeout(() => {
-          const button = firstItem.querySelector('[data-testid="portfolio-details-button"]');
-          if (!button) {
-            resolve({ success: false, error: 'No details button found after hover' });
-            return;
-          }
-          
-          // Try clicking
-          (button as HTMLElement).click();
-          
-          // Also dispatch click event
-          button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-          
-          resolve({ success: true });
-        }, 300);
-      });
-    });
-    
-    if (!jsClickResult.success) {
-      if (errors.length > 0) {
-        console.error('Console errors:', errors.join('\n'));
-      }
-      throw new Error(`Failed to click via JS: ${jsClickResult.error}. Console errors: ${errors.length}`);
-    }
-    
-    console.log('JavaScript click successful');
-  }
-  
-  // Before waiting for modal, check if portfolio items have onClick handlers
-  const hasHandlers = await page.evaluate(() => {
-    const items = document.querySelectorAll('[data-testid="portfolio-item"]');
-    return Array.from(items).map((item, index) => {
-      const button = item.querySelector('[data-testid="portfolio-details-button"]');
-      return {
-        index,
-        hasButton: !!button,
-        hasOnClick: button ? !!(button as any).onclick : false,
-        hasReactHandlers: button ? !!Object.keys(button).find(key => key.startsWith('__react')) : false
-      };
-    });
-  });
-  console.log('Portfolio items onClick status:', JSON.stringify(hasHandlers.slice(0, 3)));
-  
-  // Wait for modal using locator
+  await expect(detailsButton).toBeVisible({ timeout: 5000 });
+  console.log('Details button is visible.');
+
+  // Ensure the button is enabled and ready
+  await expect(detailsButton).toBeEnabled();
+
+  // Click the details button with force if needed
+  await detailsButton.click();
+  console.log('Clicked the details button.');
+
+  // Wait for the modal to appear
   const modal = page.locator('[data-testid="portfolio-modal"]');
-  
-  try {
-    // First wait for modal to be attached to DOM
-    await modal.waitFor({ state: 'attached', timeout: 5000 });
-    // Then wait for it to be visible
-    await modal.waitFor({ state: 'visible', timeout: 5000 });
-    console.log('Modal is visible');
-  } catch (error) {
-    // Enhanced debugging
-    const modalCount = await page.locator('[data-testid="portfolio-modal"]').count();
-    const modalHidden = await page.locator('[data-testid="portfolio-modal"][style*="display: none"]').count();
-    const bodyClasses = await page.locator('body').getAttribute('class');
-    
-    console.error(`Modal debug info:
-    - Modal elements in DOM: ${modalCount}
-    - Hidden modals: ${modalHidden}
-    - Body classes: ${bodyClasses}
-    - Console errors: ${errors.length}`);
-    
-    if (errors.length > 0) {
-      console.error('Errors:', errors.join('\n'));
-    }
-    
-    throw error;
+  await expect(modal).toBeVisible({ timeout: 10000 });
+  console.log('Portfolio modal is open.');
+
+  // Wait for modal content to be loaded
+  const modalTitle = modal.locator('h2, [data-testid="portfolio-modal-title"]').first();
+  await expect(modalTitle).toBeVisible({ timeout: 5000 });
+  await expect(modalTitle).toContainText(/.+/); // Ensure it has text
+  console.log('Modal content is loaded.');
+
+  // Check for any console errors during the process
+  if (errors.length > 0) {
+    console.warn('Console errors detected during modal opening:', errors.join('\n'));
   }
-  
-  // Wait for modal content
-  const modalTitle = modal.locator('h2').first();
-  await modalTitle.waitFor({ state: 'visible', timeout: 5000 });
-  
+
   return modal;
 }
 
-// Alternative approach using JavaScript evaluation
-export async function openPortfolioModalWithJS(page: Page) {
-  const errors = setupConsoleErrorLogging(page);
-  
-  // Navigate to portfolio if not already there
-  if (!page.url().includes('/portfolio')) {
-    await page.goto('/portfolio');
-  }
-  
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000); // Allow hydration
-  
-  // Click using JavaScript
-  const clicked = await page.evaluate(() => {
-    const firstItem = document.querySelector('[data-testid="portfolio-item"]');
-    if (!firstItem) return { success: false, error: 'No portfolio item found' };
-    
-    const button = firstItem.querySelector('[data-testid="portfolio-details-button"]');
-    if (!button) return { success: false, error: 'No details button found' };
-    
-    // Trigger click
-    (button as HTMLElement).click();
-    return { success: true };
-  });
-  
-  if (!clicked.success) {
-    throw new Error(`Failed to click via JS: ${clicked.error}`);
-  }
-  
-  // Wait for modal
+/**
+ * Closes the portfolio modal.
+ * @param page The Playwright page object.
+ */
+export async function closePortfolioModal(page: Page) {
   const modal = page.locator('[data-testid="portfolio-modal"]');
-  await modal.waitFor({ state: 'visible', timeout: 10000 });
   
-  return modal;
+  // Check if modal is visible
+  if (await modal.isVisible()) {
+    // Try to close using the close button first
+    const closeButton = modal.locator('[data-testid="portfolio-modal-close"], button[aria-label*="close" i], button[aria-label*="schließen" i]');
+    
+    if (await closeButton.isVisible()) {
+      await closeButton.click();
+      console.log('Clicked modal close button.');
+    } else {
+      // Fallback: press Escape
+      await page.keyboard.press('Escape');
+      console.log('Pressed Escape to close modal.');
+    }
+    
+    // Wait for modal to be hidden
+    await expect(modal).toBeHidden({ timeout: 5000 });
+    console.log('Modal is closed.');
+  }
+}
+
+/**
+ * Filters portfolio items by category.
+ * @param page The Playwright page object.
+ * @param category The category to filter by.
+ */
+export async function filterPortfolioByCategory(page: Page, category: string) {
+  // Find the filter button for the category
+  const filterButton = page.locator(`[data-testid="portfolio-filter-${category}"], button:has-text("${category}")`).first();
+  
+  await expect(filterButton).toBeVisible({ timeout: 10000 });
+  await filterButton.click();
+  console.log(`Filtered portfolio by category: ${category}`);
+  
+  // Wait for filtering animation to complete
+  await page.waitForTimeout(500);
+  
+  // Verify items are filtered
+  const visibleItems = page.locator('[data-testid="portfolio-item"]:visible');
+  await expect(visibleItems).toHaveCount.greaterThan(0);
 }
