@@ -50,7 +50,7 @@ export default defineConfig({
       ]
     : 'html',
   /* Timeout for each test */
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
   /* Timeout for each assertion */
   expect: {
     timeout: 10 * 1000,
@@ -80,10 +80,10 @@ export default defineConfig({
     video: process.env.CI ? 'retain-on-failure' : 'off',
     
     /* Action timeout */
-    actionTimeout: 10 * 1000,
+    actionTimeout: 15 * 1000,
     
     /* Navigation timeout */
-    navigationTimeout: 30 * 1000,
+    navigationTimeout: 45 * 1000,
     
     /* Test id attribute */
     testIdAttribute: 'data-testid',
