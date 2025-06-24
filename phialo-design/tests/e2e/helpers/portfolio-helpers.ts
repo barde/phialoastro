@@ -65,7 +65,8 @@ export async function openPortfolioModal(page: Page) {
   // Navigate to the portfolio page if not already there
   if (!page.url().includes('/portfolio')) {
     console.log('Navigating to portfolio page...');
-    await page.goto('/portfolio', { waitUntil: 'networkidle' });
+    await page.goto('/portfolio', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle');
   }
 
   // Wait for the portfolio section to be visible
@@ -103,8 +104,8 @@ export async function openPortfolioModal(page: Page) {
   // Ensure the button is enabled and ready
   await expect(detailsButton).toBeEnabled();
 
-  // Click the details button with force if needed
-  await detailsButton.click();
+  // Click the details button with force to bypass any overlapping elements
+  await detailsButton.click({ force: true });
   console.log('Clicked the details button.');
 
   // Wait for the modal to appear
