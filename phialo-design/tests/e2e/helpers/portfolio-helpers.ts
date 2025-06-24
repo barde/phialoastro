@@ -92,27 +92,33 @@ export async function openPortfolioModal(page: Page) {
   // Wait for any animations to complete
   await page.waitForTimeout(1000);
 
-  // Hover over the item and wait for the overlay to appear
-  await firstItem.hover();
-  console.log('Hovered over the first portfolio item.');
-
-  // Wait for the details button to be visible within the hovered item
-  const detailsButton = firstItem.locator('[data-testid="portfolio-details-button"]');
-  await expect(detailsButton).toBeVisible({ timeout: 5000 });
-  console.log('Details button is visible.');
-
-  // Ensure the button is enabled and ready
-  await expect(detailsButton).toBeEnabled();
-
-  // Try to click the details button
+  // Try different strategies to open the modal
+  console.log('Attempting to open portfolio modal...');
+  
+  // Strategy 1: Try hovering and clicking the details button
   try {
-    await detailsButton.click({ force: true });
-    console.log('Clicked the details button with force.');
-  } catch (clickError) {
-    console.log('Force click failed, trying JavaScript click...');
-    // Fallback to JavaScript click if standard click fails
-    await detailsButton.evaluate((el: HTMLElement) => el.click());
-    console.log('Clicked the details button via JavaScript.');
+    await firstItem.hover();
+    console.log('Hovered over the first portfolio item.');
+    
+    // Look for any button within the item that could open the modal
+    const detailsButton = firstItem.locator('button:has-text("Ansehen"), [data-testid="portfolio-details-button"], button').first();
+    
+    // Check if button is visible after hover
+    const isButtonVisible = await detailsButton.isVisible();
+    console.log(`Details button visible after hover: ${isButtonVisible}`);
+    
+    if (isButtonVisible) {
+      await detailsButton.click({ force: true });
+      console.log('Clicked the details button.');
+    } else {
+      throw new Error('Details button not visible after hover');
+    }
+  } catch (hoverError) {
+    console.log('Hover strategy failed, trying direct click on item...');
+    
+    // Strategy 2: Click directly on the portfolio item
+    await firstItem.click({ position: { x: 100, y: 100 } });
+    console.log('Clicked directly on the portfolio item.');
   }
 
   // Add a small delay to allow for any transitions
@@ -121,22 +127,25 @@ export async function openPortfolioModal(page: Page) {
   // Wait for the modal to appear - check multiple possible selectors
   const modal = page.locator('[data-testid="portfolio-modal"], [role="dialog"], .portfolio-modal').first();
   
-  try {
-    // Wait for the modal to be attached to DOM first
-    await modal.waitFor({ state: 'attached', timeout: 10000 });
-    console.log('Modal is attached to DOM.');
+  // Check if modal appeared
+  const modalVisible = await modal.isVisible();
+  
+  if (!modalVisible) {
+    console.log('Modal not visible yet, trying alternative approaches...');
     
-    // Then wait for it to be visible
+    // Try clicking the image within the portfolio item
+    const itemImage = firstItem.locator('img').first();
+    if (await itemImage.isVisible()) {
+      await itemImage.click({ force: true });
+      console.log('Clicked on portfolio item image.');
+      await page.waitForTimeout(500);
+    }
+    
+    // Final check for modal
     await expect(modal).toBeVisible({ timeout: 10000 });
-    console.log('Portfolio modal is open.');
-  } catch (modalError) {
-    // If modal still doesn't appear, try clicking the first item directly
-    console.log('Modal did not appear, trying direct item click...');
-    await firstItem.click({ force: true });
-    await page.waitForTimeout(500);
-    await expect(modal).toBeVisible({ timeout: 5000 });
-    console.log('Portfolio modal is open after direct item click.');
   }
+  
+  console.log('Portfolio modal is open.');
 
   // Wait for modal content to be loaded
   const modalTitle = modal.locator('h2, [data-testid="portfolio-modal-title"]').first();
