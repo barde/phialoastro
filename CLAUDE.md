@@ -368,6 +368,45 @@ For custom domain deployment (production only):
 - Workers handle static asset serving and dynamic routing
 - Also possible to deploy via instructions from [DEPLOY.md](./docs/how-to/DEPLOY.md) to get more debug data via web browsing
 
+### Wrangler Worker Management
+
+#### Listing Workers
+Unfortunately, wrangler doesn't provide a direct command to list all workers in an account. To manage workers:
+
+```bash
+# Check if a specific worker exists
+npx wrangler deployments list --name "worker-name"
+
+# Delete a specific worker
+npx wrangler delete --name "worker-name" --force
+
+# Check worker deployments (requires worker name)
+npx wrangler deployments list --name "phialo-design-preview"
+
+# View worker logs
+npx wrangler tail "worker-name"
+```
+
+#### Alternative: Use Cloudflare API
+```bash
+# List all workers (requires env vars)
+curl -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+     -H "Content-Type: application/json" | jq -r '.result[].id'
+```
+
+#### Cleaning Up Ephemeral Workers
+To manually clean up dangling PR preview workers:
+```bash
+# Check specific PR workers
+for pr in 100 101 102 103; do
+  echo "Checking phialo-pr-$pr..."
+  npx wrangler delete --name "phialo-pr-$pr" --force 2>/dev/null || echo "Not found"
+done
+```
+
+Note: The cleanup-preview.yml workflow now automatically handles worker cleanup when PRs are closed.
+
 ## Key Files to Understand
 
 - `astro.config.mjs`: Core Astro configuration with React/Tailwind integration
