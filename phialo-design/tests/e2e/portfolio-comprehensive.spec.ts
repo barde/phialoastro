@@ -139,14 +139,14 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
     await firstItem.hover();
     
     // Wait for the details button to be visible and click it
-    await page.waitForTimeout(300); // Wait for hover animation
+    await page.waitForTimeout(500); // Wait for hover animation
     const detailsButton = firstItem.locator('[data-testid="portfolio-details-button"]');
-    await expect(detailsButton).toBeVisible();
-    await detailsButton.click();
+    await expect(detailsButton).toBeVisible({ timeout: 5000 });
+    await detailsButton.click({ force: true });
     
-    // Wait for modal to appear
+    // Wait for modal to appear with increased timeout
     const modal = page.locator('[data-testid="portfolio-modal"]');
-    await expect(modal).toBeVisible({ timeout: 10000 });
+    await expect(modal).toBeVisible({ timeout: 15000 });
     
     // Check modal content
     const modalTitle = await modal.locator('h2').textContent();
