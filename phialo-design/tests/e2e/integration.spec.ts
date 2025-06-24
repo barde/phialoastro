@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openPortfolioModal } from './helpers/portfolio-helpers';
 
 test.describe('Integration Tests - All Fixes', () => {
   test('@critical Complete user journey in German', async ({ page }) => {
@@ -30,18 +31,7 @@ test.describe('Integration Tests - All Fixes', () => {
     }
     
     // Open portfolio modal (Issue #22)
-    const portfolioItem = page.locator('[data-testid="portfolio-item"]').first();
-    await portfolioItem.hover();
-    await page.waitForTimeout(500); // Wait for hover animation
-    
-    // Wait for and click the details button
-    const detailsButton = portfolioItem.locator('[data-testid="portfolio-details-button"]');
-    await expect(detailsButton).toBeVisible({ timeout: 5000 });
-    await detailsButton.click({ force: true });
-    
-    // Wait for modal with increased timeout
-    const modal = page.locator('[data-testid="portfolio-modal"]');
-    await expect(modal).toBeVisible({ timeout: 10000 });
+    const modal = await openPortfolioModal(page);
     // Check for "Materialien" text in any h3 element within the modal
     const materialsHeading = modal.locator('h3').filter({ hasText: 'Materialien' });
     await expect(materialsHeading).toBeVisible();
