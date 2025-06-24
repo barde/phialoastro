@@ -1,5 +1,5 @@
 name = "phialo-design"
-main = "src/index-minimal.ts"
+main = "src/index-simple.ts"
 compatibility_date = "2024-01-01"
 workers_dev = true
 
