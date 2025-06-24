@@ -44,6 +44,18 @@ jobs:
           PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
         run: npm run build
 
+      - name: Verify build output
+        working-directory: phialo-design
+        run: |
+          echo "Checking dist folder structure..."
+          ls -la dist/
+          echo ""
+          echo "Checking if images exist in dist..."
+          ls -la dist/images/portfolio/ | head -10
+          echo ""
+          echo "Total image count:"
+          find dist/images -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.svg" \) | wc -l
+
       - name: Install dependencies (workers)
         working-directory: workers
         run: npm install

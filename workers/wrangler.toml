@@ -1,5 +1,5 @@
 name = "phialo-design"
-main = "src/index-simple.ts" # TODO: Switch back to src/index.ts after fixing full implementation
+main = "src/index.ts"
 compatibility_date = "2024-01-01"
 workers_dev = true
 
