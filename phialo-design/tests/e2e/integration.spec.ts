@@ -63,11 +63,11 @@ test.describe('Integration Tests - All Fixes', () => {
     // Start at homepage
     await page.goto('/');
     
-    // Check language is German by default
-    await expect(page.locator('nav')).toContainText('Über mich');
+    // Check language is German by default (use header nav specifically)
+    await expect(page.locator('header nav')).toContainText('Über mich');
     
-    // Navigate through main sections
-    await page.locator('a[href="/portfolio"]').click();
+    // Navigate through main sections (use header nav to avoid footer conflicts)
+    await page.locator('header a[href="/portfolio"]').click();
     await expect(page).toHaveURL('/portfolio');
     await expect(page.locator('h1')).toContainText('Portfolio');
     
@@ -76,19 +76,19 @@ test.describe('Integration Tests - All Fixes', () => {
     await expect(portfolioItems).toHaveCount(9);
     
     // Navigate to services
-    await page.locator('a[href="/services"]').click();
+    await page.locator('header a[href="/services"]').click();
     await expect(page).toHaveURL('/services');
     
     // Navigate to tutorials  
-    await page.locator('a[href="/tutorials"]').click();
+    await page.locator('header a[href="/tutorials"]').click();
     await expect(page).toHaveURL('/tutorials');
     
     // Navigate to about
-    await page.locator('a[href="/about"]').click();
+    await page.locator('header a[href="/about"]').click();
     await expect(page).toHaveURL('/about');
     
     // Navigate to contact
-    await page.locator('a[href="/contact"]').click();
+    await page.locator('header a[href="/contact"]').click();
     await expect(page).toHaveURL('/contact');
     
     // Fill contact form
