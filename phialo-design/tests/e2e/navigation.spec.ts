@@ -63,7 +63,7 @@ test.describe('Navigation Tests', () => {
       const englishButton = page.locator('[data-language-selector] button[data-lang="en"]');
       await englishButton.click();
       
-      await expect(page).toHaveURL('/en/portfolio');
+      await expect(page).toHaveURL(/\/en\/portfolio\/?/);
     });
   });
 
@@ -73,42 +73,60 @@ test.describe('Navigation Tests', () => {
       
       // Open mobile menu if on mobile
       if (isMobile) {
-        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        // Use data-testid for reliable selection
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+        await expect(menuButton).toBeVisible();
         await menuButton.click();
-        await page.waitForTimeout(300); // Wait for menu animation
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
       }
       
-      // Portfolio - use appropriate selector based on device
-      const portfolioLink = isMobile 
-        ? page.locator('nav a[href="/portfolio"], div[class*="fixed"] a[href="/portfolio"]').first()
-        : page.locator('nav.hidden.lg\\:flex a[href="/portfolio"]');
-      await portfolioLink.click();
+      // Portfolio - use data-testid for mobile
+      if (isMobile) {
+        // For mobile, use data-testid
+        const portfolioLink = page.locator('[data-testid="mobile-nav-portfolio"]');
+        await portfolioLink.click();
+      } else {
+        // For desktop, use the nav link
+        const portfolioLink = page.locator('nav.hidden.lg\\:flex a[href="/portfolio"]');
+        await portfolioLink.click();
+      }
       await expect(page).toHaveURL('/portfolio');
       
       // Services
       await page.goto('/');
       if (isMobile) {
-        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
-        await page.waitForTimeout(300);
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const servicesLink = page.locator('[data-testid="mobile-nav-services"]');
+        await servicesLink.click();
+      } else {
+        // For desktop, use the nav link
+        const servicesLink = page.locator('nav.hidden.lg\\:flex a[href="/services"]');
+        await servicesLink.click();
       }
-      const servicesLink = isMobile
-        ? page.locator('nav a[href="/services"], div[class*="fixed"] a[href="/services"]').first()
-        : page.locator('nav.hidden.lg\\:flex a[href="/services"]');
-      await servicesLink.click();
       await expect(page).toHaveURL('/services');
       
       // Tutorials
       await page.goto('/');
       if (isMobile) {
-        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
-        await page.waitForTimeout(300);
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
+        await tutorialsLink.click();
+      } else {
+        // For desktop, use the nav link
+        const tutorialsLink = page.locator('nav.hidden.lg\\:flex a[href="/tutorials"]');
+        await tutorialsLink.click();
       }
-      const tutorialsLink = isMobile
-        ? page.locator('nav a[href="/tutorials"], div[class*="fixed"] a[href="/tutorials"]').first()
-        : page.locator('nav.hidden.lg\\:flex a[href="/tutorials"]');
-      await tutorialsLink.click();
       await expect(page).toHaveURL('/tutorials');
     });
 
@@ -117,42 +135,60 @@ test.describe('Navigation Tests', () => {
       
       // Open mobile menu if on mobile
       if (isMobile) {
-        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        // Use data-testid for reliable selection
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+        await expect(menuButton).toBeVisible();
         await menuButton.click();
-        await page.waitForTimeout(300); // Wait for menu animation
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
       }
       
-      // Portfolio - use appropriate selector based on device
-      const portfolioLink = isMobile 
-        ? page.locator('nav a[href="/en/portfolio"], div[class*="fixed"] a[href="/en/portfolio"]').first()
-        : page.locator('nav.hidden.lg\\:flex a[href="/en/portfolio"]');
-      await portfolioLink.click();
+      // Portfolio - use data-testid for mobile
+      if (isMobile) {
+        // For mobile, use data-testid
+        const portfolioLink = page.locator('[data-testid="mobile-nav-portfolio"]');
+        await portfolioLink.click();
+      } else {
+        // For desktop, use the nav link
+        const portfolioLink = page.locator('nav.hidden.lg\\:flex a[href="/en/portfolio"]');
+        await portfolioLink.click();
+      }
       await expect(page).toHaveURL('/en/portfolio');
       
       // Services
       await page.goto('/en/');
       if (isMobile) {
-        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
-        await page.waitForTimeout(300);
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const servicesLink = page.locator('[data-testid="mobile-nav-services"]');
+        await servicesLink.click();
+      } else {
+        // For desktop, use the nav link
+        const servicesLink = page.locator('nav.hidden.lg\\:flex a[href="/en/services"]');
+        await servicesLink.click();
       }
-      const servicesLink = isMobile
-        ? page.locator('nav a[href="/en/services"], div[class*="fixed"] a[href="/en/services"]').first()
-        : page.locator('nav.hidden.lg\\:flex a[href="/en/services"]');
-      await servicesLink.click();
       await expect(page).toHaveURL('/en/services');
       
       // Tutorials
       await page.goto('/en/');
       if (isMobile) {
-        const menuButton = page.locator('button[aria-label*="Men\u00fc"], button[aria-label*="menu"]').first();
+        // Use data-testid for menu button
+        const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await menuButton.click();
-        await page.waitForTimeout(300);
+        // Wait for mobile menu panel to be visible
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        // For mobile, use data-testid
+        const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
+        await tutorialsLink.click();
+      } else {
+        // For desktop, use the nav link
+        const tutorialsLink = page.locator('nav.hidden.lg\\:flex a[href="/en/tutorials"]');
+        await tutorialsLink.click();
       }
-      const tutorialsLink = isMobile
-        ? page.locator('nav a[href="/en/tutorials"], div[class*="fixed"] a[href="/en/tutorials"]').first()
-        : page.locator('nav.hidden.lg\\:flex a[href="/en/tutorials"]');
-      await tutorialsLink.click();
       await expect(page).toHaveURL('/en/tutorials');
     });
   });
