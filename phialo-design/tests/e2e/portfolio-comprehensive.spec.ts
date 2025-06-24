@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openPortfolioModal } from './helpers/portfolio-helpers';
 
 test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
   test.beforeEach(async ({ page }) => {
@@ -134,19 +135,8 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
   });
 
   test('@critical portfolio modal should open with correct item', async ({ page }) => {
-    // Hover over the first portfolio item to reveal buttons
-    const firstItem = page.locator('[data-testid="portfolio-item"]').first();
-    await firstItem.hover();
-    
-    // Wait for the details button to be visible and click it
-    await page.waitForTimeout(500); // Wait for hover animation
-    const detailsButton = firstItem.locator('[data-testid="portfolio-details-button"]');
-    await expect(detailsButton).toBeVisible({ timeout: 5000 });
-    await detailsButton.click({ force: true });
-    
-    // Wait for modal to appear with increased timeout
-    const modal = page.locator('[data-testid="portfolio-modal"]');
-    await expect(modal).toBeVisible({ timeout: 15000 });
+    // Open the portfolio modal using simplified helper
+    const modal = await openPortfolioModal(page);
     
     // Check modal content
     const modalTitle = await modal.locator('h2').textContent();
