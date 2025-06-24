@@ -27,7 +27,7 @@ jobs:
           WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
           
           # Delete the worker
-          npx wrangler delete "$WORKER_NAME" --force || true
+          npx wrangler delete --name "$WORKER_NAME" --force || true
       
       - name: Comment on PR
         if: always()
