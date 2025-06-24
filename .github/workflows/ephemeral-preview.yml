@@ -48,15 +48,24 @@ jobs:
           # Create unique worker name
           WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
           
-          # Deploy with dynamic worker name and capture output
-          # Note: We need to specify the entry point and site configuration explicitly
-          # when using --name flag, as it doesn't use wrangler.toml settings
-          DEPLOY_OUTPUT=$(npx wrangler deploy src/index.ts \
-            --name "$WORKER_NAME" \
-            --compatibility-date "2024-01-01" \
-            --site ../phialo-design/dist \
-            --var ENVIRONMENT:preview \
-            --var PR_NUMBER:${{ github.event.pull_request.number }} 2>&1)
+          # Create a temporary wrangler.toml for this deployment
+          # This ensures all configurations are properly applied
+          cat > wrangler-ephemeral.toml << EOF
+          name = "${WORKER_NAME}"
+          main = "src/index.ts"
+          compatibility_date = "2024-01-01"
+          workers_dev = true
+          
+          [site]
+          bucket = "../phialo-design/dist"
+          
+          [vars]
+          ENVIRONMENT = "preview"
+          PR_NUMBER = "${{ github.event.pull_request.number }}"
+          EOF
+          
+          # Deploy using the temporary configuration
+          DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler-ephemeral.toml 2>&1)
           
           echo "Deploy output:"
           echo "$DEPLOY_OUTPUT"
@@ -79,6 +88,9 @@ jobs:
           fi
           
           echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          
+          # Clean up temporary configuration
+          rm -f wrangler-ephemeral.toml
       
       - name: Comment PR with preview URL
         uses: actions/github-script@v7
