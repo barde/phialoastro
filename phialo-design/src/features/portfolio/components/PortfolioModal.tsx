@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from '../../../lib/framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -17,22 +17,31 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
   
-  // Use state to handle language detection properly
-  const [detectedLang, setDetectedLang] = useState(lang);
+  // Initialize state with prop value to match SSR
+  const [detectedLang, setDetectedLang] = useState<'en' | 'de'>(lang);
+  const [isHydrated, setIsHydrated] = useState(false);
   
   // Detect language from URL AFTER hydration to avoid mismatches
   useEffect(() => {
+    // Mark as hydrated
+    setIsHydrated(true);
+    
     if (typeof window !== 'undefined' && window.location) {
       const pathname = window.location.pathname || '';
       const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
-      setDetectedLang(urlLang);
+      
+      // Only update if different from prop
+      if (urlLang !== lang) {
+        setDetectedLang(urlLang);
+      }
       
       // Debug logging
       console.log('PortfolioModal Language Detection:', {
         propLang: lang,
         urlLang,
         pathname,
-        category: portfolioItem.category
+        category: portfolioItem.category,
+        isHydrated: true
       });
     }
   }, [lang, portfolioItem.category]); // Re-run when props change
@@ -96,8 +105,20 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   
   const hasMultipleImages = allImages.length > 1;
 
+  // Navigation function needs to be stable for useEffect dependencies
+  const navigateImage = useCallback((direction: 'prev' | 'next') => {
+    setImageLoading(true);
+    if (direction === 'prev') {
+      setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+    } else {
+      setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+    }
+  }, [allImages.length]);
+
   // Handle keyboard events
   useEffect(() => {
+    if (!isHydrated) return; // Skip until hydrated
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
       
@@ -120,7 +141,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, hasMultipleImages, currentImageIndex]);
+  }, [isOpen, onClose, hasMultipleImages, navigateImage, isHydrated]);
 
   // Reset states when modal opens
   useEffect(() => {
@@ -132,49 +153,52 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
 
   // Focus management
   useEffect(() => {
-    if (isOpen) {
-      // Save current focus
-      const previouslyFocused = document.activeElement as HTMLElement;
-      
-      // Focus the close button
-      setTimeout(() => {
-        closeButtonRef.current?.focus();
-      }, 100);
+    if (!isHydrated || !isOpen) return; // Skip until hydrated and open
+    
+    // Save current focus
+    const previouslyFocused = document.activeElement as HTMLElement;
+    
+    // Focus the close button
+    const focusTimer = setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 100);
 
-      // Trap focus within modal
-      const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key !== 'Tab') return;
+    // Trap focus within modal
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
 
-        const focusableElements = modalRef.current?.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
+      const focusableElements = modalRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
 
-        if (!focusableElements || focusableElements.length === 0) return;
+      if (!focusableElements || focusableElements.length === 0) return;
 
-        const firstElement = focusableElements[0] as HTMLElement;
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-        if (e.shiftKey && document.activeElement === firstElement) {
-          e.preventDefault();
-          lastElement.focus();
-        } else if (!e.shiftKey && document.activeElement === lastElement) {
-          e.preventDefault();
-          firstElement.focus();
-        }
-      };
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
 
-      document.addEventListener('keydown', handleTabKey);
+    document.addEventListener('keydown', handleTabKey);
 
-      return () => {
-        document.removeEventListener('keydown', handleTabKey);
-        // Restore focus when modal closes
-        previouslyFocused?.focus();
-      };
-    }
-  }, [isOpen]);
+    return () => {
+      clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleTabKey);
+      // Restore focus when modal closes
+      previouslyFocused?.focus();
+    };
+  }, [isOpen, isHydrated]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
+    if (!isHydrated) return; // Skip until hydrated
+    
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -184,16 +208,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
-
-  const navigateImage = (direction: 'prev' | 'next') => {
-    setImageLoading(true);
-    if (direction === 'prev') {
-      setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
-    } else {
-      setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
-    }
-  };
+  }, [isOpen, isHydrated]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -222,6 +237,8 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-midnight/90 backdrop-blur-sm"
             aria-hidden="true"
+            onClick={onClose}
+            data-testid="modal-backdrop"
           />
 
           {/* Modal container */}

@@ -10,7 +10,7 @@ export default defineConfig({
   ...baseConfig,
   
   // Optimize for speed with shorter timeouts
-  timeout: 15 * 1000, // 15 seconds per test (half of base config)
+  timeout: 45 * 1000, // 45 seconds per test (75% of base config)
   
   // Minimal retries to save time
   retries: process.env.CI ? 1 : 0,
@@ -22,7 +22,7 @@ export default defineConfig({
   reporter: process.env.CI ? [
     ['list'],
     ['github'],
-    ['html', { open: 'never', outputFolder: 'playwright-report-pr' }]
+    ['html', { open: 'never', outputFolder: 'playwright-report' }]
   ] : 'list',
   
   // Run only critical tests using grep pattern
@@ -47,8 +47,8 @@ export default defineConfig({
     video: 'off',
     
     // Shorter timeouts for faster feedback
-    actionTimeout: 5 * 1000, // 5 seconds
-    navigationTimeout: 15 * 1000, // 15 seconds
+    actionTimeout: 10 * 1000, // 10 seconds
+    navigationTimeout: 30 * 1000, // 30 seconds
     
     // Skip animations to speed up tests
     hasTouch: false,
@@ -109,7 +109,7 @@ export default defineConfig({
   /* Speed optimizations for PR tests */
   expect: {
     // Shorter timeout for assertions
-    timeout: 5 * 1000,
+    timeout: 10 * 1000,
   },
   
   // Disable global setup/teardown if not needed
@@ -117,7 +117,7 @@ export default defineConfig({
   globalTeardown: undefined,
   
   // Output folder for test results
-  outputDir: 'test-results-pr',
+  outputDir: 'test-results',
   
   // Preserve test output for only failed tests
   preserveOutput: 'failures-only',

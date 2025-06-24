@@ -329,24 +329,33 @@ interface PortfolioProps {
 }
 
 export default function Portfolio({ lang = 'de' }: PortfolioProps) {
-  // Use state to handle language detection properly
-  const [actualLang, setActualLang] = useState(lang);
+  // Initialize state with the prop value to match SSR
+  const [actualLang, setActualLang] = useState<'en' | 'de'>(lang);
+  const [isHydrated, setIsHydrated] = useState(false);
   
   // Detect language from URL AFTER hydration to avoid mismatches
   useEffect(() => {
+    // Mark as hydrated
+    setIsHydrated(true);
+    
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname;
       const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
-      setActualLang(urlLang);
+      
+      // Only update if different from prop to avoid unnecessary re-renders
+      if (urlLang !== lang) {
+        setActualLang(urlLang);
+      }
       
       // Debug logging
       console.log('Portfolio Language Detection:', {
         propLang: lang,
         urlLang,
-        pathname
+        pathname,
+        isHydrated: true
       });
     }
-  }, []); // Run once after mount
+  }, [lang]); // Re-run if lang prop changes
   
   const isEnglish = actualLang === 'en';
   
