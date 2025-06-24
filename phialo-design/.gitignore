@@ -52,3 +52,6 @@ playwright-report-*/
 # Build artifacts
 *.log
 node_modules/
+
+# Test screenshots
+portfolio-check*.png
