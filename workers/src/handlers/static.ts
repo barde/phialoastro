@@ -1,9 +1,16 @@
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
 import { getMimeType } from '../utils/mime';
 
-// @ts-expect-error
-import manifestJSON from '__STATIC_CONTENT_MANIFEST';
-const assetManifest = JSON.parse(manifestJSON);
+// Lazy load manifest to avoid initialization errors
+let assetManifest: any;
+function getAssetManifest() {
+  if (!assetManifest) {
+    // @ts-expect-error
+    const manifestJSON = __STATIC_CONTENT_MANIFEST;
+    assetManifest = JSON.parse(manifestJSON);
+  }
+  return assetManifest;
+}
 
 export async function handleStatic(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
@@ -12,7 +19,7 @@ export async function handleStatic(request: Request, env: any, ctx: ExecutionCon
     // Configure asset handling options
     const options = {
       ASSET_NAMESPACE: env.__STATIC_CONTENT,
-      ASSET_MANIFEST: assetManifest,
+      ASSET_MANIFEST: getAssetManifest(),
       mapRequestToAsset: (req: Request) => {
         const url = new URL(req.url);
         let pathname = url.pathname;
@@ -82,7 +89,7 @@ async function handle404(env: any, url: URL, ctx: ExecutionContext): Promise<Res
   try {
     const options = {
       ASSET_NAMESPACE: env.__STATIC_CONTENT,
-      ASSET_MANIFEST: assetManifest,
+      ASSET_MANIFEST: getAssetManifest(),
     };
     
     const request = new Request(new URL('/404.html', url.origin).toString());
