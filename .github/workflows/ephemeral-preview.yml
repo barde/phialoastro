@@ -49,9 +49,12 @@ jobs:
           WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
           
           # Deploy with dynamic worker name and capture output
-          DEPLOY_OUTPUT=$(npx wrangler deploy \
+          # Note: We need to specify the entry point and site configuration explicitly
+          # when using --name flag, as it doesn't use wrangler.toml settings
+          DEPLOY_OUTPUT=$(npx wrangler deploy src/index.ts \
             --name "$WORKER_NAME" \
             --compatibility-date "2024-01-01" \
+            --site ../phialo-design/dist \
             --var ENVIRONMENT:preview \
             --var PR_NUMBER:${{ github.event.pull_request.number }} 2>&1)
           
