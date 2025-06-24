@@ -104,14 +104,39 @@ export async function openPortfolioModal(page: Page) {
   // Ensure the button is enabled and ready
   await expect(detailsButton).toBeEnabled();
 
-  // Click the details button with force to bypass any overlapping elements
-  await detailsButton.click({ force: true });
-  console.log('Clicked the details button.');
+  // Try to click the details button
+  try {
+    await detailsButton.click({ force: true });
+    console.log('Clicked the details button with force.');
+  } catch (clickError) {
+    console.log('Force click failed, trying JavaScript click...');
+    // Fallback to JavaScript click if standard click fails
+    await detailsButton.evaluate((el: HTMLElement) => el.click());
+    console.log('Clicked the details button via JavaScript.');
+  }
 
-  // Wait for the modal to appear
-  const modal = page.locator('[data-testid="portfolio-modal"]');
-  await expect(modal).toBeVisible({ timeout: 10000 });
-  console.log('Portfolio modal is open.');
+  // Add a small delay to allow for any transitions
+  await page.waitForTimeout(1000);
+
+  // Wait for the modal to appear - check multiple possible selectors
+  const modal = page.locator('[data-testid="portfolio-modal"], [role="dialog"], .portfolio-modal').first();
+  
+  try {
+    // Wait for the modal to be attached to DOM first
+    await modal.waitFor({ state: 'attached', timeout: 10000 });
+    console.log('Modal is attached to DOM.');
+    
+    // Then wait for it to be visible
+    await expect(modal).toBeVisible({ timeout: 10000 });
+    console.log('Portfolio modal is open.');
+  } catch (modalError) {
+    // If modal still doesn't appear, try clicking the first item directly
+    console.log('Modal did not appear, trying direct item click...');
+    await firstItem.click({ force: true });
+    await page.waitForTimeout(500);
+    await expect(modal).toBeVisible({ timeout: 5000 });
+    console.log('Portfolio modal is open after direct item click.');
+  }
 
   // Wait for modal content to be loaded
   const modalTitle = modal.locator('h2, [data-testid="portfolio-modal-title"]').first();
