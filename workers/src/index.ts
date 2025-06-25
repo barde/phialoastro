@@ -1,31 +1,36 @@
-import { Router } from 'itty-router';
-import { handleStatic } from './handlers/static';
-import { applyHeaders } from './handlers/headers';
-import { handleRedirects } from './handlers/redirects';
-import { withCache } from './utils/cache';
-
 export interface Env {
-  __STATIC_CONTENT: any;
-  BRANCH_NAME?: string;
+  ASSETS: {
+    fetch: (request: Request) => Promise<Response>;
+  };
+  ENVIRONMENT?: string;
+  PR_NUMBER?: string;
 }
 
-const router = Router();
-
-router.all('*', handleRedirects);
-router.get('*', withCache(handleStatic));
-
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
     try {
-      const response = await router.handle(request, env, ctx);
+      // Try to fetch the asset
+      const response = await env.ASSETS.fetch(request);
       
-      if (!response) {
-        return new Response('Not Found', { status: 404 });
+      // If successful, return it
+      if (response.status !== 404) {
+        return response;
       }
       
-      return applyHeaders(response, request);
-    } catch (error) {
-      console.error('Worker error:', error);
+      // For 404s, check if this is a client-side route (no file extension)
+      const url = new URL(request.url);
+      const hasExtension = url.pathname.includes('.');
+      
+      // If no extension and 404, serve index.html for SPA routing
+      if (!hasExtension) {
+        const indexRequest = new Request(new URL('/', url.origin).toString(), request);
+        return env.ASSETS.fetch(indexRequest);
+      }
+      
+      // Otherwise, return the 404
+      return response;
+    } catch (e) {
+      // Return a generic error response
       return new Response('Internal Server Error', { status: 500 });
     }
   },
