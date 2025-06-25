@@ -366,7 +366,7 @@ For custom domain deployment (production only):
 - Security headers configured in Workers script
 - CSP allows YouTube embeds
 - Workers handle static asset serving and dynamic routing
-- Also possible to deploy via instructions from [DEPLOY.md](./docs/how-to/DEPLOY.md) to get more debug data via web browsing
+- Also possible to deploy via instructions from [DEPLOY.md](./phialo-design/docs/how-to/DEPLOY.md) to get more debug data via web browsing
 
 ### Wrangler Worker Management
 

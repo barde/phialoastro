@@ -32,3 +32,12 @@ ENVIRONMENT = "production"
 
 [vars]
 ENVIRONMENT = "development"
+
+# Test environment for running tests
+[env.test]
+name = "phialo-design-test"
+workers_dev = true
+main = "src/index.ts" # Use full implementation for tests
+
+[env.test.vars]
+ENVIRONMENT = "test"
