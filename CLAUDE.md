@@ -62,6 +62,8 @@ npm run test:ui            # Run tests with UI
 # Code Quality (MUST RUN BEFORE PR)
 npm run lint               # Run linter
 npm run typecheck         # Run TypeScript checks
+npm run format:check      # Check code formatting
+npm run pre-push          # Run all pre-push checks
 
 # Deployment
 npm run deploy             # Deploy to Cloudflare Workers production
@@ -70,6 +72,12 @@ npm run deploy:preview     # Deploy to Cloudflare Workers preview
 # Maintenance
 ./scripts/clean-project.sh # Remove .DS_Store and other junk files
 ```
+
+## PR and Development Guidelines
+
+- Always wait for PR post-push checks like e2e tests
+- Your PR is finished when either all tests pass or when you see an issue not related to the PR itself
+- Always do smaller fixes as part of the PR
 
 ## Component Decision Matrix
 
