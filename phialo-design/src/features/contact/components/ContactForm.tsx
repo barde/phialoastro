@@ -98,6 +98,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       errorValidation: 'Bitte überprüfen Sie Ihre Eingaben und versuchen Sie es erneut.',
       errorServer: 'Serverfehler. Bitte versuchen Sie es später erneut oder kontaktieren Sie uns direkt per E-Mail.',
       errorUnknown: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
+      errorInvalidKey: 'Konfigurationsfehler: Ungültiger Access Key',
       tryAgain: 'Erneut versuchen',
       closeButton: 'Schließen'
     },
@@ -126,6 +127,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       errorValidation: 'Please check your input and try again.',
       errorServer: 'Server error. Please try again later or contact us directly via email.',
       errorUnknown: 'An unexpected error occurred. Please try again.',
+      errorInvalidKey: 'Configuration error: Invalid access key',
       tryAgain: 'Try Again',
       closeButton: 'Close'
     }
