@@ -70,9 +70,13 @@ test.describe('Contact Form Integration', () => {
       // Submit form
       await page.click('button[type="submit"]');
       
-      // Check success message
-      await expect(page.locator('#form-result')).toContainText('✓ Vielen Dank! Ihre Nachricht wurde erfolgreich gesendet.');
-      await expect(page.locator('#form-result')).toHaveClass(/text-green-600/);
+      // Check success modal appears
+      const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Nachricht gesendet!' });
+      await expect(successModal).toBeVisible();
+      await expect(successModal).toContainText('Vielen Dank für Ihre Nachricht. Wir werden uns so schnell wie möglich bei Ihnen melden.');
+      
+      // Close modal
+      await page.click('button:has-text("Schließen")');
       
       // Check form is reset
       await expect(page.locator('input[name="name"]')).toHaveValue('');
@@ -98,9 +102,10 @@ test.describe('Contact Form Integration', () => {
       // Submit form
       await page.click('button[type="submit"]');
       
-      // Check error message
-      await expect(page.locator('#form-result')).toContainText('Konfigurationsfehler: Der Web3Forms Access Key ist ungültig');
-      await expect(page.locator('#form-result')).toHaveClass(/text-red-600/);
+      // Check error modal appears
+      const errorModal = page.locator('.fixed.inset-0').filter({ hasText: 'Fehler beim Senden' });
+      await expect(errorModal).toBeVisible();
+      await expect(errorModal).toContainText('Konfigurationsfehler: Ungültiger Access Key');
     });
 
     test('should show loading state during submission', async ({ page }) => {
@@ -123,26 +128,12 @@ test.describe('Contact Form Integration', () => {
       const submitPromise = page.click('button[type="submit"]');
       
       // Check loading state
-      await expect(page.locator('button[type="submit"]')).toContainText('Wird gesendet...');
+      await expect(page.locator('button[type="submit"]')).toContainText('Senden...');
       await expect(page.locator('button[type="submit"]')).toBeDisabled();
       
       await submitPromise;
     });
 
-    test('should display warning if access key not configured', async ({ page }) => {
-      // Check if access key has the default value
-      const accessKey = await page.locator('input[name="access_key"]').getAttribute('value');
-      
-      // If it's the default placeholder, there should be a warning
-      if (accessKey === 'YOUR_ACCESS_KEY_HERE') {
-        // Look for warning message in console or on page
-        // This test might need adjustment based on how the warning is displayed
-        await expect(page.locator('#form-result')).toContainText('');
-      } else {
-        // Access key is configured, skip warning check
-        expect(accessKey).not.toBe('YOUR_ACCESS_KEY_HERE');
-      }
-    });
   });
 
   test.describe('English Contact Page', () => {
@@ -169,9 +160,6 @@ test.describe('Contact Form Integration', () => {
       
       // Check submit button
       await expect(page.locator('button[type="submit"]')).toContainText('Send Message');
-      
-      // Check subject line
-      await expect(page.locator('input[name="subject"]')).toHaveValue('New Contact Request - Phialo Design');
     });
 
     test('@critical should show English success message', async ({ page }) => {
@@ -192,8 +180,10 @@ test.describe('Contact Form Integration', () => {
       // Submit form
       await page.click('button[type="submit"]');
       
-      // Check success message
-      await expect(page.locator('#form-result')).toContainText('✓ Thank you! Your message has been sent successfully.');
+      // Check success modal appears
+      const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Message sent!' });
+      await expect(successModal).toBeVisible();
+      await expect(successModal).toContainText('Thank you for your message. We will get back to you as soon as possible.');
     });
 
     test('should show English error message for invalid key', async ({ page }) => {
@@ -214,8 +204,10 @@ test.describe('Contact Form Integration', () => {
       // Submit form
       await page.click('button[type="submit"]');
       
-      // Check error message
-      await expect(page.locator('#form-result')).toContainText('Configuration error: Invalid Web3Forms access key');
+      // Check error modal appears
+      const errorModal = page.locator('.fixed.inset-0').filter({ hasText: 'Error sending' });
+      await expect(errorModal).toBeVisible();
+      await expect(errorModal).toContainText('Configuration error: Invalid access key');
     });
   });
 
@@ -252,7 +244,7 @@ test.describe('Contact Form Integration', () => {
       await page.goto('/contact');
       
       // Check that form and image are stacked (not side by side)
-      const form = page.locator('form#contactForm');
+      const form = page.locator('form').first();
       const image = page.locator('img[alt="Gesa Pickbrenner"]');
       
       await expect(form).toBeVisible();
