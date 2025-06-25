@@ -62,6 +62,8 @@ npm run test:ui            # Run tests with UI
 # Code Quality (MUST RUN BEFORE PR)
 npm run lint               # Run linter
 npm run typecheck         # Run TypeScript checks
+npm run format:check      # Check code formatting
+npm run pre-push          # Run all pre-push checks
 
 # Deployment
 npm run deploy             # Deploy to Cloudflare Workers production
