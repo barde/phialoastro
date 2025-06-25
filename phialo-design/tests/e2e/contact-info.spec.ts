@@ -35,8 +35,10 @@ test.describe('Contact Information Tests (Issue #7)', () => {
   test('Phone number should be displayed on contact page', async ({ page }) => {
     await page.goto('/contact');
     
-    const phoneInfo = page.locator('text=(+49) 1578 566 47 00');
+    // Phone number appears multiple times, get the first one in the contact section
+    const phoneInfo = page.locator('a[href="tel:+4915785664700"]').first();
     await expect(phoneInfo).toBeVisible();
+    await expect(phoneInfo).toContainText('(+49) 1578 566 47 00');
   });
 
   test('Email should be displayed in footer', async ({ page }) => {
