@@ -65,7 +65,6 @@ jobs:
           [assets]
           directory = "../phialo-design/dist"
           binding = "ASSETS"
-          not_found_handling = "single-page-application"
           
           [vars]
           ENVIRONMENT = "preview"
