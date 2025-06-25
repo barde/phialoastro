@@ -1,0 +1,101 @@
+# Lefthook configuration for pre-push hooks
+# https://github.com/evilmartians/lefthook
+
+# Quick pre-commit checks (< 5 seconds)
+pre-commit:
+  parallel: true
+  commands:
+    file-size:
+      run: |
+        large_files=$(find . -size +5M -not -path "./node_modules/*" -not -path "./.git/*" -not -path "./dist/*" -not -path "./.astro/*")
+        if [ -n "$large_files" ]; then
+          echo "❌ Error: Large files detected (>5MB):"
+          echo "$large_files"
+          echo ""
+          echo "Please remove or reduce the size of these files before committing."
+          exit 1
+        fi
+      skip:
+        - merge
+        - rebase
+    
+    prohibited-files:
+      run: |
+        prohibited=$(find . -name ".DS_Store" -o -name "*.log" -o -name "*.zip" -o -name "workflow.log*" | grep -v node_modules | grep -v .git)
+        if [ -n "$prohibited" ]; then
+          echo "❌ Error: Prohibited files detected:"
+          echo "$prohibited"
+          echo ""
+          echo "Please remove these files before committing."
+          echo "Run: ./scripts/clean-project.sh"
+          exit 1
+        fi
+      skip:
+        - merge
+        - rebase
+
+# Comprehensive pre-push checks (< 2 minutes)
+pre-push:
+  parallel: true
+  commands:
+    clean:
+      run: |
+        echo "🧹 Running project cleanup..."
+        cd .. && ./scripts/clean-project.sh
+      skip:
+        - merge
+        - rebase
+    
+    typecheck:
+      run: |
+        echo "🔍 Running TypeScript checks..."
+        npm run typecheck
+      glob: "*.{ts,tsx,astro}"
+      skip:
+        - merge
+        - rebase
+    
+    lint:
+      run: |
+        echo "📝 Running ESLint..."
+        npm run lint
+      glob: "*.{js,jsx,ts,tsx,astro}"
+      skip:
+        - merge
+        - rebase
+    
+    test:
+      run: |
+        echo "🧪 Running unit tests..."
+        npm run test:run
+      glob: "*.{ts,tsx,test.ts,test.tsx}"
+      skip:
+        - merge
+        - rebase
+    
+    build:
+      run: |
+        echo "🏗️  Running build check..."
+        npm run build
+      skip:
+        - merge
+        - rebase
+    
+    file-size-check:
+      run: |
+        large_files=$(find . -size +10M -not -path "./node_modules/*" -not -path "./.git/*" -not -path "./dist/*" -not -path "./.astro/*")
+        if [ -n "$large_files" ]; then
+          echo "⚠️  Warning: Very large files detected (>10MB):"
+          echo "$large_files"
+          echo ""
+          echo "Consider if these files should be committed to the repository."
+          echo "To bypass this check, use: git push --no-verify"
+        fi
+      skip:
+        - merge
+        - rebase
+
+# Skip hooks in CI environment
+skip_output:
+  - meta
+  - summary
