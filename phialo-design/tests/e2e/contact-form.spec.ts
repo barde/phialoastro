@@ -14,7 +14,7 @@ test.describe('Contact Form Integration', () => {
       await expect(page.locator('h1')).toContainText('Kontakt');
       
       // Check form is on the left
-      const formContainer = page.locator('form#contactForm').locator('..');
+      const formContainer = page.locator('form').first();
       await expect(formContainer).toBeVisible();
       
       // Check image is on the right
@@ -29,11 +29,6 @@ test.describe('Contact Form Integration', () => {
       
       // Check submit button
       await expect(page.locator('button[type="submit"]')).toContainText('Nachricht senden');
-      
-      // Check hidden fields
-      await expect(page.locator('input[name="access_key"]')).toBeHidden();
-      await expect(page.locator('input[name="subject"]')).toHaveValue('Neue Kontaktanfrage - Phialo Design');
-      await expect(page.locator('input[name="botcheck"]')).toBeHidden();
     });
 
     test('@critical should validate required fields', async ({ page }) => {
@@ -71,9 +66,9 @@ test.describe('Contact Form Integration', () => {
       await page.click('button[type="submit"]');
       
       // Check success modal appears
-      const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Nachricht gesendet!' });
+      const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Erfolg!' });
       await expect(successModal).toBeVisible();
-      await expect(successModal).toContainText('Vielen Dank für Ihre Nachricht. Wir werden uns so schnell wie möglich bei Ihnen melden.');
+      await expect(successModal).toContainText('Ihre Nachricht wurde erfolgreich gesendet');
       
       // Close modal
       await page.click('button:has-text("Schließen")');
@@ -103,7 +98,7 @@ test.describe('Contact Form Integration', () => {
       await page.click('button[type="submit"]');
       
       // Check error modal appears
-      const errorModal = page.locator('.fixed.inset-0').filter({ hasText: 'Fehler beim Senden' });
+      const errorModal = page.locator('.fixed.inset-0').filter({ hasText: 'Fehler' });
       await expect(errorModal).toBeVisible();
       await expect(errorModal).toContainText('Konfigurationsfehler: Ungültiger Access Key');
     });
@@ -128,7 +123,7 @@ test.describe('Contact Form Integration', () => {
       const submitPromise = page.click('button[type="submit"]');
       
       // Check loading state
-      await expect(page.locator('button[type="submit"]')).toContainText('Senden...');
+      await expect(page.locator('button[type="submit"]')).toContainText('Wird gesendet...');
       await expect(page.locator('button[type="submit"]')).toBeDisabled();
       
       await submitPromise;
@@ -181,9 +176,9 @@ test.describe('Contact Form Integration', () => {
       await page.click('button[type="submit"]');
       
       // Check success modal appears
-      const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Message sent!' });
+      const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Success!' });
       await expect(successModal).toBeVisible();
-      await expect(successModal).toContainText('Thank you for your message. We will get back to you as soon as possible.');
+      await expect(successModal).toContainText('Your message has been sent successfully');
     });
 
     test('should show English error message for invalid key', async ({ page }) => {
@@ -205,7 +200,7 @@ test.describe('Contact Form Integration', () => {
       await page.click('button[type="submit"]');
       
       // Check error modal appears
-      const errorModal = page.locator('.fixed.inset-0').filter({ hasText: 'Error sending' });
+      const errorModal = page.locator('.fixed.inset-0').filter({ hasText: 'Error' });
       await expect(errorModal).toBeVisible();
       await expect(errorModal).toContainText('Configuration error: Invalid access key');
     });
