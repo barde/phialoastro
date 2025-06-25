@@ -417,96 +417,299 @@ jobs:
           path: nightly-report.md
           retention-days: 90
 
-      - name: Create E2E failure issue
+      - name: Handle E2E failure issue
         if: steps.report.outputs.E2E_STATUS == 'failure' && inputs.create_issues != 'false'
         uses: actions/github-script@v7
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
-            const title = `🚨 Nightly E2E Tests Failed - ${date}`;
-
-            // Check if issue already exists
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'nightly-test-failure,e2e'
-            });
-
-            const existingIssue = issues.find(issue => issue.title.includes(date));
-
-            if (!existingIssue) {
-              await github.rest.issues.create({
+            const datetime = new Date().toISOString();
+            
+            try {
+              // Check for existing open E2E failure issue
+              console.log('Checking for existing E2E failure issues...');
+              const { data: issues } = await github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: title,
-                body: `## Nightly E2E Test Failure Report
-
-                The nightly E2E test suite failed on ${date}.
-
-                ### Failed Test Matrix
-                Please review the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
-
-                ### Action Items
-                - [ ] Review test failure logs
-                - [ ] Identify root cause
-                - [ ] Create fix PR
-                - [ ] Verify fix in next nightly run
-
-                ### Test Artifacts
-                - [Download all test artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-                - Videos and screenshots are available for failed tests
-
-                cc: @phialo-team`,
-                labels: ['nightly-test-failure', 'e2e', 'high-priority']
+                state: 'open',
+                labels: 'nightly-test-failure,e2e',
+                sort: 'created',
+                direction: 'desc'
               });
+
+              // Find an existing issue with [ONGOING] marker
+              const ongoingIssue = issues.find(issue => 
+                issue.title.includes('[ONGOING]') && 
+                issue.title.includes('Nightly E2E Tests Failed')
+              );
+
+              if (ongoingIssue) {
+                // Update existing issue with new failure information
+                console.log(`Found existing issue #${ongoingIssue.number}, updating...`);
+                
+                // Add a comment with the new failure details
+                const failureComment = [
+                  `## 🔄 Failure Recurrence - ${datetime}`,
+                  '',
+                  `The E2E tests have failed again in the [latest nightly run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`,
+                  '',
+                  '### Test Status',
+                  `- **Date**: ${date}`,
+                  `- **Time**: ${datetime}`,
+                  `- **Workflow Run**: [#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                  '',
+                  '### Test Artifacts',
+                  `- [Download all test artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                  '- Videos and screenshots are available for failed tests',
+                  '',
+                  '---',
+                  '*This is an automated update from the nightly test workflow.*'
+                ].join('\n');
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: ongoingIssue.number,
+                  body: failureComment
+                });
+
+                // Update issue body to reflect ongoing status
+                const currentBody = ongoingIssue.body || '';
+                const failureCountMatch = currentBody.match(/### Failure Count: (\d+)/);
+                const currentCount = failureCountMatch ? parseInt(failureCountMatch[1]) : 1;
+                const newCount = currentCount + 1;
+
+                // Update or add failure count in the body
+                let updatedBody = currentBody;
+                if (failureCountMatch) {
+                  updatedBody = updatedBody.replace(
+                    /### Failure Count: \d+/,
+                    `### Failure Count: ${newCount}`
+                  );
+                  updatedBody = updatedBody.replace(
+                    /Last failure: .*/,
+                    `Last failure: ${datetime}`
+                  );
+                } else {
+                  // Add failure tracking info if not present
+                  const trackingInfo = [
+                    '',
+                    '',
+                    '### Failure Tracking',
+                    `### Failure Count: ${newCount}`,
+                    `First failure: ${ongoingIssue.created_at}`,
+                    `Last failure: ${datetime}`
+                  ].join('\n');
+                  updatedBody = currentBody + trackingInfo;
+                }
+
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: ongoingIssue.number,
+                  body: updatedBody
+                });
+
+                console.log(`Updated issue #${ongoingIssue.number} with failure count: ${newCount}`);
+              } else {
+                // Create new issue for first failure
+                console.log('No existing ongoing issue found, creating new issue...');
+                
+                const newIssue = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `🚨 [ONGOING] Nightly E2E Tests Failed - First detected ${date}`,
+                  body: [
+                    '## Nightly E2E Test Failure Report',
+                    '',
+                    'The nightly E2E test suite has failed. This issue will track ongoing failures until resolved.',
+                    '',
+                    '### Test Status',
+                    `- **First Failure**: ${datetime}`,
+                    `- **Latest Run**: [#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                    '',
+                    '### Failed Test Matrix',
+                    `Please review the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.`,
+                    '',
+                    '### Action Items',
+                    '- [ ] Review test failure logs',
+                    '- [ ] Identify root cause',
+                    '- [ ] Create fix PR',
+                    '- [ ] Verify fix in next nightly run',
+                    '',
+                    '### Test Artifacts',
+                    `- [Download all test artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                    '- Videos and screenshots are available for failed tests',
+                    '',
+                    '### Failure Tracking',
+                    '### Failure Count: 1',
+                    `First failure: ${datetime}`,
+                    `Last failure: ${datetime}`,
+                    '',
+                    '---',
+                    '**Note**: This issue will be automatically updated with each subsequent failure until the tests pass again.',
+                    '',
+                    'cc: @phialo-team'
+                  ].join('\n'),
+                  labels: ['nightly-test-failure', 'e2e', 'high-priority']
+                });
+                
+                console.log(`Created new issue #${newIssue.data.number} for E2E failures`);
+              }
+            } catch (error) {
+              console.error('Error handling E2E failure issue:', error);
+              throw error;
             }
 
-      - name: Create Performance failure issue
+      - name: Handle Performance failure issue
         if: steps.report.outputs.PERF_STATUS == 'failure' && inputs.create_issues != 'false'
         uses: actions/github-script@v7
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
-            const title = `⚡ Nightly Performance Tests Failed - ${date}`;
-
-            // Check if issue already exists
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'nightly-test-failure,performance'
-            });
-
-            const existingIssue = issues.find(issue => issue.title.includes(date));
-
-            if (!existingIssue) {
-              await github.rest.issues.create({
+            const datetime = new Date().toISOString();
+            
+            try {
+              // Check for existing open performance failure issue
+              console.log('Checking for existing performance failure issues...');
+              const { data: issues } = await github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: title,
-                body: `## Nightly Performance Test Failure Report
-
-                The nightly performance test suite failed on ${date}.
-
-                ### Performance Metrics Below Threshold
-                - Performance threshold: ${process.env.LIGHTHOUSE_PERFORMANCE_THRESHOLD}
-                - Accessibility threshold: ${process.env.LIGHTHOUSE_ACCESSIBILITY_THRESHOLD}
-                - Best Practices threshold: ${process.env.LIGHTHOUSE_BEST_PRACTICES_THRESHOLD}
-                - SEO threshold: ${process.env.LIGHTHOUSE_SEO_THRESHOLD}
-
-                ### Action Items
-                - [ ] Review Lighthouse reports
-                - [ ] Identify performance regressions
-                - [ ] Optimize affected pages
-                - [ ] Re-run performance tests
-
-                ### Test Artifacts
-                - [Lighthouse Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-                cc: @phialo-team`,
-                labels: ['nightly-test-failure', 'performance', 'high-priority']
+                state: 'open',
+                labels: 'nightly-test-failure,performance',
+                sort: 'created',
+                direction: 'desc'
               });
+
+              // Find an existing issue with [ONGOING] marker
+              const ongoingIssue = issues.find(issue => 
+                issue.title.includes('[ONGOING]') && 
+                issue.title.includes('Nightly Performance Tests Failed')
+              );
+
+              if (ongoingIssue) {
+                // Update existing issue with new failure information
+                console.log(`Found existing issue #${ongoingIssue.number}, updating...`);
+                
+                // Add a comment with the new failure details
+                const failureComment = [
+                  `## 🔄 Failure Recurrence - ${datetime}`,
+                  '',
+                  `The performance tests have failed again in the [latest nightly run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`,
+                  '',
+                  '### Test Status',
+                  `- **Date**: ${date}`,
+                  `- **Time**: ${datetime}`,
+                  `- **Workflow Run**: [#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                  '',
+                  '### Performance Thresholds',
+                  `- Performance: ${process.env.LIGHTHOUSE_PERFORMANCE_THRESHOLD || '90'}`,
+                  `- Accessibility: ${process.env.LIGHTHOUSE_ACCESSIBILITY_THRESHOLD || '95'}`,
+                  `- Best Practices: ${process.env.LIGHTHOUSE_BEST_PRACTICES_THRESHOLD || '90'}`,
+                  `- SEO: ${process.env.LIGHTHOUSE_SEO_THRESHOLD || '90'}`,
+                  '',
+                  '### Test Artifacts',
+                  `- [Lighthouse Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                  '',
+                  '---',
+                  '*This is an automated update from the nightly test workflow.*'
+                ].join('\n');
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: ongoingIssue.number,
+                  body: failureComment
+                });
+
+                // Update issue body to reflect ongoing status
+                const currentBody = ongoingIssue.body || '';
+                const failureCountMatch = currentBody.match(/### Failure Count: (\d+)/);
+                const currentCount = failureCountMatch ? parseInt(failureCountMatch[1]) : 1;
+                const newCount = currentCount + 1;
+
+                // Update or add failure count in the body
+                let updatedBody = currentBody;
+                if (failureCountMatch) {
+                  updatedBody = updatedBody.replace(
+                    /### Failure Count: \d+/,
+                    `### Failure Count: ${newCount}`
+                  );
+                  updatedBody = updatedBody.replace(
+                    /Last failure: .*/,
+                    `Last failure: ${datetime}`
+                  );
+                } else {
+                  // Add failure tracking info if not present
+                  const trackingInfo = [
+                    '',
+                    '',
+                    '### Failure Tracking',
+                    `### Failure Count: ${newCount}`,
+                    `First failure: ${ongoingIssue.created_at}`,
+                    `Last failure: ${datetime}`
+                  ].join('\n');
+                  updatedBody = currentBody + trackingInfo;
+                }
+
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: ongoingIssue.number,
+                  body: updatedBody
+                });
+
+                console.log(`Updated issue #${ongoingIssue.number} with failure count: ${newCount}`);
+              } else {
+                // Create new issue for first failure
+                console.log('No existing ongoing issue found, creating new issue...');
+                
+                const newIssue = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `⚡ [ONGOING] Nightly Performance Tests Failed - First detected ${date}`,
+                  body: [
+                    '## Nightly Performance Test Failure Report',
+                    '',
+                    'The nightly performance test suite has failed. This issue will track ongoing failures until resolved.',
+                    '',
+                    '### Test Status',
+                    `- **First Failure**: ${datetime}`,
+                    `- **Latest Run**: [#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                    '',
+                    '### Performance Metrics Below Threshold',
+                    `- Performance threshold: ${process.env.LIGHTHOUSE_PERFORMANCE_THRESHOLD || '90'}`,
+                    `- Accessibility threshold: ${process.env.LIGHTHOUSE_ACCESSIBILITY_THRESHOLD || '95'}`,
+                    `- Best Practices threshold: ${process.env.LIGHTHOUSE_BEST_PRACTICES_THRESHOLD || '90'}`,
+                    `- SEO threshold: ${process.env.LIGHTHOUSE_SEO_THRESHOLD || '90'}`,
+                    '',
+                    '### Action Items',
+                    '- [ ] Review Lighthouse reports',
+                    '- [ ] Identify performance regressions',
+                    '- [ ] Optimize affected pages',
+                    '- [ ] Re-run performance tests',
+                    '',
+                    '### Test Artifacts',
+                    `- [Lighthouse Reports](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+                    '',
+                    '### Failure Tracking',
+                    '### Failure Count: 1',
+                    `First failure: ${datetime}`,
+                    `Last failure: ${datetime}`,
+                    '',
+                    '---',
+                    '**Note**: This issue will be automatically updated with each subsequent failure until the tests pass again.',
+                    '',
+                    'cc: @phialo-team'
+                  ].join('\n'),
+                  labels: ['nightly-test-failure', 'performance', 'high-priority']
+                });
+                
+                console.log(`Created new issue #${newIssue.data.number} for performance failures`);
+              }
+            } catch (error) {
+              console.error('Error handling performance failure issue:', error);
+              throw error;
             }
 
   cleanup-old-artifacts:

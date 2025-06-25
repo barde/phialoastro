@@ -14,21 +14,22 @@ export default {
     env: WorkerEnv,
     ctx: ExecutionContext
   ): Promise<Response> {
-    // Set up environment-specific configuration
-    const environment = env.ENVIRONMENT || 'production';
-    const config = getEnvironmentConfig(environment);
-    
-    // Configure logger
-    logger.setConfig({
-      minLevel: config.debug ? LogLevel.DEBUG : LogLevel.INFO,
-    });
-    
-    // Create worker context
     const context: WorkerContext = { request, env, ctx };
     
+    // Configure logger based on environment
+    const config = getEnvironmentConfig(env);
+    logger.setLogLevel(config.logLevel);
+    
     try {
+      // Log request
+      logger.info('Incoming request', {
+        method: request.method,
+        url: request.url,
+        headers: Object.fromEntries(request.headers.entries())
+      });
+      
       // Handle request through router
-      const response = await router.handle(request, context);
+      const response = await router.handle(context);
       
       if (!response) {
         throw new Error('No response from router');
