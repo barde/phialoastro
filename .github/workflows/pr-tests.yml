@@ -44,6 +44,9 @@ jobs:
       github.event_name == 'merge_group'
     permissions:
       contents: read
+    outputs:
+      coverage: ${{ steps.test-results.outputs.coverage }}
+      build-time: ${{ steps.test-results.outputs.build-time }}
 
     steps:
       - name: Checkout code
@@ -79,7 +82,11 @@ jobs:
 
       - name: Run unit tests with coverage
         working-directory: phialo-design
-        run: pnpm run test:run -- --coverage
+        run: |
+          pnpm run test:run -- --coverage --reporter=json --reporter=default
+          # Extract coverage percentage
+          COVERAGE=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct' 2>/dev/null || echo "0")
+          echo "COVERAGE_PCT=$COVERAGE" >> $GITHUB_ENV
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -89,7 +96,19 @@ jobs:
 
       - name: Build project
         working-directory: phialo-design
-        run: pnpm run build
+        run: |
+          BUILD_START=$(date +%s)
+          pnpm run build
+          BUILD_END=$(date +%s)
+          BUILD_TIME=$((BUILD_END - BUILD_START))
+          echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+          echo "Build completed in ${BUILD_TIME}s"
+
+      - name: Set test results outputs
+        id: test-results
+        run: |
+          echo "coverage=${COVERAGE_PCT:-0}" >> $GITHUB_OUTPUT
+          echo "build-time=${BUILD_TIME:-0}" >> $GITHUB_OUTPUT
 
   e2e:
     name: E2E Tests - Core Scenarios
@@ -103,6 +122,9 @@ jobs:
       github.event_name == 'merge_group'
     permissions:
       contents: read
+    outputs:
+      test-time: ${{ steps.e2e-results.outputs.test-time }}
+      test-count: ${{ steps.e2e-results.outputs.test-count }}
 
     steps:
       - name: Checkout code
@@ -164,7 +186,27 @@ jobs:
       # Run only core E2E tests for PRs
       - name: Run core E2E tests
         working-directory: phialo-design
-        run: npx playwright test --config=playwright.pr.config.ts
+        run: |
+          E2E_START=$(date +%s)
+          npx playwright test --config=playwright.pr.config.ts --reporter=json --reporter=line
+          E2E_EXIT_CODE=$?
+          E2E_END=$(date +%s)
+          E2E_TIME=$((E2E_END - E2E_START))
+          echo "E2E_TIME=$E2E_TIME" >> $GITHUB_ENV
+          # Extract test count from JSON report if available
+          if [ -f "test-results.json" ]; then
+            TEST_COUNT=$(cat test-results.json | jq '.stats.expected' 2>/dev/null || echo "0")
+            echo "TEST_COUNT=$TEST_COUNT" >> $GITHUB_ENV
+          else
+            echo "TEST_COUNT=0" >> $GITHUB_ENV
+          fi
+          exit $E2E_EXIT_CODE
+
+      - name: Set E2E results outputs
+        id: e2e-results
+        run: |
+          echo "test-time=${E2E_TIME:-0}" >> $GITHUB_OUTPUT
+          echo "test-count=${TEST_COUNT:-0}" >> $GITHUB_OUTPUT
 
       - name: Upload test results
         if: always()
@@ -233,6 +275,10 @@ jobs:
 
             const unitResult = '${{ needs.test.result }}';
             const e2eResult = '${{ needs.e2e.result }}';
+            const coverage = '${{ needs.test.outputs.coverage }}' || '0';
+            const buildTime = '${{ needs.test.outputs.build-time }}' || '0';
+            const e2eTime = '${{ needs.e2e.outputs.test-time }}' || '0';
+            const e2eCount = '${{ needs.e2e.outputs.test-count }}' || '0';
 
             const unitIcon = unitResult === 'success' ? '✅' : unitResult === 'skipped' ? '⏭️' : '❌';
             const e2eIcon = e2eResult === 'success' ? '✅' : e2eResult === 'skipped' ? '⏭️' : '⚠️';
@@ -247,25 +293,38 @@ jobs:
               if (changes.config) changesText += '- ⚙️ Configuration\n';
             }
 
+            // Coverage badge color
+            let coverageColor = 'red';
+            if (coverage >= 80) coverageColor = 'brightgreen';
+            else if (coverage >= 60) coverageColor = 'yellow';
+            else if (coverage >= 40) coverageColor = 'orange';
+
             const comment = `## Test Results
 
             ${changesText}
 
             ### Test Execution
-            | Test Suite | Status | Note |
-            |------------|--------|------|
-            | Unit Tests | ${unitIcon} ${unitResult} | ${unitResult === 'skipped' ? 'No relevant changes' : unitResult === 'success' ? 'Node 20.x only' : 'Required'} |
-            | E2E Tests (Core) | ${e2eIcon} ${e2eResult} | ${e2eResult === 'skipped' ? 'No relevant changes' : 'Chrome, Firefox, Mobile Safari/Chrome'} |
+            | Test Suite | Status | Details |
+            |------------|--------|---------|
+            | Unit Tests | ${unitIcon} ${unitResult} | ${unitResult === 'skipped' ? 'No relevant changes' : unitResult === 'success' ? `Coverage: ${coverage}%` : 'Failed'} |
+            | E2E Tests | ${e2eIcon} ${e2eResult} | ${e2eResult === 'skipped' ? 'No relevant changes' : `${e2eCount} tests in ${e2eTime}s`} |
 
             ${unitResult === 'failure' ? '⚠️ **Unit tests must pass before merging!**' : ''}
             ${e2eResult === 'failure' ? '❌ **E2E tests must pass before merging!**' : ''}
 
-            💡 **Optimization Details:**
-            - Running on Node 20.x only (reduced from 3 versions)
-            - E2E uses 4 parallel workers (increased from 1)
-            - Running only tests tagged with @critical for PR speed
-            - Reduced browser matrix: Chrome, Firefox, Mobile Safari/Chrome
-            - Playwright browsers are cached for faster runs
+            ### 📊 Build Metrics
+            ${unitResult === 'success' ? `
+            - **Test Coverage:** ![Coverage](https://img.shields.io/badge/coverage-${coverage}%25-${coverageColor})
+            - **Build Time:** ${buildTime}s
+            - **E2E Test Time:** ${e2eTime}s (${e2eCount} tests)
+            ` : '
+            Build metrics will be available once tests pass.
+            '}
+
+            💡 **Performance Insights:**
+            - Tests run on Node 20.x with optimized caching
+            - Parallel test execution with 4 workers
+            - Critical path tests only for faster PR feedback
             `;
 
             // Find existing comment
