@@ -11,3 +11,6 @@ declare module '__STATIC_CONTENT_MANIFEST' {
   const manifest: string;
   export default manifest;
 }
+
+// Re-export worker types
+export * from './worker';

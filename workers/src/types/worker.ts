@@ -1,0 +1,79 @@
+import { ExecutionContext } from '@cloudflare/workers-types';
+
+/**
+ * Environment variables and bindings available to the worker
+ */
+export interface WorkerEnv {
+  __STATIC_CONTENT: KVNamespace;
+  BRANCH_NAME?: string;
+  ENVIRONMENT?: 'development' | 'preview' | 'production';
+}
+
+/**
+ * Worker context with request, environment, and execution context
+ */
+export interface WorkerContext {
+  request: Request;
+  env: WorkerEnv;
+  ctx: ExecutionContext;
+}
+
+/**
+ * Handler function type for worker routes
+ */
+export type RouteHandler = (context: WorkerContext) => Promise<Response> | Response;
+
+/**
+ * Middleware function type
+ */
+export type Middleware = (
+  context: WorkerContext,
+  next: () => Promise<Response>
+) => Promise<Response> | Response;
+
+/**
+ * Asset handler options
+ */
+export interface AssetHandlerOptions {
+  cacheControl?: {
+    browserTTL?: number;
+    edgeTTL?: number;
+    bypassCache?: boolean;
+  };
+  mapRequestToAsset?: (request: Request) => Request;
+}
+
+/**
+ * Cache configuration
+ */
+export interface CacheConfig {
+  cacheName?: string;
+  cacheKey?: Request | string;
+  ttl?: number;
+}
+
+/**
+ * Error types for better error handling
+ */
+export enum ErrorType {
+  NOT_FOUND = 'NOT_FOUND',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  BAD_REQUEST = 'BAD_REQUEST',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+}
+
+/**
+ * Custom error class for worker errors
+ */
+export class WorkerError extends Error {
+  constructor(
+    public type: ErrorType,
+    public statusCode: number,
+    message: string,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'WorkerError';
+  }
+}

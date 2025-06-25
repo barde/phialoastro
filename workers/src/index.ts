@@ -1,32 +1,47 @@
-import { Router } from 'itty-router';
-import { handleStatic } from './handlers/static';
-import { applyHeaders } from './handlers/headers';
-import { handleRedirects } from './handlers/redirects';
-import { withCache } from './utils/cache';
+import { WorkerEnv, WorkerContext } from './types/worker';
+import { createRouter } from './router';
+import { handleError } from './utils/errors';
+import { applySecurityHeaders } from './handlers/security';
+import { logger, LogLevel } from './utils/logger';
+import { getEnvironmentConfig } from './config/index';
 
-export interface Env {
-  __STATIC_CONTENT: any;
-  BRANCH_NAME?: string;
-}
-
-const router = Router();
-
-router.all('*', handleRedirects);
-router.get('*', withCache(handleStatic));
+// Initialize router
+const router = createRouter();
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: WorkerEnv,
+    ctx: ExecutionContext
+  ): Promise<Response> {
+    // Set up environment-specific configuration
+    const environment = env.ENVIRONMENT || 'production';
+    const config = getEnvironmentConfig(environment);
+    
+    // Configure logger
+    logger.setConfig({
+      minLevel: config.debug ? LogLevel.DEBUG : LogLevel.INFO,
+    });
+    
+    // Create worker context
+    const context: WorkerContext = { request, env, ctx };
+    
     try {
-      const response = await router.handle(request, env, ctx);
+      // Handle request through router
+      const response = await router.handle(request, context);
       
       if (!response) {
-        return new Response('Not Found', { status: 404 });
+        throw new Error('No response from router');
       }
       
-      return applyHeaders(response, request);
+      // Apply security headers
+      return applySecurityHeaders(response, request);
     } catch (error) {
-      console.error('Worker error:', error);
-      return new Response('Internal Server Error', { status: 500 });
+      // Handle errors gracefully
+      return handleError(error, request);
     }
   },
 };
+
+// Export types for external use
+export type { WorkerEnv } from './types/worker';
