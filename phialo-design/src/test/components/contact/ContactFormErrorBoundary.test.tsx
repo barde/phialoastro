@@ -76,25 +76,31 @@ describe('ContactFormErrorBoundary', () => {
   });
 
   it('allows resetting after error', () => {
+    let throwError = true;
+    
+    const TestComponent = () => {
+      if (throwError) {
+        throw new Error('Test error');
+      }
+      return <div>No error</div>;
+    };
+    
     const { rerender } = render(
       <ContactFormErrorBoundary>
-        <ThrowError shouldThrow={true} />
+        <TestComponent />
       </ContactFormErrorBoundary>
     );
 
     expect(screen.getByText('Ups! Etwas ist schief gelaufen')).toBeInTheDocument();
 
-    // Click try again
+    // Click try again button to reset the error boundary
     const tryAgainButton = screen.getByText('Erneut versuchen');
+    
+    // Set throwError to false before clicking reset
+    throwError = false;
     fireEvent.click(tryAgainButton);
 
-    // Rerender with working component
-    rerender(
-      <ContactFormErrorBoundary>
-        <ThrowError shouldThrow={false} />
-      </ContactFormErrorBoundary>
-    );
-
+    // After clicking reset, the component should render normally
     expect(screen.getByText('No error')).toBeInTheDocument();
     expect(screen.queryByText('Ups! Etwas ist schief gelaufen')).not.toBeInTheDocument();
   });
@@ -135,9 +141,10 @@ describe('ContactFormErrorBoundary', () => {
       </ContactFormErrorBoundary>
     );
 
-    const errorIcon = screen.getByRole('img', { hidden: true });
+    // The SVG is not an img role, check for the svg element directly
+    const errorIcon = screen.getByText('Ups! Etwas ist schief gelaufen').parentElement?.parentElement?.querySelector('svg');
     expect(errorIcon).toBeInTheDocument();
-    expect(errorIcon.parentElement).toHaveClass('bg-red-500/20');
+    expect(errorIcon?.parentElement).toHaveClass('bg-red-500/20');
   });
 
   it('shows technical details in development mode', () => {
