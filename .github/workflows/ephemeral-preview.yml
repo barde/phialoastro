@@ -72,10 +72,15 @@ jobs:
           EOF
           
           # Deploy using the temporary configuration
-          DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler-ephemeral.toml 2>&1)
-          
-          echo "Deploy output:"
-          echo "$DEPLOY_OUTPUT"
+          echo "Deploying with wrangler..."
+          if DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler-ephemeral.toml 2>&1); then
+            echo "Deployment successful!"
+            echo "$DEPLOY_OUTPUT"
+          else
+            echo "Deployment failed!"
+            echo "$DEPLOY_OUTPUT"
+            exit 1
+          fi
           
           # Extract the URL from deployment output
           # Wrangler outputs: "Published phialo-pr-106 (version = ...) https://phialo-pr-106.subdomain.workers.dev"
