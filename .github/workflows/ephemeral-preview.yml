@@ -18,6 +18,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,15 +50,37 @@ jobs:
           # Create unique worker name
           WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
           
-          # Deploy with dynamic worker name and capture output
-          DEPLOY_OUTPUT=$(npx wrangler deploy \
-            --name "$WORKER_NAME" \
-            --compatibility-date "2024-01-01" \
-            --var ENVIRONMENT:preview \
-            --var PR_NUMBER:${{ github.event.pull_request.number }} 2>&1)
+          # Get the main entry point from wrangler.toml
+          MAIN_ENTRY=$(grep "^main = " wrangler.toml | cut -d'"' -f2)
+          echo "Using main entry point: $MAIN_ENTRY"
           
-          echo "Deploy output:"
-          echo "$DEPLOY_OUTPUT"
+          # Create a temporary wrangler.toml for this deployment
+          # This ensures all configurations are properly applied
+          cat > wrangler-ephemeral.toml << EOF
+          name = "${WORKER_NAME}"
+          main = "${MAIN_ENTRY}"
+          compatibility_date = "2024-09-25"
+          workers_dev = true
+          
+          [assets]
+          directory = "../phialo-design/dist"
+          binding = "ASSETS"
+          
+          [vars]
+          ENVIRONMENT = "preview"
+          PR_NUMBER = "${{ github.event.pull_request.number }}"
+          EOF
+          
+          # Deploy using the temporary configuration
+          echo "Deploying with wrangler..."
+          if DEPLOY_OUTPUT=$(npx wrangler deploy --config wrangler-ephemeral.toml 2>&1); then
+            echo "Deployment successful!"
+            echo "$DEPLOY_OUTPUT"
+          else
+            echo "Deployment failed!"
+            echo "$DEPLOY_OUTPUT"
+            exit 1
+          fi
           
           # Extract the URL from deployment output
           # Wrangler outputs: "Published phialo-pr-106 (version = ...) https://phialo-pr-106.subdomain.workers.dev"
@@ -76,6 +100,9 @@ jobs:
           fi
           
           echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          
+          # Clean up temporary configuration
+          rm -f wrangler-ephemeral.toml
       
       - name: Comment PR with preview URL
         uses: actions/github-script@v7

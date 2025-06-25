@@ -16,5 +16,5 @@
 # - Path normalization (removing trailing slashes)
 # - Language-specific redirects
 
-# This single rule will handle 404s via Astro's 404.astro page
-/* /404 404
+# Workers static assets doesn't support 404 status codes in _redirects
+# 404 handling is now done in the worker script

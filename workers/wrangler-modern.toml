@@ -1,8 +1,9 @@
 name = "phialo-design"
 main = "src/index.ts"
-compatibility_date = "2024-09-25"
+compatibility_date = "2024-01-01"
 workers_dev = true
 
+# Modern assets configuration (replaces [site])
 [assets]
 directory = "../phialo-design/dist"
 binding = "ASSETS"
@@ -18,7 +19,6 @@ workers_dev = true
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
-# Note: WEB3FORMS_ACCESS_KEY is passed during build via GitHub Actions
 
 # Production environment
 [env.production]
@@ -29,16 +29,6 @@ workers_dev = false
 
 [env.production.vars]
 ENVIRONMENT = "production"
-# Note: WEB3FORMS_ACCESS_KEY must be set in Cloudflare dashboard under Worker settings
 
 [vars]
 ENVIRONMENT = "development"
-
-# Test environment for running tests
-[env.test]
-name = "phialo-design-test"
-workers_dev = true
-main = "src/index.ts" # Use full implementation for tests
-
-[env.test.vars]
-ENVIRONMENT = "test"
