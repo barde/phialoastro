@@ -253,30 +253,31 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
     setErrorMessage('');
 
     try {
-      // Simulate API call (replace with actual API endpoint)
-      // For now, we'll use the mailto approach but with better error handling
-      const subject = encodeURIComponent(`Contact inquiry from ${formData.name}`);
-      const body = encodeURIComponent(`
-Name: ${formData.name}
-Email: ${formData.email}
-${formData.phone ? `Phone: ${formData.phone}` : ''}
+      // Prepare form data for Web3Forms
+      const web3FormData = {
+        access_key: import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY || 'YOUR_ACCESS_KEY_HERE',
+        subject: `New Contact Request - Phialo Design`,
+        from_name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        phone: formData.phone || 'Not provided'
+      };
 
-Message:
-${formData.message}
-      `);
-      
-      const mailtoLink = `mailto:kontakt@phialo.de?subject=${subject}&body=${body}`;
-      
-      // Create a temporary anchor element to trigger mailto
-      // Skip actual navigation in test environment
-      if (typeof window !== 'undefined' && !window.location.href.includes('localhost:')) {
-        const link = document.createElement('a');
-        link.href = mailtoLink;
-        link.click();
+      // Submit to Web3Forms API
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(web3FormData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to send message');
       }
-      
-      // Simulate success after a short delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setSubmitStatus('success');
       setFormData({ name: '', email: '', phone: '', message: '' });
@@ -292,6 +293,8 @@ ${formData.message}
       // Determine error type
       if (error instanceof TypeError && error.message.includes('fetch')) {
         setErrorMessage(t.errorNetwork);
+      } else if (error instanceof Error && error.message.toLowerCase().includes('invalid access key')) {
+        setErrorMessage(t.errorInvalidKey);
       } else if (error instanceof Error && error.message.includes('validation')) {
         setErrorMessage(t.errorValidation);
       } else if (error instanceof Error && error.message.includes('server')) {
