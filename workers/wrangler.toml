@@ -6,7 +6,6 @@ workers_dev = true
 [assets]
 directory = "../phialo-design/dist"
 binding = "ASSETS"
-not_found_handling = "single-page-application"
 
 [build]
 command = "npm run build"
