@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
 import ContactForm from '../../../features/contact/components/ContactForm';
 
 // Mock window.location
@@ -15,10 +15,29 @@ Object.defineProperty(window, 'location', {
   writable: true
 });
 
+// Mock fetch for Web3Forms API
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock import.meta.env
+const originalEnv = import.meta.env;
+beforeAll(() => {
+  (import.meta as any).env = {
+    ...originalEnv,
+    PUBLIC_WEB3FORMS_ACCESS_KEY: 'test-access-key'
+  };
+});
+
+afterAll(() => {
+  (import.meta as any).env = originalEnv;
+});
+
 describe('ContactForm', () => {
   beforeEach(() => {
     // Reset location to German
     mockLocation.pathname = '/';
+    // Reset fetch mock
+    vi.clearAllMocks();
   });
 
   describe('Validation', () => {
@@ -148,6 +167,12 @@ describe('ContactForm', () => {
     });
 
     it('shows success message after submission', async () => {
+      // Mock successful API response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true })
+      });
+      
       render(<ContactForm />);
       
       // Fill in valid data
@@ -165,6 +190,12 @@ describe('ContactForm', () => {
     });
 
     it('resets form after successful submission', async () => {
+      // Mock successful API response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true })
+      });
+      
       render(<ContactForm />);
       
       // Fill in valid data
@@ -194,6 +225,12 @@ describe('ContactForm', () => {
     });
 
     it('calls onSuccess callback when provided', async () => {
+      // Mock successful API response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true })
+      });
+      
       const onSuccess = vi.fn();
       render(<ContactForm onSuccess={onSuccess} />);
       
@@ -216,15 +253,8 @@ describe('ContactForm', () => {
       // Mock console.error to prevent test output pollution
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
-      // Mock window.location.href setter to throw an error
-      const originalLocation = window.location;
-      delete (window as any).location;
-      window.location = { ...originalLocation, href: '' };
-      Object.defineProperty(window.location, 'href', {
-        set: () => {
-          throw new Error('Network error');
-        }
-      });
+      // Mock failed API response
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
       
       render(<ContactForm />);
       
@@ -241,11 +271,16 @@ describe('ContactForm', () => {
       });
       
       // Restore
-      window.location = originalLocation;
       consoleSpy.mockRestore();
     });
 
     it('allows retry after error', async () => {
+      // Mock successful API response for the second attempt
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true })
+      });
+      
       render(<ContactForm />);
       
       // Trigger validation error first
@@ -267,6 +302,38 @@ describe('ContactForm', () => {
       await waitFor(() => {
         expect(screen.getByText('Erfolg!')).toBeInTheDocument();
       }, { timeout: 2000 });
+    });
+
+    it('shows invalid access key error when API rejects with invalid key message', async () => {
+      // Mock console.error to prevent test output pollution
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Mock API response with invalid access key error
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ 
+          success: false,
+          message: 'Invalid access key' 
+        })
+      });
+      
+      render(<ContactForm />);
+      
+      // Fill in valid data
+      await userEvent.type(screen.getByLabelText(/Name/), 'John Doe');
+      await userEvent.type(screen.getByLabelText(/E-Mail/), 'john@example.com');
+      await userEvent.type(screen.getByLabelText(/Nachricht/), 'This is a test message');
+      
+      const submitButton = screen.getByText('Nachricht senden');
+      fireEvent.click(submitButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Fehler')).toBeInTheDocument();
+        expect(screen.getByText('Konfigurationsfehler: Ungültiger Access Key')).toBeInTheDocument();
+      });
+      
+      // Restore
+      consoleSpy.mockRestore();
     });
   });
 
