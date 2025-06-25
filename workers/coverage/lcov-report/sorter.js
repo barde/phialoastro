@@ -1,4 +1,11 @@
 /* eslint-disable */
+
+function sanitizeValue(value) {
+    // Escape or validate the value to prevent XSS
+    const tempDiv = document.createElement('div');
+    tempDiv.textContent = value;
+    return tempDiv.innerHTML;
+}
 var addSorting = (function() {
     'use strict';
     var cols,
@@ -85,7 +92,7 @@ var addSorting = (function() {
         for (i = 0; i < tableCols.length; i += 1) {
             colNode = tableCols[i];
             col = cols[i];
-            val = colNode.getAttribute('data-value');
+            val = sanitizeValue(colNode.getAttribute('data-value'));
             if (col.type === 'number') {
                 val = Number(val);
             }
