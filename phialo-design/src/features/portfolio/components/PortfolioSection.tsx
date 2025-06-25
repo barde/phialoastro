@@ -18,6 +18,11 @@ export interface PortfolioItemData {
   techniques: string[];
   details: string;
   gallery: string[];
+  client?: string;
+  projectDate?: string;
+  availability?: string;
+  price?: string;
+  tags?: string[];
 }
 
 // Function to get portfolio items with correct language
