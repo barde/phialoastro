@@ -1,5 +1,5 @@
 import { WorkerContext } from '../../types/worker';
-import { fetchAssetFromKV, processAssetResponse, handle404 } from '../../handlers/assets';
+import { fetchAsset, handle404 } from '../../handlers/assets-modern';
 import { logger } from '../../utils/logger';
 
 /**
@@ -10,19 +10,16 @@ export async function handleStaticAsset(context: WorkerContext): Promise<Respons
   const url = new URL(request.url);
   
   try {
-    // Fetch the asset from KV
-    const assetResponse = await fetchAssetFromKV(context);
-    
-    // Process and return the response
-    const processedResponse = processAssetResponse(assetResponse, url.pathname);
+    // Fetch the asset using modern ASSETS binding
+    const assetResponse = await fetchAsset(context);
     
     logger.debug('Served static asset', {
       path: url.pathname,
-      status: processedResponse.status,
-      contentType: processedResponse.headers.get('Content-Type'),
+      status: assetResponse.status,
+      contentType: assetResponse.headers.get('Content-Type'),
     });
     
-    return processedResponse;
+    return assetResponse;
   } catch (error: any) {
     // Handle 404 errors specially
     if (error.statusCode === 404) {

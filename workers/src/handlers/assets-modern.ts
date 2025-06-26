@@ -1,11 +1,6 @@
-import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
 import { WorkerContext, WorkerError, ErrorType, AssetHandlerOptions } from '../types/worker';
 import { getMimeType } from '../utils/mime';
 import { logger } from '../utils/logger';
-
-// @ts-expect-error
-import manifestJSON from '__STATIC_CONTENT_MANIFEST';
-const assetManifest = JSON.parse(manifestJSON);
 
 /**
  * Maps request URLs to asset paths, handling directory index files
@@ -55,43 +50,40 @@ export function getCacheHeaders(pathname: string): HeadersInit {
 }
 
 /**
- * Fetches an asset from KV storage with proper error handling
+ * Fetches an asset using the modern ASSETS binding
  */
-export async function fetchAssetFromKV(
+export async function fetchAsset(
   context: WorkerContext,
   options?: AssetHandlerOptions
 ): Promise<Response> {
-  const { request, env, ctx } = context;
+  const { request, env } = context;
   
-  const kvOptions = {
-    ASSET_NAMESPACE: env.__STATIC_CONTENT,
-    ASSET_MANIFEST: assetManifest,
-    mapRequestToAsset: options?.mapRequestToAsset || mapRequestToAsset,
-    cacheControl: options?.cacheControl,
-  };
+  // Map the request to the correct asset path
+  const mappedRequest = options?.mapRequestToAsset ? 
+    options.mapRequestToAsset(request) : 
+    mapRequestToAsset(request);
   
   try {
-    const response = await getAssetFromKV(
-      {
-        request,
-        waitUntil: ctx.waitUntil.bind(ctx),
-      },
-      kvOptions
-    );
+    // Use the modern ASSETS binding to fetch the asset
+    const response = await env.ASSETS.fetch(mappedRequest);
     
-    return response;
-  } catch (error: any) {
-    // Re-throw as WorkerError for consistent error handling
-    if (error.status === 404) {
+    if (!response.ok && response.status === 404) {
       throw new WorkerError(
         ErrorType.NOT_FOUND,
         404,
         'Asset not found',
-        { path: new URL(request.url).pathname }
+        { path: new URL(mappedRequest.url).pathname }
       );
     }
     
-    logger.error('Failed to fetch asset from KV', {
+    return response;
+  } catch (error: any) {
+    // Re-throw WorkerError as-is
+    if (error instanceof WorkerError) {
+      throw error;
+    }
+    
+    logger.error('Failed to fetch asset', {
       error: error.message,
       stack: error.stack,
       path: new URL(request.url).pathname,
@@ -135,7 +127,7 @@ export function processAssetResponse(response: Response, pathname: string): Resp
  * Handles 404 errors by serving a custom 404 page
  */
 export async function handle404(context: WorkerContext): Promise<Response> {
-  const { env, ctx } = context;
+  const { env } = context;
   const url = new URL(context.request.url);
   
   try {
@@ -143,7 +135,7 @@ export async function handle404(context: WorkerContext): Promise<Response> {
     const notFoundRequest = new Request(new URL('/404.html', url.origin).toString());
     const notFoundContext = { ...context, request: notFoundRequest };
     
-    const notFoundResponse = await fetchAssetFromKV(notFoundContext);
+    const notFoundResponse = await fetchAsset(notFoundContext);
     
     // Return the 404 page with 404 status
     return new Response(notFoundResponse.body, {
@@ -186,3 +178,6 @@ export async function handle404(context: WorkerContext): Promise<Response> {
     );
   }
 }
+
+// Export compatibility aliases for easier migration
+export const fetchAssetFromKV = fetchAsset;
