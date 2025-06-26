@@ -95,8 +95,9 @@ export const LIMITS = {
 /**
  * Get environment-specific configuration
  */
-export function getEnvironmentConfig(env: string = 'production') {
-  const isProduction = env === 'production';
+export function getEnvironmentConfig(env: { ENVIRONMENT?: string } | string = 'production') {
+  const environment = typeof env === 'string' ? env : (env.ENVIRONMENT || 'production');
+  const isProduction = environment === 'production';
   
   return {
     debug: !isProduction,

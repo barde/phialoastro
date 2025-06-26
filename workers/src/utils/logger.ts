@@ -160,6 +160,16 @@ class Logger {
   setConfig(config: Partial<LoggerConfig>): void {
     this.config = { ...this.config, ...config };
   }
+
+  /**
+   * Set log level
+   */
+  setLogLevel(level: string): void {
+    const logLevel = level as LogLevel;
+    if (Object.values(LogLevel).includes(logLevel)) {
+      this.config.minLevel = logLevel;
+    }
+  }
 }
 
 /**
