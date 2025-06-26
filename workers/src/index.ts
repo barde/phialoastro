@@ -22,10 +22,15 @@ export default {
     
     try {
       // Log request
+      const headers: Record<string, string> = {};
+      request.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      
       logger.info('Incoming request', {
         method: request.method,
         url: request.url,
-        headers: Object.fromEntries(request.headers.entries())
+        headers
       });
       
       // Handle request through router

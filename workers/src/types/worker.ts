@@ -4,9 +4,10 @@ import { ExecutionContext } from '@cloudflare/workers-types';
  * Environment variables and bindings available to the worker
  */
 export interface WorkerEnv {
-  __STATIC_CONTENT: KVNamespace;
+  ASSETS: Fetcher;  // Modern assets binding
   BRANCH_NAME?: string;
-  ENVIRONMENT?: 'development' | 'preview' | 'production';
+  ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
+  WEB3FORMS_ACCESS_KEY?: string;
 }
 
 /**
