@@ -51,8 +51,16 @@ jobs:
           WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
           
           # Get the main entry point from wrangler.toml
-          MAIN_ENTRY=$(grep "^main = " wrangler.toml | cut -d'"' -f2)
+          # Use sed to extract the value between quotes more reliably
+          MAIN_ENTRY=$(sed -n 's/^main = "\(.*\)"/\1/p' wrangler.toml | head -1)
           echo "Using main entry point: $MAIN_ENTRY"
+          
+          # Verify the file exists
+          if [ ! -f "$MAIN_ENTRY" ]; then
+            echo "Error: Main entry file '$MAIN_ENTRY' not found!"
+            ls -la src/
+            exit 1
+          fi
           
           # Create a temporary wrangler.toml for this deployment
           # This ensures all configurations are properly applied

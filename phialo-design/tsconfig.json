@@ -9,6 +9,18 @@
   ],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@features/*": ["src/features/*"],
+      "@shared/*": ["src/shared/*"],
+      "@lib/*": ["src/lib/*"],
+      "@components/*": ["src/shared/components/*"],
+      "@layouts/*": ["src/shared/layouts/*"],
+      "@pages/*": ["src/pages/*"],
+      "@content/*": ["src/content/*"],
+      "@styles/*": ["src/styles/*"],
+      "@test/*": ["src/test/*"]
+    }
   }
 }

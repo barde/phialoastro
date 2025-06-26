@@ -1,37 +1,53 @@
-export interface Env {
-  ASSETS: {
-    fetch: (request: Request) => Promise<Response>;
-  };
-  ENVIRONMENT?: string;
-  PR_NUMBER?: string;
-}
+import { WorkerEnv, WorkerContext } from './types/worker';
+import { createRouter } from './router';
+import { handleError } from './utils/errors';
+import { applySecurityHeaders } from './handlers/security';
+import { logger, LogLevel } from './utils/logger';
+import { getEnvironmentConfig } from './config/index';
+
+// Initialize router
+const router = createRouter();
 
 export default {
-  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: WorkerEnv,
+    ctx: ExecutionContext
+  ): Promise<Response> {
+    const context: WorkerContext = { request, env, ctx };
+    
+    // Configure logger based on environment
+    const config = getEnvironmentConfig(env);
+    logger.setLogLevel(config.logLevel);
+    
     try {
-      // Try to fetch the asset
-      const response = await env.ASSETS.fetch(request);
+      // Log request
+      const headers: Record<string, string> = {};
+      request.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
       
-      // If successful, return it
-      if (response.status !== 404) {
-        return response;
+      logger.info('Incoming request', {
+        method: request.method,
+        url: request.url,
+        headers
+      });
+      
+      // Handle request through router
+      const response = await router.handle(context);
+      
+      if (!response) {
+        throw new Error('No response from router');
       }
       
-      // For 404s, check if this is a client-side route (no file extension)
-      const url = new URL(request.url);
-      const hasExtension = url.pathname.includes('.');
-      
-      // If no extension and 404, serve index.html for SPA routing
-      if (!hasExtension) {
-        const indexRequest = new Request(new URL('/', url.origin).toString(), request);
-        return env.ASSETS.fetch(indexRequest);
-      }
-      
-      // Otherwise, return the 404
-      return response;
-    } catch (e) {
-      // Return a generic error response
-      return new Response('Internal Server Error', { status: 500 });
+      // Apply security headers
+      return applySecurityHeaders(response, request);
+    } catch (error) {
+      // Handle errors gracefully
+      return handleError(error, request);
     }
   },
 };
+
+// Export types for external use
+export type { WorkerEnv } from './types/worker';

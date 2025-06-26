@@ -206,9 +206,7 @@ wrangler deployments list
 
 ## Documentation
 
-- [📚 Deployment Guide](../docs/DEPLOYMENT_GUIDE.md) - Complete setup and deployment instructions
-- [⚡ Quick Reference](../docs/DEPLOYMENT_QUICK_REFERENCE.md) - Common commands and tasks
-- [🔐 Cloudflare Setup](../docs/CLOUDFLARE_SETUP.md) - GitHub secrets configuration
+- [📚 Deployment Guide](../phialo-design/docs/how-to/DEPLOY.md) - Complete setup and deployment instructions
 
 ## Resources
 
