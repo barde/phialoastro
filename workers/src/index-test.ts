@@ -1,18 +1,27 @@
 import { Router } from 'itty-router';
-import { handleStatic } from './handlers/static';
+import { fetchAsset, handle404 } from './handlers/assets-modern';
 import { applyHeaders } from './handlers/headers';
 import { handleRedirects } from './handlers/redirects';
+import { WorkerEnv, WorkerContext } from './types/worker';
 
-export interface Env {
-  __STATIC_CONTENT: any;
-  ENVIRONMENT?: string;
+export interface Env extends WorkerEnv {
   PR_NUMBER?: string;
 }
 
 const router = Router();
 
 router.all('*', handleRedirects);
-router.get('*', handleStatic);  // Remove withCache wrapper for testing
+router.get('*', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const context: WorkerContext = { request, env, ctx };
+  try {
+    return await fetchAsset(context);
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      return handle404(context);
+    }
+    throw error;
+  }
+});
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

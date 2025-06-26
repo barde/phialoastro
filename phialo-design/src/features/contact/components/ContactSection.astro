@@ -1,5 +1,6 @@
 ---
-import Button from '../../../shared/components/ui/Button.astro';
+import ContactForm from './ContactForm';
+import ContactFormErrorBoundary from './ContactFormErrorBoundary';
 
 // Language detection based on URL pathname
 const currentPath = Astro.url.pathname;
@@ -11,15 +12,6 @@ const translations = {
     title: 'Kontakt',
     subtitle: 'Haben Sie eine Schmuckidee? Benötigen Sie eine Beratung? Kontaktieren Sie uns für eine unverbindliche Anfrage.',
     formTitle: 'Nachricht senden',
-    nameLabel: 'Name',
-    namePlaceholder: 'Ihr Name',
-    emailLabel: 'Email',
-    emailPlaceholder: 'ihre.email@example.com',
-    phoneLabel: 'Telefon',
-    phonePlaceholder: 'Ihre Telefonnummer',
-    messageLabel: 'Nachricht',
-    messagePlaceholder: 'Beschreiben Sie Ihr Projekt oder Ihre Anfrage...',
-    submitButton: 'Nachricht senden',
     contactInfoTitle: 'Direkte Kontaktdaten',
     emailLabel: 'Email',
     phoneContactLabel: 'Telefon',
@@ -28,23 +20,12 @@ const translations = {
     socialTitle: 'Folgen Sie uns',
     instagramDescription: 'Portfolio auf Instagram',
     youtubeDescription: 'Kostenlose Tutorials',
-    responseTime: 'Wir antworten normalerweise innerhalb von 24 Stunden',
-    subjectPrefix: 'Kontaktanfrage von',
-    successMessage: 'Ihr E-Mail-Client wird geöffnet. Vielen Dank für Ihre Nachricht!'
+    responseTime: 'Wir antworten normalerweise innerhalb von 24 Stunden'
   },
   en: {
     title: 'Contact',
     subtitle: 'Have a jewelry idea? Need consultation? Contact us for a non-binding inquiry.',
     formTitle: 'Send Message',
-    nameLabel: 'Name',
-    namePlaceholder: 'Your Name',
-    emailLabel: 'Email',
-    emailPlaceholder: 'your.email@example.com',
-    phoneLabel: 'Phone',
-    phonePlaceholder: 'Your phone number',
-    messageLabel: 'Message',
-    messagePlaceholder: 'Describe your project or inquiry...',
-    submitButton: 'Send Message',
     contactInfoTitle: 'Direct Contact Information',
     phoneContactLabel: 'Phone',
     locationLabel: 'Location',
@@ -52,9 +33,7 @@ const translations = {
     socialTitle: 'Follow Us',
     instagramDescription: 'Portfolio on Instagram',
     youtubeDescription: 'Free Tutorials',
-    responseTime: 'We typically respond within 24 hours',
-    subjectPrefix: 'Contact inquiry from',
-    successMessage: 'Your email client will open. Thank you for your message!'
+    responseTime: 'We typically respond within 24 hours'
   }
 };
 
@@ -79,73 +58,10 @@ const t = translations[isEnglish ? 'en' : 'de'];
         <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
           <h3 class="font-display text-2xl font-medium mb-6">{t.formTitle}</h3>
           
-          <form id="contactForm" class="space-y-6">
-            <div class="form-group">
-              <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
-                {t.nameLabel} *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300"
-                placeholder={t.namePlaceholder}
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-                {t.emailLabel} *
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300"
-                placeholder={t.emailPlaceholder}
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">
-                {t.phoneLabel}
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300"
-                placeholder={t.phonePlaceholder}
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="message" class="block text-sm font-medium text-gray-300 mb-2">
-                {t.messageLabel} *
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows="5"
-                required
-                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 resize-none"
-                placeholder={t.messagePlaceholder}
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <Button 
-                type="submit" 
-                variant="primary" 
-                size="lg" 
-                class="w-full"
-              >
-                {t.submitButton}
-              </Button>
-            </div>
-          </form>
+          <!-- React Contact Form with Error Boundary -->
+          <ContactFormErrorBoundary client:load>
+            <ContactForm client:load />
+          </ContactFormErrorBoundary>
 
           <!-- Contact info below form -->
           <div class="mt-8 pt-8 border-t border-white/10">
@@ -215,49 +131,5 @@ const t = translations[isEnglish ? 'en' : 'de'];
 </section>
 
 <style>
-  .form-group input:focus,
-  .form-group textarea:focus {
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-  }
+  /* Form focus styles are now handled in the React component */
 </style>
-
-<script define:vars={{ t, isEnglish }}>
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('contactForm');
-    
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Get form data
-        const formData = new FormData(form);
-        const name = formData.get('name');
-        const email = formData.get('email');
-        const phone = formData.get('phone');
-        const message = formData.get('message');
-        
-        // Create mailto link with translated content
-        const subject = encodeURIComponent(`${t.subjectPrefix} ${name}`);
-        const phoneLabel = isEnglish ? 'Phone' : 'Telefon';
-        const messageLabel = isEnglish ? 'Message' : 'Nachricht';
-        
-        const body = encodeURIComponent(`
-Name: ${name}
-Email: ${email}
-${phone ? `${phoneLabel}: ${phone}` : ''}
-
-${messageLabel}:
-${message}
-        `);
-        
-        const mailtoLink = `mailto:kontakt@phialo.de?subject=${subject}&body=${body}`;
-        
-        // Open email client
-        window.location.href = mailtoLink;
-        
-        // Show success message
-        alert(t.successMessage);
-      });
-    }
-  });
-</script>

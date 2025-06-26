@@ -57,6 +57,19 @@ export default defineConfig({
         gzipSize: true,
         brotliSize: true,
       })
-    ]
+    ],
+    resolve: {
+      alias: {
+        '@features': new URL('./src/features', import.meta.url).pathname,
+        '@shared': new URL('./src/shared', import.meta.url).pathname,
+        '@lib': new URL('./src/lib', import.meta.url).pathname,
+        '@components': new URL('./src/shared/components', import.meta.url).pathname,
+        '@layouts': new URL('./src/shared/layouts', import.meta.url).pathname,
+        '@pages': new URL('./src/pages', import.meta.url).pathname,
+        '@content': new URL('./src/content', import.meta.url).pathname,
+        '@styles': new URL('./src/styles', import.meta.url).pathname,
+        '@test': new URL('./src/test', import.meta.url).pathname
+      }
+    }
   }
 });

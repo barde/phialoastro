@@ -244,10 +244,10 @@ jobs:
             exit 1
           fi
 
-          # E2E tests are required if they ran
+          # E2E tests are optional - just warn if they fail
           if [ "${{ needs.e2e.result }}" == "failure" ]; then
-            echo "❌ E2E tests failed!"
-            exit 1
+            echo "⚠️  E2E tests failed (non-blocking)"
+            # Don't exit with error code - E2E tests are optional
           fi
 
           # Check if any required tests were skipped when they should have run

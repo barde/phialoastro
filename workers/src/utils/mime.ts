@@ -1,41 +1,41 @@
-const mimeTypes: Record<string, string> = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.mjs': 'application/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.xml': 'application/xml; charset=utf-8',
-  '.txt': 'text/plain; charset=utf-8',
-  '.md': 'text/markdown; charset=utf-8',
-  
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.webp': 'image/webp',
-  '.avif': 'image/avif',
-  '.ico': 'image/x-icon',
-  
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-  '.otf': 'font/otf',
-  '.eot': 'application/vnd.ms-fontobject',
-  
-  '.mp4': 'video/mp4',
-  '.webm': 'video/webm',
-  '.mp3': 'audio/mpeg',
-  '.ogg': 'audio/ogg',
-  '.wav': 'audio/wav',
-  
-  '.pdf': 'application/pdf',
-  '.zip': 'application/zip',
-  '.gz': 'application/gzip',
-  '.br': 'application/x-br',
-};
+import { MIME_TYPES } from '../config/index';
 
+/**
+ * Get MIME type for a file path
+ */
 export function getMimeType(pathname: string): string | undefined {
-  const ext = pathname.match(/\.[^.]*$/)?.[0];
-  return ext ? mimeTypes[ext.toLowerCase()] : undefined;
+  // Remove query string and hash
+  const cleanPath = pathname.split('?')[0].split('#')[0];
+  const ext = cleanPath.match(/\.[^.]*$/)?.[0];
+  return ext ? MIME_TYPES[ext.toLowerCase()] : undefined;
+}
+
+/**
+ * Check if MIME type is compressible
+ */
+export function isCompressible(mimeType: string): boolean {
+  const compressibleTypes = [
+    'text/',
+    'application/json',
+    'application/javascript',
+    'application/xml',
+    'image/svg+xml',
+  ];
+  
+  return compressibleTypes.some(type => mimeType.startsWith(type));
+}
+
+/**
+ * Check if MIME type is binary
+ */
+export function isBinary(mimeType: string): boolean {
+  const textTypes = [
+    'text/',
+    'application/json',
+    'application/javascript',
+    'application/xml',
+    'image/svg+xml',
+  ];
+  
+  return !textTypes.some(type => mimeType.startsWith(type));
 }
