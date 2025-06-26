@@ -26,6 +26,7 @@ interface Translations {
   errorValidation: string;
   errorServer: string;
   errorUnknown: string;
+  errorInvalidKey: string;
   tryAgain: string;
   closeButton: string;
 }
