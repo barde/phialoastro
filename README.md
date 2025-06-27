@@ -125,11 +125,7 @@ For commercial licensing inquiries, please contact info@phialo.de.
 
 ## 🙏 Acknowledgments
 
-<a href="https://www.browserstack.com" target="_blank">
-  <img src="https://www.browserstack.com/images/layout/browserstack-logo-600x315.png" alt="BrowserStack" width="200">
-</a>
-
-We use [BrowserStack](https://www.browserstack.com) for cross-browser testing to ensure our website works perfectly across all browsers and devices. Thank you BrowserStack for supporting open source projects!
+This project is tested with BrowserStack
 
 ## 🔗 Links
 
