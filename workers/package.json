@@ -1,6 +1,7 @@
 {
   "name": "phialo-design-worker",
   "version": "1.0.0",
+  "license": "AGPL-3.0",
   "private": true,
   "scripts": {
     "dev": "wrangler dev --local --live-reload",
