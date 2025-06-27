@@ -112,7 +112,24 @@ npm run deploy:preview
 
 ## 📄 License
 
+This project uses a dual licensing approach:
+
+- **Source Code**: Licensed under [GNU AGPLv3](./LICENSE-CODE)
+- **Creative Assets**: Licensed under [CC BY-NC-ND 4.0](./LICENSE-ASSETS)
+
+See [LICENSE.md](./LICENSE.md) for detailed information.
+
+For commercial licensing inquiries, please contact info@phialo.de.
+
 © 2025 Phialo Design. All rights reserved.
+
+## 🙏 Acknowledgments
+
+<a href="https://www.browserstack.com" target="_blank">
+  <img src="https://www.browserstack.com/images/layout/browserstack-logo-600x315.png" alt="BrowserStack" width="200">
+</a>
+
+We use [BrowserStack](https://www.browserstack.com) for cross-browser testing to ensure our website works perfectly across all browsers and devices. Thank you BrowserStack for supporting open source projects!
 
 ## 🔗 Links
 
