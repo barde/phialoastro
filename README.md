@@ -112,7 +112,20 @@ npm run deploy:preview
 
 ## 📄 License
 
+This project uses a dual licensing approach:
+
+- **Source Code**: Licensed under [GNU AGPLv3](./LICENSE-CODE)
+- **Creative Assets**: Licensed under [CC BY-NC-ND 4.0](./LICENSE-ASSETS)
+
+See [LICENSE.md](./LICENSE.md) for detailed information.
+
+For commercial licensing inquiries, please contact info@phialo.de.
+
 © 2025 Phialo Design. All rights reserved.
+
+## 🙏 Acknowledgments
+
+This project is tested with BrowserStack
 
 ## 🔗 Links
 

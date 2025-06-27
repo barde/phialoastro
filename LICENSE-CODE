@@ -1,0 +1,25 @@
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+This file contains the GNU Affero General Public License v3.0 (AGPLv3).
+
+For the complete and official text of the AGPLv3 license, please visit:
+https://www.gnu.org/licenses/agpl-3.0.txt
+
+The AGPLv3 is a free, copyleft license for software and other kinds of works,
+specifically designed to ensure cooperation with the community in the case of
+network server software.
+
+Key provisions of AGPLv3:
+- Source code must be made available when distributing the software
+- Network use constitutes distribution (key difference from GPLv3)
+- Modifications must be released under the same license
+- Patent protection for contributors and users
+- Compatibility with GPLv3
+
+For more information about the AGPLv3 license, visit:
+https://www.gnu.org/licenses/agpl-3.0.en.html
