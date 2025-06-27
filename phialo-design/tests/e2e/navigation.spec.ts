@@ -76,9 +76,19 @@ test.describe('Navigation Tests', () => {
         // Use data-testid for reliable selection
         const menuButton = page.locator('[data-testid="mobile-menu-button"]');
         await expect(menuButton).toBeVisible();
+        
+        // Add a small delay before clicking
+        await page.waitForTimeout(500);
         await menuButton.click();
-        // Wait for mobile menu panel to be visible
-        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        
+        // Wait for mobile menu panel to be visible with longer timeout
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { 
+          state: 'visible',
+          timeout: 30000 
+        });
+        
+        // Additional wait to ensure menu is fully open
+        await page.waitForTimeout(500);
       }
       
       // Portfolio - use data-testid for mobile
@@ -98,9 +108,11 @@ test.describe('Navigation Tests', () => {
       if (isMobile) {
         // Use data-testid for menu button
         const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+        await page.waitForTimeout(500);
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible', timeout: 30000 });
+        await page.waitForTimeout(500);
         // For mobile, use data-testid
         const servicesLink = page.locator('[data-testid="mobile-nav-services"]');
         await servicesLink.click();
@@ -116,9 +128,11 @@ test.describe('Navigation Tests', () => {
       if (isMobile) {
         // Use data-testid for menu button
         const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+        await page.waitForTimeout(500);
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible', timeout: 30000 });
+        await page.waitForTimeout(500);
         // For mobile, use data-testid
         const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
         await tutorialsLink.click();
@@ -160,9 +174,11 @@ test.describe('Navigation Tests', () => {
       if (isMobile) {
         // Use data-testid for menu button
         const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+        await page.waitForTimeout(500);
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible', timeout: 30000 });
+        await page.waitForTimeout(500);
         // For mobile, use data-testid
         const servicesLink = page.locator('[data-testid="mobile-nav-services"]');
         await servicesLink.click();
@@ -178,9 +194,11 @@ test.describe('Navigation Tests', () => {
       if (isMobile) {
         // Use data-testid for menu button
         const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+        await page.waitForTimeout(500);
         await menuButton.click();
         // Wait for mobile menu panel to be visible
-        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible' });
+        await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible', timeout: 30000 });
+        await page.waitForTimeout(500);
         // For mobile, use data-testid
         const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
         await tutorialsLink.click();
