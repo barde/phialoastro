@@ -263,26 +263,26 @@ describe('Classes Component Translation Tests', () => {
       
       // Each class should have title, description, category, and at least one link
       mockClasses.forEach((classItem) => {
-        const tutorialElement = screen.getByTestId(`class-${classItem.id}`);
+        const classElement = screen.getByTestId(`class-${classItem.id}`);
         
         // Check title
-        expect(within(tutorialElement).getByText(classItem.title)).toBeInTheDocument();
+        expect(within(classElement).getByText(classItem.title)).toBeInTheDocument();
         
         // Check description
-        expect(within(tutorialElement).getByText(classItem.description)).toBeInTheDocument();
+        expect(within(classElement).getByText(classItem.description)).toBeInTheDocument();
         
         // Check category
-        expect(within(tutorialElement).getByText(classItem.category)).toBeInTheDocument();
+        expect(within(classElement).getByText(classItem.category)).toBeInTheDocument();
         
         // Check Skillshare link
-        const skillshareLink = within(tutorialElement).getByTestId(`skillshare-link-${classItem.id}`);
+        const skillshareLink = within(classElement).getByTestId(`skillshare-link-${classItem.id}`);
         expect(skillshareLink).toHaveAttribute('href', classItem.link);
         expect(skillshareLink).toHaveAttribute('target', '_blank');
         expect(skillshareLink).toHaveAttribute('rel', 'noopener noreferrer');
         
         // Check direct link if exists
         if (classItem.directLink) {
-          const directLink = within(tutorialElement).getByTestId(`direct-link-${classItem.id}`);
+          const directLink = within(classElement).getByTestId(`direct-link-${classItem.id}`);
           expect(directLink).toHaveAttribute('href', classItem.directLink);
           expect(directLink).toHaveAttribute('target', '_blank');
         }
@@ -460,8 +460,8 @@ describe('Classes Component Translation Tests', () => {
     test('all required class fields are present', () => {
       render(<ClassesComponent />);
       
-      mockClasses.forEach(tutorial => {
-        const tutorialElement = screen.getByTestId(`class-${classItem.id}`);
+      mockClasses.forEach(classItem => {
+        const classElement = screen.getByTestId(`class-${classItem.id}`);
         
         // Required fields
         expect(classItem.id).toBeDefined();
@@ -480,7 +480,7 @@ describe('Classes Component Translation Tests', () => {
     });
 
     test('tutorial links are valid URLs', () => {
-      mockClasses.forEach(tutorial => {
+      mockClasses.forEach(classItem => {
         // Skillshare links
         expect(classItem.link).toMatch(/^https:\/\/skl\.sh\//);
         
@@ -499,7 +499,7 @@ describe('Classes Component Translation Tests', () => {
       const classes = screen.getAllByRole('article');
       expect(classes).toHaveLength(5);
       
-      classes.forEach((tutorial, index) => {
+      classes.forEach((classItem, index) => {
         // Each class should have an image
         const img = within(classItem).getByRole('img');
         expect(img).toBeInTheDocument();
