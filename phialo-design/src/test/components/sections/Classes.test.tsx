@@ -1,5 +1,5 @@
 /**
- * Tutorials Component Translation Tests
+ * Classes Component Translation Tests
  * Tests to ensure proper language handling and prevent missing translations
  */
 
@@ -14,8 +14,8 @@ import {
 } from '../../utils/i18n-test-utils';
 import '@testing-library/jest-dom';
 
-// Mock data matching the actual Tutorials component
-const mockTutorials = [
+// Mock data matching the actual Classes component
+const mockClasses = [
   {
     id: 1,
     title: 'Lern Blender - 3D Design für absolute Anfänger',
@@ -70,23 +70,23 @@ const mockTutorials = [
 ];
 
 // Language-specific content
-const tutorialsContent = {
+const classesContent = {
   de: {
-    title: "Tutorials",
+    title: "Classes",
     subtitle: "Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.",
     skillshareLabel: "Auf Skillshare ansehen",
     directPurchaseLabel: "Direkt kaufen (ohne Mitgliedschaft)"
   },
   en: {
-    title: "Tutorials", 
+    title: "Classes", 
     subtitle: "Learn 3D design with Blender! Courses for beginners and advanced users in German and English.",
     skillshareLabel: "View on Skillshare",
     directPurchaseLabel: "Direct purchase (no membership required)"
   }
 };
 
-// Mock Tutorials React component for testing
-const TutorialsComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
+// Mock Classes React component for testing
+const ClassesComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
   const [isEnglish, setIsEnglish] = React.useState(false);
   
   React.useEffect(() => {
@@ -100,10 +100,10 @@ const TutorialsComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
     }
   }, [lang]);
 
-  const t = isEnglish ? tutorialsContent.en : tutorialsContent.de;
+  const t = isEnglish ? classesContent.en : classesContent.de;
 
   return (
-    <section id="tutorials" className="py-20 bg-neutral-50">
+    <section id="classes" className="py-20 bg-neutral-50">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -115,19 +115,19 @@ const TutorialsComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
           </p>
         </div>
 
-        {/* Tutorials Grid */}
+        {/* Classes Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {mockTutorials.map((tutorial) => (
+          {mockClasses.map((classItem) => (
             <article 
-              key={tutorial.id}
+              key={classItem.id}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
-              data-testid={`tutorial-${tutorial.id}`}
+              data-testid={`class-${classItem.id}`}
             >
               {/* Image */}
               <div className="relative h-48 bg-neutral-200">
                 <img 
-                  src={tutorial.image} 
-                  alt={tutorial.title}
+                  src={classItem.image} 
+                  alt={classItem.title}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
@@ -137,25 +137,25 @@ const TutorialsComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-neutral-100 text-neutral-700">
-                    {tutorial.category}
+                    {classItem.category}
                   </span>
                 </div>
                 
                 <h3 className="text-xl font-semibold text-neutral-900 mb-3">
-                  {tutorial.title}
+                  {classItem.title}
                 </h3>
                 
                 <p className="text-neutral-600 mb-6">
-                  {tutorial.description}
+                  {classItem.description}
                 </p>
 
                 <div className="space-y-3">
                   <a 
-                    href={tutorial.link}
+                    href={classItem.link}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
-                    data-testid={`skillshare-link-${tutorial.id}`}
+                    data-testid={`skillshare-link-${classItem.id}`}
                   >
                     {t.skillshareLabel}
                     <svg 
@@ -168,14 +168,14 @@ const TutorialsComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
                     </svg>
                   </a>
                   
-                  {tutorial.directLink && (
+                  {classItem.directLink && (
                     <div>
                       <a 
-                        href={tutorial.directLink}
+                        href={classItem.directLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors group text-sm"
-                        data-testid={`direct-link-${tutorial.id}`}
+                        data-testid={`direct-link-${classItem.id}`}
                       >
                         {t.directPurchaseLabel}
                         <svg 
@@ -202,7 +202,7 @@ const TutorialsComponent = ({ lang }: { lang?: 'de' | 'en' }) => {
 // Add React import for the mock component
 import React from 'react';
 
-describe('Tutorials Component Translation Tests', () => {
+describe('Classes Component Translation Tests', () => {
   beforeEach(() => {
     mockWindowLocation('/');
   });
@@ -212,14 +212,14 @@ describe('Tutorials Component Translation Tests', () => {
   });
 
   describe('Basic Language Detection', () => {
-    testBothLanguages('Tutorials', (context: LanguageContext) => {
+    testBothLanguages('Classes', (context: LanguageContext) => {
       test('renders correct language content based on URL', () => {
         mockWindowLocation(context.currentPath);
         
-        render(<TutorialsComponent />);
+        render(<ClassesComponent />);
         
         // Check main content
-        expect(screen.getByText('Tutorials')).toBeInTheDocument();
+        expect(screen.getByText('Classes')).toBeInTheDocument();
         
         if (context.isEnglish) {
           expect(screen.getByText(/Learn 3D design with Blender!/)).toBeInTheDocument();
@@ -237,7 +237,7 @@ describe('Tutorials Component Translation Tests', () => {
       test('renders correct language when lang prop is provided', () => {
         const lang = context.isEnglish ? 'en' : 'de';
         
-        render(<TutorialsComponent lang={lang} />);
+        render(<ClassesComponent lang={lang} />);
         
         if (context.isEnglish) {
           expect(screen.getByText(/Learn 3D design with Blender!/)).toBeInTheDocument();
@@ -251,48 +251,48 @@ describe('Tutorials Component Translation Tests', () => {
   });
 
   describe('Tutorial Items Content', () => {
-    test('all tutorials have proper content structure', () => {
-      render(<TutorialsComponent />);
+    test('all classes have proper content structure', () => {
+      render(<ClassesComponent />);
       
-      // Check that all 5 tutorials are rendered
-      expect(screen.getByTestId('tutorial-1')).toBeInTheDocument();
-      expect(screen.getByTestId('tutorial-2')).toBeInTheDocument();
-      expect(screen.getByTestId('tutorial-3')).toBeInTheDocument();
-      expect(screen.getByTestId('tutorial-4')).toBeInTheDocument();
-      expect(screen.getByTestId('tutorial-5')).toBeInTheDocument();
+      // Check that all 5 classes are rendered
+      expect(screen.getByTestId('class-1')).toBeInTheDocument();
+      expect(screen.getByTestId('class-2')).toBeInTheDocument();
+      expect(screen.getByTestId('class-3')).toBeInTheDocument();
+      expect(screen.getByTestId('class-4')).toBeInTheDocument();
+      expect(screen.getByTestId('class-5')).toBeInTheDocument();
       
-      // Each tutorial should have title, description, category, and at least one link
-      mockTutorials.forEach((tutorial) => {
-        const tutorialElement = screen.getByTestId(`tutorial-${tutorial.id}`);
+      // Each class should have title, description, category, and at least one link
+      mockClasses.forEach((classItem) => {
+        const tutorialElement = screen.getByTestId(`class-${classItem.id}`);
         
         // Check title
-        expect(within(tutorialElement).getByText(tutorial.title)).toBeInTheDocument();
+        expect(within(tutorialElement).getByText(classItem.title)).toBeInTheDocument();
         
         // Check description
-        expect(within(tutorialElement).getByText(tutorial.description)).toBeInTheDocument();
+        expect(within(tutorialElement).getByText(classItem.description)).toBeInTheDocument();
         
         // Check category
-        expect(within(tutorialElement).getByText(tutorial.category)).toBeInTheDocument();
+        expect(within(tutorialElement).getByText(classItem.category)).toBeInTheDocument();
         
         // Check Skillshare link
-        const skillshareLink = within(tutorialElement).getByTestId(`skillshare-link-${tutorial.id}`);
-        expect(skillshareLink).toHaveAttribute('href', tutorial.link);
+        const skillshareLink = within(tutorialElement).getByTestId(`skillshare-link-${classItem.id}`);
+        expect(skillshareLink).toHaveAttribute('href', classItem.link);
         expect(skillshareLink).toHaveAttribute('target', '_blank');
         expect(skillshareLink).toHaveAttribute('rel', 'noopener noreferrer');
         
         // Check direct link if exists
-        if (tutorial.directLink) {
-          const directLink = within(tutorialElement).getByTestId(`direct-link-${tutorial.id}`);
-          expect(directLink).toHaveAttribute('href', tutorial.directLink);
+        if (classItem.directLink) {
+          const directLink = within(tutorialElement).getByTestId(`direct-link-${classItem.id}`);
+          expect(directLink).toHaveAttribute('href', classItem.directLink);
           expect(directLink).toHaveAttribute('target', '_blank');
         }
       });
     });
 
     test('tutorial 3 has both Skillshare and direct purchase links', () => {
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
-      const tutorial3 = screen.getByTestId('tutorial-3');
+      const tutorial3 = screen.getByTestId('class-3');
       
       // Should have both links
       expect(within(tutorial3).getByTestId('skillshare-link-3')).toBeInTheDocument();
@@ -302,9 +302,9 @@ describe('Tutorials Component Translation Tests', () => {
 
   describe('Language Consistency', () => {
     test('no German text appears in English version', () => {
-      mockWindowLocation('/en/tutorials');
+      mockWindowLocation('/en/classes');
       
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
       // German phrases that should NOT appear
       const germanPhrases = [
@@ -325,9 +325,9 @@ describe('Tutorials Component Translation Tests', () => {
     });
 
     test('no English navigation text appears in German version', () => {
-      mockWindowLocation('/tutorials');
+      mockWindowLocation('/classes');
       
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
       // English phrases that should NOT appear
       const englishPhrases = [
@@ -351,14 +351,14 @@ describe('Tutorials Component Translation Tests', () => {
   describe('Dynamic Language Updates', () => {
     test('content updates when language changes', async () => {
       // Start with German
-      mockWindowLocation('/tutorials');
-      const { rerender } = render(<TutorialsComponent />);
+      mockWindowLocation('/classes');
+      const { rerender } = render(<ClassesComponent />);
       
       expect(screen.getByText(/Lernen Sie 3D-Design mit Blender!/)).toBeInTheDocument();
       expect(screen.getAllByText('Auf Skillshare ansehen')).toHaveLength(5);
       
       // Change to English via prop (simulating prop change from parent)
-      rerender(<TutorialsComponent lang="en" />);
+      rerender(<ClassesComponent lang="en" />);
       
       // Wait for the component to update
       await waitFor(() => {
@@ -367,10 +367,10 @@ describe('Tutorials Component Translation Tests', () => {
       });
     });
 
-    test('maintains language consistency when navigating between tutorials', async () => {
-      mockWindowLocation('/en/tutorials');
+    test('maintains language consistency when navigating between classes', async () => {
+      mockWindowLocation('/en/classes');
       
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
       // Wait for component to detect English from URL
       await waitFor(() => {
@@ -396,27 +396,27 @@ describe('Tutorials Component Translation Tests', () => {
   describe('Edge Cases', () => {
     test('handles missing translations gracefully', () => {
       // Even with missing translations, component should not crash
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
-      expect(screen.getByText('Tutorials')).toBeInTheDocument();
+      expect(screen.getByText('Classes')).toBeInTheDocument();
       expect(screen.getAllByRole('article')).toHaveLength(5);
     });
 
     test('handles undefined language context', () => {
       mockWindowLocation('/some/invalid/path');
       
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
       // Should default to German
       expect(screen.getByText(/Lernen Sie 3D-Design mit Blender!/)).toBeInTheDocument();
     });
 
-    test('all tutorial categories are language-independent', () => {
+    test('all class categories are language-independent', () => {
       // Categories contain language info, should not be translated
-      render(<TutorialsComponent />);
+      render(<ClassesComponent />);
       
       expect(screen.getByText('Deutsch - Anfängerniveau')).toBeInTheDocument();
-      // There are multiple "English - Beginner" tutorials, so use getAllByText
+      // There are multiple "English - Beginner" classes, so use getAllByText
       const englishBeginnerCategories = screen.getAllByText('English - Beginner');
       expect(englishBeginnerCategories).toHaveLength(2); // Tutorial 2 and 3
       expect(screen.getByText('English - All Levels')).toBeInTheDocument();
@@ -429,7 +429,7 @@ describe('Tutorials Component Translation Tests', () => {
       test('all links have proper accessibility attributes', () => {
         mockWindowLocation(context.currentPath);
         
-        render(<TutorialsComponent />);
+        render(<ClassesComponent />);
         
         // Check all external links
         const allLinks = screen.getAllByRole('link');
@@ -443,13 +443,13 @@ describe('Tutorials Component Translation Tests', () => {
       test('images have proper alt text', () => {
         mockWindowLocation(context.currentPath);
         
-        render(<TutorialsComponent />);
+        render(<ClassesComponent />);
         
         const images = screen.getAllByRole('img');
         expect(images).toHaveLength(5);
         
         images.forEach((img, index) => {
-          expect(img).toHaveAttribute('alt', mockTutorials[index].title);
+          expect(img).toHaveAttribute('alt', mockClasses[index].title);
           expect(img).toHaveAttribute('loading', 'lazy');
         });
       });
@@ -457,59 +457,59 @@ describe('Tutorials Component Translation Tests', () => {
   });
 
   describe('Content Validation', () => {
-    test('all required tutorial fields are present', () => {
-      render(<TutorialsComponent />);
+    test('all required class fields are present', () => {
+      render(<ClassesComponent />);
       
-      mockTutorials.forEach(tutorial => {
-        const tutorialElement = screen.getByTestId(`tutorial-${tutorial.id}`);
+      mockClasses.forEach(tutorial => {
+        const tutorialElement = screen.getByTestId(`class-${classItem.id}`);
         
         // Required fields
-        expect(tutorial.id).toBeDefined();
-        expect(tutorial.title).toBeTruthy();
-        expect(tutorial.description).toBeTruthy();
-        expect(tutorial.image).toBeTruthy();
-        expect(tutorial.duration).toBeTruthy();
-        expect(tutorial.category).toBeTruthy();
-        expect(tutorial.link).toBeTruthy();
+        expect(classItem.id).toBeDefined();
+        expect(classItem.title).toBeTruthy();
+        expect(classItem.description).toBeTruthy();
+        expect(classItem.image).toBeTruthy();
+        expect(classItem.duration).toBeTruthy();
+        expect(classItem.category).toBeTruthy();
+        expect(classItem.link).toBeTruthy();
         
         // Optional field
-        if (tutorial.id === 3) {
-          expect(tutorial.directLink).toBeTruthy();
+        if (classItem.id === 3) {
+          expect(classItem.directLink).toBeTruthy();
         }
       });
     });
 
     test('tutorial links are valid URLs', () => {
-      mockTutorials.forEach(tutorial => {
+      mockClasses.forEach(tutorial => {
         // Skillshare links
-        expect(tutorial.link).toMatch(/^https:\/\/skl\.sh\//);
+        expect(classItem.link).toMatch(/^https:\/\/skl\.sh\//);
         
         // Direct link if exists
-        if (tutorial.directLink) {
-          expect(tutorial.directLink).toMatch(/^https:\/\//);
+        if (classItem.directLink) {
+          expect(classItem.directLink).toMatch(/^https:\/\//);
         }
       });
     });
   });
 
   describe('Visual Consistency', () => {
-    test('all tutorials have consistent structure', () => {
-      render(<TutorialsComponent />);
+    test('all classes have consistent structure', () => {
+      render(<ClassesComponent />);
       
-      const tutorials = screen.getAllByRole('article');
-      expect(tutorials).toHaveLength(5);
+      const classes = screen.getAllByRole('article');
+      expect(classes).toHaveLength(5);
       
-      tutorials.forEach((tutorial, index) => {
-        // Each tutorial should have an image
-        const img = within(tutorial).getByRole('img');
+      classes.forEach((tutorial, index) => {
+        // Each class should have an image
+        const img = within(classItem).getByRole('img');
         expect(img).toBeInTheDocument();
         
-        // Each tutorial should have a category badge
-        const category = within(tutorial).getByText(mockTutorials[index].category);
+        // Each class should have a category badge
+        const category = within(classItem).getByText(mockClasses[index].category);
         expect(category).toBeInTheDocument();
         
-        // Each tutorial should have at least one link
-        const links = within(tutorial).getAllByRole('link');
+        // Each class should have at least one link
+        const links = within(classItem).getAllByRole('link');
         expect(links.length).toBeGreaterThanOrEqual(1);
       });
     });
