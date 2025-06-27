@@ -18,7 +18,7 @@ const footerContent = {
     navItems: {
       portfolio: 'Portfolio',
       services: '3D für Sie',
-      tutorials: 'Tutorials',
+      classes: 'Classes',
       about: 'Über uns',
       contact: 'Kontakt'
     },
@@ -39,7 +39,7 @@ const footerContent = {
     navItems: {
       portfolio: 'Portfolio',
       services: '3D for You',
-      tutorials: 'Tutorials',
+      classes: 'Classes',
       about: 'About Us',
       contact: 'Contact'
     },
@@ -89,8 +89,8 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
           <a href={getLocalizedHref('/services')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
             {content.navItems.services}
           </a>
-          <a href={getLocalizedHref('/tutorials')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
-            {content.navItems.tutorials}
+          <a href={getLocalizedHref('/classes')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.classes}
           </a>
           <a href={getLocalizedHref('/about')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
             {content.navItems.about}

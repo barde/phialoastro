@@ -1,10 +1,11 @@
 ---
+import { Image } from 'astro:assets';
 import PageLayout from '../shared/layouts/PageLayout.astro';
 import Hero from '../features/home/components/HeroSection.astro';
 import Testimonials from '../features/home/components/TestimonialsSection.astro';
 
-const title = 'Phialo Design | 3D Design - Schmuck - Tutorials';
-const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen, 3D Design, 3D-Druck und Guss. Ihre Idee als reales Modell! Tutorials & HowTos';
+const title = 'Phialo Design | 3D Design - Schmuck - Classes';
+const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen, 3D Design, 3D-Druck und Guss. Ihre Idee als reales Modell! Classes & HowTos';
 ---
 
 <PageLayout title={title} description={description}>
@@ -26,10 +27,15 @@ const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen,
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
         <!-- Portfolio Card -->
         <a href="/portfolio" class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-          <div class="aspect-square bg-gradient-to-br from-gold/20 to-champagne/30 flex items-center justify-center">
-            <svg class="w-16 h-16 text-gold group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM3 8a1 1 0 000 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a1 1 0 100-2H3zm3 6a1 1 0 102 0v-1a1 1 0 10-2 0v1z"/>
-            </svg>
+          <div class="aspect-square bg-gradient-to-br from-gold/20 to-champagne/30 relative overflow-hidden">
+            <Image 
+              src="/images/homepage/portfolio-feature.jpg"
+              alt="Phialo Design Portfolio"
+              width={576}
+              height={576}
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              loading="lazy"
+            />
           </div>
           <div class="p-6">
             <h3 class="text-xl font-medium text-midnight mb-2">Portfolio</h3>
@@ -41,10 +47,15 @@ const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen,
 
         <!-- Services Card -->
         <a href="/services" class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-          <div class="aspect-square bg-gradient-to-br from-midnight/20 to-charcoal/30 flex items-center justify-center">
-            <svg class="w-16 h-16 text-midnight group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-            </svg>
+          <div class="aspect-square bg-gradient-to-br from-midnight/20 to-charcoal/30 relative overflow-hidden">
+            <Image 
+              src="/images/homepage/3d-services-feature.png"
+              alt="3D für Sie - Professionelle 3D-Services"
+              width={576}
+              height={576}
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              loading="lazy"
+            />
           </div>
           <div class="p-6">
             <h3 class="text-xl font-medium text-midnight mb-2">3D für Sie</h3>
@@ -54,15 +65,20 @@ const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen,
           </div>
         </a>
 
-        <!-- Tutorials Card -->
-        <a href="/tutorials" class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-          <div class="aspect-square bg-gradient-to-br from-champagne/20 to-gold/30 flex items-center justify-center">
-            <svg class="w-16 h-16 text-champagne group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+        <!-- Classes Card -->
+        <a href="/classes" class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+          <div class="aspect-square bg-gradient-to-br from-champagne/20 to-gold/30 relative overflow-hidden">
+            <Image 
+              src="/images/homepage/classes-feature.jpg"
+              alt="Classes - Lernen Sie 3D-Design und Blender"
+              width={576}
+              height={576}
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              loading="lazy"
+            />
           </div>
           <div class="p-6">
-            <h3 class="text-xl font-medium text-midnight mb-2">Tutorials</h3>
+            <h3 class="text-xl font-medium text-midnight mb-2">Classes</h3>
             <p class="text-gray-600 text-sm">
               Lernen Sie 3D-Design und Blender in unseren umfassenden Kursen
             </p>
@@ -71,11 +87,15 @@ const description = 'Fantasie wird zu 3D wird Realität. Schmuck und Skulpturen,
 
         <!-- Contact Card -->
         <a href="/contact" class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-          <div class="aspect-square bg-gradient-to-br from-charcoal/20 to-midnight/30 flex items-center justify-center">
-            <svg class="w-16 h-16 text-charcoal group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-            </svg>
+          <div class="aspect-square bg-gradient-to-br from-charcoal/20 to-midnight/30 relative overflow-hidden">
+            <Image 
+              src="/images/homepage/contact-feature.png"
+              alt="Kontakt - Nehmen Sie Kontakt mit uns auf"
+              width={576}
+              height={576}
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              loading="lazy"
+            />
           </div>
           <div class="p-6">
             <h3 class="text-xl font-medium text-midnight mb-2">Kontakt</h3>
