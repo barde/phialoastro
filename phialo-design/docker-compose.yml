@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Development server
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4321:4321"
+    volumes:
+      # Mount source code for hot reloading
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./content:/app/content
+      # Exclude node_modules to use container's dependencies
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: pnpm dev --host
+
+  # Test runner (for CI simulation)
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - /app/node_modules
+    environment:
+      - CI=true
+    command: pnpm test:run
+
+  # Linting and type checking
+  quality:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    command: /bin/sh -c "pnpm lint && pnpm typecheck"
+
+  # Production build
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./dist:/app/dist
+    command: pnpm build
+
+  # E2E tests
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+    ports:
+      - "4322:4321"
+    environment:
+      - PLAYWRIGHT_BROWSERS_PATH=/usr/bin
+    command: /bin/sh -c "pnpm dev & npx wait-on http://localhost:4321 && pnpm test:e2e"
