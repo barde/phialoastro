@@ -30,16 +30,15 @@ jobs:
           # Check if the worker exists
           echo "Checking if worker $WORKER_NAME exists..."
           
-          # Use wrangler deployments list to check if worker exists
-          # The command will return exit code 0 even if worker doesn't exist
-          WORKER_EXISTS=$(npx wrangler deployments list --name "$WORKER_NAME" 2>&1 | grep -q "No deployments found" && echo "false" || echo "true")
+          # Try to delete the worker directly - if it doesn't exist, the command will fail gracefully
+          # This avoids the need for KV storage permissions just to check if a worker exists
+          echo "Attempting to delete worker $WORKER_NAME..."
           
-          if [ "$WORKER_EXISTS" = "true" ]; then
-            echo "Worker $WORKER_NAME exists, deleting..."
-            npx wrangler delete --name "$WORKER_NAME" --force
+          if npx wrangler delete --name "$WORKER_NAME" --force 2>&1; then
+            echo "Worker $WORKER_NAME was successfully deleted"
             echo "worker_deleted=true" >> $GITHUB_OUTPUT
           else
-            echo "Worker $WORKER_NAME does not exist, skipping deletion"
+            echo "Worker $WORKER_NAME does not exist or was already deleted"
             echo "worker_deleted=false" >> $GITHUB_OUTPUT
           fi
       
