@@ -6,7 +6,7 @@ describe('Page Route Tests', () => {
       '/',
       '/portfolio',
       '/services',
-      '/tutorials',
+      '/classes',
       '/contact'
     ];
 
@@ -18,10 +18,10 @@ describe('Page Route Tests', () => {
 
   it('should have correct page titles', () => {
     const pageTitles = {
-      '/': 'Phialo Design | 3D Design - Schmuck - Tutorials',
+      '/': 'Phialo Design | 3D Design - Schmuck - Classes',
       '/portfolio': 'Portfolio | Phialo Design',
       '/services': '3D für Sie | Phialo Design',
-      '/tutorials': 'Tutorials | Phialo Design',
+      '/classes': 'Classes | Phialo Design',
       '/contact': 'Kontakt | Phialo Design'
     };
 

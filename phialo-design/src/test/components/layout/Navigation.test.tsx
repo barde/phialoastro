@@ -30,7 +30,7 @@ describe('Navigation', () => {
 
       expect(screen.getByText('Portfolio')).toBeInTheDocument();
       expect(screen.getByText('3D für Sie')).toBeInTheDocument();
-      expect(screen.getByText('Tutorials')).toBeInTheDocument();
+      expect(screen.getByText('Classes')).toBeInTheDocument();
       expect(screen.getByText('Über mich')).toBeInTheDocument();
       expect(screen.getByText('Kontakt')).toBeInTheDocument();
     });
@@ -40,13 +40,13 @@ describe('Navigation', () => {
 
       const portfolioLink = screen.getByRole('link', { name: 'Portfolio' });
       const servicesLink = screen.getByRole('link', { name: '3D für Sie' });
-      const tutorialsLink = screen.getByRole('link', { name: 'Tutorials' });
+      const classesLink = screen.getByRole('link', { name: 'Classes' });
       const aboutLink = screen.getByRole('link', { name: 'Über mich' });
       const contactLink = screen.getByRole('link', { name: 'Kontakt' });
 
       expect(portfolioLink).toHaveAttribute('href', '/portfolio');
       expect(servicesLink).toHaveAttribute('href', '/services');
-      expect(tutorialsLink).toHaveAttribute('href', '/tutorials');
+      expect(classesLink).toHaveAttribute('href', '/classes');
       expect(aboutLink).toHaveAttribute('href', '/about');
       expect(contactLink).toHaveAttribute('href', '/contact');
     });
@@ -76,7 +76,7 @@ describe('Navigation', () => {
 
       expect(screen.getByText('Portfolio')).toBeInTheDocument();
       expect(screen.getByText('3D for You')).toBeInTheDocument();
-      expect(screen.getByText('Tutorials')).toBeInTheDocument();
+      expect(screen.getByText('Classes')).toBeInTheDocument();
       expect(screen.getByText('About Me')).toBeInTheDocument();
       expect(screen.getByText('Contact')).toBeInTheDocument();
     });
@@ -86,13 +86,13 @@ describe('Navigation', () => {
 
       const portfolioLink = screen.getByRole('link', { name: 'Portfolio' });
       const servicesLink = screen.getByRole('link', { name: '3D for You' });
-      const tutorialsLink = screen.getByRole('link', { name: 'Tutorials' });
+      const classesLink = screen.getByRole('link', { name: 'Classes' });
       const aboutLink = screen.getByRole('link', { name: 'About Me' });
       const contactLink = screen.getByRole('link', { name: 'Contact' });
 
       expect(portfolioLink).toHaveAttribute('href', '/en/portfolio');
       expect(servicesLink).toHaveAttribute('href', '/en/services');
-      expect(tutorialsLink).toHaveAttribute('href', '/en/tutorials');
+      expect(classesLink).toHaveAttribute('href', '/en/classes');
       expect(aboutLink).toHaveAttribute('href', '/en/about');
       expect(contactLink).toHaveAttribute('href', '/en/contact');
     });
