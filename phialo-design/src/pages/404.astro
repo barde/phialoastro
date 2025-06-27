@@ -26,8 +26,8 @@ const content = {
         title: 'Über uns',
         description: 'Erfahren Sie mehr über unser Erbe und unsere Handwerkskunst'
       },
-      tutorials: {
-        title: 'Tutorials',
+      classes: {
+        title: 'Classes',
         description: 'Lernen Sie über Edelsteine und Schmuckpflege'
       },
       contact: {
@@ -54,8 +54,8 @@ const content = {
         title: 'About Us',
         description: 'Learn about our heritage and craftsmanship'
       },
-      tutorials: {
-        title: 'Tutorials',
+      classes: {
+        title: 'Classes',
         description: 'Learn about gemstones and jewelry care'
       },
       contact: {
@@ -153,7 +153,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             </a>
 
             <a 
-              href={getLocalizedHref('/tutorials')} 
+              href={getLocalizedHref('/classes')} 
               class="group p-6 bg-white border border-neutral-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all duration-300"
             >
               <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
@@ -161,8 +161,8 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
               </div>
-              <h3 class="font-semibold text-neutral-900 mb-2">{pageContent.pages.tutorials.title}</h3>
-              <p class="text-sm text-neutral-600">{pageContent.pages.tutorials.description}</p>
+              <h3 class="font-semibold text-neutral-900 mb-2">{pageContent.pages.classes.title}</h3>
+              <p class="text-sm text-neutral-600">{pageContent.pages.classes.description}</p>
             </a>
 
             <a 
