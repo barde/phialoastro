@@ -1,0 +1,61 @@
+Phialo Design
+Copyright 2025 Phialo Design Gesa Pickbrenner
+
+This product includes software developed by Phialo Design (https://phialo.de).
+
+==============================================================================
+Third-Party Software Attributions
+==============================================================================
+
+This project uses the following open source software:
+
+1. Astro (https://astro.build/)
+   License: MIT
+   Copyright (c) 2021-present Astro
+
+2. React (https://react.dev/)
+   License: MIT
+   Copyright (c) Meta Platforms, Inc. and affiliates
+
+3. Tailwind CSS (https://tailwindcss.com/)
+   License: MIT
+   Copyright (c) Tailwind Labs, Inc.
+
+4. TypeScript (https://www.typescriptlang.org/)
+   License: Apache-2.0
+   Copyright (c) Microsoft Corporation
+
+5. Lucide Icons (https://lucide.dev/)
+   License: ISC
+   Copyright (c) 2020-present Lucide Contributors
+
+6. Vitest (https://vitest.dev/)
+   License: MIT
+   Copyright (c) 2021-Present Anthony Fu
+
+7. Playwright (https://playwright.dev/)
+   License: Apache-2.0
+   Copyright (c) Microsoft Corporation
+
+8. Web3Forms (https://web3forms.com/)
+   Used for contact form submissions
+
+For a complete list of dependencies and their licenses, see:
+- phialo-design/package.json
+- workers/package.json
+
+==============================================================================
+Asset Attributions
+==============================================================================
+
+All jewelry designs, images, and creative assets are the property of Phialo Design
+and are licensed under Creative Commons BY-NC-ND 4.0.
+
+==============================================================================
+Testing Infrastructure
+==============================================================================
+
+Cross-browser testing powered by:
+BrowserStack (https://www.browserstack.com)
+
+We gratefully acknowledge BrowserStack's support of open source projects.

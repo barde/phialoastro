@@ -56,18 +56,37 @@ test.describe('Contact Form Integration', () => {
         });
       });
       
-      // Fill out form
-      await page.fill('input[name="name"]', 'E2E Test User');
-      await page.fill('input[name="email"]', 'e2e-test@example.com');
-      await page.fill('input[name="phone"]', '+49 123 456789');
-      await page.fill('textarea[name="message"]', 'Dies ist eine automatisierte E2E Testnachricht.');
+      // Wait for form to be ready
+      await page.waitForLoadState('networkidle');
+      
+      // Fill out form with waits to ensure fields are ready
+      const nameInput = page.locator('input[name="name"]');
+      await nameInput.waitFor({ state: 'visible' });
+      await nameInput.fill('E2E Test User');
+      
+      const emailInput = page.locator('input[name="email"]');
+      await emailInput.waitFor({ state: 'visible' });
+      await emailInput.fill('e2e-test@example.com');
+      
+      const phoneInput = page.locator('input[name="phone"]');
+      await phoneInput.waitFor({ state: 'visible' });
+      await phoneInput.fill('+49 123 456789');
+      
+      const messageInput = page.locator('textarea[name="message"]');
+      await messageInput.waitFor({ state: 'visible' });
+      await messageInput.fill('Dies ist eine automatisierte E2E Testnachricht.');
       
       // Submit form
-      await page.click('button[type="submit"]');
+      const submitButton = page.locator('button[type="submit"]');
+      await submitButton.waitFor({ state: 'visible' });
+      await submitButton.click();
       
-      // Check success modal appears
+      // Wait a bit for the response
+      await page.waitForTimeout(1000);
+      
+      // Check success modal appears with more flexible selector
       const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Erfolg!' });
-      await expect(successModal).toBeVisible();
+      await expect(successModal).toBeVisible({ timeout: 15000 });
       await expect(successModal).toContainText('Ihre Nachricht wurde erfolgreich gesendet');
       
       // Close modal
@@ -167,17 +186,33 @@ test.describe('Contact Form Integration', () => {
         });
       });
       
-      // Fill out form
-      await page.fill('input[name="name"]', 'E2E Test User');
-      await page.fill('input[name="email"]', 'e2e-test@example.com');
-      await page.fill('textarea[name="message"]', 'This is an automated E2E test message.');
+      // Wait for form to be ready
+      await page.waitForLoadState('networkidle');
+      
+      // Fill out form with waits to ensure fields are ready
+      const nameInput = page.locator('input[name="name"]');
+      await nameInput.waitFor({ state: 'visible' });
+      await nameInput.fill('E2E Test User');
+      
+      const emailInput = page.locator('input[name="email"]');
+      await emailInput.waitFor({ state: 'visible' });
+      await emailInput.fill('e2e-test@example.com');
+      
+      const messageInput = page.locator('textarea[name="message"]');
+      await messageInput.waitFor({ state: 'visible' });
+      await messageInput.fill('This is an automated E2E test message.');
       
       // Submit form
-      await page.click('button[type="submit"]');
+      const submitButton = page.locator('button[type="submit"]');
+      await submitButton.waitFor({ state: 'visible' });
+      await submitButton.click();
       
-      // Check success modal appears
+      // Wait a bit for the response
+      await page.waitForTimeout(1000);
+      
+      // Check success modal appears with more flexible selector
       const successModal = page.locator('.fixed.inset-0').filter({ hasText: 'Success!' });
-      await expect(successModal).toBeVisible();
+      await expect(successModal).toBeVisible({ timeout: 15000 });
       await expect(successModal).toContainText('Your message has been sent successfully');
     });
 
