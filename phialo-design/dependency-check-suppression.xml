@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Suppress false positives or accepted risks -->
+    
+    <!-- Example: Suppress a known false positive in a development dependency -->
+    <!--
+    <suppress>
+        <notes>False positive - this is a development-only dependency not exposed in production</notes>
+        <packageUrl regex="true">^pkg:npm/.*dev.*$</packageUrl>
+        <cve>CVE-2021-12345</cve>
+    </suppress>
+    -->
+    
+    <!-- Suppress test-only dependencies -->
+    <suppress>
+        <notes>Test dependencies are not exposed in production</notes>
+        <packageUrl regex="true">^pkg:npm/@playwright/test@.*$</packageUrl>
+        <vulnerabilityName regex="true">.*</vulnerabilityName>
+    </suppress>
+    
+    <suppress>
+        <notes>Test dependencies are not exposed in production</notes>
+        <packageUrl regex="true">^pkg:npm/vitest@.*$</packageUrl>
+        <vulnerabilityName regex="true">.*</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress build-only tools -->
+    <suppress>
+        <notes>Build tools are not included in production bundle</notes>
+        <packageUrl regex="true">^pkg:npm/vite@.*$</packageUrl>
+        <vulnerabilityName regex="true">.*</vulnerabilityName>
+    </suppress>
+</suppressions>
