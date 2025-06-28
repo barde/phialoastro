@@ -405,32 +405,30 @@ jobs:
         include:
           - image: base
             test-script: ./ci/scripts/test-base.sh
-            condition: ${{ needs.build-base.result == 'success' }}
+            needs-job: build-base
           - image: test
             test-script: ./ci/scripts/test-playwright.sh
-            condition: ${{ needs.build-test.result == 'success' }}
+            needs-job: build-test
           - image: build-deploy
             test-script: ./ci/scripts/test-build-deploy.sh
-            condition: ${{ needs.build-deploy.result == 'success' }}
+            needs-job: build-deploy
           - image: security
             test-script: ./ci/scripts/test-security.sh
-            condition: ${{ needs.build-security.result == 'success' }}
+            needs-job: build-security
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        if: matrix.condition
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
-        if: matrix.condition
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull and test ${{ matrix.image }} image
-        if: matrix.condition
         run: |
+          echo "Pulling image for ${{ matrix.image }}..."
           if [ "${{ matrix.image }}" = "base" ]; then
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-ci-base:latest
             docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-ci-base:latest phialo-ci-base:latest
@@ -438,6 +436,9 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image }}:latest
             docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image }}:latest phialo-${{ matrix.image }}:latest
           fi
+          echo "Available images:"
+          docker images | grep phialo
+          echo "Running test script..."
           ${{ matrix.test-script }}
 
   # Clean up old images
