@@ -2,7 +2,7 @@
 # This version is optimized for size and speed in CI environments
 
 # Build arguments
-ARG BASE_IMAGE=phialo-ci-base:latest
+ARG BASE_IMAGE=ghcr.io/barde/phialo-ci-base:latest
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION=1.0.0
