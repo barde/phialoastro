@@ -13,14 +13,6 @@ on:
       - 'phialo-design/package*.json'
       - 'workers/package*.json'
       - '.github/workflows/docker-images.yml'
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - 'ci/**'
-      - 'phialo-design/Dockerfile*'
-      - 'phialo-design/package*.json'
-      - 'workers/package*.json'
-      - '.github/workflows/docker-images.yml'
   schedule:
     # Run weekly on Sunday at 2 AM UTC for security updates
     - cron: '0 2 * * 0'
@@ -40,6 +32,10 @@ on:
           - build-deploy
           - security
         default: all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
