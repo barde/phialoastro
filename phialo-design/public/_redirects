@@ -18,3 +18,7 @@
 
 # Workers static assets doesn't support 404 status codes in _redirects
 # 404 handling is now done in the worker script
+
+# Tutorials to Classes redirects
+/tutorials              /classes              301
+/en/tutorials           /en/classes           301
