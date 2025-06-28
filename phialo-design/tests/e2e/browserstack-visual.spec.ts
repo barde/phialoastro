@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('BrowserStack Real Device Tests', () => {
-  test('@browserstack @critical Homepage renders correctly on real devices', async ({ page, browserName }) => {
+  test('@browserstack Homepage renders correctly on real devices', async ({ page, browserName }) => {
     await page.goto('/');
     
     // Wait for page to fully load
