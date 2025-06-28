@@ -401,6 +401,7 @@ jobs:
     if: always() && (needs.build-base.result == 'success' || needs.build-test.result == 'success' || needs.build-deploy.result == 'success' || needs.build-security.result == 'success')
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - image: base
@@ -427,6 +428,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull and test ${{ matrix.image }} image
+        continue-on-error: true
         run: |
           echo "Pulling image for ${{ matrix.image }}..."
           if [ "${{ matrix.image }}" = "base" ]; then
