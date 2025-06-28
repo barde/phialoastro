@@ -19,8 +19,8 @@ test.describe('BrowserStack Real Device Tests', () => {
     });
     
     // Verify core elements are visible
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page.locator('header')).toBeVisible();
+    await expect(page.locator('main h1').first()).toBeVisible();
+    await expect(page.locator('header#main-header')).toBeVisible();
     await expect(page.locator('footer')).toBeVisible();
   });
 

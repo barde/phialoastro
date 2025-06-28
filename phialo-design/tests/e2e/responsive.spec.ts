@@ -47,7 +47,7 @@ test.describe('Responsive Design Tests', () => {
       await page.waitForLoadState('networkidle');
       
       // Header should be visible
-      const header = page.locator('header');
+      const header = page.locator('header#main-header');
       await expect(header).toBeVisible();
       
       // Check if navigation is in desktop mode (no hamburger menu)
