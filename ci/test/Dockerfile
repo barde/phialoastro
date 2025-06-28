@@ -51,7 +51,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
 WORKDIR /app
 
 # Install Playwright globally instead of from package
-RUN npm install -g playwright@1.49.1 && \
+RUN npm install -g playwright@1.53.1 && \
     # Install Playwright with all browsers
     playwright install --with-deps chromium firefox webkit && \
     # Verify installation
