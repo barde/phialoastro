@@ -13,11 +13,11 @@ test.describe('Smoke Tests', () => {
     // Page loads successfully
     await expect(page).toHaveTitle(/Phialo/);
     
-    // Main heading is visible
-    await expect(page.locator('h1')).toBeVisible();
+    // Main heading is visible - use first() to handle multiple h1s from browser tools
+    await expect(page.locator('main h1').first()).toBeVisible();
     
-    // Navigation is present
-    await expect(page.locator('header')).toBeVisible();
+    // Navigation is present - use ID to ensure we get the right header
+    await expect(page.locator('header#main-header')).toBeVisible();
   });
 
   test('@smoke Language switching works', async ({ page }) => {
@@ -29,7 +29,8 @@ test.describe('Smoke Tests', () => {
     
     // Click to switch to English
     await langSelector.click();
-    await page.getByRole('button', { name: /English|EN/i }).click();
+    // Be more specific - look for the button inside the language selector
+    await langSelector.getByRole('button', { name: /English|EN/i }).click();
     
     // Verify URL changed to English
     await page.waitForURL('**/en/**');
