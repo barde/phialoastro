@@ -2,6 +2,21 @@
 
 This directory contains the Docker-based CI infrastructure for the Phialo Design project. The setup is optimized for build speed, caching efficiency, and minimal image size.
 
+## 🚀 Latest Updates
+
+### Phase 3 Complete: Comprehensive Containerization
+- **PR Tests**: Reduced test time from 3-4 minutes to under 2 minutes
+- **E2E Sharding**: Parallel execution across 4-6 shards
+- **Nightly Tests**: Comprehensive test suite with security scanning
+- **Quick Reference Guides**:
+  - [PR Tests Guide](./docs/PR_TESTS_QUICK_REFERENCE.md)
+  - [E2E Sharded Guide](./docs/E2E_SHARDED_QUICK_REFERENCE.md)
+  - [Nightly Tests Guide](./docs/NIGHTLY_TESTS_QUICK_REFERENCE.md)
+- **Migration Documentation**:
+  - [PR Tests Migration](./docs/PHASE3_PR_TESTS_MIGRATION.md)
+  - [E2E Sharded Summary](./docs/PHASE3_E2E_SHARDED_SUMMARY.md)
+  - [Nightly Tests Summary](./docs/PHASE3_NIGHTLY_TESTS_SUMMARY.md)
+
 ## 🎯 CI/CD Pipeline
 
 The project uses GitHub Actions for automated Docker image building, testing, and deployment:
@@ -10,6 +25,7 @@ The project uses GitHub Actions for automated Docker image building, testing, an
 - **Security Scanning**: Daily vulnerability checks with auto-rebuild
 - **Multi-Architecture**: Supports amd64 and arm64
 - **Registry Management**: Automatic cleanup of old images
+- **Containerized Tests**: PR tests now run in optimized Docker containers
 
 See [CI/CD Pipeline Documentation](./docs/CI_CD_PIPELINE.md) for details.
 
@@ -20,10 +36,21 @@ ci/
 ├── base/                 # Base CI image definitions
 │   ├── Dockerfile.base   # Optimized base image with Node.js 20 and pnpm
 │   └── Dockerfile        # Full CI image (from Phase 1)
-├── scripts/              # Build and test scripts
-│   ├── build-base.sh     # Build the base CI image
-│   └── test-base.sh      # Test the base CI image
-├── configs/              # CI configuration files
+├── test/                 # Test container definitions
+│   ├── Dockerfile        # E2E test runner with Playwright
+│   └── Dockerfile.ci     # CI-specific test configuration
+├── build/                # Build and deployment container
+│   └── Dockerfile        # Production build container
+├── security/             # Security scanning container
+│   ├── Dockerfile        # Security tools container
+│   └── scripts/          # Security scan scripts
+├── scripts/              # CI/CD automation scripts
+│   ├── build-*.sh        # Image build scripts
+│   ├── test-*.sh         # Image test scripts
+│   └── compare-*.sh      # Workflow comparison tools
+├── docs/                 # Comprehensive documentation
+│   ├── *QUICK_REFERENCE.md  # Quick start guides
+│   └── PHASE3_*.md       # Migration documentation
 ├── docker-compose.yml    # Docker Compose for local testing
 ├── Makefile              # Convenient command shortcuts
 └── README.md            # This file
@@ -117,6 +144,12 @@ All CI images are automatically published to GitHub Container Registry:
 ghcr.io/[owner]/phialo-ci-base:latest
 ghcr.io/[owner]/phialo-test:latest
 ghcr.io/[owner]/phialo-build-deploy:latest
+ghcr.io/[owner]/phialo-security:latest
+
+# Node.js specific versions
+ghcr.io/[owner]/phialo-test:node18
+ghcr.io/[owner]/phialo-test:node20
+ghcr.io/[owner]/phialo-test:node22
 
 # PR-specific versions
 ghcr.io/[owner]/phialo-ci-base:pr-123-ci-base

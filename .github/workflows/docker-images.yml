@@ -38,6 +38,7 @@ on:
           - base
           - test
           - build-deploy
+          - security
         default: all
 
 env:
@@ -52,6 +53,7 @@ jobs:
       base: ${{ steps.filter.outputs.base }}
       test: ${{ steps.filter.outputs.test }}
       build: ${{ steps.filter.outputs.build }}
+      security: ${{ steps.filter.outputs.security }}
       force: ${{ github.event.inputs.force_rebuild == 'true' }}
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +74,9 @@ jobs:
               - 'ci/scripts/build-deploy.sh'
               - 'phialo-design/package*.json'
               - 'workers/package*.json'
+            security:
+              - 'ci/security/**'
+              - 'ci/scripts/security-scan.sh'
 
   # Build base CI image
   build-base:
@@ -305,10 +310,94 @@ jobs:
           sarif_file: 'trivy-build-deploy.sarif'
           category: 'docker-build-deploy'
 
+  # Build security image
+  build-security:
+    needs: [changes, build-base]
+    if: always() && (needs.changes.outputs.security == 'true' || needs.changes.outputs.force == 'true' || github.event.inputs.target_image == 'security' || github.event.inputs.target_image == 'all')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-security
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Determine base image tag
+        id: base-tag
+        run: |
+          if [ "${{ needs.build-base.outputs.image-digest }}" != "" ]; then
+            echo "BASE_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-ci-base@${{ needs.build-base.outputs.image-digest }}" >> $GITHUB_OUTPUT
+          else
+            echo "BASE_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-ci-base:latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push security image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./ci/security
+          file: ./ci/security/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BASE_IMAGE=${{ steps.base-tag.outputs.BASE_IMAGE }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Run security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-security:${{ steps.meta.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-security.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload security scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-security.sarif'
+          category: 'docker-security'
+
   # Test images functionality
   test-images:
-    needs: [build-base, build-test, build-deploy]
-    if: always() && (needs.build-base.result == 'success' || needs.build-test.result == 'success' || needs.build-deploy.result == 'success')
+    needs: [build-base, build-test, build-deploy, build-security]
+    if: always() && (needs.build-base.result == 'success' || needs.build-test.result == 'success' || needs.build-deploy.result == 'success' || needs.build-security.result == 'success')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -322,6 +411,9 @@ jobs:
           - image: build-deploy
             test-script: ./ci/scripts/test-build-deploy.sh
             condition: ${{ needs.build-deploy.result == 'success' }}
+          - image: security
+            test-script: ./ci/scripts/test-security.sh
+            condition: ${{ needs.build-security.result == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -375,6 +467,14 @@ jobs:
           min-versions-to-keep: 5
           delete-only-untagged-versions: 'true'
 
+      - name: Delete old security image versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'phialo-security'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'true'
+
   # Create release if on main branch
   release:
     needs: [test-images]
@@ -404,6 +504,7 @@ jobs:
           - \`ghcr.io/${{ env.IMAGE_PREFIX }}-ci-base:${{ steps.version.outputs.version }}\`
           - \`ghcr.io/${{ env.IMAGE_PREFIX }}-test:${{ steps.version.outputs.version }}\`
           - \`ghcr.io/${{ env.IMAGE_PREFIX }}-build-deploy:${{ steps.version.outputs.version }}\`
+          - \`ghcr.io/${{ env.IMAGE_PREFIX }}-security:${{ steps.version.outputs.version }}\`
           
           ### Changes
           - Automated build from commit ${{ github.sha }}
@@ -415,6 +516,7 @@ jobs:
           docker pull ghcr.io/${{ env.IMAGE_PREFIX }}-ci-base:${{ steps.version.outputs.version }}
           docker pull ghcr.io/${{ env.IMAGE_PREFIX }}-test:${{ steps.version.outputs.version }}
           docker pull ghcr.io/${{ env.IMAGE_PREFIX }}-build-deploy:${{ steps.version.outputs.version }}
+          docker pull ghcr.io/${{ env.IMAGE_PREFIX }}-security:${{ steps.version.outputs.version }}
           \`\`\`
           EOF
 

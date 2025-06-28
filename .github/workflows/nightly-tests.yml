@@ -1,0 +1,605 @@
+---
+name: Nightly Comprehensive Tests
+
+'on':
+  schedule:
+    # Run at 2 AM UTC every night
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_suites:
+        description: 'Test suites to run (comma-separated: unit,integration,e2e,performance,security)'
+        required: false
+        default: 'unit,integration,e2e,performance,security'
+      node_versions:
+        description: 'Node.js versions to test (comma-separated: 18,20,22)'
+        required: false
+        default: '18,20,22'
+      browsers:
+        description: 'Browsers to test (comma-separated: chromium,firefox,webkit)'
+        required: false
+        default: 'chromium,firefox,webkit'
+      os_variants:
+        description: 'OS variants to test (comma-separated: ubuntu,alpine)'
+        required: false
+        default: 'ubuntu,alpine'
+      skip_security:
+        description: 'Skip security scans'
+        type: boolean
+        required: false
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/phialo
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  # Prepare test matrix
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      test_suites: ${{ steps.parse.outputs.test_suites }}
+      security_enabled: ${{ steps.parse.outputs.security_enabled }}
+    steps:
+      - name: Parse inputs
+        id: parse
+        run: |
+          # Parse test suites
+          SUITES="${{ github.event.inputs.test_suites || 'unit,integration,e2e,performance,security' }}"
+          echo "test_suites=$SUITES" >> $GITHUB_OUTPUT
+          
+          # Check if security is enabled
+          if [[ "$SUITES" == *"security"* ]] && [ "${{ github.event.inputs.skip_security }}" != "true" ]; then
+            echo "security_enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "security_enabled=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate test matrix
+        id: matrix
+        run: |
+          NODE_VERSIONS="${{ github.event.inputs.node_versions || '18,20,22' }}"
+          OS_VARIANTS="${{ github.event.inputs.os_variants || 'ubuntu,alpine' }}"
+          
+          # Generate matrix JSON
+          MATRIX='{"include":['
+          FIRST=true
+          
+          for NODE in ${NODE_VERSIONS//,/ }; do
+            for OS in ${OS_VARIANTS//,/ }; do
+              if [ "$FIRST" != "true" ]; then
+                MATRIX+=','
+              fi
+              
+              # Determine container image based on OS and Node version
+              if [ "$OS" = "alpine" ]; then
+                IMAGE_TAG="node${NODE}-alpine"
+              else
+                IMAGE_TAG="node${NODE}"
+              fi
+              
+              MATRIX+="{\"node\":\"$NODE\",\"os\":\"$OS\",\"image_tag\":\"$IMAGE_TAG\"}"
+              FIRST=false
+            done
+          done
+          
+          MATRIX+=']}'
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  # Unit and Integration Tests
+  unit-integration-tests:
+    needs: prepare-matrix
+    if: contains(needs.prepare-matrix.outputs.test_suites, 'unit') || contains(needs.prepare-matrix.outputs.test_suites, 'integration')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:${{ matrix.image_tag }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root --init
+    name: Unit/Integration Tests (Node ${{ matrix.node }} - ${{ matrix.os }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache test results
+        uses: actions/cache@v4
+        with:
+          path: |
+            phialo-design/coverage
+            phialo-design/.vitest-cache
+          key: test-cache-${{ matrix.node }}-${{ matrix.os }}-${{ hashFiles('phialo-design/src/**/*.test.*') }}
+          restore-keys: |
+            test-cache-${{ matrix.node }}-${{ matrix.os }}-
+            test-cache-${{ matrix.node }}-
+
+      - name: Run unit tests
+        if: contains(needs.prepare-matrix.outputs.test_suites, 'unit')
+        run: |
+          cd phialo-design
+          
+          # Run unit tests with coverage
+          pnpm test:unit:coverage --reporter=json --outputFile=unit-results.json
+          
+          # Generate coverage report
+          pnpm run coverage:report
+        env:
+          CI: true
+          NODE_VERSION: ${{ matrix.node }}
+
+      - name: Run integration tests
+        if: contains(needs.prepare-matrix.outputs.test_suites, 'integration')
+        run: |
+          cd phialo-design
+          
+          # Run integration tests
+          pnpm test:integration --reporter=json --outputFile=integration-results.json
+        env:
+          CI: true
+          NODE_VERSION: ${{ matrix.node }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-unit-${{ matrix.node }}-${{ matrix.os }}
+          path: |
+            phialo-design/*-results.json
+            phialo-design/coverage/
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        if: contains(needs.prepare-matrix.outputs.test_suites, 'unit')
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./phialo-design/coverage
+          flags: unit-node${{ matrix.node }}-${{ matrix.os }}
+          name: Unit Tests Node ${{ matrix.node }} ${{ matrix.os }}
+
+  # E2E Tests (Full matrix)
+  e2e-tests:
+    needs: prepare-matrix
+    if: contains(needs.prepare-matrix.outputs.test_suites, 'e2e')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20']  # Use Node 20 for E2E tests
+        os: ['ubuntu']
+        browser: ${{ fromJson(format('[{0}]', github.event.inputs.browsers || '"chromium","firefox","webkit"')) }}
+        shard: [1, 2, 3, 4, 5, 6]  # More shards for nightly
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:node${{ matrix.node }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root --init
+    name: E2E ${{ matrix.browser }} (shard ${{ matrix.shard }}/6)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            phialo-design/.astro
+            phialo-design/dist
+          key: build-nightly-${{ hashFiles('phialo-design/src/**', 'phialo-design/public/**') }}
+          restore-keys: |
+            build-nightly-
+            build-
+
+      - name: Build application
+        run: |
+          cd phialo-design
+          if [ ! -d "dist" ]; then
+            echo "Building application..."
+            pnpm run build
+          else
+            echo "Using cached build"
+          fi
+
+      - name: Start preview server
+        run: |
+          cd phialo-design
+          pnpm run preview &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          
+          # Wait for server to be ready
+          timeout 30 bash -c 'while ! curl -s http://localhost:4321 > /dev/null; do sleep 1; done'
+          echo "Preview server ready"
+
+      - name: Run E2E tests
+        run: |
+          cd phialo-design
+          
+          # Configure test environment
+          export CI=true
+          export FORCE_COLOR=1
+          export PLAYWRIGHT_HTML_REPORT=playwright-report-${{ matrix.browser }}-${{ matrix.shard }}
+          
+          # Run all E2E tests (not just smoke tests)
+          npx playwright test \
+            --project=${{ matrix.browser }} \
+            --shard=${{ matrix.shard }}/6 \
+            --reporter=list,html,json \
+            --output=test-results-${{ matrix.browser }}-${{ matrix.shard }} \
+            --retries=2
+        env:
+          DISPLAY: :99
+
+      - name: Stop preview server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then
+            kill $SERVER_PID || true
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ matrix.browser }}-${{ matrix.shard }}
+          path: |
+            phialo-design/test-results-${{ matrix.browser }}-${{ matrix.shard }}/
+            phialo-design/playwright-report-${{ matrix.browser }}-${{ matrix.shard }}/
+            phialo-design/test-results.json
+          retention-days: 14
+
+  # Performance Tests
+  performance-tests:
+    needs: prepare-matrix
+    if: contains(needs.prepare-matrix.outputs.test_suites, 'performance')
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:node20
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root --init
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build production bundle
+        run: |
+          cd phialo-design
+          pnpm run build
+          
+          # Analyze bundle size
+          pnpm run analyze > bundle-analysis.txt || true
+
+      - name: Run Lighthouse CI
+        run: |
+          cd phialo-design
+          
+          # Start preview server
+          pnpm run preview &
+          SERVER_PID=$!
+          
+          # Wait for server
+          timeout 30 bash -c 'while ! curl -s http://localhost:4321 > /dev/null; do sleep 1; done'
+          
+          # Run Lighthouse tests
+          npx lhci autorun \
+            --config=.lighthouserc.js \
+            --upload.target=temporary-public-storage \
+            --collect.numberOfRuns=3
+          
+          # Stop server
+          kill $SERVER_PID || true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Run performance benchmarks
+        run: |
+          cd phialo-design
+          
+          # Run custom performance tests
+          pnpm test:performance
+          
+          # Generate performance report
+          node scripts/generate-perf-report.js > performance-report.md || true
+
+      - name: Check bundle size limits
+        run: |
+          cd phialo-design
+          
+          # Check if bundle sizes are within limits
+          BUNDLE_SIZE=$(du -b dist/assets/*.js | awk '{total += $1} END {print total}')
+          MAX_SIZE=350000  # 350KB limit
+          
+          if [ "$BUNDLE_SIZE" -gt "$MAX_SIZE" ]; then
+            echo "⚠️ Bundle size ($BUNDLE_SIZE bytes) exceeds limit ($MAX_SIZE bytes)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ Bundle size ($BUNDLE_SIZE bytes) is within limit ($MAX_SIZE bytes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: |
+            phialo-design/bundle-analysis.txt
+            phialo-design/.lighthouseci/
+            phialo-design/performance-report.md
+          retention-days: 30
+
+  # Security Tests
+  security-tests:
+    needs: prepare-matrix
+    if: needs.prepare-matrix.outputs.security_enabled == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-security:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root --init
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run dependency audit
+        run: |
+          cd phialo-design
+          
+          # Run npm audit
+          npm audit --json > npm-audit.json || true
+          
+          # Run Snyk test (if token available)
+          if [ -n "${{ secrets.SNYK_TOKEN }}" ]; then
+            npx snyk test --json > snyk-results.json || true
+          fi
+          
+          # Run OWASP dependency check
+          dependency-check \
+            --project "Phialo Design" \
+            --scan . \
+            --format JSON \
+            --out dependency-check-report.json \
+            --suppression dependency-check-suppression.xml || true
+
+      - name: Run security linting
+        run: |
+          cd phialo-design
+          
+          # Run ESLint security plugin
+          npx eslint . \
+            --ext .js,.jsx,.ts,.tsx \
+            --plugin security \
+            --format json \
+            --output-file eslint-security.json || true
+          
+          # Run semgrep
+          semgrep \
+            --config=auto \
+            --json \
+            --output=semgrep-results.json \
+            . || true
+
+      - name: Run container security scan
+        run: |
+          # Scan the test container itself
+          trivy image \
+            --format json \
+            --output trivy-container.json \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest || true
+          
+          # Scan for secrets
+          trufflehog filesystem . \
+            --json \
+            --no-verification > trufflehog-results.json || true
+
+      - name: Generate security report
+        run: |
+          cd phialo-design
+          
+          # Create comprehensive security report
+          cat > security-summary.md << 'EOF'
+          ## 🔒 Security Scan Results
+          
+          ### Dependency Vulnerabilities
+          EOF
+          
+          # Parse npm audit results
+          if [ -f npm-audit.json ]; then
+            VULNS=$(jq '.metadata.vulnerabilities // {}' npm-audit.json)
+            echo "- **npm audit**: $(echo $VULNS | jq -r 'to_entries | map("\(.key): \(.value)") | join(", ")')" >> security-summary.md
+          fi
+          
+          # Parse Snyk results
+          if [ -f snyk-results.json ]; then
+            SNYK_VULNS=$(jq '.vulnerabilities | length' snyk-results.json)
+            echo "- **Snyk**: $SNYK_VULNS vulnerabilities found" >> security-summary.md
+          fi
+          
+          # Add more sections as needed
+          echo "" >> security-summary.md
+          echo "### Container Security" >> security-summary.md
+          
+          if [ -f ../trivy-container.json ]; then
+            TRIVY_CRITICAL=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' ../trivy-container.json)
+            TRIVY_HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' ../trivy-container.json)
+            echo "- **Trivy**: $TRIVY_CRITICAL critical, $TRIVY_HIGH high severity vulnerabilities" >> security-summary.md
+          fi
+          
+          # Output to GitHub summary
+          cat security-summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload security results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-results
+          path: |
+            phialo-design/*-audit.json
+            phialo-design/*-results.json
+            phialo-design/security-summary.md
+            trivy-container.json
+            trufflehog-results.json
+          retention-days: 30
+
+  # Generate comprehensive report
+  generate-report:
+    needs: [unit-integration-tests, e2e-tests, performance-tests, security-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results/
+
+      - name: Generate comprehensive report
+        run: |
+          cd phialo-design
+          
+          # Create report directory
+          mkdir -p nightly-report
+          
+          # Merge all test results
+          echo "# 🌙 Nightly Test Report" > nightly-report/README.md
+          echo "" >> nightly-report/README.md
+          echo "**Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> nightly-report/README.md
+          echo "**Commit**: ${{ github.sha }}" >> nightly-report/README.md
+          echo "" >> nightly-report/README.md
+          
+          # Process unit test results
+          if ls ../all-results/test-results-unit-*/unit-results.json 1> /dev/null 2>&1; then
+            echo "## Unit Test Results" >> nightly-report/README.md
+            for result in ../all-results/test-results-unit-*/unit-results.json; do
+              NODE_VERSION=$(echo $result | grep -oP 'node\K\d+')
+              OS=$(echo $result | grep -oP '(ubuntu|alpine)')
+              PASSED=$(jq -r '.numPassedTests // 0' "$result")
+              FAILED=$(jq -r '.numFailedTests // 0' "$result")
+              echo "- **Node $NODE_VERSION ($OS)**: $PASSED passed, $FAILED failed" >> nightly-report/README.md
+            done
+            echo "" >> nightly-report/README.md
+          fi
+          
+          # Process E2E test results
+          if ls ../all-results/e2e-results-*/test-results.json 1> /dev/null 2>&1; then
+            echo "## E2E Test Results" >> nightly-report/README.md
+            TOTAL_E2E_PASSED=0
+            TOTAL_E2E_FAILED=0
+            
+            for result in ../all-results/e2e-results-*/test-results.json; do
+              PASSED=$(jq -r '.stats.passed // 0' "$result")
+              FAILED=$(jq -r '.stats.failed // 0' "$result")
+              TOTAL_E2E_PASSED=$((TOTAL_E2E_PASSED + PASSED))
+              TOTAL_E2E_FAILED=$((TOTAL_E2E_FAILED + FAILED))
+            done
+            
+            echo "- **Total**: $TOTAL_E2E_PASSED passed, $TOTAL_E2E_FAILED failed" >> nightly-report/README.md
+            echo "" >> nightly-report/README.md
+          fi
+          
+          # Add performance results
+          if [ -f ../all-results/performance-results/performance-report.md ]; then
+            echo "## Performance Results" >> nightly-report/README.md
+            cat ../all-results/performance-results/performance-report.md >> nightly-report/README.md
+            echo "" >> nightly-report/README.md
+          fi
+          
+          # Add security results
+          if [ -f ../all-results/security-results/security-summary.md ]; then
+            cat ../all-results/security-results/security-summary.md >> nightly-report/README.md
+            echo "" >> nightly-report/README.md
+          fi
+          
+          # Create JSON summary for programmatic access
+          cat > nightly-report/summary.json << EOF
+          {
+            "date": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+            "commit": "${{ github.sha }}",
+            "status": "completed",
+            "suites_run": "${{ needs.prepare-matrix.outputs.test_suites }}"
+          }
+          EOF
+          
+          # Output to GitHub summary
+          cat nightly-report/README.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload nightly report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-report
+          path: phialo-design/nightly-report/
+          retention-days: 90
+
+      - name: Create issue if tests failed
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const title = `🚨 Nightly tests failed - ${date}`;
+            
+            const body = `## Nightly Test Failure Report
+            
+            The nightly test run has failed. Please investigate the failures.
+            
+            **Run URL**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Commit**: ${{ github.sha }}
+            **Date**: ${new Date().toUTCString()}
+            
+            ### Action Items
+            - [ ] Review the test results
+            - [ ] Fix any failing tests
+            - [ ] Update dependencies if security vulnerabilities were found
+            - [ ] Check performance regressions
+            
+            cc @${{ github.repository_owner }}`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'nightly-failure', 'high-priority']
+            });
+
+  # Cleanup old artifacts
+  cleanup:
+    needs: generate-report
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old nightly artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+            
+            const nightlyArtifacts = artifacts.data.artifacts.filter(artifact => 
+              artifact.name.includes('nightly-') && 
+              new Date(artifact.created_at) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+            );
+            
+            for (const artifact of nightlyArtifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id
+              });
+              console.log(`Deleted old artifact: ${artifact.name}`);
+            }
