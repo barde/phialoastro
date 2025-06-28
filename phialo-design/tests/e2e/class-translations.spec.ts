@@ -14,7 +14,7 @@ test.describe('Classes Section Translation Tests', () => {
       await page.goto('/#classes');
       
       // Check section title and subtitle
-      await expect(page.locator('#classes h2')).toHaveText('Classs');
+      await expect(page.locator('#classes h2')).toHaveText('Classes');
       await expect(page.locator('#classes p').first()).toContainText('Lernen Sie 3D-Design mit Blender');
       
       // Check all tutorial cards
@@ -61,7 +61,7 @@ test.describe('Classes Section Translation Tests', () => {
       await page.goto('/classes/');
       
       // Check page title and content
-      await expect(page.locator('h1')).toContainText('Classs');
+      await expect(page.locator('h1')).toContainText('Classes');
       await expect(page.locator('main')).toContainText('3D-Design');
     });
   });
@@ -79,7 +79,7 @@ test.describe('Classes Section Translation Tests', () => {
       await page.goto('/en/#classes');
       
       // Check section title and subtitle
-      await expect(page.locator('#classes h2')).toHaveText('Classs');
+      await expect(page.locator('#classes h2')).toHaveText('Classes');
       await expect(page.locator('#classes p').first()).toContainText('Learn 3D design with Blender');
       
       // Check all tutorial cards
@@ -126,7 +126,7 @@ test.describe('Classes Section Translation Tests', () => {
       await page.goto('/en/classes/');
       
       // Check page title and content
-      await expect(page.locator('h1')).toContainText('Classs');
+      await expect(page.locator('h1')).toContainText('Classes');
       await expect(page.locator('main')).toContainText('3D design');
     });
   });
