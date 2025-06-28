@@ -34,7 +34,8 @@ RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/
 RUN curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin v3.63.0
 
 # Install Semgrep for SAST
-RUN python3 -m pip install --no-cache-dir semgrep==1.45.0
+# Use --break-system-packages flag to override PEP 668 restriction
+RUN python3 -m pip install --no-cache-dir --break-system-packages semgrep==1.45.0
 
 # Install OWASP Dependency Check
 ENV DC_VERSION=9.0.7
