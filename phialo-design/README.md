@@ -59,6 +59,7 @@ src/
 
 - Node.js 18.x or higher
 - npm or yarn package manager
+- Docker (optional) - Only needed for CI/CD testing or containerized development. See [Local CI Setup](./docs/how-to/local-ci-setup.md) for details.
 
 
 ### Environment Variables
