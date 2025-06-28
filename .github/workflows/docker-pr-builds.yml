@@ -159,7 +159,7 @@ jobs:
             command: "node --version && npm --version && pnpm --version"
           - name: test
             image: test
-            command: "pnpm exec playwright --version"
+            command: "playwright --version"
           - name: build-deploy
             image: build-deploy
             command: "wrangler --version"
