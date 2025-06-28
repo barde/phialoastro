@@ -82,6 +82,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
@@ -156,6 +157,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
@@ -240,6 +242,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
@@ -314,6 +317,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
@@ -443,6 +447,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
     steps:
       - name: Delete old image versions
         uses: actions/delete-package-versions@v5
