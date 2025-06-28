@@ -1,0 +1,269 @@
+name: Docker Cleanup
+
+on:
+  schedule:
+    # Run weekly on Sunday at 4 AM UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (only show what would be deleted)'
+        type: boolean
+        default: true
+      keep_days:
+        description: 'Keep images newer than X days'
+        type: number
+        default: 30
+      keep_versions:
+        description: 'Minimum versions to keep per image'
+        type: number
+        default: 5
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/phialo
+
+jobs:
+  # List all images and versions
+  inventory:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      report: ${{ steps.inventory.outputs.report }}
+    steps:
+      - name: Generate inventory report
+        id: inventory
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packages = ['phialo-ci-base', 'phialo-test', 'phialo-build-deploy'];
+            const report = [];
+            
+            for (const pkg of packages) {
+              try {
+                const versions = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                  package_type: 'container',
+                  package_name: pkg,
+                  org: context.repo.owner,
+                  per_page: 100
+                });
+                
+                const summary = {
+                  name: pkg,
+                  total_versions: versions.data.length,
+                  total_size_mb: versions.data.reduce((sum, v) => sum + (v.size || 0), 0) / 1024 / 1024,
+                  versions: versions.data.map(v => ({
+                    id: v.id,
+                    name: v.name,
+                    tags: v.metadata?.container?.tags || [],
+                    created_at: v.created_at,
+                    size_mb: (v.size || 0) / 1024 / 1024,
+                    downloads: v.download_count || 0
+                  }))
+                };
+                
+                report.push(summary);
+              } catch (error) {
+                console.error(`Error fetching ${pkg}:`, error);
+              }
+            }
+            
+            // Generate markdown report
+            let markdown = '## Docker Image Inventory\n\n';
+            markdown += `| Package | Versions | Total Size | Oldest | Newest |\n`;
+            markdown += `|---------|----------|------------|---------|--------|\n`;
+            
+            for (const pkg of report) {
+              const oldest = new Date(Math.min(...pkg.versions.map(v => new Date(v.created_at))));
+              const newest = new Date(Math.max(...pkg.versions.map(v => new Date(v.created_at))));
+              
+              markdown += `| ${pkg.name} | ${pkg.total_versions} | ${pkg.total_size_mb.toFixed(2)} MB | ${oldest.toISOString().split('T')[0]} | ${newest.toISOString().split('T')[0]} |\n`;
+            }
+            
+            console.log(markdown);
+            core.setOutput('report', JSON.stringify(report));
+
+  # Clean up old versions
+  cleanup:
+    needs: inventory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        package: 
+          - phialo-ci-base
+          - phialo-test
+          - phialo-build-deploy
+    steps:
+      - name: Calculate cutoff date
+        id: cutoff
+        run: |
+          KEEP_DAYS=${{ github.event.inputs.keep_days || 30 }}
+          CUTOFF=$(date -d "$KEEP_DAYS days ago" +%Y-%m-%dT%H:%M:%SZ)
+          echo "date=$CUTOFF" >> $GITHUB_OUTPUT
+
+      - name: Clean up ${{ matrix.package }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packageName = '${{ matrix.package }}';
+            const dryRun = ${{ github.event.inputs.dry_run != 'false' }};
+            const keepVersions = ${{ github.event.inputs.keep_versions || 5 }};
+            const cutoffDate = new Date('${{ steps.cutoff.outputs.date }}');
+            
+            console.log(`Cleaning up ${packageName}`);
+            console.log(`Dry run: ${dryRun}`);
+            console.log(`Keep versions: ${keepVersions}`);
+            console.log(`Cutoff date: ${cutoffDate.toISOString()}`);
+            
+            try {
+              // Get all versions
+              const versions = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                package_type: 'container',
+                package_name: packageName,
+                org: context.repo.owner,
+                per_page: 100
+              });
+              
+              // Sort by created date (newest first)
+              const sortedVersions = versions.data.sort((a, b) => 
+                new Date(b.created_at) - new Date(a.created_at)
+              );
+              
+              // Identify versions to keep
+              const taggedVersions = sortedVersions.filter(v => 
+                v.metadata?.container?.tags?.length > 0
+              );
+              
+              const toKeep = new Set();
+              
+              // Keep minimum number of versions
+              sortedVersions.slice(0, keepVersions).forEach(v => toKeep.add(v.id));
+              
+              // Keep all tagged versions
+              taggedVersions.forEach(v => toKeep.add(v.id));
+              
+              // Keep versions newer than cutoff
+              sortedVersions.filter(v => 
+                new Date(v.created_at) > cutoffDate
+              ).forEach(v => toKeep.add(v.id));
+              
+              // Identify versions to delete
+              const toDelete = sortedVersions.filter(v => !toKeep.has(v.id));
+              
+              console.log(`Total versions: ${sortedVersions.length}`);
+              console.log(`Versions to keep: ${toKeep.size}`);
+              console.log(`Versions to delete: ${toDelete.length}`);
+              
+              if (toDelete.length > 0) {
+                console.log('\nVersions to delete:');
+                for (const version of toDelete) {
+                  const sizeMB = (version.size || 0) / 1024 / 1024;
+                  console.log(`- ${version.name} (${sizeMB.toFixed(2)} MB, created: ${version.created_at})`);
+                  
+                  if (!dryRun) {
+                    await github.rest.packages.deletePackageVersionForOrg({
+                      package_type: 'container',
+                      package_name: packageName,
+                      org: context.repo.owner,
+                      package_version_id: version.id
+                    });
+                    console.log(`  ✅ Deleted`);
+                  }
+                }
+                
+                const totalSizeMB = toDelete.reduce((sum, v) => sum + (v.size || 0), 0) / 1024 / 1024;
+                console.log(`\nTotal space to be freed: ${totalSizeMB.toFixed(2)} MB`);
+              } else {
+                console.log('No versions to delete.');
+              }
+              
+            } catch (error) {
+              console.error(`Error cleaning up ${packageName}:`, error);
+              throw error;
+            }
+
+  # Clean up untagged manifests
+  cleanup-untagged:
+    needs: cleanup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Delete untagged versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'phialo-ci-base'
+          package-type: 'container'
+          delete-only-untagged-versions: 'true'
+          min-versions-to-keep: 0
+
+      - name: Delete untagged test versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'phialo-test'
+          package-type: 'container'
+          delete-only-untagged-versions: 'true'
+          min-versions-to-keep: 0
+
+      - name: Delete untagged build-deploy versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'phialo-build-deploy'
+          package-type: 'container'
+          delete-only-untagged-versions: 'true'
+          min-versions-to-keep: 0
+
+  # Generate cleanup report
+  report:
+    needs: [inventory, cleanup, cleanup-untagged]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Generate cleanup report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dryRun = ${{ github.event.inputs.dry_run != 'false' }};
+            const date = new Date().toISOString().split('T')[0];
+            const title = `📦 Docker Cleanup Report - ${date}`;
+            
+            let body = `## Docker Image Cleanup Report\n\n`;
+            body += `**Date:** ${date}\n`;
+            body += `**Mode:** ${dryRun ? 'Dry Run' : 'Live Cleanup'}\n`;
+            body += `**Keep Days:** ${{ github.event.inputs.keep_days || 30 }}\n`;
+            body += `**Keep Versions:** ${{ github.event.inputs.keep_versions || 5 }}\n\n`;
+            
+            body += `### Summary\n`;
+            body += `- ✅ Cleanup workflow completed\n`;
+            body += `- 🗑️ Untagged manifests removed\n`;
+            body += `- 📊 See workflow logs for detailed information\n\n`;
+            
+            if (!dryRun) {
+              body += `### Next Cleanup\n`;
+              body += `Scheduled for next Sunday at 4 AM UTC\n`;
+            } else {
+              body += `### ⚠️ This was a dry run\n`;
+              body += `To perform actual cleanup, run the workflow again with dry_run = false\n`;
+            }
+            
+            // Only create issue for actual cleanups, not dry runs
+            if (!dryRun) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['docker', 'cleanup', 'automated']
+              });
+            } else {
+              console.log('Dry run - no issue created');
+              console.log(body);
+            }
