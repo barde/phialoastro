@@ -55,7 +55,7 @@ WORKDIR /app
 # Skip copying package files since they're not in this context
 
 # Install Playwright globally and browsers
-RUN npm install -g playwright@1.49.1 && \
+RUN npm install -g playwright@1.53.1 && \
     # Install only the browsers we actually use in CI
     playwright install chromium firefox webkit && \
     # Install system dependencies that Playwright needs
