@@ -1,0 +1,292 @@
+name: Docker CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  # Build and cache Docker images
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+            image=moby/buildkit:latest
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build CI image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./phialo-design
+          file: ./phialo-design/Dockerfile.ci
+          target: ci
+          tags: phialo-design:ci
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          load: true
+
+      - name: Build test runner image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./phialo-design
+          file: ./phialo-design/Dockerfile.ci
+          target: test-runner
+          tags: phialo-design:test-runner
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          load: true
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Save Docker images
+        run: |
+          docker save phialo-design:ci phialo-design:test-runner | gzip > docker-images.tar.gz
+
+      - name: Upload Docker images
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-images
+          path: docker-images.tar.gz
+          retention-days: 1
+
+  # Run quality checks in Docker
+  docker-quality:
+    name: Quality Checks (Docker)
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load Docker images
+        run: |
+          docker load < docker-images.tar.gz
+
+      - name: Run linting
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/phialo-design/src:/app/src:ro \
+            phialo-design:ci \
+            pnpm lint
+
+      - name: Run type checking
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/phialo-design/src:/app/src:ro \
+            phialo-design:ci \
+            pnpm typecheck
+
+      - name: Check formatting
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/phialo-design:/app:ro \
+            phialo-design:ci \
+            pnpm format:check
+
+  # Run unit tests in Docker
+  docker-unit-tests:
+    name: Unit Tests (Docker)
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load Docker images
+        run: |
+          docker load < docker-images.tar.gz
+
+      - name: Run unit tests
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/phialo-design/src:/app/src:ro \
+            -v ${{ github.workspace }}/phialo-design/tests:/app/tests:ro \
+            -e CI=true \
+            phialo-design:ci \
+            pnpm test:run
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: phialo-design/test-results/
+          retention-days: 7
+
+  # Run E2E tests in Docker
+  docker-e2e-tests:
+    name: E2E Tests (Docker)
+    needs: docker-build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Load Docker images
+        run: |
+          docker load < docker-images.tar.gz
+
+      - name: Run E2E tests - ${{ matrix.browser }}
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/phialo-design:/app:ro \
+            -e CI=true \
+            -e BROWSER=${{ matrix.browser }} \
+            phialo-design:test-runner \
+            sh -c "pnpm dev --port 4321 & npx wait-on http://localhost:4321 --timeout 60000 && pnpm test:e2e --project=${{ matrix.browser }}"
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ matrix.browser }}-artifacts
+          path: |
+            phialo-design/test-results/
+            phialo-design/playwright-report/
+          retention-days: 7
+
+  # Build production image
+  docker-production-build:
+    name: Production Build (Docker)
+    needs: [docker-quality, docker-unit-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-prod-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-prod-
+            ${{ runner.os }}-buildx-
+
+      - name: Build production image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./phialo-design
+          file: ./phialo-design/Dockerfile
+          target: runner
+          tags: |
+            phialo-design:latest
+            phialo-design:${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          outputs: type=docker,dest=./phialo-design-prod.tar
+
+      - name: Test production image
+        run: |
+          docker load < ./phialo-design-prod.tar
+          docker run -d --name phialo-test -p 4321:4321 phialo-design:latest
+          sleep 10
+          curl -f http://localhost:4321 || exit 1
+          docker stop phialo-test
+
+      - name: Extract static files
+        run: |
+          docker create --name extract phialo-design:latest
+          docker cp extract:/app/dist ./dist
+          docker rm extract
+          tar -czf dist.tar.gz dist/
+
+      - name: Upload production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: |
+            dist.tar.gz
+            phialo-design-prod.tar
+          retention-days: 7
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  # Docker Compose integration test
+  docker-compose-test:
+    name: Docker Compose Integration
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test Docker Compose setup
+        working-directory: ./phialo-design
+        run: |
+          # Test build
+          docker-compose build --parallel
+          
+          # Test services
+          docker-compose run --rm test pnpm test:run
+          docker-compose run --rm quality
+          
+          # Cleanup
+          docker-compose down -v
+
+  # Summary job
+  docker-ci-summary:
+    name: Docker CI Summary
+    needs: [docker-quality, docker-unit-tests, docker-e2e-tests, docker-production-build, docker-compose-test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.docker-quality.result }}" != "success" ] || \
+             [ "${{ needs.docker-unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.docker-e2e-tests.result }}" != "success" ] || \
+             [ "${{ needs.docker-production-build.result }}" != "success" ] || \
+             [ "${{ needs.docker-compose-test.result }}" != "success" ]; then
+            echo "Some Docker CI jobs failed"
+            exit 1
+          fi
+          echo "All Docker CI jobs passed!"
