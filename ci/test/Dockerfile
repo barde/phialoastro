@@ -2,45 +2,35 @@
 # Extends the base CI image with Playwright and browser dependencies
 # Supports all three browsers: Chromium, Firefox, and WebKit
 
-ARG BASE_IMAGE=ghcr.io/barde/phialo-ci-base:latest
-FROM ${BASE_IMAGE}
+# Use Debian-based image for Playwright compatibility
+FROM node:20-bookworm-slim
 
 # Switch to root for system installations
 USER root
 
 # Install system dependencies for browsers
 # These are required for Playwright browsers to run properly
-RUN apk add --no-cache \
-    # Chromium dependencies
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    # Firefox dependencies
-    firefox-esr \
-    # WebKit/Safari dependencies
-    webkit2gtk \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Basic tools
+    curl \
+    git \
+    wget \
+    # Build tools
+    python3 \
+    make \
+    g++ \
     # X11 and display dependencies for headless testing
     xvfb \
-    dbus \
-    dbus-x11 \
-    # Additional utilities
-    mesa-gl \
-    mesa-dri-gallium \
-    # Font packages for better rendering
-    font-noto \
-    font-noto-cjk \
-    font-noto-emoji \
-    # Video codecs for video recording
-    ffmpeg \
     # Process management
-    dumb-init
+    dumb-init \
+    # Clean up
+    && rm -rf /var/lib/apt/lists/*
 
 # Set up Xvfb for headless display
 ENV DISPLAY=:99
+
+# Install pnpm
+RUN npm install -g pnpm@9.15.2
 
 # Create directory for Playwright browsers with correct permissions
 RUN mkdir -p /ms-playwright && \
