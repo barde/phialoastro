@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success()
         with:
           sarif_file: 'trivy-base.sarif'
           category: 'docker-base'
@@ -229,7 +229,7 @@ jobs:
 
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success()
         with:
           sarif_file: 'trivy-test.sarif'
           category: 'docker-test'
@@ -304,7 +304,7 @@ jobs:
 
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success()
         with:
           sarif_file: 'trivy-build-deploy.sarif'
           category: 'docker-build-deploy'
@@ -381,6 +381,7 @@ jobs:
 
       - name: Run security scan
         uses: aquasecurity/trivy-action@master
+        if: success()
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-security@${{ steps.build.outputs.digest }}
           format: 'sarif'
@@ -389,7 +390,7 @@ jobs:
 
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success()
         with:
           sarif_file: 'trivy-security.sarif'
           category: 'docker-security'
