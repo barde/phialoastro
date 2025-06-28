@@ -60,23 +60,16 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
 # Create test workspace
 WORKDIR /app
 
-# Copy package files as node user
-COPY --chown=node:node package.json pnpm-lock.yaml ./
-
-# Install dependencies and Playwright browsers
-RUN pnpm install --frozen-lockfile && \
+# Install Playwright globally instead of from package
+RUN npm install -g playwright@1.49.1 && \
     # Install Playwright with all browsers
-    pnpm exec playwright install --with-deps chromium firefox webkit && \
+    playwright install --with-deps chromium firefox webkit && \
     # Verify installation
-    pnpm exec playwright --version && \
-    # Clean up
-    pnpm store prune
+    playwright --version
 
-# Copy Playwright configurations
-COPY --chown=node:node playwright*.config.ts ./
+# Skip copying Playwright configurations - they'll be in the mounted workspace
 
-# Copy test files
-COPY --chown=node:node tests ./tests
+# Skip copying test files - they'll be in the mounted workspace
 
 # Create directories for test artifacts
 RUN mkdir -p test-results playwright-report && \

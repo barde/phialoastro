@@ -55,21 +55,20 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
 
 WORKDIR /app
 
-# Copy package files
-COPY --chown=node:node package.json pnpm-lock.yaml ./
+# Install Playwright globally instead of from package.json
+# Skip copying package files since they're not in this context
 
-# Install dependencies and Playwright in one layer
-RUN pnpm install --frozen-lockfile --prefer-offline && \
+# Install Playwright globally and browsers
+RUN npm install -g playwright@1.49.1 && \
     # Install only the browsers we actually use in CI
-    pnpm exec playwright install chromium firefox webkit && \
+    playwright install chromium firefox webkit && \
     # Install system dependencies that Playwright needs
-    pnpm exec playwright install-deps && \
+    playwright install-deps && \
     # Verify installation
-    pnpm exec playwright --version && \
-    # Clean pnpm cache
-    pnpm store prune && \
-    # Remove unnecessary files
-    rm -rf ~/.cache/ms-playwright/webkit-*/minidump-reporter \
+    playwright --version
+
+# Remove unnecessary files
+RUN rm -rf ~/.cache/ms-playwright/webkit-*/minidump-reporter \
            ~/.cache/ms-playwright/firefox-*/minidump-reporter
 
 # Stage 3: Final CI image

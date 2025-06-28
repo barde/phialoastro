@@ -82,7 +82,7 @@ RUN mkdir -p $DEPENDENCY_CHECK_DATA $TRIVY_CACHE_DIR && \
     chmod -R 755 $DEPENDENCY_CHECK_DATA $TRIVY_CACHE_DIR
 
 # Add security scanning scripts
-COPY --chown=node:node scripts/security-scan.sh /usr/local/bin/security-scan
+COPY --chown=node:node ./scripts/security-scan.sh /usr/local/bin/security-scan
 RUN chmod +x /usr/local/bin/security-scan
 
 # Default command runs all security scans
