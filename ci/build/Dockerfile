@@ -31,7 +31,7 @@ RUN apk add --no-cache \
     jq
 
 # Install pnpm globally for faster installs
-RUN npm install -g pnpm@9.12.3
+RUN npm install -g pnpm@9.15.2
 
 # Install Cloudflare Wrangler globally
 RUN npm install -g wrangler@4.20.5
