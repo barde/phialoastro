@@ -1,0 +1,305 @@
+name: Docker Base Images
+
+on:
+  # Manual trigger for rebuilding base images
+  workflow_dispatch:
+  # Rebuild on schedule (weekly)
+  schedule:
+    - cron: '0 2 * * 1' # Every Monday at 2 AM UTC
+  # Rebuild when Dockerfiles change
+  push:
+    branches: [main, master]
+    paths:
+      - 'phialo-design/Dockerfile*'
+      - '.github/workflows/docker-base-images.yml'
+
+env:
+  REGISTRY: ghcr.io
+  # Base image names
+  CI_IMAGE: ${{ github.repository }}-ci
+  DEV_IMAGE: ${{ github.repository }}-dev
+  PROD_IMAGE: ${{ github.repository }}
+
+jobs:
+  # Build CI/CD base image with all test dependencies
+  build-ci-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write # For security scanning
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.CI_IMAGE }}
+          tags: |
+            # Latest tag for default branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            # Branch name tag
+            type=ref,event=branch
+            # Semantic versioning (if using tags)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            # Date-based tag
+            type=raw,value={{date 'YYYYMMDD'}},enable={{is_default_branch}}
+            # SHA-based tag for reproducibility
+            type=sha,prefix={{branch}}-,format=short
+
+      - name: Build and push CI image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./phialo-design
+          file: ./phialo-design/Dockerfile.ci
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: |
+            type=gha,scope=ci-${{ github.ref }}
+            type=gha,scope=ci-main
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.CI_IMAGE }}:buildcache
+          cache-to: |
+            type=gha,mode=max,scope=ci-${{ github.ref }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.CI_IMAGE }}:buildcache,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.CI_IMAGE }}:latest
+          format: 'sarif'
+          output: 'trivy-ci-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-ci-results.sarif'
+          category: 'trivy-ci'
+
+  # Build development image
+  build-dev-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.DEV_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value={{date 'YYYYMMDD'}},enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-,format=short
+
+      - name: Build and push dev image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./phialo-design
+          file: ./phialo-design/Dockerfile.dev
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: |
+            type=gha,scope=dev-${{ github.ref }}
+            type=gha,scope=dev-main
+          cache-to: type=gha,mode=max,scope=dev-${{ github.ref }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.DEV_IMAGE }}:latest
+          format: 'sarif'
+          output: 'trivy-dev-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-dev-results.sarif'
+          category: 'trivy-dev'
+
+  # Build production image
+  build-prod-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.PROD_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value={{date 'YYYYMMDD'}},enable={{is_default_branch}}
+            type=sha,format=long
+
+      - name: Build and push production image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./phialo-design
+          file: ./phialo-design/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: |
+            type=gha,scope=prod-${{ github.ref }}
+            type=gha,scope=prod-main
+          cache-to: type=gha,mode=max,scope=prod-${{ github.ref }}
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.PROD_IMAGE }}:latest
+          format: 'sarif'
+          output: 'trivy-prod-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-prod-results.sarif'
+          category: 'trivy-prod'
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.PROD_IMAGE }}:latest
+          format: spdx-json
+          output-file: sbom-prod.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-production
+          path: sbom-prod.spdx.json
+
+  # Create manifest for multi-arch support
+  create-manifest:
+    needs: [build-ci-image, build-dev-image, build-prod-image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-arch manifest
+        run: |
+          # Create manifest lists for each image type
+          for IMAGE in "${{ env.CI_IMAGE }}" "${{ env.DEV_IMAGE }}" "${{ env.PROD_IMAGE }}"; do
+            docker manifest create \
+              ${{ env.REGISTRY }}/${IMAGE}:latest \
+              --amend ${{ env.REGISTRY }}/${IMAGE}:latest-amd64 \
+              --amend ${{ env.REGISTRY }}/${IMAGE}:latest-arm64
+            
+            docker manifest push ${{ env.REGISTRY }}/${IMAGE}:latest
+          done
+
+  # Clean up old images
+  cleanup:
+    needs: create-manifest
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Delete old container images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ github.event.repository.name }}
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'true'

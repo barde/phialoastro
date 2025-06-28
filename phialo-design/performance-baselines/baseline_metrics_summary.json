@@ -1,0 +1,131 @@
+{
+  "metadata": {
+    "generated": "2025-06-28T16:45:00+02:00",
+    "repository": "phialoastro",
+    "analysis_period": "2025-06-21 to 2025-06-28"
+  },
+  "workflows": {
+    "pr_tests": {
+      "average_duration_seconds": 242,
+      "success_rate": 0.7,
+      "runs_analyzed": 10,
+      "jobs": {
+        "detect_changes": {
+          "average_duration_seconds": 3,
+          "steps": {
+            "checkout": 1,
+            "detect_changes": 1,
+            "cleanup": 1
+          }
+        },
+        "unit_tests": {
+          "average_duration_seconds": 40,
+          "steps": {
+            "setup_checkout": 3,
+            "nodejs_setup": 2,
+            "pnpm_install": 1,
+            "cache_operations": 5,
+            "dependencies_install": 2,
+            "run_tests": 12,
+            "build_project": 11,
+            "cleanup": 3
+          }
+        },
+        "e2e_tests": {
+          "average_duration_seconds": 165,
+          "steps": {
+            "setup_checkout": 2,
+            "nodejs_pnpm_setup": 4,
+            "cache_operations": 7,
+            "dependencies_install": 2,
+            "playwright_cache": 5,
+            "playwright_deps": 71,
+            "run_tests": 72,
+            "cleanup": 3
+          }
+        }
+      }
+    },
+    "nightly_tests": {
+      "average_duration_seconds": 598,
+      "success_rate": 0.0,
+      "runs_analyzed": 5,
+      "characteristics": [
+        "Full browser matrix (8 combinations)",
+        "Performance testing with Lighthouse",
+        "Multi-OS/Node version testing",
+        "Security scanning"
+      ]
+    },
+    "file_validation": {
+      "average_duration_seconds": 11,
+      "success_rate": 1.0,
+      "runs_analyzed": 10
+    }
+  },
+  "bottlenecks": {
+    "critical": [
+      {
+        "name": "Playwright Dependencies Installation",
+        "impact_seconds": 71,
+        "frequency": "per_e2e_job",
+        "optimization_potential": 0.95
+      },
+      {
+        "name": "E2E Test Execution",
+        "impact_seconds": 72,
+        "frequency": "per_e2e_job",
+        "optimization_potential": 0.1
+      },
+      {
+        "name": "Build Process",
+        "impact_seconds": 11,
+        "frequency": "per_test_job",
+        "optimization_potential": 0.5
+      }
+    ],
+    "moderate": [
+      {
+        "name": "Cache Operations",
+        "impact_seconds": 6,
+        "frequency": "per_job",
+        "cache_hit_rate": 0.8
+      },
+      {
+        "name": "Node.js and Tool Setup",
+        "impact_seconds": 3.5,
+        "frequency": "per_job",
+        "optimization_potential": 0.8
+      }
+    ]
+  },
+  "optimization_targets": {
+    "pr_test_total": {
+      "current_seconds": 242,
+      "target_seconds": 120,
+      "improvement_percent": 50
+    },
+    "e2e_setup_time": {
+      "current_seconds": 80,
+      "target_seconds": 10,
+      "improvement_percent": 87.5
+    },
+    "unit_test_setup": {
+      "current_seconds": 15,
+      "target_seconds": 5,
+      "improvement_percent": 66
+    },
+    "nightly_tests": {
+      "current_seconds": 600,
+      "target_seconds": 300,
+      "improvement_percent": 50
+    }
+  },
+  "cost_analysis": {
+    "monthly_minutes": 4800,
+    "cost_per_minute_usd": 0.008,
+    "monthly_cost_usd": 38.40,
+    "projected_savings_percent": 40,
+    "projected_monthly_cost_usd": 23.04
+  }
+}
