@@ -36,9 +36,6 @@ RUN npm install -g pnpm@9.15.2
 RUN mkdir -p /ms-playwright && \
     chown -R node:node /ms-playwright
 
-# Switch back to node user
-USER node
-
 # Set Playwright environment variables
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0 \
@@ -50,12 +47,15 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
 # Create test workspace
 WORKDIR /app
 
-# Install Playwright globally instead of from package
+# Install Playwright globally as root
 RUN npm install -g playwright@1.53.1 && \
     # Install Playwright with all browsers
     playwright install --with-deps chromium firefox webkit && \
     # Verify installation
     playwright --version
+
+# Switch to node user after installations
+USER node
 
 # Skip copying Playwright configurations - they'll be in the mounted workspace
 
