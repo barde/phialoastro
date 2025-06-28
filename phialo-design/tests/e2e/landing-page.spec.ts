@@ -37,7 +37,7 @@ test.describe('Landing Page Tests (Issue #4)', () => {
     await expect(heroSection).toBeVisible();
     
     // Main heading should be visible
-    const heading = heroSection.locator('h1');
+    const heading = heroSection.locator('h1').first();
     await expect(heading).toBeVisible();
     await expect(heading).toContainText(/3D Design|Schmuck|Tutorials/);
     
@@ -75,8 +75,8 @@ test.describe('Landing Page Tests (Issue #4)', () => {
     await page.waitForTimeout(1000);
     
     // Check that all main elements are visible
-    await expect(page.locator('header')).toBeVisible();
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.locator('header#main-header')).toBeVisible();
+    await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.locator('footer')).toBeVisible();
     
     // No elements should be off-screen or have broken animations
