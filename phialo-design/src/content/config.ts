@@ -23,7 +23,7 @@ const portfolioCollection = defineCollection({
   }),
 });
 
-const tutorialCollection = defineCollection({
+const classesCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
@@ -48,5 +48,5 @@ const tutorialCollection = defineCollection({
 
 export const collections = {
   portfolio: portfolioCollection,
-  tutorials: tutorialCollection,
+  classes: classesCollection,
 };

@@ -123,7 +123,7 @@ test.describe('Navigation Tests', () => {
       }
       await expect(page).toHaveURL('/services');
       
-      // Tutorials
+      // Classes
       await page.goto('/');
       if (isMobile) {
         // Use data-testid for menu button
@@ -134,14 +134,14 @@ test.describe('Navigation Tests', () => {
         await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible', timeout: 30000 });
         await page.waitForTimeout(500);
         // For mobile, use data-testid
-        const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
-        await tutorialsLink.click();
+        const classesLink = page.locator('[data-testid="mobile-nav-classes"]');
+        await classesLink.click();
       } else {
         // For desktop, use the nav link
-        const tutorialsLink = page.locator('nav.hidden.lg\\:flex a[href="/tutorials"]');
-        await tutorialsLink.click();
+        const classesLink = page.locator('nav.hidden.lg\\:flex a[href="/classes"]');
+        await classesLink.click();
       }
-      await expect(page).toHaveURL('/tutorials');
+      await expect(page).toHaveURL('/classes');
     });
 
     test('Should navigate to all main sections in English', async ({ page, isMobile }) => {
@@ -189,7 +189,7 @@ test.describe('Navigation Tests', () => {
       }
       await expect(page).toHaveURL('/en/services');
       
-      // Tutorials
+      // Classes
       await page.goto('/en/');
       if (isMobile) {
         // Use data-testid for menu button
@@ -200,14 +200,14 @@ test.describe('Navigation Tests', () => {
         await page.waitForSelector('[data-testid="mobile-menu-panel"]', { state: 'visible', timeout: 30000 });
         await page.waitForTimeout(500);
         // For mobile, use data-testid
-        const tutorialsLink = page.locator('[data-testid="mobile-nav-tutorials"]');
-        await tutorialsLink.click();
+        const classesLink = page.locator('[data-testid="mobile-nav-classes"]');
+        await classesLink.click();
       } else {
         // For desktop, use the nav link
-        const tutorialsLink = page.locator('nav.hidden.lg\\:flex a[href="/en/tutorials"]');
-        await tutorialsLink.click();
+        const classesLink = page.locator('nav.hidden.lg\\:flex a[href="/en/classes"]');
+        await classesLink.click();
       }
-      await expect(page).toHaveURL('/en/tutorials');
+      await expect(page).toHaveURL('/en/classes');
     });
   });
 });

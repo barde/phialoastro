@@ -47,7 +47,7 @@ describe('Component Translations', () => {
         
         // Check that navigation items are rendered
         expect(screen.getByText('Portfolio')).toBeInTheDocument();
-        expect(screen.getByText('Tutorials')).toBeInTheDocument();
+        expect(screen.getByText('Classes')).toBeInTheDocument();
         
         // Check language-specific labels
         if (context.isEnglish) {
@@ -111,7 +111,7 @@ describe('Component Translations', () => {
     const mockNavItems = [
       { href: '/portfolio', label: 'Portfolio' },
       { href: '/services', label: '3D für Sie', labelEn: '3D for You' },
-      { href: '/tutorials', label: 'Tutorials' },
+      { href: '/classes', label: 'Classes' },
       { href: '/contact', label: 'Kontakt', labelEn: 'Contact' }
     ];
 
@@ -144,7 +144,7 @@ describe('Component Translations', () => {
         
         // Check common items
         expect(screen.getByText('Portfolio')).toBeInTheDocument();
-        expect(screen.getByText('Tutorials')).toBeInTheDocument();
+        expect(screen.getByText('Classes')).toBeInTheDocument();
         
         // Check language-specific items
         if (context.isEnglish) {

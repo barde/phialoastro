@@ -8,13 +8,13 @@ const isEnglish = currentPath.startsWith('/en/');
 // Language-specific content
 const content = {
   de: {
-    title: "Tutorials",
+    title: "Classes",
     subtitle: "Lernen Sie 3D-Design mit Blender! Kurse für Anfänger und Fortgeschrittene in Deutsch und Englisch.",
     skillshareLabel: "Auf Skillshare ansehen",
     directPurchaseLabel: "Direkt kaufen (ohne Mitgliedschaft)"
   },
   en: {
-    title: "Tutorials", 
+    title: "Classes", 
     subtitle: "Learn 3D design with Blender! Courses for beginners and advanced users in German and English.",
     skillshareLabel: "View on Skillshare",
     directPurchaseLabel: "Direct purchase (no membership required)"
@@ -23,8 +23,8 @@ const content = {
 
 const t = isEnglish ? content.en : content.de;
 
-// Multilingual tutorials data
-const tutorialsData = {
+// Multilingual classes data
+const classesData = {
   de: [
     {
       id: 1,
@@ -143,11 +143,11 @@ const tutorialsData = {
   ]
 };
 
-// Select tutorials based on current language
-const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
+// Select classes based on current language
+const classes = isEnglish ? classesData.en : classesData.de;
 ---
 
-<section id="tutorials" class="py-20 bg-neutral-50">
+<section id="classes" class="py-20 bg-neutral-50">
   <div class="container mx-auto px-6">    <!-- Section Header -->
     <div class="text-center mb-16">
       <h2 class="text-4xl md:text-5xl font-light text-neutral-900 mb-6">
@@ -164,48 +164,48 @@ const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
         class="flex gap-8 overflow-x-auto scrollbar-hide pb-6 snap-x snap-mandatory"
         style="scroll-padding-left: 1.5rem;"
       >
-        {tutorials.map((tutorial) => (
+        {classes.map((classItem) => (
           <article 
-            class="flex-none w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start tutorial-card"
-            data-tutorial-id={tutorial.id}
+            class="flex-none w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start class-card"
+            data-class-id={classItem.id}
           >
             <!-- Image -->
             <div class="relative h-48 bg-neutral-200">
               <img 
-                src={tutorial.image} 
-                alt={tutorial.title}
+                src={classItem.image} 
+                alt={classItem.title}
                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 loading="lazy"
               />
               <!-- Language Badge -->
               <div class="absolute top-3 right-3">
                 <span class={`inline-flex items-center justify-center w-10 h-10 rounded-full text-xs font-bold backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-110 ${
-                  tutorial.language === 'de' 
+                  classItem.language === 'de' 
                     ? 'bg-neutral-900/85 text-white border-2 border-white/30 hover:bg-neutral-900/95' 
                     : 'bg-white/85 text-neutral-900 border-2 border-neutral-900/20 hover:bg-white/95'
                 }`}>
-                  {tutorial.language === 'de' ? 'DE' : 'EN'}
+                  {classItem.language === 'de' ? 'DE' : 'EN'}
                 </span>
               </div>
             </div>            <!-- Content -->
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-neutral-100 text-neutral-700">
-                  {tutorial.category}
+                  {classItem.category}
                 </span>
               </div>
               
               <h3 class="text-xl font-semibold text-neutral-900 mb-3 line-clamp-2">
-                {tutorial.title}
+                {classItem.title}
               </h3>
               
               <p class="text-neutral-600 mb-6 line-clamp-3">
-                {tutorial.description}
+                {classItem.description}
               </p>
 
               <div class="space-y-3">
                 <a 
-                  href={tutorial.link}
+                  href={classItem.link}
                   target="_blank"
                   rel="noopener noreferrer"
                   class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors group"
@@ -221,10 +221,10 @@ const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
                   </svg>
                 </a>
                 
-                {tutorial.directLink && (
+                {classItem.directLink && (
                   <div>
                     <a 
-                      href={tutorial.directLink}
+                      href={classItem.directLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       class="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors group text-sm"
@@ -249,11 +249,11 @@ const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
 
       <!-- Scroll Indicators -->
       <div class="flex justify-center mt-8 gap-2">
-        {tutorials.map((_, index) => (
+        {classes.map((_, index) => (
           <button
             class="w-2 h-2 rounded-full bg-neutral-300 transition-all duration-300 scroll-indicator"
             data-index={index}
-            aria-label={`Go to tutorial ${index + 1}`}
+            aria-label={`Go to class ${index + 1}`}
           ></button>
         ))}
       </div>
@@ -288,7 +288,7 @@ const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
 
 <script>
   // Scroll indicator functionality
-  function initTutorialScrollIndicators() {
+  function initClassScrollIndicators() {
     const scrollContainer = document.querySelector('.flex.gap-8.overflow-x-auto');
     const indicators = document.querySelectorAll('.scroll-indicator');
     
@@ -332,5 +332,5 @@ const tutorials = isEnglish ? tutorialsData.en : tutorialsData.de;
   }
 
   // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', initTutorialScrollIndicators);
+  document.addEventListener('DOMContentLoaded', initClassScrollIndicators);
 </script>
