@@ -244,10 +244,10 @@ jobs:
             exit 1
           fi
 
-          # E2E tests are optional - just warn if they fail
+          # E2E tests are required if they ran
           if [ "${{ needs.e2e.result }}" == "failure" ]; then
-            echo "⚠️  E2E tests failed (non-blocking)"
-            # Don't exit with error code - E2E tests are optional
+            echo "❌ E2E tests failed!"
+            exit 1
           fi
 
           # Check if any required tests were skipped when they should have run
@@ -310,7 +310,7 @@ jobs:
             | E2E Tests | ${e2eIcon} ${e2eResult} | ${e2eResult === 'skipped' ? 'No relevant changes' : `${e2eCount} tests in ${e2eTime}s`} |
 
             ${unitResult === 'failure' ? '⚠️ **Unit tests must pass before merging!**' : ''}
-            ${e2eResult === 'failure' ? '❌ **E2E tests must pass before merging!**' : ''}
+            ${e2eResult === 'failure' ? '⚠️ **E2E tests must pass before merging!**' : ''}
 
             ### 📊 Build Metrics
             ${unitResult === 'success' ? `
