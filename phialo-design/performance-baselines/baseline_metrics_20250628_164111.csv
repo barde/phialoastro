@@ -1,0 +1,30 @@
+Workflow,Runs Analyzed,Avg Duration,Success Rate,Failed Runs
+[0;34m
+Analyzing: PR Tests[0m
+  - Total runs analyzed: 10
+  - Average duration: 4m 2s
+  - Success rate: 70% (7/10)
+  - Failed runs: 3
+PR Tests,10,4m 2s,70%,3
+[0;34m
+Analyzing: Nightly Tests[0m
+  - Total runs analyzed: 5
+  - Average duration: 9m 58s
+  - Success rate: 0% (0/5)
+  - Failed runs: 5
+Nightly Tests,5,9m 58s,0%,5
+[0;34m
+Analyzing: E2E Sharded Tests[0m
+  - No runs found or gh CLI error
+E2E Sharded Tests,0,N/A,N/A,0
+[0;34m
+Analyzing: BrowserStack Tests[0m
+  - No runs found or gh CLI error
+BrowserStack Tests,0,N/A,N/A,0
+[0;34m
+Analyzing: File Validation[0m
+  - Total runs analyzed: 10
+  - Average duration: 11s
+  - Success rate: 100% (10/10)
+  - Failed runs: 0
+File Validation,10,11s,100%,0

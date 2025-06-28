@@ -1,0 +1,130 @@
+# Optimized Playwright CI Image for GitHub Actions and other CI systems
+# This version is optimized for size and speed in CI environments
+
+# Build arguments
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION=1.0.0
+
+# Use Debian-based Node image for Playwright compatibility
+FROM node:20-bookworm-slim AS browser-deps
+
+# Switch to root for system installations
+USER root
+
+# Install only essential browser dependencies (no actual browsers)
+# Browsers will be installed via Playwright which gives us better control
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Basic tools
+    curl \
+    git \
+    wget \
+    # Build tools for node-gyp
+    python3 \
+    make \
+    g++ \
+    # Process management
+    dumb-init \
+    procps \
+    # Xvfb for headless
+    xvfb \
+    # Clean up
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm
+RUN npm install -g pnpm@9.15.2
+
+# Stage 2: Playwright installation
+FROM browser-deps AS playwright-install
+
+# Create Playwright directories with correct permissions
+RUN mkdir -p /ms-playwright && \
+    chown -R node:node /ms-playwright
+
+# Set Playwright environment
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0 \
+    DISPLAY=:99
+
+WORKDIR /app
+
+# Install Playwright globally as root
+RUN npm install -g playwright@1.53.1
+
+# Install browsers and dependencies as root
+RUN playwright install chromium firefox webkit && \
+    playwright install-deps && \
+    # Verify installation
+    playwright --version
+
+# Switch to node user after installations
+USER node
+
+# Remove unnecessary files
+RUN rm -rf ~/.cache/ms-playwright/webkit-*/minidump-reporter \
+           ~/.cache/ms-playwright/firefox-*/minidump-reporter
+
+# Stage 3: Final CI image
+FROM playwright-install AS final
+
+# Re-declare build arguments for this stage
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION=1.0.0
+
+# Switch back to root for directory creation
+USER root
+
+# Skip copying test files - they will be mounted at runtime
+
+# Create output directories
+RUN mkdir -p test-results playwright-report .playwright && \
+    chmod -R 755 test-results playwright-report .playwright && \
+    chown -R node:node test-results playwright-report .playwright
+
+# Add CI-specific scripts
+RUN mkdir -p /app/scripts && \
+    cat > /app/scripts/ci-test-runner.sh << 'EOF'
+#!/bin/sh
+# CI test runner with automatic Xvfb management
+
+# Start Xvfb if not already running
+if ! pgrep -x Xvfb > /dev/null; then
+    echo "Starting Xvfb..."
+    Xvfb :99 -screen 0 1280x720x24 -ac +extension GLX +render -noreset &
+    sleep 2
+fi
+
+# Run tests with proper error handling
+exec "$@"
+EOF
+
+RUN chmod +x /app/scripts/ci-test-runner.sh && \
+    chown node:node /app/scripts/ci-test-runner.sh
+
+# Switch back to node user for runtime
+USER node
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD playwright --version || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/app/scripts/ci-test-runner.sh"]
+
+# Default command for CI
+CMD ["pnpm", "run", "test:e2e:ci"]
+
+# Labels
+LABEL maintainer="Phialo Design CI" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.authors="Phialo Design Team" \
+      org.opencontainers.image.url="https://github.com/phialo/phialoastro" \
+      org.opencontainers.image.documentation="https://github.com/phialo/phialoastro/tree/main/ci/test" \
+      org.opencontainers.image.source="https://github.com/phialo/phialoastro" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.vendor="Phialo Design" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.title="Phialo Test Image" \
+      org.opencontainers.image.description="Playwright test image for E2E testing"
