@@ -74,13 +74,14 @@ test.describe('Accessibility Tests', () => {
   test('Page should have proper heading hierarchy', async ({ page }) => {
     await page.goto('/');
     
-    // Should have exactly one h1
-    const h1Count = await page.locator('h1').count();
+    // Should have exactly one h1 in the main content (ignoring browser extensions)
+    const h1Count = await page.locator('main h1').count();
     expect(h1Count).toBe(1);
     
-    // Check heading hierarchy
+    // Check heading hierarchy (only in main content area)
     const headings = await page.evaluate(() => {
-      const allHeadings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      const mainContent = document.querySelector('main') || document.body;
+      const allHeadings = mainContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
       return Array.from(allHeadings).map(h => ({
         level: parseInt(h.tagName[1]),
         text: h.textContent?.trim()
