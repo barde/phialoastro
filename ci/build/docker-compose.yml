@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # Build service for production builds
+  build:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    environment:
+      - NODE_ENV=production
+      - ANALYZE_BUNDLE=true
+    volumes:
+      - ../../phialo-design/dist:/workspace/phialo-design/dist
+    command: /scripts/build.sh
+
+  # Build service for preview builds
+  build-preview:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    environment:
+      - NODE_ENV=development
+      - ASTRO_MODE=preview
+    volumes:
+      - ../../phialo-design/dist:/workspace/phialo-design/dist
+    command: /scripts/build-preview.sh
+
+  # Image optimization service
+  optimize:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    volumes:
+      - ../../phialo-design/public:/workspace/phialo-design/public
+      - ../../phialo-design/src:/workspace/phialo-design/src
+    command: /scripts/optimize-images.sh
+
+  # Bundle analysis service
+  analyze:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    volumes:
+      - ../../phialo-design/dist:/workspace/phialo-design/dist
+      - ../../phialo-design/stats.html:/workspace/phialo-design/stats.html
+    command: /scripts/analyze-bundle.sh
+
+  # Deploy to production
+  deploy:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    environment:
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ACCOUNT_ID
+      - WEB3FORMS_ACCESS_KEY
+      - ENVIRONMENT=production
+    volumes:
+      - ../../phialo-design/dist:/workspace/phialo-design/dist:ro
+    command: /scripts/deploy.sh
+
+  # Deploy to preview
+  deploy-preview:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    environment:
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ACCOUNT_ID
+      - WEB3FORMS_ACCESS_KEY
+      - ENVIRONMENT=preview
+    volumes:
+      - ../../phialo-design/dist:/workspace/phialo-design/dist:ro
+    command: /scripts/deploy-preview.sh
+
+  # Full deployment pipeline
+  full-deploy:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    environment:
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ACCOUNT_ID
+      - WEB3FORMS_ACCESS_KEY
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - OPTIMIZE_IMAGES=${OPTIMIZE_IMAGES:-true}
+    volumes:
+      - ../../phialo-design:/workspace/phialo-design
+    command: /scripts/full-deploy.sh
+
+  # Interactive shell for debugging
+  shell:
+    build:
+      context: ../..
+      dockerfile: ci/build/Dockerfile
+    image: phialo-design:build
+    environment:
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ACCOUNT_ID
+    volumes:
+      - ../../phialo-design:/workspace/phialo-design
+      - ../../workers:/workspace/workers
+    command: /bin/bash
+    stdin_open: true
+    tty: true

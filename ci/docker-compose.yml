@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Base CI image service
+  ci-base:
+    build:
+      context: ./base
+      dockerfile: Dockerfile.base
+      cache_from:
+        - phialo-ci-base:latest
+    image: phialo-ci-base:latest
+    container_name: phialo-ci-base
+    command: /bin/sh -c "echo 'Base CI image ready' && sleep infinity"
+    volumes:
+      # Mount pnpm store for caching
+      - pnpm-store:/pnpm-store
+    environment:
+      - CI=true
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "node", "--version"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Test runner service
+  test-base:
+    image: phialo-ci-base:latest
+    container_name: phialo-ci-test
+    depends_on:
+      ci-base:
+        condition: service_healthy
+    command: /ci/scripts/test-base.sh
+    volumes:
+      - ./scripts:/ci/scripts:ro
+    environment:
+      - CI=true
+
+  # Interactive shell for debugging
+  shell:
+    image: phialo-ci-base:latest
+    container_name: phialo-ci-shell
+    depends_on:
+      ci-base:
+        condition: service_healthy
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./scripts:/ci/scripts:ro
+      - pnpm-store:/pnpm-store
+    environment:
+      - CI=true
+      - NODE_ENV=development
+
+  # Playwright test runner service
+  e2e:
+    build:
+      context: ../phialo-design
+      dockerfile: ../ci/test/Dockerfile
+      cache_from:
+        - phialo-test:latest
+        - phialo-ci-base:latest
+    image: phialo-test:latest
+    container_name: phialo-e2e-runner
+    depends_on:
+      ci-base:
+        condition: service_healthy
+    volumes:
+      - ../phialo-design:/app
+      - pnpm-store:/pnpm-store
+      - test-results:/app/test-results
+      - playwright-report:/app/playwright-report
+    environment:
+      - CI=true
+      - NODE_ENV=test
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    networks:
+      - phialo-test-network
+
+  # E2E test service with specific config
+  e2e-critical:
+    image: phialo-test:latest
+    container_name: phialo-e2e-critical
+    depends_on:
+      e2e:
+        condition: service_started
+    command: pnpm test:e2e:critical
+    volumes:
+      - ../phialo-design:/app
+      - test-results:/app/test-results
+      - playwright-report:/app/playwright-report
+    environment:
+      - CI=true
+      - NODE_ENV=test
+      - TEST_TAG=@critical
+    networks:
+      - phialo-test-network
+
+volumes:
+  pnpm-store:
+    name: phialo-ci-pnpm-store
+  test-results:
+    name: phialo-test-results
+  playwright-report:
+    name: phialo-playwright-report
+
+networks:
+  phialo-test-network:
+    driver: bridge

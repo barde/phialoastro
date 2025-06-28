@@ -1,46 +1,110 @@
 version: '3.8'
 
 services:
-  # Development server
+  # Development server with hot reload
   dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
+      target: dev
+      cache_from:
+        - node:20-alpine
+      args:
+        BUILDKIT_INLINE_CACHE: 1
     ports:
       - "4321:4321"
+      - "4322:4322"  # Secondary port for testing
     volumes:
       # Mount source code for hot reloading
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./content:/app/content
-      # Exclude node_modules to use container's dependencies
+      - ./src:/app/src:delegated
+      - ./public:/app/public:delegated
+      - ./tests:/app/tests:delegated
+      - ./scripts:/app/scripts:delegated
+      # Mount config files for hot reload
+      - ./astro.config.mjs:/app/astro.config.mjs:delegated
+      - ./tailwind.config.mjs:/app/tailwind.config.mjs:delegated
+      - ./vite.config.ts:/app/vite.config.ts:delegated
+      # Use container's node_modules for consistency
       - /app/node_modules
+      # Mount pnpm store for faster installs
+      - pnpm-store:/pnpm-store
     environment:
       - NODE_ENV=development
-    command: pnpm dev --host
+      - FORCE_COLOR=1
+      - DEBUG=*
+    command: pnpm dev --host 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4321"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Test runner (for CI simulation)
+  # VS Code development environment
+  dev-vscode:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: dev-vscode
+    ports:
+      - "4321:4321"
+      - "4322:4322"
+      - "2222:22"  # SSH for VS Code Remote
+    volumes:
+      - ./:/home/developer/app:delegated
+      - /home/developer/app/node_modules
+      - pnpm-store:/pnpm-store
+    environment:
+      - NODE_ENV=development
+    command: /bin/sh -c "sudo /usr/sbin/sshd -D & pnpm dev --host 0.0.0.0"
+
+  # Unit test runner
   test:
     build:
       context: .
       dockerfile: Dockerfile.ci
+      target: ci
+      cache_from:
+        - phialo-design:ci-cache
     volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
       - /app/node_modules
     environment:
       - CI=true
+      - NODE_ENV=test
     command: pnpm test:run
 
-  # Linting and type checking
+  # E2E test runner
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+      target: test-runner
+      cache_from:
+        - phialo-design:ci-cache
+    ports:
+      - "4322:4321"
+    environment:
+      - CI=true
+      - BASE_URL=http://localhost:4321
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    command: /bin/sh -c "pnpm dev --port 4321 & npx wait-on http://localhost:4321 --timeout 60000 && pnpm test:e2e:ci"
+    depends_on:
+      - dev
+
+  # Quality checks (lint, typecheck, format)
   quality:
     build:
       context: .
       dockerfile: Dockerfile.ci
+      target: quality
+      cache_from:
+        - phialo-design:ci-cache
     volumes:
-      - ./src:/app/src
+      - ./src:/app/src:ro
       - /app/node_modules
-    command: /bin/sh -c "pnpm lint && pnpm typecheck"
+    environment:
+      - CI=true
 
   # Production build
   build:
@@ -48,17 +112,58 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      cache_from:
+        - phialo-design:build-cache
     volumes:
       - ./dist:/app/dist
+    environment:
+      - NODE_ENV=production
     command: pnpm build
 
-  # E2E tests
-  e2e:
+  # Production preview
+  preview:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    ports:
+      - "4321:4321"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4321', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # All-in-one CI simulation
+  ci:
     build:
       context: .
       dockerfile: Dockerfile.ci
-    ports:
-      - "4322:4321"
+      target: ci
     environment:
-      - PLAYWRIGHT_BROWSERS_PATH=/usr/bin
-    command: /bin/sh -c "pnpm dev & npx wait-on http://localhost:4321 && pnpm test:e2e"
+      - CI=true
+    command: /bin/sh -c "
+      echo '🔍 Running quality checks...' && 
+      pnpm run lint && 
+      pnpm run typecheck && 
+      pnpm run format:check && 
+      echo '✅ Quality checks passed!' && 
+      echo '🧪 Running unit tests...' && 
+      pnpm test:run && 
+      echo '✅ Unit tests passed!' && 
+      echo '🎭 Running E2E tests...' && 
+      pnpm dev --port 4321 & 
+      npx wait-on http://localhost:4321 --timeout 60000 && 
+      pnpm test:e2e:ci && 
+      echo '✅ All tests passed!'
+      "
+
+volumes:
+  pnpm-store:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
