@@ -1,0 +1,218 @@
+name: BrowserStack Tests
+
+on:
+  # Run on schedule for comprehensive device testing
+  schedule:
+    - cron: '0 2 * * 1,3,5' # Monday, Wednesday, Friday at 2 AM UTC
+  
+  # Manual trigger with device selection
+  workflow_dispatch:
+    inputs:
+      test-suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'critical'
+        type: choice
+        options:
+          - smoke
+          - critical
+          - full
+      devices:
+        description: 'Device groups to test'
+        required: true
+        default: 'essential'
+        type: choice
+        options:
+          - essential
+          - mobile-only
+          - desktop-only
+          - all
+
+  # Can be called from other workflows
+  workflow_call:
+    secrets:
+      BROWSERSTACK_USERNAME:
+        required: true
+      BROWSERSTACK_ACCESS_KEY:
+        required: true
+
+jobs:
+  browserstack-test:
+    name: BrowserStack E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright
+        working-directory: phialo-design
+        run: npx playwright install chromium webkit
+
+      - name: Set up test configuration
+        working-directory: phialo-design
+        run: |
+          # Configure test suite
+          TEST_GREP=""
+          case "${{ inputs.test-suite || 'critical' }}" in
+            smoke)
+              TEST_GREP="@smoke"
+              ;;
+            critical)
+              TEST_GREP="@critical"
+              ;;
+            full)
+              TEST_GREP=""
+              ;;
+          esac
+          echo "TEST_GREP=$TEST_GREP" >> $GITHUB_ENV
+
+          # Configure device projects
+          PROJECTS=""
+          case "${{ inputs.devices || 'essential' }}" in
+            essential)
+              PROJECTS="Chrome@latest-Windows,iPhone-14-Pro"
+              ;;
+            mobile-only)
+              PROJECTS="iPhone-14-Pro,Samsung-S23,iPad-Pro-12.9"
+              ;;
+            desktop-only)
+              PROJECTS="Chrome@latest-Windows,Safari@latest-macOS,Edge@latest-Windows"
+              ;;
+            all)
+              PROJECTS=""  # Run all projects
+              ;;
+          esac
+          echo "PROJECTS=$PROJECTS" >> $GITHUB_ENV
+
+      - name: Run BrowserStack tests
+        working-directory: phialo-design
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME || 'bartholomusdeder_nJUBTZ' }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY || 'LR111gJnb7cEqyzUbjiL' }}
+          CI: true
+        run: |
+          if [ -n "$TEST_GREP" ]; then
+            GREP_FLAG="--grep $TEST_GREP"
+          else
+            GREP_FLAG=""
+          fi
+
+          if [ -n "$PROJECTS" ]; then
+            # Run specific projects
+            IFS=',' read -ra PROJECT_ARRAY <<< "$PROJECTS"
+            for project in "${PROJECT_ARRAY[@]}"; do
+              echo "Running tests on $project..."
+              npx playwright test --config=playwright.browserstack.config.ts --project="$project" $GREP_FLAG || true
+            done
+          else
+            # Run all projects
+            npx playwright test --config=playwright.browserstack.config.ts $GREP_FLAG
+          fi
+
+      - name: Upload BrowserStack report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browserstack-report
+          path: phialo-design/browserstack-report/
+          retention-days: 7
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browserstack-results
+          path: phialo-design/browserstack-results.json
+          retention-days: 7
+
+      - name: Create test summary
+        if: always()
+        working-directory: phialo-design
+        run: |
+          if [ -f "browserstack-results.json" ]; then
+            echo "## BrowserStack Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract stats from JSON
+            TOTAL=$(jq -r '.stats.expected // 0' browserstack-results.json)
+            PASSED=$(jq -r '.stats.expected - .stats.unexpected - .stats.skipped // 0' browserstack-results.json)
+            FAILED=$(jq -r '.stats.unexpected // 0' browserstack-results.json)
+            SKIPPED=$(jq -r '.stats.skipped // 0' browserstack-results.json)
+            DURATION=$(jq -r '.stats.duration // 0' browserstack-results.json)
+            
+            # Convert duration to seconds
+            DURATION_SEC=$((DURATION / 1000))
+            
+            echo "### Summary" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total Tests:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+            echo "- **Passed:** $PASSED ✅" >> $GITHUB_STEP_SUMMARY
+            echo "- **Failed:** $FAILED ❌" >> $GITHUB_STEP_SUMMARY
+            echo "- **Skipped:** $SKIPPED ⏭️" >> $GITHUB_STEP_SUMMARY
+            echo "- **Duration:** ${DURATION_SEC}s" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            echo "### Configuration" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test Suite:** ${{ inputs.test-suite || 'critical' }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Devices:** ${{ inputs.devices || 'essential' }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Build:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+            
+            # Notify if tests failed
+            if [ "$FAILED" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "⚠️ **Action Required:** $FAILED tests failed on BrowserStack devices!" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "## BrowserStack Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "❌ No test results found. Tests may have failed to start." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Visual regression testing job
+  visual-regression:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test-suite == 'full')
+    needs: browserstack-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Visual regression tests
+        run: |
+          echo "Visual regression tests would run here"
+          echo "This is a placeholder for Percy.io or Applitools integration"
