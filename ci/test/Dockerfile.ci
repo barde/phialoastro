@@ -2,41 +2,35 @@
 # This version is optimized for size and speed in CI environments
 
 # Build arguments
-ARG BASE_IMAGE=ghcr.io/barde/phialo-ci-base:latest
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION=1.0.0
 
-FROM ${BASE_IMAGE} AS browser-deps
+# Use Debian-based Node image for Playwright compatibility
+FROM node:20-bookworm-slim AS browser-deps
 
 # Switch to root for system installations
 USER root
 
 # Install only essential browser dependencies (no actual browsers)
 # Browsers will be installed via Playwright which gives us better control
-RUN apk add --no-cache \
-    # Core dependencies for all browsers
-    libx11 libxcomposite libxdamage libxext libxfixes \
-    libxrandr libxrender libxtst libxi \
-    # Audio/Video
-    alsa-lib \
-    # Fonts - minimal set
-    ttf-freefont font-noto \
-    # Graphics
-    mesa-gl mesa-dri-gallium \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Basic tools
+    curl \
+    git \
+    # Build tools for node-gyp
+    python3 \
+    make \
+    g++ \
     # Process management
     dumb-init \
     # Xvfb for headless
     xvfb \
-    # NSS for Chromium
-    nss \
-    # GTK for WebKit
-    gtk+3.0 \
-    # FFmpeg for video recording (smaller than full package)
-    ffmpeg-libs
+    # Clean up
+    && rm -rf /var/lib/apt/lists/*
 
-# Clean up apk cache
-RUN rm -rf /var/cache/apk/*
+# Install pnpm
+RUN npm install -g pnpm@9.15.2
 
 # Stage 2: Playwright installation
 FROM browser-deps AS playwright-install
