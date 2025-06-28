@@ -2,7 +2,8 @@
 # Extends the base CI image with Playwright and browser dependencies
 # Supports all three browsers: Chromium, Firefox, and WebKit
 
-FROM phialo-ci-base:latest
+ARG BASE_IMAGE=ghcr.io/barde/phialo-ci-base:latest
+FROM ${BASE_IMAGE}
 
 # Switch to root for system installations
 USER root

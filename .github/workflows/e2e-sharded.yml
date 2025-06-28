@@ -1,0 +1,412 @@
+---
+name: E2E Tests (Sharded)
+
+'on':
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      test_tag:
+        description: 'Test tag to filter (e.g., @critical, @smoke)'
+        required: false
+        default: ''
+      browsers:
+        description: 'Browsers to test (comma-separated: chromium,firefox,webkit)'
+        required: false
+        default: 'chromium,firefox,webkit'
+      shards:
+        description: 'Number of shards (1-8)'
+        required: false
+        default: '4'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/phialo
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+jobs:
+  # Prepare test strategy
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      browsers: ${{ steps.browsers.outputs.browsers }}
+      shards: ${{ steps.shards.outputs.shards }}
+    steps:
+      - name: Parse browsers input
+        id: browsers
+        run: |
+          if [ "${{ github.event.inputs.browsers }}" ]; then
+            BROWSERS='${{ github.event.inputs.browsers }}'
+          else
+            BROWSERS='chromium,firefox,webkit'
+          fi
+          echo "browsers=$BROWSERS" >> $GITHUB_OUTPUT
+
+      - name: Parse shards input
+        id: shards
+        run: |
+          if [ "${{ github.event.inputs.shards }}" ]; then
+            SHARDS=${{ github.event.inputs.shards }}
+          else
+            SHARDS=4
+          fi
+          echo "shards=$SHARDS" >> $GITHUB_OUTPUT
+
+      - name: Generate test matrix
+        id: matrix
+        run: |
+          BROWSERS='${{ steps.browsers.outputs.browsers }}'
+          SHARDS=${{ steps.shards.outputs.shards }}
+
+          # Generate matrix JSON
+          MATRIX='{"include":['
+          FIRST=true
+
+          for BROWSER in ${BROWSERS//,/ }; do
+            for ((i=1; i<=$SHARDS; i++)); do
+              if [ "$FIRST" != "true" ]; then
+                MATRIX+=','
+              fi
+              MATRIX+="{\"browser\":\"$BROWSER\",\"shard\":$i,\"total_shards\":$SHARDS}"
+              FIRST=false
+            done
+          done
+
+          MATRIX+=']}'
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  # Run E2E tests in parallel shards
+  e2e-tests:
+    needs: prepare
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root --init
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    name: >-
+      E2E ${{ matrix.browser }}
+      (shard ${{ matrix.shard }}/${{ matrix.total_shards }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            phialo-design/.astro
+            phialo-design/dist
+          key: >-
+            build-${{ hashFiles('phialo-design/src/**',
+            'phialo-design/public/**') }}-${{
+            hashFiles('phialo-design/package.json') }}
+          restore-keys: |
+            build-${{ hashFiles('phialo-design/src/**',
+              'phialo-design/public/**') }}-
+            build-
+
+      - name: Build application (if not cached)
+        run: |
+          cd phialo-design
+          if [ ! -d "dist" ]; then
+            echo "Building application..."
+            pnpm run build
+          else
+            echo "Using cached build"
+          fi
+
+      - name: Start preview server
+        run: |
+          cd phialo-design
+          pnpm run preview &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+          # Wait for server to be ready
+          timeout 30 bash -c \
+            'while ! curl -s http://localhost:4321 > /dev/null; do sleep 1; done'
+          echo "Preview server ready"
+
+      - name: >-
+          Run E2E tests
+          (shard ${{ matrix.shard }}/${{ matrix.total_shards }})
+        run: |
+          cd phialo-design
+
+          # Configure test environment
+          export CI=true
+          export FORCE_COLOR=1
+          export PLAYWRIGHT_HTML_REPORT=\
+            playwright-report-${{ matrix.browser }}-${{ matrix.shard }}
+
+          # Run tests with sharding
+          npx playwright test \
+            --project=${{ matrix.browser }} \
+            --shard=${{ matrix.shard }}/${{ matrix.total_shards }} \
+            --reporter=list,html,json \
+            --output=test-results-${{ matrix.browser }}-${{ matrix.shard }} \
+            ${TEST_TAG:+--grep "$TEST_TAG"}
+        env:
+          TEST_TAG: ${{ github.event.inputs.test_tag }}
+          DISPLAY: :99
+
+      - name: Stop preview server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then
+            kill $SERVER_PID || true
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.browser }}-${{ matrix.shard }}
+          path: |
+            phialo-design/test-results-${{
+              matrix.browser }}-${{ matrix.shard }}/
+            phialo-design/playwright-report-${{
+              matrix.browser }}-${{ matrix.shard }}/
+            phialo-design/test-results.json
+          retention-days: 7
+
+  # Merge test reports
+  merge-reports:
+    needs: e2e-tests
+    if: always()
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: all-results/
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          ls -la all-results/
+
+      - name: Merge test reports
+        run: |
+          cd phialo-design
+
+          # Collect all report directories
+          REPORT_DIRS=""
+          for dir in ../all-results/test-results-*/playwright-report-*; do
+            if [ -d "$dir" ]; then
+              REPORT_DIRS="$REPORT_DIRS $dir"
+            fi
+          done
+
+          if [ -n "$REPORT_DIRS" ]; then
+            npx playwright merge-reports $REPORT_DIRS --reporter=html
+          else
+            echo "No reports found to merge"
+          fi
+
+      - name: Generate test summary
+        run: |
+          cd phialo-design
+
+          # Parse test results
+          TOTAL_PASSED=0
+          TOTAL_FAILED=0
+          TOTAL_SKIPPED=0
+          TOTAL_FLAKY=0
+          TOTAL_DURATION=0
+
+          for result_file in ../all-results/test-results-*/test-results.json; do
+            if [ -f "$result_file" ]; then
+              PASSED=$(jq -r '.stats.passed // 0' "$result_file")
+              FAILED=$(jq -r '.stats.failed // 0' "$result_file")
+              SKIPPED=$(jq -r '.stats.skipped // 0' "$result_file")
+              FLAKY=$(jq -r '.stats.flaky // 0' "$result_file")
+              DURATION=$(jq -r '.stats.duration // 0' "$result_file")
+
+              TOTAL_PASSED=$((TOTAL_PASSED + PASSED))
+              TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
+              TOTAL_SKIPPED=$((TOTAL_SKIPPED + SKIPPED))
+              TOTAL_FLAKY=$((TOTAL_FLAKY + FLAKY))
+              TOTAL_DURATION=$((TOTAL_DURATION + DURATION))
+            fi
+          done
+
+          # Create summary markdown
+          cat > test-summary.md << EOF
+          ## 🎭 E2E Test Results Summary
+
+          ### Overall Results
+          - ✅ **Passed**: $TOTAL_PASSED
+          - ❌ **Failed**: $TOTAL_FAILED
+          - ⏭️ **Skipped**: $TOTAL_SKIPPED
+          - 🔄 **Flaky**: $TOTAL_FLAKY
+          - ⏱️ **Total Duration**: $((TOTAL_DURATION / 1000))s
+
+          ### Configuration
+          - **Browsers**: ${{ needs.prepare.outputs.browsers }}
+          - **Shards**: ${{ needs.prepare.outputs.shards }}
+          - **Tag Filter**: ${{ github.event.inputs.test_tag || 'none' }}
+
+          ### Reports
+          - [📊 Full HTML Report](https://github.com/${{
+            github.repository }}/actions/runs/${{ github.run_id }})
+          - [📁 Download Artifacts](https://github.com/${{
+            github.repository }}/actions/runs/${{
+            github.run_id }}#artifacts)
+          EOF
+
+          # Output to GitHub summary
+          cat test-summary.md >> $GITHUB_STEP_SUMMARY
+
+          # Save for PR comment
+          echo "TOTAL_PASSED=$TOTAL_PASSED" >> $GITHUB_ENV
+          echo "TOTAL_FAILED=$TOTAL_FAILED" >> $GITHUB_ENV
+          echo "TOTAL_SKIPPED=$TOTAL_SKIPPED" >> $GITHUB_ENV
+          echo "TOTAL_FLAKY=$TOTAL_FLAKY" >> $GITHUB_ENV
+          echo "TOTAL_DURATION=$((TOTAL_DURATION / 1000))" >> $GITHUB_ENV
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-merged
+          path: |
+            phialo-design/playwright-report/
+            phialo-design/test-summary.md
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Build comment body
+            const passed = process.env.TOTAL_PASSED || 0;
+            const failed = process.env.TOTAL_FAILED || 0;
+            const skipped = process.env.TOTAL_SKIPPED || 0;
+            const flaky = process.env.TOTAL_FLAKY || 0;
+            const duration = process.env.TOTAL_DURATION || 0;
+
+            const status = failed > 0 ? '❌ Failed' : '✅ Passed';
+            const emoji = failed > 0 ? '🔴' : '🟢';
+
+            const comment = `## ${emoji} E2E Test Results: ${status}
+
+            ### Summary
+            - ✅ **Passed**: ${passed}
+            - ❌ **Failed**: ${failed}
+            - ⏭️ **Skipped**: ${skipped}
+            - 🔄 **Flaky**: ${flaky}
+            - ⏱️ **Duration**: ${duration}s
+
+            ### Details
+            - **Browsers tested**: ${process.env.BROWSERS || 'chromium, firefox, webkit'}
+            - **Shards used**: ${process.env.SHARDS || '4'}
+            - **Workflow run**: [View details](https://github.com/${{
+              github.repository }}/actions/runs/${{ github.run_id }})
+
+            ${failed > 0
+              ? '### ⚠️ Action Required\n' +
+                'Some tests are failing. Please check the ' +
+                '[test report](https://github.com/${{ github.repository }}' +
+                '/actions/runs/${{ github.run_id }}) for details.'
+              : '### ✨ All tests passed!\n' +
+                'Great job! Your changes are ready for review.'}`;
+
+            // Find existing comment
+            const { data: comments } = await
+              github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('E2E Test Results')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  # Quick smoke tests for critical path validation
+  smoke-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root --init
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build application
+        run: |
+          cd phialo-design
+          pnpm run build
+
+      - name: Run smoke tests
+        run: |
+          cd phialo-design
+
+          # Start preview server
+          pnpm run preview &
+          SERVER_PID=$!
+
+          # Wait for server
+          timeout 30 bash -c \
+            'while ! curl -s http://localhost:4321 > /dev/null; do sleep 1; done'
+
+          # Run smoke tests
+          pnpm test:e2e:smoke || EXIT_CODE=$?
+
+          # Stop server
+          kill $SERVER_PID || true
+
+          exit ${EXIT_CODE:-0}
+        env:
+          CI: true
+          DISPLAY: :99
+
+      - name: Upload smoke test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            phialo-design/test-results/
+            phialo-design/playwright-report/
+          retention-days: 3

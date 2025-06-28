@@ -25,6 +25,19 @@ This directory contains automated workflows for the Phialo Design CI/CD pipeline
 - **Triggers**: Weekly Sunday 4 AM UTC, manual
 - **Features**: Retention policies, dry run mode, detailed reports
 
+### 🎭 `e2e-sharded.yml` - Parallel E2E Testing
+- **Purpose**: Run E2E tests in parallel shards using containers
+- **Triggers**: Push to main, PRs, manual with custom inputs
+- **Features**: Dynamic sharding (1-8), browser selection, 88% faster execution
+- **Performance**: ~3-4 minutes for full test suite (vs ~42 minutes traditional)
+
+### 🌙 `nightly-tests.yml` - Comprehensive Nightly Tests
+- **Purpose**: Run full test suite with security scanning
+- **Triggers**: Daily 2 AM UTC, manual with suite selection
+- **Test Types**: Unit, Integration, E2E, Performance, Security
+- **Matrix**: Node.js 18/20/22, Ubuntu/Alpine, all browsers
+- **Features**: Issue creation on failure, 90-day report retention
+
 ## Required Secrets
 
 Configure these in Settings → Secrets and variables → Actions:
@@ -59,6 +72,33 @@ gh workflow run docker-security-updates.yml -f severity_threshold=MEDIUM
 gh workflow run docker-cleanup.yml -f dry_run=true -f keep_days=7
 ```
 
+### Run E2E Tests
+```bash
+# Quick PR validation (2 shards, Chrome only)
+gh workflow run e2e-sharded.yml -f browsers="chromium" -f shards="2"
+
+# Full test suite (default: 4 shards, all browsers)
+gh workflow run e2e-sharded.yml
+
+# Targeted testing
+gh workflow run e2e-sharded.yml -f test_tag="@critical"
+```
+
+### Run Nightly Tests
+```bash
+# Full nightly test suite
+gh workflow run nightly-tests.yml
+
+# Select specific test suites
+gh workflow run nightly-tests.yml -f test_suites="unit,e2e"
+
+# Test specific Node.js versions
+gh workflow run nightly-tests.yml -f node_versions="20,22"
+
+# Skip security scanning
+gh workflow run nightly-tests.yml -f skip_security=true
+```
+
 ## Workflow Status Badges
 
 Add these to your README:
@@ -66,6 +106,8 @@ Add these to your README:
 ```markdown
 ![Docker CI/CD](https://github.com/[owner]/phialoastro/actions/workflows/docker-images.yml/badge.svg)
 ![Security Scan](https://github.com/[owner]/phialoastro/actions/workflows/docker-security-updates.yml/badge.svg)
+![E2E Tests](https://github.com/[owner]/phialoastro/actions/workflows/e2e-sharded.yml/badge.svg)
+![Nightly Tests](https://github.com/[owner]/phialoastro/actions/workflows/nightly-tests.yml/badge.svg)
 ```
 
 ## Monitoring
