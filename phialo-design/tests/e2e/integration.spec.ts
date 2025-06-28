@@ -79,9 +79,9 @@ test.describe('Integration Tests - All Fixes', () => {
     await page.locator('header a[href="/services"]').click();
     await expect(page).toHaveURL('/services');
     
-    // Navigate to tutorials  
-    await page.locator('header a[href="/tutorials"]').click();
-    await expect(page).toHaveURL('/tutorials');
+    // Navigate to classes  
+    await page.locator('header a[href="/classes"]').click();
+    await expect(page).toHaveURL('/classes');
     
     // Navigate to about
     await page.locator('header a[href="/about"]').click();

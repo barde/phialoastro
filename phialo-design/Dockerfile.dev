@@ -1,0 +1,35 @@
+# Development container with all tools pre-installed
+FROM node:20-alpine AS dev
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    python3 \
+    make \
+    g++ \
+    chromium \
+    firefox
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Set Playwright to use system browsers
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_BROWSERS_PATH=/usr/bin
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install all dependencies including devDependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Pre-build for caching
+RUN pnpm run build
+
+# Keep container running for development
+CMD ["pnpm", "run", "dev", "--host"]

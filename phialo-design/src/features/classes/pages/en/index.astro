@@ -1,46 +1,47 @@
 ---
-import PageLayout from '../../../shared/layouts/PageLayout.astro';
-import Tutorials from '../components/TutorialsSection.astro';
+// English version - Content to be translated
+import PageLayout from '../../../../shared/layouts/PageLayout.astro';
+import Classes from '../../components/ClassesSection.astro';
 
-const title = 'Tutorials | Phialo Design';
-const description = 'Lernen Sie 3D-Design und Blender in unseren umfassenden Kursen. Von Anfänger bis Fortgeschrittene.';
+const title = 'Classes | Phialo Design';
+const description = 'Learn 3D design and Blender in our comprehensive courses. From beginner to advanced.';
 ---
 
-<PageLayout title={title} description={description}>
+<PageLayout title={title} description={description} lang="en">
   <!-- Hero Section -->
   <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Tutorials
+          Classes
         </h1>
         <p class="text-xl text-neutral-600 leading-relaxed">
-          Lernen Sie 3D-Design und Blender von Grund auf. Unsere Kurse führen Sie Schritt für Schritt 
-          vom Anfänger zum versierten 3D-Designer.
+          Learn 3D design and Blender from the ground up. Our courses guide you step by step 
+          from beginner to skilled 3D designer.
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Tutorials Section -->
+  <!-- Classes Section -->
   <div class="pt-0">
-    <Tutorials />
+    <Classes />
   </div>
 
   <!-- Call-to-Action -->
   <section class="py-20 bg-neutral-50">
     <div class="container mx-auto px-6 text-center">
       <h2 class="text-3xl font-light text-neutral-900 mb-6">
-        Bereit zum Lernen?
+        Ready to Learn?
       </h2>
       <p class="text-lg text-neutral-600 mb-8 max-w-2xl mx-auto">
-        Starten Sie noch heute Ihre Reise in die Welt des 3D-Designs mit unseren professionellen Tutorials.
+        Start your journey into the world of 3D design today with our professional classes.
       </p>
       <a 
-        href="/contact" 
+        href="/en/contact" 
         class="inline-flex items-center px-8 py-4 bg-neutral-900 text-white text-lg font-medium rounded-full hover:bg-neutral-800 transition-colors"
       >
-        Fragen stellen
+        Ask Questions
       </a>
     </div>
   </section>
