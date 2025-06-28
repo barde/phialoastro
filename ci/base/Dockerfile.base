@@ -1,0 +1,80 @@
+# Base CI image for Phialo Design
+# Provides Node.js 20.x, pnpm, and essential build tools
+# Optimized for size and build speed
+
+# Build arguments for metadata
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION=1.0.0
+
+FROM node:20-alpine AS base
+
+# Install system dependencies in a single layer
+RUN apk add --no-cache \
+    # Version control
+    git \
+    # Build essentials for native modules
+    python3 \
+    make \
+    g++ \
+    # Required for some npm packages
+    libc6-compat \
+    # Basic utilities
+    bash \
+    curl \
+    # Network tools
+    netcat-openbsd && \
+    # Clean up apk cache
+    rm -rf /var/cache/apk/*
+
+# Install and configure pnpm
+# Using corepack for consistent pnpm version management
+RUN corepack enable && \
+    corepack prepare pnpm@9.15.2 --activate && \
+    # Configure pnpm for optimal CI performance
+    pnpm config set store-dir /pnpm-store && \
+    pnpm config set frozen-lockfile true && \
+    pnpm config set prefer-frozen-lockfile true
+
+# Set up environment for CI
+ENV CI=true \
+    NODE_ENV=production \
+    # Disable telemetry
+    ASTRO_TELEMETRY_DISABLED=1 \
+    NEXT_TELEMETRY_DISABLED=1 \
+    # pnpm settings
+    PNPM_HOME=/pnpm \
+    PATH="/pnpm:$PATH" \
+    # Ensure color output in CI
+    FORCE_COLOR=1
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Health check to verify Node and pnpm are working
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node --version && pnpm --version
+
+# Default to non-root user
+USER nodejs
+
+# Label for identification
+LABEL maintainer="Phialo Design CI" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.authors="Phialo Design Team" \
+      org.opencontainers.image.url="https://github.com/phialo/phialoastro" \
+      org.opencontainers.image.documentation="https://github.com/phialo/phialoastro/tree/main/ci" \
+      org.opencontainers.image.source="https://github.com/phialo/phialoastro" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.vendor="Phialo Design" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.title="Phialo CI Base" \
+      org.opencontainers.image.description="Base CI image with Node.js 20 and pnpm"
+
+# Default command shows versions
+CMD ["sh", "-c", "echo 'Phialo CI Base Image' && echo '=====================' && node --version && pnpm --version && git --version"]
