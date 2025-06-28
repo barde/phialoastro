@@ -68,16 +68,15 @@ RUN rm -rf ~/.cache/ms-playwright/webkit-*/minidump-reporter \
 # Stage 3: Final CI image
 FROM playwright-install AS final
 
-# Copy test configurations
-COPY --chown=node:node playwright*.config.ts ./
-COPY --chown=node:node tests ./tests
+# Skip copying test files - they will be mounted at runtime
 
 # Create output directories
 RUN mkdir -p test-results playwright-report .playwright && \
     chmod -R 755 test-results playwright-report .playwright
 
 # Add CI-specific scripts
-COPY --chown=node:node <<'EOF' /app/scripts/ci-test-runner.sh
+RUN mkdir -p /app/scripts && \
+    cat > /app/scripts/ci-test-runner.sh << 'EOF'
 #!/bin/sh
 # CI test runner with automatic Xvfb management
 
