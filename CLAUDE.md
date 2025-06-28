@@ -95,6 +95,8 @@ npm run deploy:preview     # Deploy to Cloudflare Workers preview
 
 - The developer instance is running locally in another shell with "npm run dev" at http://localhost:4321/
 - If dev server is not on http://localhost:4321/, run the website on http://localhost:4322/ for dev purposes. If the site is not reachable then interrupt and get it from the user.
+- **Docker is OPTIONAL**: Local development does not require Docker. Use standard npm commands for development.
+- For CI/CD testing or containerized development, see [Local CI Setup](./phialo-design/docs/how-to/local-ci-setup.md)
 
 ## Architecture Overview
 
