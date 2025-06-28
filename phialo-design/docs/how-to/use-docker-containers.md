@@ -1,10 +1,27 @@
 # How to Use Docker Containers for Development
 
-This guide explains how to use Docker containers for faster development and CI/CD.
+This guide explains how to use Docker containers for development and CI/CD optimization.
+
+> **Important**: Docker is **OPTIONAL** for local development. Most developers can work efficiently using the standard npm workflow without Docker. See [Local Development and CI Testing Setup](./local-ci-setup.md) for details on when Docker is and isn't needed.
+
+## When to Use Docker
+
+Docker containers are beneficial for:
+- **CI/CD Pipeline Testing**: Debug GitHub Actions locally
+- **Environment Consistency**: Ensure your code works across different systems
+- **Team Standardization**: Share exact development environments
+- **Complex Dependencies**: Manage multiple service dependencies
+
+For simple local development, you can skip Docker entirely and use:
+```bash
+npm install
+npm run dev
+```
 
 ## Prerequisites
 
 - Docker Desktop installed ([Download](https://www.docker.com/products/docker-desktop))
+  - **Free Alternative**: See [Local CI Setup](./local-ci-setup.md) for Lima VM option
 - Docker Compose v2.x or higher
 - 4GB+ free disk space for images
 
