@@ -18,12 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Basic tools
     curl \
     git \
+    wget \
     # Build tools for node-gyp
     python3 \
     make \
     g++ \
     # Process management
     dumb-init \
+    procps \
     # Xvfb for headless
     xvfb \
     # Clean up
