@@ -1,0 +1,127 @@
+name: Cloudflare PR Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'phialo-design/**'
+      - 'workers/**'
+      - '.github/workflows/cloudflare-pr-preview.yml'
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    name: Deploy PR Preview to Cloudflare Workers
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'phialo-design/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./phialo-design
+        run: npm ci
+      
+      - name: Build Astro site
+        working-directory: ./phialo-design
+        run: npm run build
+        
+      - name: Create temporary wrangler config
+        working-directory: ./workers
+        run: |
+          cat > wrangler-pr-${{ github.event.pull_request.number }}.toml << EOF
+          name = "phialo-pr-${{ github.event.pull_request.number }}"
+          main = "src/index.ts"
+          compatibility_date = "2024-01-01"
+          workers_dev = true
+          
+          [site]
+          bucket = "../phialo-design/dist"
+          
+          [vars]
+          ENVIRONMENT = "preview"
+          PR_NUMBER = "${{ github.event.pull_request.number }}"
+          EOF
+      
+      - name: Deploy to Cloudflare Workers
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'workers'
+          command: deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
+      
+      - name: Extract deployment URL
+        id: extract-url
+        working-directory: ./workers
+        run: |
+          # The deployment URL will be in the format: https://phialo-pr-<number>.meise.workers.dev
+          PREVIEW_URL="https://phialo-pr-${{ github.event.pull_request.number }}.meise.workers.dev"
+          echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+      
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr_number = context.issue.number;
+            const preview_url = '${{ steps.extract-url.outputs.preview_url }}';
+            
+            // Create a unique identifier for this comment
+            const identifier = '<!-- cloudflare-preview-deployment -->';
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr_number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.body?.includes(identifier)
+            );
+            
+            const body = `${identifier}
+## 🚀 Cloudflare Preview Deployment
+
+Your preview deployment is ready!
+
+🔗 **Preview URL**: ${preview_url}
+
+This deployment will be automatically updated when you push new commits to this PR.
+`;
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr_number,
+                body: body
+              });
+            }
+      
+      - name: Clean up temporary config
+        if: always()
+        working-directory: ./workers
+        run: |
+          rm -f wrangler-pr-${{ github.event.pull_request.number }}.toml
