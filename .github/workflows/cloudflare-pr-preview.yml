@@ -26,7 +26,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'phialo-design/package-lock.json'
+          cache-dependency-path: |
+            phialo-design/package-lock.json
+            workers/package-lock.json
       
       - name: Install dependencies
         working-directory: ./phialo-design
@@ -35,6 +37,10 @@ jobs:
       - name: Build Astro site
         working-directory: ./phialo-design
         run: npm run build
+      
+      - name: Install worker dependencies
+        working-directory: ./workers
+        run: npm ci
         
       - name: Create temporary wrangler config
         working-directory: ./workers
