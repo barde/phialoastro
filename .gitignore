@@ -8,6 +8,7 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+!ci/build/
 .cache/
 
 # Environment variables
