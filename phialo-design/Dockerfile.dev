@@ -1,35 +1,136 @@
-# Development container with all tools pre-installed
-FROM node:20-alpine AS dev
+# Development container with hot reload and all tools
+# Optimized for fast rebuilds and developer experience
 
-# Install system dependencies
+# Use the same base as CI for consistency
+FROM node:20-alpine AS dev-base
+
+# Install comprehensive development dependencies
 RUN apk add --no-cache \
+    # Build tools
     git \
     python3 \
     make \
     g++ \
+    # Browsers for testing
     chromium \
-    firefox
+    firefox-esr \
+    # Browser dependencies
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    dbus-x11 \
+    # Development utilities
+    bash \
+    curl \
+    vim \
+    htop \
+    # Network debugging
+    netcat-openbsd \
+    iputils \
+    # Required for some npm packages
+    libc6-compat && \
+    # Install oh-my-bash for better shell experience
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" || true
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm and configure for development
+RUN corepack enable && \
+    corepack prepare pnpm@9.15.2 --activate && \
+    pnpm config set store-dir /pnpm-store && \
+    # Enable pnpm shell auto-completion
+    pnpm completion bash > /etc/bash_completion.d/pnpm
 
-# Set Playwright to use system browsers
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-ENV PLAYWRIGHT_BROWSERS_PATH=/usr/bin
+# Stage 2: Development environment
+FROM dev-base AS dev
+
+# Set development environment variables
+ENV NODE_ENV=development \
+    # Enable source maps
+    NODE_OPTIONS="--enable-source-maps" \
+    # Playwright configuration
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    # Disable telemetry in dev
+    ASTRO_TELEMETRY_DISABLED=1 \
+    # Better error messages
+    DEBUG=* \
+    # pnpm settings
+    PNPM_HOME=/pnpm \
+    PATH="$PNPM_HOME:$PATH" \
+    # Color output
+    FORCE_COLOR=1
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for dependency installation
 COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies including devDependencies
-RUN pnpm install --frozen-lockfile
+# Install all dependencies with caching
+# Mount cache to speed up repeated builds
+RUN --mount=type=cache,id=pnpm-dev,target=/pnpm-store \
+    pnpm install --frozen-lockfile --prefer-offline && \
+    # Install Playwright browsers
+    npx playwright install chromium firefox webkit && \
+    # Install additional dev tools globally
+    pnpm add -g npm-check-updates concurrently wait-on && \
+    # Pre-download common dependencies to speed up installs
+    pnpm store prune
+
+# Copy configuration files
+COPY astro.config.mjs \
+     tailwind.config.mjs \
+     tsconfig.json \
+     vite.config.ts \
+     vitest.config.ts \
+     playwright.config.ts \
+     playwright.*.config.ts \
+     lefthook.yml \
+     .eslintrc.* \
+     .prettierrc* \
+     ./
 
 # Copy source code
-COPY . .
+COPY public ./public
+COPY src ./src
+COPY tests ./tests
+COPY scripts ./scripts
 
-# Pre-build for caching
-RUN pnpm run build
+# Pre-compile to warm up caches
+RUN pnpm run typecheck || true && \
+    # Create initial build to speed up first run
+    pnpm run build || true && \
+    # Warm up test caches
+    pnpm run test:run -- --run || true
 
-# Keep container running for development
-CMD ["pnpm", "run", "dev", "--host"]
+# Create volume mount points for development
+VOLUME ["/app/src", "/app/public", "/app/tests"]
+
+# Expose both dev server and test server ports
+EXPOSE 4321 4322
+
+# Default command for development with host binding
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]
+
+# Stage 3: Development with VS Code support
+FROM dev AS dev-vscode
+
+# Install VS Code server dependencies
+RUN apk add --no-cache \
+    openssh \
+    sudo && \
+    # Create development user with sudo access
+    adduser -D -s /bin/bash developer && \
+    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    # Set up SSH for VS Code Remote
+    mkdir -p /home/developer/.ssh && \
+    chown -R developer:developer /home/developer
+
+# Switch to developer user
+USER developer
+WORKDIR /home/developer/app
+
+# Copy with proper permissions
+COPY --chown=developer:developer . .
+
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]
