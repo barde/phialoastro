@@ -2,6 +2,8 @@
 
 A modern, high-performance website built with Astro, React, and Tailwind CSS, showcasing the "Minimalist Elegance" design concept for Phialo Design's luxury jewelry and gemstone collection.
 
+<!-- Test comment for preview deployment verification -->
+
 ## 🌟 Features
 
 - **Modern Stack**: Built with Astro 4.x, React 18, and Tailwind CSS 3.x
