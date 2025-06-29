@@ -55,3 +55,5 @@ node_modules/
 
 # Test screenshots
 portfolio-check*.png
+homepage-current.png
+tests/e2e/browserstack-visual.spec.ts-snapshots/
