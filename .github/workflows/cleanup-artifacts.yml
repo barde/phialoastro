@@ -268,6 +268,8 @@ jobs:
     needs: [cleanup-artifacts, cleanup-caches, cleanup-workflow-runs]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Final Summary
         run: |

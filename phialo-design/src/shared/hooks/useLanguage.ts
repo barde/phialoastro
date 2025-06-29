@@ -22,6 +22,23 @@ interface UseLanguageReturn {
 const STORAGE_KEY = 'preferred-language';
 const DEFAULT_LANG: Language = 'de';
 
+// Security: Validate that a path is safe for navigation (prevents open redirects)
+function isValidPath(path: string): boolean {
+  // Only allow relative paths that start with /
+  if (!path.startsWith('/')) return false;
+  
+  // Prevent protocol-relative URLs (//example.com)
+  if (path.startsWith('//')) return false;
+  
+  // Prevent URLs with protocols
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(path)) return false;
+  
+  // Additional safety: ensure path doesn't contain @, which could be used in URLs
+  if (path.includes('@')) return false;
+  
+  return true;
+}
+
 // Common translations that can be extended by components
 const commonTranslations: Translations = {
   // Navigation
@@ -91,7 +108,10 @@ export function useLanguage(componentTranslations?: Translations): UseLanguageRe
         } else if (storedLang && storedLang !== urlLang) {
           // On homepage with different stored preference, redirect
           const targetUrl = storedLang === 'en' ? '/en/' : '/';
-          window.location.replace(targetUrl);
+          // Security: validate URL before navigation
+          if (isValidPath(targetUrl)) {
+            window.location.replace(targetUrl);
+          }
           return;
         } else {
           // No stored preference or matches URL
@@ -121,9 +141,17 @@ export function useLanguage(componentTranslations?: Translations): UseLanguageRe
     const isCurrentlyEnglish = currentPath.startsWith('/en');
     
     if (newLang === 'en' && !isCurrentlyEnglish) {
-      window.location.href = '/en' + currentPath;
+      const newPath = '/en' + currentPath;
+      // Security: validate URL before navigation
+      if (isValidPath(newPath)) {
+        window.location.href = newPath;
+      }
     } else if (newLang === 'de' && isCurrentlyEnglish) {
-      window.location.href = currentPath.replace(/^\/en/, '') || '/';
+      const newPath = currentPath.replace(/^\/en/, '') || '/';
+      // Security: validate URL before navigation
+      if (isValidPath(newPath)) {
+        window.location.href = newPath;
+      }
     }
   }, []);
 
