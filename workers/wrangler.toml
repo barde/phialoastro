@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-09-25"
 workers_dev = true
 
+# Note: Preview deployments are handled automatically by Cloudflare
+# Every version upload creates a preview URL in the format:
+# <VERSION_PREFIX>-<WORKER_NAME>.<SUBDOMAIN>.workers.dev
+
 [assets]
 directory = "../phialo-design/dist"
 binding = "ASSETS"
@@ -11,14 +15,9 @@ binding = "ASSETS"
 command = "npm run build"
 cwd = "../phialo-design"
 
-# Preview environment for branch deployments
-[env.preview]
-name = "phialo-design-preview"
-workers_dev = true
-
-[env.preview.vars]
-ENVIRONMENT = "preview"
-# Note: WEB3FORMS_ACCESS_KEY is passed during build via GitHub Actions
+# Development environment (default)
+[vars]
+ENVIRONMENT = "development"
 
 # Production environment
 [env.production]
@@ -30,9 +29,6 @@ workers_dev = false
 [env.production.vars]
 ENVIRONMENT = "production"
 # Note: WEB3FORMS_ACCESS_KEY must be set in Cloudflare dashboard under Worker settings
-
-[vars]
-ENVIRONMENT = "development"
 
 # Test environment for running tests
 [env.test]

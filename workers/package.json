@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "wrangler dev --local --live-reload",
     "deploy": "wrangler deploy",
-    "deploy:preview": "wrangler deploy --env preview",
     "deploy:production": "wrangler deploy --env production",
+    "preview": "wrangler versions upload --experimental-versions",
+    "preview:deploy": "wrangler versions deploy --experimental-versions",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
