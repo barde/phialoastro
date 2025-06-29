@@ -1,0 +1,161 @@
+name: Runner Disk Space Optimization
+
+# This is a reusable workflow that can be called by other workflows
+# to free up disk space on GitHub-hosted runners
+
+on:
+  workflow_call:
+    inputs:
+      aggressive:
+        description: 'Use aggressive cleanup (removes more tools)'
+        required: false
+        type: boolean
+        default: false
+      target-free-gb:
+        description: 'Target free space in GB'
+        required: false
+        type: number
+        default: 20
+
+jobs:
+  cleanup:
+    name: Optimize Runner Disk Space
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check initial disk space
+        run: |
+          echo "### Initial Disk Space"
+          df -h
+          echo ""
+          echo "### Largest directories in /usr"
+          du -h /usr 2>/dev/null | sort -hr | head -20 || true
+          echo ""
+          echo "### Docker disk usage"
+          docker system df || true
+
+      - name: Basic cleanup
+        run: |
+          echo "### Starting basic cleanup..."
+          
+          # Clean package manager caches
+          sudo apt-get clean
+          sudo apt-get autoremove -y
+          
+          # Clean pip cache
+          pip cache purge || true
+          
+          # Clean npm cache
+          npm cache clean --force || true
+          
+          # Remove temporary files
+          sudo rm -rf /tmp/*
+          sudo rm -rf /var/tmp/*
+          
+          # Show space saved
+          echo "### Disk space after basic cleanup"
+          df -h
+
+      - name: Remove unnecessary tools
+        if: inputs.aggressive
+        run: |
+          echo "### Removing unnecessary tools..."
+          
+          # Remove .NET
+          sudo rm -rf /usr/share/dotnet
+          
+          # Remove Android SDK
+          sudo rm -rf /usr/local/lib/android
+          
+          # Remove Haskell
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/.ghcup
+          
+          # Remove Swift
+          sudo rm -rf /usr/share/swift
+          
+          # Remove Rust (if not needed)
+          sudo rm -rf /usr/share/rust
+          
+          # Remove CodeQL
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          
+          # Remove Go (keep only if needed)
+          # sudo rm -rf /opt/hostedtoolcache/go
+          
+          # Remove Ruby (keep only if needed)
+          # sudo rm -rf /opt/hostedtoolcache/Ruby
+          
+          # Remove PyPy
+          sudo rm -rf /opt/hostedtoolcache/PyPy
+          
+          # Show space saved
+          echo "### Disk space after removing tools"
+          df -h
+
+      - name: Clean Docker resources
+        run: |
+          echo "### Cleaning Docker resources..."
+          
+          # Stop all running containers
+          docker stop $(docker ps -q) 2>/dev/null || true
+          
+          # Remove all containers
+          docker rm $(docker ps -aq) 2>/dev/null || true
+          
+          # Remove all images
+          docker rmi $(docker images -q) 2>/dev/null || true
+          
+          # Clean everything
+          docker system prune -a -f --volumes || true
+          
+          # Show space saved
+          echo "### Disk space after Docker cleanup"
+          df -h
+
+      - name: Free up /mnt space
+        run: |
+          echo "### Optimizing /mnt usage..."
+          
+          # /mnt has the most space on GitHub runners
+          # Create symlinks for common large directories
+          
+          # Move npm cache to /mnt
+          sudo mkdir -p /mnt/npm-cache
+          sudo rm -rf ~/.npm
+          ln -s /mnt/npm-cache ~/.npm
+          
+          # Move pnpm store to /mnt
+          sudo mkdir -p /mnt/pnpm-store
+          export PNPM_HOME="/mnt/pnpm-store"
+          
+          echo "### Final disk space"
+          df -h
+
+      - name: Verify target space achieved
+        run: |
+          # Get available space in GB
+          AVAILABLE_GB=$(df -BG / | awk 'NR==2 {print $4}' | sed 's/G//')
+          TARGET_GB=${{ inputs.target-free-gb }}
+          
+          echo "### Space Summary"
+          echo "Available: ${AVAILABLE_GB}GB"
+          echo "Target: ${TARGET_GB}GB"
+          
+          if [ "$AVAILABLE_GB" -lt "$TARGET_GB" ]; then
+            echo "⚠️ Warning: Only ${AVAILABLE_GB}GB available, target was ${TARGET_GB}GB"
+            echo "Consider enabling aggressive cleanup or reducing build requirements"
+          else
+            echo "✅ Success: ${AVAILABLE_GB}GB available, exceeds target of ${TARGET_GB}GB"
+          fi
+          
+          # Create summary
+          echo "## Disk Space Optimization Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Available Space:** ${AVAILABLE_GB}GB" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Space:** ${TARGET_GB}GB" >> $GITHUB_STEP_SUMMARY
+          echo "- **Aggressive Mode:** ${{ inputs.aggressive }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Final Disk Usage" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          df -h >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
