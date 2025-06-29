@@ -22,10 +22,8 @@ ENVIRONMENT = "development"
 # Production environment
 [env.production]
 name = "phialo-design"
-route = "phialo.de/*"
-# TODO: Replace with your actual Cloudflare Zone ID
-# You can find this in Cloudflare Dashboard > Your Domain > Overview (right sidebar)
-zone_id = "YOUR_ZONE_ID"
+# Zone ID is passed via command line flag during deployment
+# This avoids committing sensitive information to the repository
 workers_dev = false
 
 [env.production.vars]

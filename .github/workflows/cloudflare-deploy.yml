@@ -3,6 +3,7 @@ name: Deploy to Cloudflare Workers
 # Required GitHub Secrets:
 # - CLOUDFLARE_API_TOKEN: API token with Workers permissions
 # - CLOUDFLARE_ACCOUNT_ID: Your Cloudflare account ID
+# - CLOUDFLARE_ZONE_ID: Your domain's zone ID
 # - WEB3FORMS_ACCESS_KEY: (Optional) For contact form functionality
 #
 # See docs/how-to/setup-github-secrets.md for detailed setup instructions
@@ -69,7 +70,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: 'workers'
-          command: deploy --env production
+          command: deploy --env production --route "phialo.de/*" --zone-id ${{ secrets.CLOUDFLARE_ZONE_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           vars: |
             WEB3FORMS_ACCESS_KEY=${{ secrets.WEB3FORMS_ACCESS_KEY }}

@@ -18,11 +18,16 @@ Find at: Cloudflare Dashboard → Right sidebar → "Account ID"
 ### 3. WEB3FORMS_ACCESS_KEY (Optional)
 Get from: https://web3forms.com dashboard
 
-## 📝 Also Update in Code
+## 📝 Zone ID Configuration
 
-Edit `workers/wrangler.toml`:
-```toml
-zone_id = "YOUR_ACTUAL_ZONE_ID"  # Find in Cloudflare Dashboard → phialo.de → Right sidebar
+The Zone ID should be set as a GitHub secret:
+
+### 4. CLOUDFLARE_ZONE_ID
+Find at: Cloudflare Dashboard → phialo.de → Right sidebar → "Zone ID"
+
+Add it as a GitHub secret:
+```bash
+gh secret set CLOUDFLARE_ZONE_ID
 ```
 
 ## ✅ Verify Setup

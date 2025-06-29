@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev --local --live-reload",
     "deploy": "wrangler deploy",
-    "deploy:production": "wrangler deploy --env production",
+    "deploy:production": "wrangler deploy --env production --route 'phialo.de/*' --zone-id \"$CLOUDFLARE_ZONE_ID\"",
     "preview": "wrangler versions upload --experimental-versions",
     "preview:deploy": "wrangler versions deploy --experimental-versions",
     "test": "vitest",

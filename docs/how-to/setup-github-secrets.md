@@ -8,7 +8,8 @@ The following secrets must be configured in your GitHub repository for the deplo
 
 1. **CLOUDFLARE_API_TOKEN** - API token for Cloudflare authentication
 2. **CLOUDFLARE_ACCOUNT_ID** - Your Cloudflare account ID
-3. **WEB3FORMS_ACCESS_KEY** - API key for the contact form service (optional)
+3. **CLOUDFLARE_ZONE_ID** - Your domain's zone ID
+4. **WEB3FORMS_ACCESS_KEY** - API key for the contact form service (optional)
 
 ## Step 1: Create Cloudflare API Token
 
