@@ -1,0 +1,283 @@
+name: Cleanup Artifacts & Cache
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      days_to_keep:
+        description: 'Number of days to keep artifacts'
+        required: false
+        default: '7'
+        type: choice
+        options:
+          - '1'
+          - '3'
+          - '7'
+          - '14'
+          - '30'
+      dry_run:
+        description: 'Dry run (only show what would be deleted)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  cleanup-artifacts:
+    name: Cleanup Old Artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Delete old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const daysToKeep = parseInt('${{ inputs.days_to_keep || 7 }}');
+            const dryRun = ${{ inputs.dry_run || false }};
+            const maxAgeMs = daysToKeep * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            
+            console.log(`🧹 Cleaning up artifacts older than ${daysToKeep} days...`);
+            console.log(`Dry run: ${dryRun}`);
+            
+            let totalSize = 0;
+            let deletedCount = 0;
+            
+            // List all artifacts
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              }
+            );
+            
+            for (const artifact of artifacts) {
+              const createdAt = new Date(artifact.created_at).getTime();
+              const age = now - createdAt;
+              
+              if (age > maxAgeMs) {
+                console.log(`📦 ${artifact.name} (${(artifact.size_in_bytes / 1024 / 1024).toFixed(2)} MB) - ${Math.floor(age / 86400000)} days old`);
+                
+                if (!dryRun) {
+                  try {
+                    await github.rest.actions.deleteArtifact({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      artifact_id: artifact.id
+                    });
+                    deletedCount++;
+                    totalSize += artifact.size_in_bytes;
+                  } catch (error) {
+                    console.error(`Failed to delete ${artifact.name}: ${error.message}`);
+                  }
+                } else {
+                  deletedCount++;
+                  totalSize += artifact.size_in_bytes;
+                }
+              }
+            }
+            
+            const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+            console.log(`\n✅ ${dryRun ? 'Would delete' : 'Deleted'} ${deletedCount} artifacts (${totalSizeMB} MB)`);
+            
+            // Create summary
+            await core.summary
+              .addHeading('Artifact Cleanup Summary')
+              .addTable([
+                [{data: 'Metric', header: true}, {data: 'Value', header: true}],
+                ['Mode', dryRun ? 'Dry Run' : 'Live'],
+                ['Days to Keep', daysToKeep.toString()],
+                ['Artifacts Processed', artifacts.length.toString()],
+                [`Artifacts ${dryRun ? 'To Delete' : 'Deleted'}`, deletedCount.toString()],
+                [`Space ${dryRun ? 'To Reclaim' : 'Reclaimed'}`, `${totalSizeMB} MB`]
+              ])
+              .write();
+
+  cleanup-caches:
+    name: Cleanup Old Caches
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Cleanup caches by branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dryRun = ${{ inputs.dry_run || false }};
+            
+            console.log('🧹 Cleaning up caches from deleted branches...');
+            console.log(`Dry run: ${dryRun}`);
+            
+            let deletedCaches = 0;
+            let totalSize = 0;
+            
+            // Get all branches
+            const branches = await github.paginate(
+              github.rest.repos.listBranches,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              }
+            );
+            
+            const branchNames = new Set(branches.map(b => b.name));
+            branchNames.add('main');
+            branchNames.add('master');
+            
+            // Get all caches
+            const caches = await github.paginate(
+              github.rest.actions.getActionsCacheList,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              }
+            );
+            
+            for (const cache of caches) {
+              const ref = cache.ref.replace('refs/heads/', '');
+              
+              // Delete caches from non-existent branches
+              if (!branchNames.has(ref) && !cache.ref.includes('refs/pull/')) {
+                console.log(`🗑️ Cache from deleted branch '${ref}': ${cache.key} (${(cache.size_in_bytes / 1024 / 1024).toFixed(2)} MB)`);
+                
+                if (!dryRun) {
+                  try {
+                    await github.rest.actions.deleteActionsCacheById({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      cache_id: cache.id
+                    });
+                    deletedCaches++;
+                    totalSize += cache.size_in_bytes;
+                  } catch (error) {
+                    console.error(`Failed to delete cache ${cache.key}: ${error.message}`);
+                  }
+                } else {
+                  deletedCaches++;
+                  totalSize += cache.size_in_bytes;
+                }
+              }
+            }
+            
+            const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+            console.log(`\n✅ ${dryRun ? 'Would delete' : 'Deleted'} ${deletedCaches} caches (${totalSizeMB} MB)`);
+            
+            // Create summary
+            await core.summary
+              .addHeading('Cache Cleanup Summary')
+              .addTable([
+                [{data: 'Metric', header: true}, {data: 'Value', header: true}],
+                ['Mode', dryRun ? 'Dry Run' : 'Live'],
+                ['Total Caches', caches.length.toString()],
+                [`Caches ${dryRun ? 'To Delete' : 'Deleted'}`, deletedCaches.toString()],
+                [`Space ${dryRun ? 'To Reclaim' : 'Reclaimed'}`, `${totalSizeMB} MB`]
+              ])
+              .write();
+
+  cleanup-workflow-runs:
+    name: Cleanup Old Workflow Runs
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Delete old workflow runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const daysToKeep = parseInt('${{ inputs.days_to_keep || 30 }}');
+            const dryRun = ${{ inputs.dry_run || false }};
+            const maxAgeMs = daysToKeep * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            
+            console.log(`🧹 Cleaning up workflow runs older than ${daysToKeep} days...`);
+            console.log(`Dry run: ${dryRun}`);
+            
+            let deletedCount = 0;
+            const maxDeletions = 100; // Limit to avoid timeout
+            
+            // Get all workflow runs
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                status: 'completed',
+                per_page: 100
+              },
+              (response) => response.data.workflow_runs
+            );
+            
+            // Sort by created_at to delete oldest first
+            runs.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            
+            for (const run of runs) {
+              if (deletedCount >= maxDeletions) {
+                console.log(`⚠️ Reached maximum deletion limit of ${maxDeletions}`);
+                break;
+              }
+              
+              const createdAt = new Date(run.created_at).getTime();
+              const age = now - createdAt;
+              
+              if (age > maxAgeMs && run.conclusion !== null) {
+                console.log(`🏃 ${run.name} #${run.run_number} - ${Math.floor(age / 86400000)} days old`);
+                
+                if (!dryRun) {
+                  try {
+                    await github.rest.actions.deleteWorkflowRun({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      run_id: run.id
+                    });
+                    deletedCount++;
+                  } catch (error) {
+                    console.error(`Failed to delete run ${run.id}: ${error.message}`);
+                  }
+                } else {
+                  deletedCount++;
+                }
+              }
+            }
+            
+            console.log(`\n✅ ${dryRun ? 'Would delete' : 'Deleted'} ${deletedCount} workflow runs`);
+            
+            // Create summary
+            await core.summary
+              .addHeading('Workflow Runs Cleanup Summary')
+              .addTable([
+                [{data: 'Metric', header: true}, {data: 'Value', header: true}],
+                ['Mode', dryRun ? 'Dry Run' : 'Live'],
+                ['Days to Keep', daysToKeep.toString()],
+                ['Total Runs Processed', runs.length.toString()],
+                [`Runs ${dryRun ? 'To Delete' : 'Deleted'}`, deletedCount.toString()],
+                ['Deletion Limit', maxDeletions.toString()]
+              ])
+              .write();
+
+  summary:
+    name: Cleanup Summary
+    needs: [cleanup-artifacts, cleanup-caches, cleanup-workflow-runs]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Final Summary
+        run: |
+          echo "### 🎉 Cleanup Complete!"
+          echo ""
+          echo "Check the individual job summaries for detailed results."
+          echo ""
+          echo "This workflow helps maintain a clean GitHub Actions environment by:"
+          echo "- Removing old artifacts to free up storage"
+          echo "- Cleaning up caches from deleted branches"
+          echo "- Deleting old workflow runs to keep history manageable"
+          echo ""
+          echo "Run this workflow manually with dry_run=true to preview what would be deleted."
