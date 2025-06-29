@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phialo Academy - Video Archive Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --dark-gold: #B8941F;
+            --midnight: #1a1a2e;
+            --soft-black: #2d2d3a;
+            --pearl: #FAF9F6;
+            --soft-gray: #E8E6E1;
+            --text-primary: #2C2C2C;
+            --text-secondary: #6B6B6B;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --error: #F44336;
+            --glass-white: rgba(255, 255, 255, 0.95);
+            --admin-bg: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--admin-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Admin Header */
+        .admin-header {
+            background: var(--midnight);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-badge {
+            background: var(--error);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Admin Layout */
+        .admin-layout {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid var(--soft-gray);
+            padding: 2rem 0;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 2rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover {
+            background: var(--soft-gray);
+            color: var(--primary-gold);
+        }
+
+        .sidebar-link.active {
+            background: var(--primary-gold);
+            color: white;
+        }
+
+        /* Main Content */
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--midnight);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gold);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--dark-gold);
+        }
+
+        /* Toolbar */
+        .admin-toolbar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 400px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--soft-gray);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--soft-gray);
+            border-radius: 8px;
+            background: white;
+            font-size: 0.875rem;
+        }
+
+        /* Bulk Actions */
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bulk-select {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-bulk {
+            background: var(--soft-gray);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-bulk:hover {
+            background: var(--primary-gold);
+            color: white;
+        }
+
+        /* Video Table */
+        .video-table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .video-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .video-table th {
+            background: var(--soft-gray);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .video-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--soft-gray);
+        }
+
+        .video-table tr:hover {
+            background: #fafafa;
+        }
+
+        .video-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .video-thumbnail-small {
+            width: 80px;
+            height: 45px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-thumbnail-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-title {
+            font-weight: 600;
+            color: var(--midnight);
+            margin-bottom: 0.25rem;
+        }
+
+        .video-client {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .privacy-private {
+            background: var(--error);
+            color: white;
+        }
+
+        .privacy-unlisted {
+            background: var(--warning);
+            color: white;
+        }
+
+        .privacy-public {
+            background: var(--success);
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            background: transparent;
+            border: 1px solid var(--soft-gray);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-gold);
+            border-color: var(--primary-gold);
+            color: white;
+        }
+
+        /* Add Video Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--soft-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--soft-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--soft-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-helper {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .radio-label input {
+            margin: 0;
+        }
+
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid var(--soft-gray);
+            border-radius: 8px;
+            min-height: 42px;
+        }
+
+        .tag {
+            background: var(--soft-gray);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--soft-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .youtube-preview {
+            background: var(--soft-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .youtube-thumb {
+            width: 120px;
+            height: 67px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .youtube-info {
+            flex: 1;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-gold);
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            color: var(--success);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-logo">
+            <span>Phialo Academy</span>
+            <span class="admin-badge">Admin</span>
+        </div>
+        <div class="admin-user">
+            <span>Gesa Pickbrenner</span>
+            <button class="btn-icon" style="background: rgba(255,255,255,0.1); color: white;">
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Admin Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <nav class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        📊 Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link active">
+                        🎥 Video-Archiv
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        📅 Termine
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        👥 Teilnehmer
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        📚 Kurse
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        ⚙️ Einstellungen
+                    </a>
+                </li>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Video-Archiv Verwaltung</h1>
+                <button class="btn btn-primary" onclick="showAddVideoModal()">
+                    + Neues Video hinzufügen
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Gesamt Videos</div>
+                    <div class="stat-value">45</div>
+                    <div class="stat-change">+5 diese Woche</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Gesamtaufrufe</div>
+                    <div class="stat-value">312</div>
+                    <div class="stat-change">+23 diese Woche</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Aktive Teilnehmer</div>
+                    <div class="stat-value">18</div>
+                    <div class="stat-change">+2 diese Woche</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Speicherplatz</div>
+                    <div class="stat-value">8.2 GB</div>
+                    <div class="stat-change">von 10 GB frei</div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="admin-toolbar">
+                <div class="toolbar-left">
+                    <div class="bulk-select">
+                        <input type="checkbox" id="selectAll">
+                        <label for="selectAll">Alle auswählen</label>
+                    </div>
+                    <input type="text" class="search-input" placeholder="Nach Titel, Kunde oder Tags suchen...">
+                    <select class="filter-select">
+                        <option>Alle Videos</option>
+                        <option>Private</option>
+                        <option>Nicht gelistet</option>
+                        <option>Öffentlich</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>Diesen Monat</option>
+                        <option>Letzte 30 Tage</option>
+                        <option>Letzte 90 Tage</option>
+                        <option>Dieses Jahr</option>
+                    </select>
+                </div>
+                <div class="bulk-actions">
+                    <button class="btn btn-bulk">
+                        🔒 Privatsphäre ändern
+                    </button>
+                    <button class="btn btn-bulk">
+                        🏷️ Tags hinzufügen
+                    </button>
+                    <button class="btn btn-bulk" style="color: var(--error);">
+                        🗑️ Löschen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Table -->
+            <div class="video-table-container">
+                <table class="video-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox">
+                            </th>
+                            <th>Video Details</th>
+                            <th>Kunde</th>
+                            <th>Datum</th>
+                            <th>Privatsphäre</th>
+                            <th>Aufrufe</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="checkbox">
+                            </td>
+                            <td>
+                                <div class="video-info-cell">
+                                    <div class="video-thumbnail-small">
+                                        <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/default.jpg" alt="Thumbnail">
+                                    </div>
+                                    <div class="video-details">
+                                        <div class="video-title">DNA-Spirale Ohrringe - Design-Konsultation</div>
+                                        <div class="video-client">45:32 • Konsultation</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Maria Schmidt</td>
+                            <td>15. Jan 2025</td>
+                            <td>
+                                <span class="privacy-badge privacy-unlisted">
+                                    🔗 Nicht gelistet
+                                </span>
+                            </td>
+                            <td>3</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" title="Bearbeiten">✏️</button>
+                                    <button class="btn-icon" title="Privatsphäre">🔒</button>
+                                    <button class="btn-icon" title="Löschen">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="checkbox">
+                            </td>
+                            <td>
+                                <div class="video-info-cell">
+                                    <div class="video-thumbnail-small">
+                                        <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/default.jpg" alt="Thumbnail">
+                                    </div>
+                                    <div class="video-details">
+                                        <div class="video-title">Individuelle Ringgestaltung - Nachbesprechung</div>
+                                        <div class="video-client">32:15 • Nachbesprechung</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Thomas Meyer</td>
+                            <td>12. Jan 2025</td>
+                            <td>
+                                <span class="privacy-badge privacy-private">
+                                    🔐 Privat
+                                </span>
+                            </td>
+                            <td>1</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" title="Bearbeiten">✏️</button>
+                                    <button class="btn-icon" title="Privatsphäre">🔒</button>
+                                    <button class="btn-icon" title="Löschen">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="checkbox">
+                            </td>
+                            <td>
+                                <div class="video-info-cell">
+                                    <div class="video-thumbnail-small">
+                                        <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/default.jpg" alt="Thumbnail">
+                                    </div>
+                                    <div class="video-details">
+                                        <div class="video-title">3D-Modellierung Grundlagen - Gruppensitzung</div>
+                                        <div class="video-client">1:23:45 • Tutorial</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Gruppensitzung</td>
+                            <td>8. Jan 2025</td>
+                            <td>
+                                <span class="privacy-badge privacy-public">
+                                    🌐 Öffentlich
+                                </span>
+                            </td>
+                            <td>27</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" title="Bearbeiten">✏️</button>
+                                    <button class="btn-icon" title="Privatsphäre">🔒</button>
+                                    <button class="btn-icon" title="Löschen">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Video Modal -->
+    <div class="modal-overlay" id="addVideoModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Neues Video hinzufügen</h2>
+                <button class="modal-close" onclick="closeAddVideoModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Mit Termin verknüpfen</label>
+                    <select class="form-input">
+                        <option value="">Wählen Sie einen Termin (optional)</option>
+                        <option>Maria Schmidt - 15. Jan 2025, 14:00</option>
+                        <option>Thomas Meyer - 12. Jan 2025, 10:00</option>
+                        <option>Gruppensitzung - 8. Jan 2025, 16:00</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">YouTube URL *</label>
+                    <input type="url" class="form-input" placeholder="https://youtube.com/watch?v=..." onblur="fetchYouTubeInfo()">
+                    <p class="form-helper">Fügen Sie die YouTube-Video-URL ein</p>
+                    
+                    <!-- YouTube Preview (shown after URL is entered) -->
+                    <div class="youtube-preview" style="display: none;">
+                        <div class="youtube-thumb">
+                            <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/default.jpg" alt="YouTube thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="youtube-info">
+                            <strong>Video erkannt</strong><br>
+                            <span>Dauer: 45:32</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Video Titel *</label>
+                    <input type="text" class="form-input" placeholder="z.B. DNA-Spirale Ohrringe - Design-Konsultation">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Kunde/Teilnehmer</label>
+                        <input type="text" class="form-input" placeholder="z.B. Maria Schmidt">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kategorie</label>
+                        <select class="form-input">
+                            <option>Konsultation</option>
+                            <option>Tutorial</option>
+                            <option>Nachbesprechung</option>
+                            <option>Kursmaterial</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Privatsphäre-Einstellung *</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="privacy" value="private" checked>
+                            <span>🔐 <strong>Privat</strong> - Nur mit signierter URL zugänglich</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="privacy" value="unlisted">
+                            <span>🔗 <strong>Nicht gelistet</strong> - Mit Link zugänglich</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="privacy" value="public">
+                            <span>🌐 <strong>Öffentlich</strong> - Für alle sichtbar (nicht empfohlen)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Zugriff läuft ab</label>
+                        <input type="date" class="form-input">
+                        <p class="form-helper">Optional - Leer lassen für unbegrenzten Zugriff</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags</label>
+                        <div class="tag-input">
+                            <span class="tag">
+                                konsultation
+                                <span class="tag-remove">×</span>
+                            </span>
+                            <span class="tag">
+                                schmuckdesign
+                                <span class="tag-remove">×</span>
+                            </span>
+                            <input type="text" style="border: none; outline: none; flex: 1; min-width: 100px;" placeholder="Tag hinzufügen...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Sitzungsnotizen</label>
+                    <textarea class="form-textarea" rows="4" placeholder="Fügen Sie Notizen zu dieser Sitzung hinzu..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <input type="checkbox" id="sendNotification">
+                    <label for="sendNotification">Teilnehmer per E-Mail benachrichtigen</label>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" style="background: var(--soft-gray);" onclick="closeAddVideoModal()">Abbrechen</button>
+                    <button class="btn btn-primary">Video hinzufügen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAddVideoModal() {
+            document.getElementById('addVideoModal').style.display = 'flex';
+        }
+        
+        function closeAddVideoModal() {
+            document.getElementById('addVideoModal').style.display = 'none';
+        }
+        
+        function fetchYouTubeInfo() {
+            // Simulate fetching YouTube info
+            document.querySelector('.youtube-preview').style.display = 'flex';
+        }
+        
+        // Select all functionality
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.video-table tbody input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    </script>
+</body>
+</html>
