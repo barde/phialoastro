@@ -1,6 +1,7 @@
 ---
 import Navigation from './Navigation';
 import LanguageSelector from './LanguageSelector.astro';
+import ThemeToggle from '../components/ui/ThemeToggle.astro';
 
 export interface Props {
   transparent?: boolean;
@@ -20,7 +21,7 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
 <header 
   id="main-header" 
   class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-    transparent ? 'bg-transparent' : 'bg-theme-background/95 backdrop-blur-sm border-b border-theme-border'
+    transparent ? 'bg-transparent' : 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800'
   }`}
 >
   <div class="container mx-auto px-6">
@@ -28,7 +29,7 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       <!-- Logo -->
       <a 
         href={logoHref}
-        class="ml-5 font-display text-2xl font-medium text-theme-text-primary hover:text-theme-accent transition-colors"
+        class="ml-5 font-display text-2xl font-medium text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
         aria-label={logoAriaLabel}
       >
         PHIALO
@@ -38,12 +39,13 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       <div class="flex items-center space-x-4">
         <Navigation client:load />
         <LanguageSelector />
+        <ThemeToggle />
       </div>
       
       <!-- CTA Button -->
       <a 
         href={ctaHref}
-        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-theme-accent border border-theme-accent rounded-full hover:bg-theme-accent hover:text-theme-accent-text transition-all duration-200"
+        class="hidden lg:inline-flex items-center px-6 py-2 text-sm font-medium text-primary-500 dark:text-primary-400 border border-primary-500 dark:border-primary-400 rounded-full hover:bg-primary-500 dark:hover:bg-primary-400 hover:text-white dark:hover:text-gray-900 transition-all duration-200"
       >
         {ctaLabel}
       </a>

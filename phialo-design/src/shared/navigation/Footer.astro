@@ -56,18 +56,18 @@ const logoHref = isEnglish ? '/en' : '/';
 const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
 ---
 
-<footer class="bg-off-white border-t border-gray-100">
+<footer class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
   <div class="container mx-auto px-6 py-16">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
       <!-- Brand Column -->
       <div class="space-y-6">
         <a 
           href={logoHref}
-          class="inline-block font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
+          class="inline-block font-display text-2xl font-medium text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
         >
           PHIALO
         </a>
-        <p class="text-gray-600 text-sm leading-relaxed max-w-xs">
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-xs">
           {content.description}
         </p>
         <div class="flex items-center gap-2 text-xs">
@@ -79,23 +79,23 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
       
       <!-- Quick Links -->
       <div class="space-y-6">
-        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider">
+        <h3 class="font-sans text-sm font-semibold text-gray-800 dark:text-white uppercase tracking-wider">
           {content.navigation}
         </h3>
         <nav class="space-y-4">
-          <a href={getLocalizedHref('/portfolio')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+          <a href={getLocalizedHref('/portfolio')} class="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             {content.navItems.portfolio}
           </a>
-          <a href={getLocalizedHref('/services')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+          <a href={getLocalizedHref('/services')} class="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             {content.navItems.services}
           </a>
-          <a href={getLocalizedHref('/classes')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+          <a href={getLocalizedHref('/classes')} class="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             {content.navItems.classes}
           </a>
-          <a href={getLocalizedHref('/about')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+          <a href={getLocalizedHref('/about')} class="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             {content.navItems.about}
           </a>
-          <a href={getLocalizedHref('/contact')} class="block text-sm text-theme-text-secondary hover:text-theme-text-primary transition-colors">
+          <a href={getLocalizedHref('/contact')} class="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             {content.navItems.contact}
           </a>
         </nav>
@@ -103,23 +103,23 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
       
       <!-- Contact & Social -->
       <div class="space-y-6">
-        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider">
+        <h3 class="font-sans text-sm font-semibold text-gray-800 dark:text-white uppercase tracking-wider">
           {content.contact}
         </h3>
-        <div class="space-y-4 text-sm text-theme-text-secondary">
+        <div class="space-y-4 text-sm text-gray-600 dark:text-gray-400">
           <a 
             href="mailto:kontakt@phialo.de" 
-            class="block hover:text-theme-text-primary transition-colors"
+            class="block hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             kontakt@phialo.de
           </a>
           <a 
             href="tel:+4915785664700" 
-            class="block hover:text-theme-text-primary transition-colors"
+            class="block hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             (+49) 1578 566 47 00
           </a>
-          <p class="text-theme-text-secondary">{content.country}</p>
+          <p class="text-gray-600 dark:text-gray-400">{content.country}</p>
         </div>
         
         <!-- Social Links -->
@@ -128,7 +128,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             href="https://linkedin.com/company/phialo-design" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
+            class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             aria-label={content.socialLabels.linkedin}
           >
             <Linkedin size={20} />
@@ -137,7 +137,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             href="https://youtube.com/@phialodesign" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
+            class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             aria-label={content.socialLabels.youtube}
           >
             <Youtube size={20} />
@@ -146,7 +146,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             href="https://instagram.com/phialodesign" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
+            class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             aria-label={content.socialLabels.instagram}
           >
             <Instagram size={20} />
@@ -156,12 +156,12 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
     </div>
     
     <!-- Bottom Bar -->
-    <div class="mt-12 pt-8 border-t border-theme-border flex flex-col md:flex-row justify-between items-center gap-4">
-      <p class="text-xs text-theme-text-tertiary">
+    <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-gray-500 dark:text-gray-400">
         {content.copyright}
       </p>
-      <div class="flex items-center gap-6 text-xs text-theme-text-tertiary">
-        <a href={getLocalizedHref('/imprint')} class="hover:text-theme-text-secondary transition-colors">
+      <div class="flex items-center gap-6 text-xs text-gray-500 dark:text-gray-400">
+        <a href={getLocalizedHref('/imprint')} class="hover:text-gray-900 dark:hover:text-white transition-colors">
           {content.imprint}
         </a>
       </div>

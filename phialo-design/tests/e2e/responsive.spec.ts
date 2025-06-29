@@ -38,6 +38,35 @@ test.describe('Responsive Design Tests', () => {
     // Will be implemented when dark mode feature is added (Issue #12)
   });
 
+  test('@critical Theme toggle should work on mobile @mobile', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'Mobile only test');
+    
+    await page.goto('/');
+    
+    // Open mobile menu if needed
+    const menuButton = page.locator('button[aria-label*="öffnen"], button[aria-label*="Open menu"]');
+    if (await menuButton.isVisible()) {
+      await menuButton.click();
+      await page.waitForSelector('nav.lg\\:hidden, div[class*="fixed"][class*="inset"] nav', { state: 'visible' });
+    }
+    
+    // Find theme toggle in mobile menu
+    const themeToggle = page.locator('#theme-toggle');
+    await expect(themeToggle).toBeVisible();
+    
+    // Toggle dark mode
+    await themeToggle.click();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    
+    // Close mobile menu
+    if (await menuButton.isVisible()) {
+        await menuButton.click();
+    }
+    
+    // Verify dark mode persists
+    await expect(page.locator('html')).toHaveClass(/dark/);
+  });
+
   test.describe('Tablet View', () => {
     test('Layout should adapt for tablet screens', async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
