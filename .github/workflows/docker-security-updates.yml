@@ -1,0 +1,174 @@
+name: Docker Security Updates
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      severity_threshold:
+        description: 'Minimum severity to trigger rebuild'
+        type: choice
+        options:
+          - CRITICAL
+          - HIGH
+          - MEDIUM
+          - LOW
+        default: HIGH
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/phialo
+
+jobs:
+  # Scan all images for vulnerabilities
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    outputs:
+      base-vulnerabilities: ${{ steps.scan-base.outputs.vulnerabilities }}
+      test-vulnerabilities: ${{ steps.scan-test.outputs.vulnerabilities }}
+      build-vulnerabilities: ${{ steps.scan-build.outputs.vulnerabilities }}
+      rebuild-needed: ${{ steps.check.outputs.rebuild }}
+    strategy:
+      matrix:
+        image:
+          - name: ci-base
+            id: base
+          - name: test
+            id: test
+          - name: build-deploy
+            id: build
+    steps:
+      - name: Run Trivy vulnerability scanner
+        id: scan-${{ matrix.image.id }}
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image.name }}:latest
+          format: 'json'
+          output: 'trivy-${{ matrix.image.name }}.json'
+          severity: ${{ github.event.inputs.severity_threshold || 'HIGH' }}
+          exit-code: '1'
+        continue-on-error: true
+
+      - name: Parse scan results
+        id: parse-${{ matrix.image.id }}
+        run: |
+          if [ -f "trivy-${{ matrix.image.name }}.json" ]; then
+            VULN_COUNT=$(jq '[.Results[].Vulnerabilities | length] | add // 0' trivy-${{ matrix.image.name }}.json)
+            echo "vulnerabilities=$VULN_COUNT" >> $GITHUB_OUTPUT
+            
+            if [ "$VULN_COUNT" -gt 0 ]; then
+              echo "::warning::Found $VULN_COUNT vulnerabilities in ${{ matrix.image.name }} image"
+              jq -r '.Results[].Vulnerabilities[] | "\(.Severity): \(.VulnerabilityID) - \(.Title)"' trivy-${{ matrix.image.name }}.json
+            fi
+          else
+            echo "vulnerabilities=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-${{ matrix.image.name }}.json'
+          category: 'security-scan-${{ matrix.image.name }}'
+
+  # Check if rebuild is needed
+  check-rebuild:
+    needs: security-scan
+    runs-on: ubuntu-latest
+    outputs:
+      rebuild-base: ${{ steps.check.outputs.base }}
+      rebuild-test: ${{ steps.check.outputs.test }}
+      rebuild-build: ${{ steps.check.outputs.build }}
+    steps:
+      - name: Check vulnerability counts
+        id: check
+        run: |
+          BASE_VULN=${{ needs.security-scan.outputs.base-vulnerabilities || 0 }}
+          TEST_VULN=${{ needs.security-scan.outputs.test-vulnerabilities || 0 }}
+          BUILD_VULN=${{ needs.security-scan.outputs.build-vulnerabilities || 0 }}
+          
+          echo "Base image vulnerabilities: $BASE_VULN"
+          echo "Test image vulnerabilities: $TEST_VULN"
+          echo "Build image vulnerabilities: $BUILD_VULN"
+          
+          echo "base=$([[ $BASE_VULN -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "test=$([[ $TEST_VULN -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "build=$([[ $BUILD_VULN -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+  # Rebuild images with security updates
+  rebuild-images:
+    needs: check-rebuild
+    if: needs.check-rebuild.outputs.rebuild-base == 'true' || needs.check-rebuild.outputs.rebuild-test == 'true' || needs.check-rebuild.outputs.rebuild-build == 'true'
+    uses: ./.github/workflows/docker-images.yml
+    with:
+      force_rebuild: true
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  # Create issue if vulnerabilities found
+  create-issue:
+    needs: [security-scan, rebuild-images]
+    if: always() && (needs.security-scan.outputs.base-vulnerabilities > 0 || needs.security-scan.outputs.test-vulnerabilities > 0 || needs.security-scan.outputs.build-vulnerabilities > 0)
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create security issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const title = `🔒 Docker Security Alert - ${date}`;
+            const body = `## Security Vulnerabilities Detected
+            
+            The following Docker images have security vulnerabilities:
+            
+            | Image | Vulnerabilities | Status |
+            |-------|----------------|--------|
+            | ci-base | ${{ needs.security-scan.outputs.base-vulnerabilities || 0 }} | ${{ needs.rebuild-images.result == 'success' && '✅ Rebuilt' || '⚠️ Needs attention' }} |
+            | test | ${{ needs.security-scan.outputs.test-vulnerabilities || 0 }} | ${{ needs.rebuild-images.result == 'success' && '✅ Rebuilt' || '⚠️ Needs attention' }} |
+            | build-deploy | ${{ needs.security-scan.outputs.build-vulnerabilities || 0 }} | ${{ needs.rebuild-images.result == 'success' && '✅ Rebuilt' || '⚠️ Needs attention' }} |
+            
+            ### Actions Taken
+            - [x] Security scan completed
+            - [${{ needs.rebuild-images.result == 'success' && 'x' || ' ' }}] Images rebuilt with latest security patches
+            - [ ] Manual review required
+            
+            ### Next Steps
+            1. Review the security scan results in the Actions tab
+            2. If automatic rebuild failed, manually trigger the rebuild workflow
+            3. Update base image versions if needed
+            4. Close this issue once resolved
+            
+            Severity threshold: ${{ github.event.inputs.severity_threshold || 'HIGH' }}
+            `;
+            
+            // Check if similar issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['security', 'docker']
+            });
+            
+            const existingIssue = issues.data.find(issue => 
+              issue.title.includes('Docker Security Alert') && 
+              issue.title.includes(date)
+            );
+            
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['security', 'docker', 'automated']
+              });
+            }
