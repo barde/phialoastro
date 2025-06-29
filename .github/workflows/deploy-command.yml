@@ -1,0 +1,241 @@
+name: Deploy Command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+
+jobs:
+  check-command:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request && 
+      (contains(github.event.comment.body, '/deploy') || 
+       contains(github.event.comment.body, '/deploy-preview') ||
+       contains(github.event.comment.body, '/deploy-production'))
+    outputs:
+      should_deploy: ${{ steps.parse.outputs.should_deploy }}
+      environment: ${{ steps.parse.outputs.environment }}
+      pr_number: ${{ steps.parse.outputs.pr_number }}
+      pr_branch: ${{ steps.parse.outputs.pr_branch }}
+    steps:
+      - name: Check permissions
+        id: check-permissions
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Check if user has write permissions
+            const { data: permissions } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login
+            });
+            
+            const hasPermission = ['admin', 'write'].includes(permissions.permission);
+            
+            if (!hasPermission) {
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: '-1'
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `@${context.payload.comment.user.login} Sorry, you don't have permission to trigger deployments. Only repository collaborators with write access can use deploy commands.`
+              });
+              
+              core.setFailed('User does not have permission to deploy');
+              return;
+            }
+            
+            // Add thumbs up reaction to acknowledge command
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '+1'
+            });
+      
+      - name: Parse command
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = context.payload.comment.body.toLowerCase();
+            let environment = 'preview';
+            let shouldDeploy = false;
+            
+            // Parse command
+            if (comment.includes('/deploy-production')) {
+              environment = 'production';
+              shouldDeploy = true;
+            } else if (comment.includes('/deploy-preview') || comment.includes('/deploy')) {
+              environment = 'preview';
+              shouldDeploy = true;
+            }
+            
+            // Get PR details
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            core.setOutput('should_deploy', shouldDeploy);
+            core.setOutput('environment', environment);
+            core.setOutput('pr_number', context.issue.number);
+            core.setOutput('pr_branch', pr.head.ref);
+            
+            // Post initial status
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🚀 Starting ${environment} deployment for PR #${context.issue.number}...`
+            });
+
+  deploy:
+    needs: check-command
+    if: needs.check-command.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.check-command.outputs.environment }}
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check-command.outputs.pr_branch }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'phialo-design/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./phialo-design
+        run: npm ci
+      
+      - name: Install worker dependencies
+        working-directory: ./workers
+        run: npm ci
+      
+      - name: Build Astro site
+        working-directory: ./phialo-design
+        run: npm run build
+      
+      - name: Deploy to Cloudflare Workers
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'workers'
+          command: |
+            deploy --env ${{ needs.check-command.outputs.environment }} \
+            ${{ needs.check-command.outputs.environment == 'preview' && format('--name phialo-pr-{0}', needs.check-command.outputs.pr_number) || '' }}
+          secrets: |
+            WEB3FORMS_ACCESS_KEY
+        env:
+          WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
+      
+      - name: Get deployment URL
+        id: url
+        run: |
+          if [ "${{ needs.check-command.outputs.environment }}" = "production" ]; then
+            echo "deployment_url=https://phialo.de" >> $GITHUB_OUTPUT
+          else
+            echo "deployment_url=https://phialo-pr-${{ needs.check-command.outputs.pr_number }}.meise.workers.dev" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Post deployment success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const environment = '${{ needs.check-command.outputs.environment }}';
+            const url = '${{ steps.url.outputs.deployment_url }}';
+            
+            const message = `
+            ## ✅ Deployment Successful!
+            
+            **Environment**: ${environment}
+            **URL**: ${url}
+            **Branch**: ${{ needs.check-command.outputs.pr_branch }}
+            **Triggered by**: @${{ github.actor }}
+            
+            ${environment === 'preview' ? 'This preview will be automatically cleaned up when the PR is closed.' : '⚠️ Production deployment - please verify the changes are working correctly.'}
+            `;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ needs.check-command.outputs.pr_number }},
+              body: message
+            });
+      
+      - name: Post deployment failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ needs.check-command.outputs.pr_number }},
+              body: `❌ Deployment failed! Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.`
+            });
+
+  help:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request && 
+      contains(github.event.comment.body, '/deploy-help')
+    steps:
+      - name: Post help message
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const helpMessage = `
+            ## 📚 Deployment Commands Help
+            
+            Available commands for PR deployments:
+            
+            - \`/deploy\` or \`/deploy-preview\` - Deploy this PR to a preview environment
+            - \`/deploy-production\` - Deploy this PR to production (requires additional approval)
+            - \`/deploy-help\` - Show this help message
+            
+            **Requirements:**
+            - You must be a repository collaborator with write access
+            - The PR branch must be up to date with the base branch
+            - All required checks should be passing
+            
+            **Preview URLs:**
+            - Preview deployments are available at: \`https://phialo-pr-{PR_NUMBER}.meise.workers.dev\`
+            - Production deployments are available at: \`https://phialo.de\`
+            
+            **Notes:**
+            - Preview deployments are automatically cleaned up when the PR is closed
+            - Production deployments require manual approval in the workflow
+            - Each command triggers a full build and deployment process
+            `;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: helpMessage
+            });

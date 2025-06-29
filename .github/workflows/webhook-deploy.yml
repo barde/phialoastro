@@ -1,0 +1,109 @@
+name: Webhook Deployment
+
+on:
+  repository_dispatch:
+    types: [deploy-preview, deploy-production]
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  validate-webhook:
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.validate.outputs.valid }}
+      environment: ${{ steps.validate.outputs.environment }}
+      branch: ${{ steps.validate.outputs.branch }}
+    steps:
+      - name: Validate webhook payload
+        id: validate
+        run: |
+          # Extract environment from event type
+          if [ "${{ github.event.action }}" = "deploy-production" ]; then
+            ENVIRONMENT="production"
+          else
+            ENVIRONMENT="preview"
+          fi
+          
+          # Extract branch from payload (default to master)
+          BRANCH="${{ github.event.client_payload.branch }}"
+          if [ -z "$BRANCH" ]; then
+            BRANCH="master"
+          fi
+          
+          # Validate secret token if provided
+          if [ -n "${{ github.event.client_payload.token }}" ]; then
+            # In a real scenario, you'd validate this against a stored secret
+            echo "Token validation would happen here"
+          fi
+          
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "valid=true" >> $GITHUB_OUTPUT
+          
+          echo "Webhook deployment request:"
+          echo "- Environment: $ENVIRONMENT"
+          echo "- Branch: $BRANCH"
+          echo "- Triggered at: $(date -u)"
+
+  deploy:
+    needs: validate-webhook
+    if: needs.validate-webhook.outputs.valid == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.validate-webhook.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-webhook.outputs.branch }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'phialo-design/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./phialo-design
+        run: npm ci
+      
+      - name: Install worker dependencies
+        working-directory: ./workers
+        run: npm ci
+      
+      - name: Build Astro site
+        working-directory: ./phialo-design
+        run: npm run build
+      
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'workers'
+          command: deploy --env ${{ needs.validate-webhook.outputs.environment }}
+          secrets: |
+            WEB3FORMS_ACCESS_KEY
+        env:
+          WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
+      
+      - name: Send webhook response
+        if: github.event.client_payload.callback_url
+        run: |
+          DEPLOYMENT_URL="https://phialo.de"
+          if [ "${{ needs.validate-webhook.outputs.environment }}" = "preview" ]; then
+            DEPLOYMENT_URL="https://phialo-design-preview.meise.workers.dev"
+          fi
+          
+          # Send callback to webhook sender
+          curl -X POST "${{ github.event.client_payload.callback_url }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "success",
+              "environment": "${{ needs.validate-webhook.outputs.environment }}",
+              "url": "'$DEPLOYMENT_URL'",
+              "deployed_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+              "run_id": "${{ github.run_id }}"
+            }'
