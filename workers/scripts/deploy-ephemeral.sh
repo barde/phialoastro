@@ -16,11 +16,12 @@ WORKER_NAME="phialo-pr-${PR_NUMBER}"
 cat > wrangler-ephemeral.toml << EOF
 name = "${WORKER_NAME}"
 main = "src/index.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-25"
 workers_dev = true
 
-[site]
-bucket = "../phialo-design/dist"
+[assets]
+directory = "../phialo-design/dist"
+binding = "ASSETS"
 
 [vars]
 ENVIRONMENT = "preview"
