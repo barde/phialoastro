@@ -1,5 +1,12 @@
 name: Deploy to Cloudflare Workers
 
+# Required GitHub Secrets:
+# - CLOUDFLARE_API_TOKEN: API token with Workers permissions
+# - CLOUDFLARE_ACCOUNT_ID: Your Cloudflare account ID
+# - WEB3FORMS_ACCESS_KEY: (Optional) For contact form functionality
+#
+# See docs/how-to/setup-github-secrets.md for detailed setup instructions
+
 on:
   push:
     branches:
