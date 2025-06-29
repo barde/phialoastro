@@ -34,11 +34,9 @@ jobs:
             // Create a unique identifier for this comment
             const identifier = '<!-- cloudflare-preview-cleanup -->';
             
-            const body = `${identifier}
-## 🧹 Preview Deployment Cleaned Up
-
-The Cloudflare preview deployment for this PR has been removed.
-`;
+            const body = identifier + '\n' +
+              '## 🧹 Preview Deployment Cleaned Up\n\n' +
+              'The Cloudflare preview deployment for this PR has been removed.\n';
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
