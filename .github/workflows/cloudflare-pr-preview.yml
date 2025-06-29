@@ -43,6 +43,13 @@ jobs:
         working-directory: ./workers
         run: npm ci
         
+      - name: Verify build output
+        run: |
+          echo "Checking phialo-design/dist directory..."
+          ls -la phialo-design/dist/ | head -20
+          echo "Checking workers directory..."
+          ls -la workers/
+          
       - name: Create temporary wrangler config
         working-directory: ./workers
         run: |
