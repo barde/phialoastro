@@ -1,7 +1,6 @@
----
 name: E2E Tests (Sharded)
 
-'on':
+on:
   pull_request:
     branches: [main, master]
   push:
