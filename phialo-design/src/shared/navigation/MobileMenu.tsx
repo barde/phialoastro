@@ -60,7 +60,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-midnight/20 backdrop-blur-sm"
+        className="fixed inset-0 bg-midnight/20"
         onClick={onClose}
         data-testid="mobile-menu-backdrop"
       />
