@@ -149,7 +149,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           </p>
           <div className="text-center">
             <a 
-              href="https://instagram.com/phialo_design" 
+              href="https://www.instagram.com/phialo_design/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors"
