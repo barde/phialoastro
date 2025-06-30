@@ -23,6 +23,11 @@ on:
         default: false
         type: boolean
 
+# Default permissions for all jobs
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   cleanup-artifacts:
     name: Cleanup Old Artifacts
