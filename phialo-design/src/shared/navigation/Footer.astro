@@ -59,13 +59,13 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
 ---
 
 <footer class="bg-off-white border-t border-gray-100">
-  <div class="container mx-auto px-6 py-16">
+  <div class="container mx-auto px-6 pt-20 pb-16">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
       <!-- Brand Column -->
-      <div class="space-y-6">
+      <div class="space-y-6 pl-5">
         <a 
           href={logoHref}
-          class="inline-block font-display text-2xl font-medium text-midnight hover:text-gold transition-colors"
+          class="inline-block font-display text-2xl font-medium text-midnight hover:text-gold transition-colors md:mt-5"
         >
           PHIALO
         </a>
@@ -80,8 +80,8 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
       </div>
       
       <!-- Quick Links -->
-      <div class="space-y-6">
-        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider">
+      <div class="space-y-6 pl-5">
+        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider md:mt-5">
           {content.navigation}
         </h3>
         <nav class="space-y-4">
@@ -107,8 +107,8 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
       </div>
       
       <!-- Contact & Social -->
-      <div class="space-y-6">
-        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider">
+      <div class="space-y-6 pl-5">
+        <h3 class="font-sans text-sm font-semibold text-theme-text-primary uppercase tracking-wider md:mt-5">
           {content.contact}
         </h3>
         <div class="space-y-4 text-sm text-theme-text-secondary">
@@ -161,8 +161,8 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
     </div>
     
     <!-- Bottom Bar -->
-    <div class="mt-12 pt-8 border-t border-theme-border flex justify-center">
-      <p class="text-xs text-theme-text-tertiary text-center">
+    <div class="mt-12 pt-8 pl-5 border-t border-theme-border flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-theme-text-tertiary">
         {content.copyright}
       </p>
     </div>
