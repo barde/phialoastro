@@ -118,31 +118,32 @@ jobs:
             VCS_REF=${{ github.event.pull_request.head.sha }}
             PR_NUMBER=${{ github.event.pull_request.number }}
 
-      - name: Comment PR with image details
-        uses: actions/github-script@v7
-        if: success()
-        with:
-          script: |
-            const image = '${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image.name }}:pr-${{ github.event.pull_request.number }}-${{ matrix.image.name }}';
-            const body = `### 🐳 Docker Image Built: \`${{ matrix.image.name }}\`
-            
-            Pull this image locally:
-            \`\`\`bash
-            docker pull ${image}
-            \`\`\`
-            
-            Run tests with this image:
-            \`\`\`bash
-            docker run --rm -v \$(pwd):/workspace ${image} npm test
-            \`\`\`
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+      # Docker build comment disabled
+      # - name: Comment PR with image details
+      #   uses: actions/github-script@v7
+      #   if: success()
+      #   with:
+      #     script: |
+      #       const image = '${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image.name }}:pr-${{ github.event.pull_request.number }}-${{ matrix.image.name }}';
+      #       const body = `### 🐳 Docker Image Built: \`${{ matrix.image.name }}\`
+      #       
+      #       Pull this image locally:
+      #       \`\`\`bash
+      #       docker pull ${image}
+      #       \`\`\`
+      #       
+      #       Run tests with this image:
+      #       \`\`\`bash
+      #       docker run --rm -v \$(pwd):/workspace ${image} npm test
+      #       \`\`\`
+      #       `;
+      #       
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: body
+      #       });
 
   # Run basic smoke tests on PR images
   test-pr-images:
