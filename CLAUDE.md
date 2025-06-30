@@ -378,6 +378,18 @@ For custom domain deployment (production only):
 - Workers handle static asset serving and dynamic routing
 - Also possible to deploy via instructions from [DEPLOY.md](./phialo-design/docs/how-to/DEPLOY.md) to get more debug data via web browsing
 
+### Manual Deployment Options
+
+Multiple methods available for triggering deployments without pushing code:
+
+1. **GitHub Actions UI**: Use workflow_dispatch from Actions tab
+2. **PR Comments**: Use `/deploy` or `/deploy-production` commands
+3. **Webhook API**: POST to repository_dispatch endpoint
+4. **GitHub CLI**: `gh workflow run manual-deploy.yml`
+5. **Shell Script**: `./scripts/deploy.sh -e preview`
+
+See [Manual Deployments Guide](./phialo-design/docs/how-to/manual-deployments.md) for detailed instructions.
+
 ### Wrangler Worker Management
 
 #### Listing Workers
