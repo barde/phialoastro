@@ -308,7 +308,7 @@ describe('Portfolio Component', () => {
     render(<Portfolio />);
     
     const instagramLink = screen.getByText('Portfolio auf Instagram').closest('a');
-    expect(instagramLink).toHaveAttribute('href', 'https://instagram.com/phialo_design');
+    expect(instagramLink).toHaveAttribute('href', 'https://www.instagram.com/phialo_design/');
     expect(instagramLink).toHaveAttribute('target', '_blank');
     expect(instagramLink).toHaveAttribute('rel', 'noopener noreferrer');  });
 
