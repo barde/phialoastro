@@ -1,7 +1,7 @@
 ---
 name: Nightly Comprehensive Tests
 
-'on':
+on:
   schedule:
     # Run at 2 AM UTC every night
     - cron: '0 2 * * *'
