@@ -93,15 +93,11 @@ jobs:
               comment.body?.includes(identifier)
             );
             
-            const body = `${identifier}
-## 🚀 Cloudflare Preview Deployment
-
-Your preview deployment is ready!
-
-🔗 **Preview URL**: ${preview_url}
-
-This deployment will be automatically updated when you push new commits to this PR.
-`;
+            const body = identifier + '\n' +
+              '## 🚀 Cloudflare Preview Deployment\n\n' +
+              'Your preview deployment is ready!\n\n' +
+              '🔗 **Preview URL**: ' + preview_url + '\n\n' +
+              'This deployment will be automatically updated when you push new commits to this PR.\n';
             
             if (existingComment) {
               // Update existing comment
