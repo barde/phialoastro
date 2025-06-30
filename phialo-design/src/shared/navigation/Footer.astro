@@ -20,7 +20,8 @@ const footerContent = {
       services: '3D für Sie',
       classes: 'Classes',
       about: 'Über uns',
-      contact: 'Kontakt'
+      contact: 'Kontakt',
+      imprint: 'Impressum'
     },
     socialLabels: {
       linkedin: 'LinkedIn',
@@ -41,7 +42,8 @@ const footerContent = {
       services: '3D for You',
       classes: 'Classes',
       about: 'About Us',
-      contact: 'Contact'
+      contact: 'Contact',
+      imprint: 'Legal Notice'
     },
     socialLabels: {
       linkedin: 'LinkedIn',
@@ -95,8 +97,11 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
           <a href={getLocalizedHref('/about')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
             {content.navItems.about}
           </a>
-          <a href={getLocalizedHref('/contact')} class="block text-sm text-theme-text-secondary hover:text-theme-text-primary transition-colors">
+          <a href={getLocalizedHref('/contact')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
             {content.navItems.contact}
+          </a>
+          <a href={getLocalizedHref('/imprint')} class="block text-sm text-gray-600 hover:text-midnight transition-colors">
+            {content.navItems.imprint}
           </a>
         </nav>
       </div>
@@ -156,15 +161,10 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
     </div>
     
     <!-- Bottom Bar -->
-    <div class="mt-12 pt-8 border-t border-theme-border flex flex-col md:flex-row justify-between items-center gap-4">
-      <p class="text-xs text-theme-text-tertiary">
+    <div class="mt-12 pt-8 border-t border-theme-border flex justify-center">
+      <p class="text-xs text-theme-text-tertiary text-center">
         {content.copyright}
       </p>
-      <div class="flex items-center gap-6 text-xs text-theme-text-tertiary">
-        <a href={getLocalizedHref('/imprint')} class="hover:text-theme-text-secondary transition-colors">
-          {content.imprint}
-        </a>
-      </div>
     </div>
   </div>
 </footer>
