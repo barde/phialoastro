@@ -23,6 +23,11 @@ on:
         default: false
         type: boolean
 
+# Default permissions for all jobs
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   cleanup-artifacts:
     name: Cleanup Old Artifacts
@@ -268,6 +273,8 @@ jobs:
     needs: [cleanup-artifacts, cleanup-caches, cleanup-workflow-runs]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Final Summary
         run: |
