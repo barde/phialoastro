@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFormPersistence } from '../hooks/useFormPersistence';
 
 // Translation types
 interface Translations {
@@ -66,6 +67,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Form persistence
+  const { clearPersistedData } = useFormPersistence(formData, setFormData, {
+    storageKey: 'phialo-contact-form',
+    excludeFields: [], // We want to persist all fields
+    clearOnSuccess: true
+  });
 
   // Check language on mount
   useEffect(() => {
@@ -285,6 +293,9 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       setSubmitStatus('success');
       setFormData({ name: '', email: '', phone: '', message: '' });
       setTouched({});
+      
+      // Clear persisted data after successful submission
+      clearPersistedData();
       
       if (onSuccess) {
         onSuccess();
