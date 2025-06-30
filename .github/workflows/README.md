@@ -25,18 +25,17 @@ This directory contains automated workflows for the Phialo Design CI/CD pipeline
 - **Triggers**: Weekly Sunday 4 AM UTC, manual
 - **Features**: Retention policies, dry run mode, detailed reports
 
-### 🎭 `e2e-sharded.yml` - Parallel E2E Testing
-- **Purpose**: Run E2E tests in parallel shards using containers
-- **Triggers**: Push to main, PRs, manual with custom inputs
-- **Features**: Dynamic sharding (1-8), browser selection, 88% faster execution
-- **Performance**: ~3-4 minutes for full test suite (vs ~42 minutes traditional)
+### 🎭 `e2e-sharded.yml` - Parallel E2E Testing [DISABLED]
+- **Status**: Disabled to reduce CI costs - E2E tests now run only in nightly workflow
+- **Purpose**: Previously ran E2E tests in parallel shards on PRs
+- **Note**: To re-enable, rename `e2e-sharded.yml.disabled` back to `e2e-sharded.yml`
 
 ### 🌙 `nightly-tests.yml` - Comprehensive Nightly Tests
-- **Purpose**: Run full test suite with security scanning
-- **Triggers**: Daily 2 AM UTC, manual with suite selection
-- **Test Types**: Unit, Integration, E2E, Performance, Security
+- **Purpose**: Run full test suite including all Playwright E2E tests with visual/screenshot testing
+- **Triggers**: Daily 2 AM UTC on master branch, manual with suite selection
+- **Test Types**: Unit, Integration, E2E (including visual tests), Performance, Security
 - **Matrix**: Node.js 18/20/22, Ubuntu/Alpine, all browsers
-- **Features**: Issue creation on failure, 90-day report retention
+- **Features**: Issue creation on failure, 90-day report retention, parallel E2E sharding
 
 ## Required Secrets
 
@@ -74,14 +73,12 @@ gh workflow run docker-cleanup.yml -f dry_run=true -f keep_days=7
 
 ### Run E2E Tests
 ```bash
-# Quick PR validation (2 shards, Chrome only)
-gh workflow run e2e-sharded.yml -f browsers="chromium" -f shards="2"
+# E2E tests are now part of nightly workflow only
+# To run E2E tests manually:
+gh workflow run nightly-tests.yml -f test_suites="e2e" -f browsers="chromium,firefox,webkit"
 
-# Full test suite (default: 4 shards, all browsers)
-gh workflow run e2e-sharded.yml
-
-# Targeted testing
-gh workflow run e2e-sharded.yml -f test_tag="@critical"
+# Run specific browser only
+gh workflow run nightly-tests.yml -f test_suites="e2e" -f browsers="chromium"
 ```
 
 ### Run Nightly Tests
