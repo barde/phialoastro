@@ -162,10 +162,10 @@ jobs:
               '## ⚠️ Cloudflare Preview Deployment Skipped\n\n' +
               'The Cloudflare API token is not configured. To enable preview deployments:\n\n' +
               '1. Create a Cloudflare API token with these permissions:\n' +
-              '   - Account: `Workers Scripts:Edit`, `Workers KV Storage:Edit`\n' + 
-              '   - Zone (phialo.de): `Workers Routes:Edit`, `Zone:Read`\n' +
+              '   - Account: `Workers Scripts:Edit`\n' +
               '2. Add it as `CLOUDFLARE_API_TOKEN` in repository secrets\n' +
               '3. Re-run this workflow\n\n' +
+              'Note: Preview deployments only need Workers permissions, not Zone permissions.\n' +
               'The build artifacts have been created successfully and are ready for deployment.';
             
             // Find existing comment
