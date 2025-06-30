@@ -32,12 +32,29 @@ afterAll(() => {
   (import.meta as any).env = originalEnv;
 });
 
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn()
+};
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true
+});
+
 describe('ContactForm', () => {
   beforeEach(() => {
     // Reset location to German
     mockLocation.pathname = '/';
     // Reset fetch mock
     vi.clearAllMocks();
+    // Reset localStorage mock
+    localStorageMock.getItem.mockClear();
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
+    localStorageMock.clear.mockClear();
   });
 
   describe('Validation', () => {
@@ -368,6 +385,151 @@ describe('ContactForm', () => {
       const { container } = render(<ContactForm />);
       const form = container.querySelector('form');
       expect(form).toHaveAttribute('noValidate');
+    });
+  });
+
+  describe('Form Persistence', () => {
+    it('saves form data to localStorage when user types', async () => {
+      render(<ContactForm />);
+      
+      const nameInput = screen.getByLabelText(/Name/);
+      const emailInput = screen.getByLabelText(/E-Mail/);
+      const messageInput = screen.getByLabelText(/Nachricht/);
+      
+      // Type in the fields
+      await userEvent.type(nameInput, 'John Doe');
+      await userEvent.type(emailInput, 'john@example.com');
+      await userEvent.type(messageInput, 'Test message');
+      
+      // Wait for debounced save
+      await waitFor(() => {
+        expect(localStorageMock.setItem).toHaveBeenCalledWith(
+          'phialo-contact-form',
+          expect.stringContaining('John Doe')
+        );
+      });
+      
+      // Verify the saved data structure
+      const lastCall = localStorageMock.setItem.mock.calls[localStorageMock.setItem.mock.calls.length - 1];
+      const savedData = JSON.parse(lastCall[1]);
+      expect(savedData).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '',
+        message: 'Test message'
+      });
+    });
+
+    it('restores form data from localStorage on mount', async () => {
+      const savedData = {
+        name: 'Jane Smith',
+        email: 'jane@example.com',
+        phone: '+49 123 456789',
+        message: 'Saved message content'
+      };
+      
+      localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(savedData));
+      
+      render(<ContactForm />);
+      
+      // Wait for the form to be populated
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Jane Smith')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('+49 123 456789')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('Saved message content')).toBeInTheDocument();
+      });
+      
+      expect(localStorageMock.getItem).toHaveBeenCalledWith('phialo-contact-form');
+    });
+
+    it('clears persisted data after successful submission', async () => {
+      // Mock successful API response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true })
+      });
+      
+      render(<ContactForm />);
+      
+      // Fill the form
+      await userEvent.type(screen.getByLabelText(/Name/), 'John Doe');
+      await userEvent.type(screen.getByLabelText(/E-Mail/), 'john@example.com');
+      await userEvent.type(screen.getByLabelText(/Nachricht/), 'This is a test message');
+      
+      // Submit the form
+      const submitButton = screen.getByText('Nachricht senden');
+      fireEvent.click(submitButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Erfolg!')).toBeInTheDocument();
+      });
+      
+      // Verify localStorage was cleared
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('phialo-contact-form');
+    });
+
+    it('preserves form data when submission fails', async () => {
+      // Mock console.error to prevent test output pollution
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Mock failed API response
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      
+      render(<ContactForm />);
+      
+      // Fill the form
+      await userEvent.type(screen.getByLabelText(/Name/), 'John Doe');
+      await userEvent.type(screen.getByLabelText(/E-Mail/), 'john@example.com');
+      await userEvent.type(screen.getByLabelText(/Nachricht/), 'This is a test message');
+      
+      // Submit the form
+      const submitButton = screen.getByText('Nachricht senden');
+      fireEvent.click(submitButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Fehler')).toBeInTheDocument();
+      });
+      
+      // Verify localStorage was NOT cleared
+      expect(localStorageMock.removeItem).not.toHaveBeenCalled();
+      
+      // Verify form data is still present
+      expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('john@example.com')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('This is a test message')).toBeInTheDocument();
+      
+      // Restore
+      consoleSpy.mockRestore();
+    });
+
+    it('handles localStorage errors gracefully', async () => {
+      // Mock console.warn to check for warnings
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      // Make localStorage.setItem throw an error
+      localStorageMock.setItem.mockImplementationOnce(() => {
+        throw new Error('QuotaExceededError');
+      });
+      
+      render(<ContactForm />);
+      
+      // Type in a field
+      await userEvent.type(screen.getByLabelText(/Name/), 'John Doe');
+      
+      // Wait for the warning
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to persist form data:',
+          expect.any(Error)
+        );
+      });
+      
+      // Form should still work normally
+      expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
+      
+      // Restore
+      consoleSpy.mockRestore();
     });
   });
 });
