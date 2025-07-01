@@ -216,9 +216,9 @@ describe('ContactForm', () => {
       render(<ContactForm />);
       
       // Fill in valid data
-      const nameInput = screen.getByLabelText(/Name/) as HTMLInputElement;
-      const emailInput = screen.getByLabelText(/E-Mail/) as HTMLInputElement;
-      const messageInput = screen.getByLabelText(/Nachricht/) as HTMLTextAreaElement;
+      const nameInput = screen.getByLabelText(/Name/);
+      const emailInput = screen.getByLabelText(/E-Mail/);
+      const messageInput = screen.getByLabelText(/Nachricht/);
       
       await userEvent.type(nameInput, 'John Doe');
       await userEvent.type(emailInput, 'john@example.com');
@@ -236,9 +236,9 @@ describe('ContactForm', () => {
       fireEvent.click(closeButton);
       
       // Check form is reset
-      expect(nameInput.value).toBe('');
-      expect(emailInput.value).toBe('');
-      expect(messageInput.value).toBe('');
+      expect((nameInput as HTMLInputElement).value).toBe('');
+      expect((emailInput as HTMLInputElement).value).toBe('');
+      expect((messageInput as HTMLTextAreaElement).value).toBe('');
     });
 
     it('calls onSuccess callback when provided', async () => {
