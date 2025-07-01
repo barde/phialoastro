@@ -180,7 +180,7 @@ test.describe('Integration Tests - All Fixes', () => {
     // Portfolio items should be responsive
     const portfolioItems = page.locator('[data-testid="portfolio-item"]');
     const firstItem = portfolioItems.first();
-    const itemWidth = await firstItem.evaluate(el => el.offsetWidth);
+    const itemWidth = await firstItem.evaluate(el => (el as HTMLElement).offsetWidth);
     expect(itemWidth).toBeLessThanOrEqual(375);
     
     // Footer should show phone number on mobile
