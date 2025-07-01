@@ -145,7 +145,7 @@ const t = isEnglish ? content.en : content.de;
         <p class="service-description">
           {t.service2.description}
         </p>
-        <p class="text-sm font-medium text-midnight mb-4">
+        <p class="text-sm font-medium text-midnight mb-4 text-center">
           <strong>{isEnglish ? 'Your Benefits:' : 'Ihre Vorteile:'}</strong> {t.service2.advantages.replace(/^.*?: /, '')}
         </p>
         <div class="service-cta">
@@ -208,17 +208,17 @@ const t = isEnglish ? content.en : content.de;
   }
   
   .service-icon {
-    @apply w-16 h-16 rounded-full flex items-center justify-center mb-6;
+    @apply w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto;
     @apply group-hover:bg-gold group-hover:bg-opacity-20 transition-colors duration-300;
     background: rgba(212, 175, 55, 0.1);
   }
   
   .service-title {
-    @apply font-display text-xl font-medium text-midnight mb-4;
+    @apply font-display text-xl font-medium text-midnight mb-4 text-center;
   }
   
   .service-description {
-    @apply text-gray-600 leading-relaxed mb-6;
+    @apply text-gray-600 leading-relaxed mb-6 text-center;
   }
   
   .service-features {
@@ -235,7 +235,7 @@ const t = isEnglish ? content.en : content.de;
   }
   
   .service-cta {
-    @apply mt-auto;
+    @apply mt-auto text-center;
   }
   
   /* Animation on scroll */
