@@ -19,19 +19,6 @@ Object.defineProperty(window, 'location', {
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock import.meta.env
-const originalEnv = import.meta.env;
-beforeAll(() => {
-  (import.meta as any).env = {
-    ...originalEnv,
-    PUBLIC_WEB3FORMS_ACCESS_KEY: 'test-access-key'
-  };
-});
-
-afterAll(() => {
-  (import.meta as any).env = originalEnv;
-});
-
 // Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
