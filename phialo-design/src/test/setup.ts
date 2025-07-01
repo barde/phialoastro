@@ -1,6 +1,19 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock import.meta.env
+(globalThis as any).import = {
+  meta: {
+    env: {
+      PUBLIC_WEB3FORMS_ACCESS_KEY: 'test-access-key',
+      MODE: 'test',
+      DEV: true,
+      PROD: false,
+      SSR: false
+    }
+  }
+};
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

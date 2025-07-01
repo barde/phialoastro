@@ -540,9 +540,15 @@ describe('Language Purity Tests', () => {
           }
         });
 
+        // Filter out acceptable loanwords in German
+        const acceptableLoanwords = ['Design']; // Common English words used in German
+        const problematicWords = foundEnglishWords.filter(word => 
+          !acceptableLoanwords.includes(word)
+        );
+
         // Log which tutorial has English words
-        if (foundEnglishWords.length > 0) {
-          console.warn(`Tutorial title "${title}" contains English words: ${foundEnglishWords.join(', ')}`);
+        if (problematicWords.length > 0) {
+          console.warn(`Tutorial title "${title}" contains English words: ${problematicWords.join(', ')}`);
         }
       });
 
