@@ -70,8 +70,8 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
         className="fixed inset-y-0 right-0 w-full max-w-sm shadow-2xl z-[101] isolate" 
         data-testid="mobile-menu-panel"
         style={{ 
-          backgroundColor: '#ffffff !important',
-          opacity: '1 !important',
+          backgroundColor: '#ffffff',
+          opacity: 1,
           backdropFilter: 'none',
           isolation: 'isolate'
         }}
