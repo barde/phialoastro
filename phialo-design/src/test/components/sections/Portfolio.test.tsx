@@ -186,8 +186,8 @@ describe('Portfolio Component Language Handling', () => {
     });
     
     // Initially, all items should be shown with English titles
-    let allTitles = screen.getAllByRole('heading', { level: 3 });
-    let titleTexts = allTitles.map(el => el.textContent);
+    const allTitles = screen.getAllByRole('heading', { level: 3 });
+    const titleTexts = allTitles.map(el => el.textContent);
     expect(titleTexts).toContain('ParookaVille Anniversary Ring');
     
     // Click on "Rings" filter button

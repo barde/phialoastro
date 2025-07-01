@@ -6,7 +6,7 @@ interface UseFormPersistenceOptions {
   clearOnSuccess?: boolean;
 }
 
-export function useFormPersistence<T extends Record<string, string>>(
+export function useFormPersistence<T extends Record<string, any>>(
   formData: T,
   setFormData: (data: T) => void,
   options: UseFormPersistenceOptions
@@ -33,7 +33,7 @@ export function useFormPersistence<T extends Record<string, string>>(
         
         Object.keys(parsedData).forEach((key) => {
           if (!excludeFields.includes(key) && key in formData && parsedData[key]) {
-            restoredData[key] = parsedData[key];
+            (restoredData as any)[key] = parsedData[key];
             hasChanges = true;
           }
         });
