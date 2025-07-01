@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import MobileMenu from '@/shared/navigation/MobileMenu';
 
 describe('MobileMenu', () => {
@@ -17,7 +17,7 @@ describe('MobileMenu', () => {
   });
 
   it('should have a solid white background when open', () => {
-    const { container } = render(
+    render(
       <MobileMenu
         isOpen={true}
         onClose={mockOnClose}
@@ -30,13 +30,11 @@ describe('MobileMenu', () => {
     const menuPanel = screen.getByTestId('mobile-menu-panel');
     expect(menuPanel).toBeInTheDocument();
     
-    // Check that the menu panel has white background
-    expect(menuPanel).toHaveStyle({ backgroundColor: '#ffffff' });
-    expect(menuPanel).toHaveStyle({ opacity: '1' });
-    
-    // Check that it has the bg-white class removed (since we're using inline styles)
-    const computedStyle = window.getComputedStyle(menuPanel);
-    expect(computedStyle.backgroundColor).toBe('rgb(255, 255, 255)');
+    // Check that the menu panel has white background via inline styles
+    expect(menuPanel).toHaveStyle({ 
+      backgroundColor: 'rgb(255, 255, 255)',
+      opacity: '1'
+    });
   });
 
   it('should display "3D für Sie" with white background', () => {
@@ -60,9 +58,7 @@ describe('MobileMenu', () => {
     
     // Verify the menu panel containing everything has white background
     const menuPanel = screen.getByTestId('mobile-menu-panel');
-    const panelStyle = window.getComputedStyle(menuPanel);
-    expect(panelStyle.backgroundColor).toBe('rgb(255, 255, 255)');
-    expect(panelStyle.opacity).toBe('1');
+    expect(menuPanel).toHaveStyle({ backgroundColor: 'rgb(255, 255, 255)' });
   });
 
   it('should display "3D for You" in English with white background', () => {
@@ -82,7 +78,7 @@ describe('MobileMenu', () => {
     
     // Verify white background
     const menuPanel = screen.getByTestId('mobile-menu-panel');
-    expect(menuPanel).toHaveStyle({ backgroundColor: '#ffffff' });
+    expect(menuPanel).toHaveStyle({ backgroundColor: 'rgb(255, 255, 255)' });
   });
 
   it('should ensure all sections have white background', () => {
