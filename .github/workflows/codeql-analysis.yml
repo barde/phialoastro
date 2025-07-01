@@ -37,16 +37,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: phialo-design/package-lock.json
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
 
     - name: Install dependencies
       working-directory: phialo-design
-      run: npm ci
+      run: pnpm install --frozen-lockfile
 
     - name: Build project
       working-directory: phialo-design
-      run: npm run build
+      run: pnpm run build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
