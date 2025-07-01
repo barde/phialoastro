@@ -67,19 +67,18 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
       
       {/* Menu Panel */}
       <div 
-        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white bg-opacity-100 shadow-2xl" 
-        style={{ backdropFilter: 'none' }}
+        className="fixed inset-y-0 right-0 w-full max-w-sm bg-theme-background/95 backdrop-blur-sm shadow-2xl" 
         data-testid="mobile-menu-panel"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
-            <h2 className="font-display text-xl font-medium text-midnight">
+          <div className="flex items-center justify-between p-6 border-b border-theme-border">
+            <h2 className="font-display text-xl font-medium text-theme-text-primary">
               {isEnglish ? 'Menu' : 'Menü'}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-gray-600 hover:text-midnight transition-colors"
+              className="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
               aria-label={isEnglish ? 'Close menu' : 'Menü schließen'}
               data-testid="mobile-menu-close"
             >
@@ -101,8 +100,8 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
                       onClick={onClose}
                       className={`block text-lg font-medium transition-colors duration-200 ${
                         isActiveLink(href)
-                          ? 'text-gold'
-                          : 'text-midnight hover:text-gold'
+                          ? 'text-theme-accent'
+                          : 'text-theme-text-primary hover:text-theme-accent'
                       }`}
                       data-testid={`mobile-nav-${href.replace(/\//g, '') || 'home'}`}
                     >
@@ -116,11 +115,11 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
           </nav>
           
           {/* CTA */}
-          <div className="p-6 border-t border-gray-100">
+          <div className="p-6 border-t border-theme-border">
             <a
               href={isEnglish ? '/en/contact' : '/contact'}
               onClick={onClose}
-              className="block w-full text-center px-6 py-3 text-sm font-medium text-gold border border-gold rounded-full hover:bg-gold hover:text-white transition-all duration-200"
+              className="block w-full text-center px-6 py-3 text-sm font-medium text-theme-accent border border-theme-accent rounded-full hover:bg-theme-accent hover:text-theme-accent-text transition-all duration-200"
             >
               {isEnglish ? 'Request Project' : 'Projekt anfragen'}
             </a>
