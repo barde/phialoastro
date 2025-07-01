@@ -134,14 +134,14 @@ export default defineConfig({
     // Override only specific settings for PR tests
     timeout: 120 * 1000, // 2 minutes for safety
     reuseExistingServer: !process.env.CI, // Clean state in CI
-    env: {
-      ...baseConfig.webServer.env,
-      NODE_ENV: 'test',
-      // Disable telemetry and analytics in tests
-      ASTRO_TELEMETRY_DISABLED: '1',
-      // Use faster builds
-      ASTRO_OPTIMIZE: '1',
-    },
+    // env: {  // env property not supported in current Playwright types
+    //   ...baseConfig.webServer.env,
+    //   NODE_ENV: 'test',
+    //   // Disable telemetry and analytics in tests
+    //   ASTRO_TELEMETRY_DISABLED: '1',
+    //   // Use faster builds
+    //   ASTRO_OPTIMIZE: '1',
+    // },
   } : undefined,
 });
 

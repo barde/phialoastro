@@ -33,7 +33,7 @@ interface Translations {
 }
 
 // Form data interface
-interface FormData {
+interface ContactFormData {
   name: string;
   email: string;
   phone: string;
@@ -56,7 +56,7 @@ interface ContactFormProps {
 const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
   // State management
   const [isGerman, setIsGerman] = useState(true);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     phone: '',
@@ -69,7 +69,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   // Form persistence
-  const { clearPersistedData } = useFormPersistence(formData, setFormData, {
+  const { clearPersistedData } = useFormPersistence<ContactFormData>(formData, setFormData, {
     storageKey: 'phialo-contact-form',
     excludeFields: [], // We want to persist all fields
     clearOnSuccess: true
@@ -264,9 +264,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
     setErrorMessage('');
 
     try {
+      // Check for API key
+      const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY;
+      if (!accessKey) {
+        throw new Error('Web3Forms access key is not configured. Please set PUBLIC_WEB3FORMS_ACCESS_KEY environment variable.');
+      }
+
       // Prepare form data for Web3Forms
       const web3FormData = {
-        access_key: import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY || 'YOUR_ACCESS_KEY_HERE',
+        access_key: accessKey,
         subject: `New Contact Request - Phialo Design`,
         from_name: formData.name,
         email: formData.email,
@@ -307,7 +313,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       // Determine error type
       if (error instanceof TypeError && error.message.includes('fetch')) {
         setErrorMessage(t.errorNetwork);
-      } else if (error instanceof Error && error.message.toLowerCase().includes('invalid access key')) {
+      } else if (error instanceof Error && (error.message.toLowerCase().includes('access key') || error.message.toLowerCase().includes('invalid access key'))) {
         setErrorMessage(t.errorInvalidKey);
       } else if (error instanceof Error && error.message.includes('validation')) {
         setErrorMessage(t.errorValidation);

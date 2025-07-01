@@ -1,4 +1,5 @@
-import { Page, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 /**
  * Sets up console error logging for a given Playwright page.
@@ -215,5 +216,6 @@ export async function filterPortfolioByCategory(page: Page, category: string) {
   
   // Verify items are filtered
   const visibleItems = page.locator('[data-testid="portfolio-item"]:visible');
-  await expect(visibleItems).toHaveCount.greaterThan(0);
+  const count = await visibleItems.count();
+  expect(count).toBeGreaterThan(0);
 }

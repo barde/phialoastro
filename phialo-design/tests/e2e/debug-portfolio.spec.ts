@@ -52,13 +52,16 @@ test('Debug portfolio rendering', async ({ page }) => {
   
   // Get all image sources
   const imageSrcs = await page.locator('img').evaluateAll(imgs => 
-    imgs.map(img => ({
-      src: img.src,
-      alt: img.alt,
-      naturalWidth: img.naturalWidth,
-      naturalHeight: img.naturalHeight,
-      complete: img.complete
-    }))
+    imgs.map(img => {
+      const imgElement = img as HTMLImageElement;
+      return {
+        src: imgElement.src,
+        alt: imgElement.alt,
+        naturalWidth: imgElement.naturalWidth,
+        naturalHeight: imgElement.naturalHeight,
+        complete: imgElement.complete
+      };
+    })
   );
   console.log('All images on page:', imageSrcs);
 });
