@@ -22,6 +22,7 @@ jobs:
       environment: ${{ steps.parse.outputs.environment }}
       pr_number: ${{ steps.parse.outputs.pr_number }}
       pr_branch: ${{ steps.parse.outputs.pr_branch }}
+      pr_sha: ${{ steps.parse.outputs.pr_sha }}
     steps:
       - name: Check permissions
         id: check-permissions
@@ -95,6 +96,7 @@ jobs:
             core.setOutput('environment', environment);
             core.setOutput('pr_number', context.issue.number);
             core.setOutput('pr_branch', pr.head.ref);
+            core.setOutput('pr_sha', pr.head.sha); // Use SHA to prevent TOCTOU
             
             // Post initial status
             await github.rest.issues.createComment({
@@ -113,26 +115,29 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.check-command.outputs.pr_branch }}
+          ref: ${{ needs.check-command.outputs.pr_sha }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'phialo-design/package-lock.json'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
       
       - name: Install dependencies
         working-directory: ./phialo-design
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       
       - name: Install worker dependencies
         working-directory: ./workers
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       
       - name: Build Astro site
         working-directory: ./phialo-design
-        run: npm run build
+        run: pnpm run build
       
       - name: Deploy to Cloudflare Workers
         id: deploy
