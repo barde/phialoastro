@@ -57,7 +57,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
+    <div className="fixed inset-0 z-[100] lg:hidden">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-midnight/20"
@@ -67,12 +67,18 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
       
       {/* Menu Panel */}
       <div 
-        className="fixed inset-y-0 right-0 w-full max-w-sm bg-theme-background/95 backdrop-blur-sm shadow-2xl" 
+        className="fixed inset-y-0 right-0 w-full max-w-sm shadow-2xl z-[101] isolate" 
         data-testid="mobile-menu-panel"
+        style={{ 
+          backgroundColor: '#ffffff !important',
+          opacity: '1 !important',
+          backdropFilter: 'none',
+          isolation: 'isolate'
+        }}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-theme-border">
+          <div className="flex items-center justify-between p-6 border-b border-theme-border bg-white">
             <h2 className="font-display text-xl font-medium text-theme-text-primary">
               {isEnglish ? 'Menu' : 'Menü'}
             </h2>
@@ -87,7 +93,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
           </div>
           
           {/* Navigation */}
-          <nav className="flex-1 px-6 py-8">
+          <nav className="flex-1 px-6 py-8 bg-white">
             <ul className="space-y-6">
               {navItems.map(({ href, label, labelEn }) => {
                 const displayLabel = isEnglish && labelEn ? labelEn : label;
@@ -115,7 +121,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
           </nav>
           
           {/* CTA */}
-          <div className="p-6 border-t border-theme-border">
+          <div className="p-6 border-t border-theme-border bg-white">
             <a
               href={isEnglish ? '/en/contact' : '/contact'}
               onClick={onClose}
