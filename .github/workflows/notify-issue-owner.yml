@@ -104,14 +104,11 @@ jobs:
             const ownerMentions = Array.from(issueOwners).map(owner => `@${owner}`).join(', ');
             const issueLinks = issueNumbers.map(num => `#${num}`).join(', ');
             
-            const commentBody = `<!-- notify-issue-owner-bot -->
-Hi ${ownerMentions}! 👋
-
-This PR addresses the issue(s) you reported: ${issueLinks}
-
-The automated tests have passed successfully. Please feel free to review the changes and let us know if they meet your requirements or if any adjustments are needed.
-
-Thank you for reporting this issue!`;
+            const commentBody = '<!-- notify-issue-owner-bot -->\n' +
+              `Hi ${ownerMentions}! 👋\n\n` +
+              `This PR addresses the issue(s) you reported: ${issueLinks}\n\n` +
+              `The automated tests have passed successfully. Please feel free to review the changes and let us know if they meet your requirements or if any adjustments are needed.\n\n` +
+              'Thank you for reporting this issue!';
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,

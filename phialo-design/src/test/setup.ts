@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock environment variables
+vi.stubEnv('PUBLIC_WEB3FORMS_ACCESS_KEY', 'test-access-key');
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

@@ -225,7 +225,7 @@ describe('Component Translations', () => {
         );
         
         const portfolioLink = screen.getByText('Portfolio').closest('a');
-        expect(portfolioLink).toHaveClass('text-gold');
+        expect(portfolioLink).toHaveClass('text-theme-accent');
       });
 
       test.skip('handles keyboard navigation correctly', async () => {
