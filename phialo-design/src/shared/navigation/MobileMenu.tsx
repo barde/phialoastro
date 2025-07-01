@@ -67,12 +67,12 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
       
       {/* Menu Panel */}
       <div 
-        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white/90 backdrop-blur-md shadow-2xl" 
+        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl" 
         data-testid="mobile-menu-panel"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
+          <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 className="font-display text-xl font-medium text-midnight">
               {isEnglish ? 'Menu' : 'Menü'}
             </h2>
@@ -115,7 +115,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
           </nav>
           
           {/* CTA */}
-          <div className="p-6 border-t border-gray-200/50">
+          <div className="p-6 border-t border-gray-100">
             <a
               href={isEnglish ? '/en/contact' : '/contact'}
               onClick={onClose}
