@@ -123,7 +123,7 @@ export default defineConfig({
       name: 'Chrome Reduced Motion',
       use: {
         ...devices['Desktop Chrome'],
-        reducedMotion: 'reduce',
+        // reducedMotion: 'reduce', // Not supported in current Playwright types
       },
     },
     
