@@ -1,0 +1,75 @@
+name: Dependabot auto-triage
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  auto-triage:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Label security updates
+        if: steps.metadata.outputs.ghsa-id != ''
+        run: |
+          gh pr edit "$PR_URL" --add-label "security"
+          gh pr edit "$PR_URL" --add-label "priority:high"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Label patch updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        run: |
+          gh pr edit "$PR_URL" --add-label "semver:patch"
+          gh pr edit "$PR_URL" --add-label "priority:low"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Label minor updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: |
+          gh pr edit "$PR_URL" --add-label "semver:minor"
+          gh pr edit "$PR_URL" --add-label "priority:medium"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Label major updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr edit "$PR_URL" --add-label "semver:major"
+          gh pr edit "$PR_URL" --add-label "priority:high"
+          gh pr edit "$PR_URL" --add-label "breaking-change"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Request review for production dependencies
+        if: steps.metadata.outputs.dependency-type == 'direct:production'
+        run: |
+          gh pr edit "$PR_URL" --add-reviewer "barde"
+          gh pr comment "$PR_URL" --body "⚠️ This updates a **production dependency**. Please review carefully before merging."
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+      - name: Comment on major version updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment "$PR_URL" --body "🚨 **Major version update detected!**\n\nThis PR updates ${{ steps.metadata.outputs.dependency-name }} from ${{ steps.metadata.outputs.previous-version }} to ${{ steps.metadata.outputs.new-version }}.\n\nPlease check:\n- [ ] Breaking changes in the changelog\n- [ ] Update any affected code\n- [ ] Run comprehensive tests\n- [ ] Update documentation if needed"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
