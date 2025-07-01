@@ -1,6 +1,8 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
 import Portfolio from '../components/PortfolioSection.tsx';
+import { Image } from 'astro:assets';
+import portfolioHeroBg from '../../../assets/images/portfolio-hero-bg.jpg';
 
 const title = 'Portfolio | Phialo Design';
 const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D-Skulpturen. Von Ringen bis zu Skulpturen - jedes Stück ein Kunstwerk.';
@@ -8,13 +10,27 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
 
 <PageLayout title={title} description={description}>
   <!-- Hero Section -->
-  <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
-    <div class="container mx-auto px-6">
+  <section class="relative pt-32 pb-20 overflow-hidden">
+    <!-- Background Image -->
+    <div class="absolute inset-0 z-0">
+      <Image 
+        src={portfolioHeroBg} 
+        alt="Portfolio hero background"
+        class="w-full h-full object-cover"
+        quality={85}
+        format="webp"
+      />
+      <!-- Dark overlay for better text contrast -->
+      <div class="absolute inset-0 bg-black/40"></div>
+    </div>
+    
+    <!-- Content -->
+    <div class="relative z-10 container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
+        <h1 class="text-5xl md:text-6xl font-light text-white mb-8 text-outline">
           Portfolio
         </h1>
-        <p class="text-xl text-neutral-600 leading-relaxed">
+        <p class="text-xl text-white leading-relaxed text-outline">
           Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D-Skulpturen. 
           Jedes Stück wird mit Präzision und künstlerischer Vision gefertigt.
         </p>
@@ -43,3 +59,22 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     </div>
   </section>
 </PageLayout>
+
+<style>
+  .text-outline {
+    -webkit-text-stroke: 0.8px black;
+    text-stroke: 0.8px black;
+    /* Fallback for browsers that don't support text-stroke */
+    text-shadow: 
+      1px 1px 0 #000,
+      -1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000;
+  }
+  
+  @supports (-webkit-text-stroke: 0.8px black) {
+    .text-outline {
+      text-shadow: none;
+    }
+  }
+</style>
