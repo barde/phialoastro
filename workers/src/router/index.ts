@@ -6,6 +6,7 @@ import { validateRequest } from '../utils/errors';
 import { withCache } from '../middleware/cache';
 import { withTiming } from '../middleware/timing';
 import { withCORS } from '../middleware/cors';
+import { handleContactForm } from '../handlers/api/contact';
 
 // Extend Request with context
 interface ContextRequest extends IRequest {
@@ -31,6 +32,14 @@ export function createRouter() {
   router.all('*', async (request: ContextRequest) => {
     const response = await handleRedirect(request.context);
     if (response) return response;
+  });
+  
+  // API routes
+  router.post('/api/contact', async (request: ContextRequest) => {
+    // Apply CORS for API routes
+    return withCORS(request.context, async () => {
+      return handleContactForm(request, request.context.env);
+    });
   });
   
   // Apply middleware chain for GET requests
@@ -63,8 +72,8 @@ async function handleOptions(context: WorkerContext): Promise<Response> {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
       'Access-Control-Max-Age': '86400',
     },
   });

@@ -14,17 +14,30 @@ export const SECURITY_HEADERS = {
 } as const;
 
 /**
+ * API-specific security headers
+ */
+export const API_SECURITY_HEADERS = {
+  ...SECURITY_HEADERS,
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-API-Version': '1.0',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+} as const;
+
+/**
  * Content Security Policy configuration
  */
 export const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https: blob:",
   "media-src 'self' https:",
-  "connect-src 'self'",
-  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+  "connect-src 'self' https://challenges.cloudflare.com",
+  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

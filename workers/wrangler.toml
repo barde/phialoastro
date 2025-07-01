@@ -34,6 +34,15 @@ ENVIRONMENT = "production"
 [vars]
 ENVIRONMENT = "development"
 
+# Email service configuration
+# Note: SEND_EMAIL binding will be configured per environment
+# Note: Email-related secrets (SENDGRID_API_KEY, TURNSTILE_SECRET_KEY, etc.) 
+# should be set using wrangler secret put or in the Cloudflare dashboard
+
+# Default email sending binding (development)
+# [[send_email]]
+# name = "SEND_EMAIL"
+
 # Test environment for running tests
 [env.test]
 name = "phialo-design-test"
