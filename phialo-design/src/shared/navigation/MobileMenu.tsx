@@ -67,7 +67,8 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
       
       {/* Menu Panel */}
       <div 
-        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl" 
+        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white bg-opacity-100 shadow-2xl" 
+        style={{ backdropFilter: 'none' }}
         data-testid="mobile-menu-panel"
       >
         <div className="flex flex-col h-full">
