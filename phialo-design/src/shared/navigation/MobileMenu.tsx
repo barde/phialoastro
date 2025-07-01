@@ -60,13 +60,17 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-midnight/20 backdrop-blur-sm"
+        className="fixed inset-0 bg-midnight/20"
         onClick={onClose}
         data-testid="mobile-menu-backdrop"
       />
       
       {/* Menu Panel */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl" data-testid="mobile-menu-panel">
+      <div 
+        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white bg-opacity-100 shadow-2xl" 
+        style={{ backdropFilter: 'none' }}
+        data-testid="mobile-menu-panel"
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
