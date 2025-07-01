@@ -26,6 +26,7 @@
     "wrangler": "^4.22.0"
   },
   "dependencies": {
-    "itty-router": "^5.0.0"
+    "itty-router": "^5.0.0",
+    "mimetext": "^3.0.27"
   }
 }

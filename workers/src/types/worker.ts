@@ -8,7 +8,30 @@ export interface WorkerEnv {
   BRANCH_NAME?: string;
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
   WEB3FORMS_ACCESS_KEY?: string;
+  
+  // Email service configuration
+  SEND_EMAIL?: any; // Cloudflare Email binding
+  EMAIL?: any; // Alternative Cloudflare Email binding
+  SENDGRID_API_KEY?: string;
+  SENDGRID_FROM_EMAIL?: string;
+  SENDGRID_FROM_NAME?: string;
+  GOOGLE_SERVICE_ACCOUNT_KEY?: string;
+  
+  // Email settings
+  FROM_EMAIL?: string;
+  TO_EMAIL?: string;
+  ALLOWED_EMAIL_DOMAINS?: string;
+  BLOCKED_EMAIL_DOMAINS?: string;
+  
+  // Turnstile
+  TURNSTILE_SECRET_KEY?: string;
+  
+  // PR deployment
+  PR_NUMBER?: string;
 }
+
+// Type alias for CloudflareEnv (used in some files)
+export type CloudflareEnv = WorkerEnv;
 
 /**
  * Worker context with request, environment, and execution context
