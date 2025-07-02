@@ -2,22 +2,45 @@
 // English version - Content to be translated
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
 import Portfolio from '../../components/PortfolioSection.tsx';
+import { Image } from 'astro:assets';
 
 const title = 'Portfolio | Phialo Design';
 const description = 'Discover our unique jewelry creations and 3D sculptures. From rings to sculptures - each piece is a work of art.';
 ---
 
 <PageLayout title={title} description={description} lang="en">
-  <!-- Hero Section -->
-  <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
-    <div class="container mx-auto px-6">
-      <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Portfolio
-        </h1>        <p class="text-xl text-neutral-600 leading-relaxed">
-          Discover our unique jewelry creations and 3D sculptures. 
-          Each piece is crafted with precision and artistic vision.
-        </p>
+  <!-- Hero Section with Background Image -->
+  <section class="hero-section">
+    <!-- Background Image Container -->
+    <div class="hero-background">
+      <Image 
+        src="/images/homepage/portfolio-feature.jpg"
+        alt=""
+        width={1920}
+        height={1080}
+        class="hero-image"
+        quality={85}
+        format="webp"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+      />
+      <!-- Dark overlay for text contrast -->
+      <div class="hero-overlay"></div>
+    </div>
+    
+    <!-- Hero Content -->
+    <div class="hero-content">
+      <div class="container mx-auto px-6">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="hero-title">
+            Portfolio
+          </h1>
+          <p class="hero-description">
+            Discover our unique jewelry creations and 3D sculptures. 
+            Each piece is crafted with precision and artistic vision.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -27,7 +50,8 @@ const description = 'Discover our unique jewelry creations and 3D sculptures. Fr
 
   <!-- Call-to-Action -->
   <section class="py-20 bg-neutral-50">
-    <div class="container mx-auto px-6 text-center">      <h2 class="text-3xl font-light text-neutral-900 mb-6">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-3xl font-light text-neutral-900 mb-6">
         Ready for something unique?
       </h2>
       <p class="text-lg text-neutral-600 mb-8 max-w-2xl mx-auto">
@@ -42,3 +66,152 @@ const description = 'Discover our unique jewelry creations and 3D sculptures. Fr
     </div>
   </section>
 </PageLayout>
+
+<style>
+  /* Hero Section Styles */
+  .hero-section {
+    position: relative;
+    min-height: 60vh;
+    overflow: hidden;
+    padding-top: 8rem; /* pt-32 equivalent */
+    padding-bottom: 5rem; /* pb-20 equivalent */
+  }
+
+  /* Background Image Container */
+  .hero-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Hero Image - Edge to Edge */
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Dark Overlay for Text Contrast */
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
+  }
+
+  /* Hero Content Container */
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hero Title with Text Outline */
+  .hero-title {
+    color: #ffffff;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+    
+    /* Text outline using shadow fallback */
+    text-shadow: 
+      -0.8px -0.8px 0 #000,
+       0.8px -0.8px 0 #000,
+      -0.8px  0.8px 0 #000,
+       0.8px  0.8px 0 #000,
+       0 2px 8px rgba(0, 0, 0, 0.5);
+    
+    /* Modern browsers with text-stroke support */
+    @supports (-webkit-text-stroke: 0.8px black) {
+      -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.9);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    }
+    
+    /* Smooth text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Hero Description with Text Outline */
+  .hero-description {
+    color: #ffffff;
+    font-size: 1.25rem;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+    
+    /* Subtle text outline for readability */
+    text-shadow: 
+      -0.8px -0.8px 0 rgba(0, 0, 0, 0.8),
+       0.8px -0.8px 0 rgba(0, 0, 0, 0.8),
+      -0.8px  0.8px 0 rgba(0, 0, 0, 0.8),
+       0.8px  0.8px 0 rgba(0, 0, 0, 0.8),
+       0 2px 6px rgba(0, 0, 0, 0.6);
+    
+    /* Modern browsers enhancement */
+    @supports (-webkit-text-stroke: 0.8px black) {
+      -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.7);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Smooth rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .hero-section {
+      min-height: 50vh;
+      padding-top: 6rem;
+      padding-bottom: 3rem;
+    }
+    
+    .hero-title {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .hero-description {
+      font-size: 1.125rem;
+      padding: 0 1rem;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .hero-overlay {
+      background: rgba(0, 0, 0, 0.7);
+    }
+    
+    .hero-title,
+    .hero-description {
+      -webkit-text-stroke: 1px black;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .hero-background {
+      display: none;
+    }
+    
+    .hero-title,
+    .hero-description {
+      color: #000;
+      text-shadow: none;
+      -webkit-text-stroke: none;
+    }
+  }
+</style>
