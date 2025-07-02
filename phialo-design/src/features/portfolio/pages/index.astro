@@ -114,7 +114,7 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     justify-content: center;
   }
 
-  /* Hero Title with Text Outline */
+  /* Hero Title */
   .hero-title {
     color: #ffffff;
     font-size: clamp(3rem, 8vw, 6rem);
@@ -122,19 +122,8 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     line-height: 1.1;
     margin-bottom: 2rem;
     
-    /* Text outline using shadow fallback */
-    text-shadow: 
-      -0.8px -0.8px 0 #000,
-       0.8px -0.8px 0 #000,
-      -0.8px  0.8px 0 #000,
-       0.8px  0.8px 0 #000,
-       0 2px 8px rgba(0, 0, 0, 0.5);
-    
-    /* Modern browsers with text-stroke support */
-    @supports (-webkit-text-stroke: 0.8px black) {
-      -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.9);
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-    }
+    /* Subtle shadow for depth without outline */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     
     /* Smooth text rendering */
     -webkit-font-smoothing: antialiased;
@@ -142,7 +131,7 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     text-rendering: optimizeLegibility;
   }
 
-  /* Hero Description with Text Outline */
+  /* Hero Description */
   .hero-description {
     color: #ffffff;
     font-size: 1.25rem;
@@ -150,19 +139,8 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     max-width: 800px;
     margin: 0 auto;
     
-    /* Subtle text outline for readability */
-    text-shadow: 
-      -0.8px -0.8px 0 rgba(0, 0, 0, 0.8),
-       0.8px -0.8px 0 rgba(0, 0, 0, 0.8),
-      -0.8px  0.8px 0 rgba(0, 0, 0, 0.8),
-       0.8px  0.8px 0 rgba(0, 0, 0, 0.8),
-       0 2px 6px rgba(0, 0, 0, 0.6);
-    
-    /* Modern browsers enhancement */
-    @supports (-webkit-text-stroke: 0.8px black) {
-      -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.7);
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
+    /* Subtle shadow for readability */
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
     
     /* Smooth rendering */
     -webkit-font-smoothing: antialiased;
@@ -196,7 +174,8 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     
     .hero-title,
     .hero-description {
-      -webkit-text-stroke: 1px black;
+      /* Enhanced shadow for better contrast in high contrast mode */
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
     }
   }
 
@@ -210,7 +189,6 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
     .hero-description {
       color: #000;
       text-shadow: none;
-      -webkit-text-stroke: none;
     }
   }
 </style>
