@@ -37,14 +37,10 @@ ENVIRONMENT = "production"
 [vars]
 ENVIRONMENT = "development"
 
-# Email service configuration
-# Note: SEND_EMAIL binding will be configured per environment
-# Note: Email-related secrets (SENDGRID_API_KEY, TURNSTILE_SECRET_KEY, etc.) 
+# Email service configuration - Google Workspace only
+# Note: GOOGLE_SERVICE_ACCOUNT_KEY and GOOGLE_DELEGATED_EMAIL
 # should be set using wrangler secret put or in the Cloudflare dashboard
-
-# Default email sending binding (development)
-# [[send_email]]
-# name = "SEND_EMAIL"
+# Example: wrangler secret put GOOGLE_SERVICE_ACCOUNT_KEY
 
 # Test environment for running tests
 [env.test]

@@ -9,13 +9,9 @@ export interface WorkerEnv {
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
   WEB3FORMS_ACCESS_KEY?: string;
   
-  // Email service configuration
-  SEND_EMAIL?: any; // Cloudflare Email binding
-  EMAIL?: any; // Alternative Cloudflare Email binding
-  SENDGRID_API_KEY?: string;
-  SENDGRID_FROM_EMAIL?: string;
-  SENDGRID_FROM_NAME?: string;
+  // Email service configuration - Google Workspace only
   GOOGLE_SERVICE_ACCOUNT_KEY?: string;
+  GOOGLE_DELEGATED_EMAIL?: string;
   
   // Email settings
   FROM_EMAIL?: string;

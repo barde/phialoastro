@@ -42,20 +42,6 @@ export interface EmailResponse {
 
 export interface EmailServiceConfig {
 	providers: {
-		cloudflare?: {
-			enabled: boolean;
-			priority: number;
-			bindings?: {
-				send_email?: any;
-			};
-		};
-		sendgrid?: {
-			enabled: boolean;
-			priority: number;
-			apiKey: string;
-			fromEmail?: string;
-			fromName?: string;
-		};
 		google?: {
 			enabled: boolean;
 			priority: number;
