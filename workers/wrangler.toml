@@ -1,6 +1,7 @@
 name = "phialo-design"
 main = "src/index.ts"
 compatibility_date = "2024-09-25"
+compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
 [assets]
@@ -15,6 +16,7 @@ cwd = "../phialo-design"
 [env.preview]
 name = "phialo-design-preview"
 workers_dev = true
+compatibility_flags = ["nodejs_compat"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -26,6 +28,7 @@ name = "phialo-design"
 route = "phialo.de/*"
 zone_id = "YOUR_ZONE_ID"
 workers_dev = false
+compatibility_flags = ["nodejs_compat"]
 
 [env.production.vars]
 ENVIRONMENT = "production"
@@ -48,6 +51,7 @@ ENVIRONMENT = "development"
 name = "phialo-design-test"
 workers_dev = true
 main = "src/index.ts" # Use full implementation for tests
+compatibility_flags = ["nodejs_compat"]
 
 [env.test.vars]
 ENVIRONMENT = "test"
