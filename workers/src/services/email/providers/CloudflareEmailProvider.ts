@@ -1,5 +1,4 @@
 import { EmailMessage } from 'cloudflare:email';
-import { createMimeMessage } from 'mimetext';
 import type { EmailProvider, EmailMessage as IEmailMessage, EmailResponse } from '../types';
 import { logger } from '../../../utils/logger';
 
@@ -23,62 +22,77 @@ export class CloudflareEmailProvider implements EmailProvider {
 
 	async send(email: IEmailMessage): Promise<EmailResponse> {
 		try {
-			// Create MIME message
-			const msg = createMimeMessage();
+			// Create a simple MIME message manually
+			const boundary = `----=_NextPart_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+			const fromHeader = email.from.name ? `"${email.from.name}" <${email.from.email}>` : email.from.email;
+			const toHeader = email.to.map(r => r.name ? `"${r.name}" <${r.email}>` : r.email).join(', ');
 			
-			// Set sender
-			msg.setSender({
-				name: email.from.name || '',
-				addr: email.from.email,
-			});
+			// Build headers
+			let headers = [
+				`From: ${fromHeader}`,
+				`To: ${toHeader}`,
+				`Subject: ${email.subject}`,
+				`Date: ${new Date().toUTCString()}`,
+				`MIME-Version: 1.0`,
+			];
 
-			// Set recipients
-			for (const recipient of email.to) {
-				msg.setRecipient(recipient.email);
-			}
-
-			// Set CC recipients
+			// Add CC if present
 			if (email.cc && email.cc.length > 0) {
-				for (const cc of email.cc) {
-					msg.setCc(cc.email);
-				}
+				const ccHeader = email.cc.map(r => r.name ? `"${r.name}" <${r.email}>` : r.email).join(', ');
+				headers.push(`Cc: ${ccHeader}`);
 			}
 
-			// Set subject
-			msg.setSubject(email.subject);
-
-			// Set reply-to if provided
+			// Add reply-to if present
 			if (email.replyTo) {
-				msg.setHeader('Reply-To', email.replyTo.email);
+				const replyToHeader = email.replyTo.name ? `"${email.replyTo.name}" <${email.replyTo.email}>` : email.replyTo.email;
+				headers.push(`Reply-To: ${replyToHeader}`);
 			}
 
 			// Add custom headers
 			if (email.headers) {
 				for (const [key, value] of Object.entries(email.headers)) {
-					msg.setHeader(key, value);
+					headers.push(`${key}: ${value}`);
 				}
 			}
 
-			// Add content
-			if (email.html) {
-				msg.addMessage({
-					contentType: 'text/html',
-					data: email.html,
-				});
+			// Build message body
+			let body = '';
+			
+			if (email.text && email.html) {
+				// Multipart message
+				headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+				body = [
+					'',
+					`--${boundary}`,
+					'Content-Type: text/plain; charset=utf-8',
+					'Content-Transfer-Encoding: quoted-printable',
+					'',
+					email.text,
+					`--${boundary}`,
+					'Content-Type: text/html; charset=utf-8',
+					'Content-Transfer-Encoding: quoted-printable',
+					'',
+					email.html,
+					`--${boundary}--`,
+				].join('\r\n');
+			} else if (email.html) {
+				headers.push('Content-Type: text/html; charset=utf-8');
+				headers.push('Content-Transfer-Encoding: quoted-printable');
+				body = '\r\n' + email.html;
+			} else if (email.text) {
+				headers.push('Content-Type: text/plain; charset=utf-8');
+				headers.push('Content-Transfer-Encoding: quoted-printable');
+				body = '\r\n' + email.text;
 			}
 
-			if (email.text) {
-				msg.addMessage({
-					contentType: 'text/plain',
-					data: email.text,
-				});
-			}
+			// Combine headers and body
+			const rawMessage = headers.join('\r\n') + '\r\n' + body;
 
 			// Create EmailMessage instance
 			const message = new EmailMessage(
 				email.from.email,
 				email.to[0].email, // Primary recipient
-				msg.asRaw()
+				rawMessage
 			);
 
 			// Send via appropriate binding
