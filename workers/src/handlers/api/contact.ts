@@ -106,27 +106,17 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			},
 		};
 
-		// Configure email service
+		// Configure email service - Google Workspace only
 		const emailConfig: EmailServiceConfig = {
 			providers: {
-				cloudflare: {
-					enabled: !!(env.SEND_EMAIL || env.EMAIL),
-					priority: 1,
-				},
-				sendgrid: {
-					enabled: !!env.SENDGRID_API_KEY,
-					priority: 2,
-					apiKey: env.SENDGRID_API_KEY || '',
-					fromEmail: env.SENDGRID_FROM_EMAIL,
-					fromName: env.SENDGRID_FROM_NAME,
-				},
 				google: {
-					enabled: false, // Disabled for now
-					priority: 3,
-					serviceAccountKey: '',
+					enabled: !!env.GOOGLE_SERVICE_ACCOUNT_KEY,
+					priority: 1,
+					serviceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
+					delegatedEmail: env.GOOGLE_DELEGATED_EMAIL,
 				},
 			},
-			fallbackEnabled: true,
+			fallbackEnabled: false, // No fallback with single provider
 			maxRetries: 3,
 			retryDelay: 1000,
 			allowedDomains: env.ALLOWED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
@@ -142,7 +132,7 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 		// Send main notification email
 		const mainEmailResponse = await emailService.send({
 			from: {
-				email: env.FROM_EMAIL || 'noreply@phialo.de',
+				email: env.GOOGLE_DELEGATED_EMAIL || env.FROM_EMAIL || 'noreply@phialo.de',
 				name: 'Phialo Website',
 			},
 			to: [{
@@ -184,7 +174,7 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 				
 				await emailService.send({
 					from: {
-						email: env.FROM_EMAIL || 'noreply@phialo.de',
+						email: env.GOOGLE_DELEGATED_EMAIL || env.FROM_EMAIL || 'noreply@phialo.de',
 						name: 'Phialo Design',
 					},
 					to: [{

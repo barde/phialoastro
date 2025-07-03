@@ -34,7 +34,7 @@ export default {
       });
       
       // Handle request through router
-      const response = await router.handle(context);
+      const response = await router.handle(request, context);
       
       if (!response) {
         throw new Error('No response from router');
