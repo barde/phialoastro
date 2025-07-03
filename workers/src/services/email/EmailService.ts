@@ -1,6 +1,4 @@
 import type { EmailProvider, EmailMessage, EmailResponse, EmailServiceConfig } from './types';
-import { CloudflareEmailProvider } from './providers/CloudflareEmailProvider';
-import { SendGridEmailProvider } from './providers/SendGridEmailProvider';
 import { GoogleWorkspaceEmailProvider } from './providers/GoogleWorkspaceEmailProvider';
 import { logger } from '../../utils/logger';
 
@@ -14,41 +12,18 @@ export class EmailService {
 	}
 
 	private initializeProviders(env: any): void {
-		const providerConfigs = [
-			{
-				enabled: this.config.providers.cloudflare?.enabled,
-				priority: this.config.providers.cloudflare?.priority || 0,
-				create: () => new CloudflareEmailProvider(env, this.config.providers.cloudflare),
-			},
-			{
-				enabled: this.config.providers.sendgrid?.enabled,
-				priority: this.config.providers.sendgrid?.priority || 0,
-				create: () => new SendGridEmailProvider(this.config.providers.sendgrid!),
-			},
-			{
-				enabled: this.config.providers.google?.enabled,
-				priority: this.config.providers.google?.priority || 0,
-				create: () => new GoogleWorkspaceEmailProvider(this.config.providers.google!),
-			},
-		];
-
-		// Sort by priority (lower number = higher priority)
-		const sortedConfigs = providerConfigs
-			.filter(p => p.enabled)
-			.sort((a, b) => a.priority - b.priority);
-
-		for (const config of sortedConfigs) {
-			try {
-				const provider = config.create();
-				this.providers.push(provider);
-				logger.info(`Initialized email provider: ${provider.getName()}`);
-			} catch (error) {
-				logger.error(`Failed to initialize email provider`, { error });
-			}
+		// Only use Google Workspace provider
+		if (!this.config.providers.google?.enabled) {
+			throw new Error('Google Workspace email provider is not configured');
 		}
 
-		if (this.providers.length === 0) {
-			throw new Error('No email providers were successfully initialized');
+		try {
+			const provider = new GoogleWorkspaceEmailProvider(this.config.providers.google);
+			this.providers.push(provider);
+			logger.info(`Initialized email provider: ${provider.getName()}`);
+		} catch (error) {
+			logger.error(`Failed to initialize Google Workspace email provider`, { error });
+			throw new Error('Failed to initialize email provider');
 		}
 	}
 
