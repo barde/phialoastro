@@ -1,8 +1,140 @@
-# Email Service Setup Guide - Google Workspace Gmail API
+# Email Service Setup Guide
 
-This guide walks you through setting up the Google Workspace Gmail API for sending emails from the Phialo Design contact form.
+This guide walks you through setting up email providers for the Phialo Design contact form. The system supports multiple providers with automatic failover:
 
-## Prerequisites
+1. **SendGrid** (Primary - Recommended for its free tier)
+2. **Google Workspace Gmail API** (Fallback - Requires paid Google Workspace account)
+
+## Quick Start (SendGrid Only)
+
+For most users, SendGrid alone is sufficient. Here's the fastest setup:
+
+1. **Sign up** at [signup.sendgrid.com](https://signup.sendgrid.com/)
+2. **Create API Key**: Settings → API Keys → Create API Key → Full Access
+3. **Add to Cloudflare**:
+   ```bash
+   wrangler secret put SENDGRID_API_KEY
+   # Paste your key: SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ```
+4. **Deploy** and you're done!
+
+That's it! For detailed instructions or to add Google Workspace as a fallback, continue reading.
+
+## Overview
+
+### Why SendGrid as Primary?
+
+- **Free Tier**: 100 emails/day (3,000/month) - perfect for < 1,000 emails/month
+- **Simple Setup**: Just an API key, no complex OAuth configuration
+- **High Deliverability**: Industry-leading email delivery rates
+- **Developer Friendly**: Excellent API and documentation
+- **No Domain Requirements**: Works without Google Workspace
+
+### Provider Comparison
+
+| Feature | SendGrid (Primary) | Google Workspace (Fallback) |
+|---------|-------------------|----------------------------|
+| Free Tier | 100/day (3,000/month) | No free tier |
+| Setup Complexity | Simple (API key only) | Complex (OAuth + delegation) |
+| Required Account | Free SendGrid account | Paid Google Workspace |
+| Best For | Transactional emails | Complex integrations |
+| Deliverability | Excellent | Good |
+
+---
+
+## Option 1: SendGrid Setup (Recommended)
+
+### Prerequisites
+
+- Email address for account creation
+- Domain access for sender verification (optional but recommended)
+
+### Step 1: Create SendGrid Account
+
+1. Go to **[SendGrid Signup](https://signup.sendgrid.com/)**
+2. Fill in the registration form:
+   - Use a business email (not Gmail/Yahoo)
+   - Select "Transactional Email" as use case
+   - Choose "Website" as the sending method
+3. Verify your email address
+4. Complete the account setup wizard
+
+### Step 2: Generate API Key
+
+1. Log into **[SendGrid Dashboard](https://app.sendgrid.com/)**
+2. Navigate to **Settings → API Keys**
+3. Click "Create API Key"
+4. Choose "Full Access" (or "Restricted Access" with Mail Send permissions)
+5. Name it (e.g., "phialo-website")
+6. **Copy and save the API key** - you won't see it again!
+
+### Step 3: Verify Sender (Recommended)
+
+1. Go to **Settings → Sender Authentication**
+2. Choose one of:
+   - **Single Sender Verification** (easier):
+     - Click "Verify a Single Sender"
+     - Enter `noreply@phialo.de` as the sender
+     - Complete verification via email
+   - **Domain Authentication** (better deliverability):
+     - Click "Authenticate Your Domain"
+     - Follow DNS setup instructions
+
+### Step 4: Configure Environment Variables
+
+#### For Local Development
+
+Create or update `workers/.dev.vars`:
+
+```bash
+# SendGrid configuration (Primary Provider)
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Email settings
+FROM_EMAIL=noreply@phialo.de
+TO_EMAIL=info@phialo.de
+
+# Optional: Turnstile for spam protection
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+```
+
+#### For Production (Cloudflare Workers)
+
+```bash
+# Add SendGrid API key as secret
+wrangler secret put SENDGRID_API_KEY
+# Paste your SendGrid API key when prompted
+
+# Add other secrets if needed
+wrangler secret put TURNSTILE_SECRET_KEY
+```
+
+### Step 5: Test SendGrid Setup
+
+You can test your SendGrid setup with this curl command:
+
+```bash
+curl -X POST https://api.sendgrid.com/v3/mail/send \
+  -H "Authorization: Bearer YOUR_SENDGRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "personalizations": [{
+      "to": [{"email": "test@example.com"}]
+    }],
+    "from": {"email": "noreply@phialo.de"},
+    "subject": "Test Email",
+    "content": [{
+      "type": "text/plain",
+      "value": "This is a test email from SendGrid."
+    }]
+  }'
+```
+
+---
+
+## Option 2: Google Workspace Setup (Fallback)
+
+### Prerequisites
 
 - Google Workspace account with Super Admin privileges
 - Access to Google Cloud Console
@@ -94,6 +226,24 @@ GOOGLE_SERVICE_ACCOUNT_KEY=<paste entire JSON content from Step 4>
 GOOGLE_DELEGATED_EMAIL=noreply@phialo.de
 
 # Email settings
+FROM_EMAIL=noreply@phialo.de
+TO_EMAIL=info@phialo.de
+```
+
+### Step 7: Update Google Workspace Configuration
+
+Since Google Workspace is now the fallback provider, update the configuration:
+
+```bash
+# workers/.dev.vars (for local development)
+# SendGrid (Primary)
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Google Workspace (Fallback) - Optional
+GOOGLE_SERVICE_ACCOUNT_KEY=<paste entire JSON content>
+GOOGLE_DELEGATED_EMAIL=noreply@phialo.de
+
+# Common settings
 FROM_EMAIL=noreply@phialo.de
 TO_EMAIL=info@phialo.de
 ```
@@ -240,19 +390,27 @@ The service generates two email templates:
    - Includes copy of their message
    - Professional branded template
 
-## Migration from Multi-Provider Setup
+## Migration to Multi-Provider Setup
 
-The email service now uses only Google Workspace Gmail API:
+The email service now supports multiple providers with automatic failover:
 
-1. **Removed**: Cloudflare Email Workers integration
-2. **Removed**: SendGrid integration
-3. **Active**: Google Workspace Gmail API with domain-wide delegation
+1. **Primary**: SendGrid (Free tier, simple setup)
+2. **Fallback**: Google Workspace Gmail API (when SendGrid fails)
+3. **Removed**: Direct Web3Forms integration (security improvement)
 
 Benefits:
-- Single, reliable email provider
-- Better deliverability with Google infrastructure
-- Native integration with Google Workspace
-- Detailed logging and monitoring
+- **Cost Savings**: SendGrid's free tier covers up to 3,000 emails/month
+- **Reliability**: Automatic failover to Google Workspace if SendGrid fails
+- **Simplicity**: SendGrid requires only an API key vs complex OAuth setup
+- **Flexibility**: Easy to add more providers or change priority
+
+### Provider Priority
+
+The system tries providers in this order:
+1. SendGrid (if SENDGRID_API_KEY is set)
+2. Google Workspace (if GOOGLE_SERVICE_ACCOUNT_KEY is set)
+
+You can configure either one or both providers. With both configured, the system automatically falls back if the primary fails.
 
 ## Deployment Checklist
 
