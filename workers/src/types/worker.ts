@@ -9,7 +9,8 @@ export interface WorkerEnv {
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
   WEB3FORMS_ACCESS_KEY?: string;
   
-  // Email service configuration - Google Workspace only
+  // Email service configuration
+  SENDGRID_API_KEY?: string;
   GOOGLE_SERVICE_ACCOUNT_KEY?: string;
   GOOGLE_DELEGATED_EMAIL?: string;
   

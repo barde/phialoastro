@@ -1,5 +1,6 @@
 import type { EmailProvider, EmailMessage, EmailResponse, EmailServiceConfig } from './types';
 import { GoogleWorkspaceEmailProvider } from './providers/GoogleWorkspaceEmailProvider';
+import { SendGridEmailProvider } from './providers/SendGridEmailProvider';
 import { logger } from '../../utils/logger';
 
 export class EmailService {
@@ -12,18 +13,44 @@ export class EmailService {
 	}
 
 	private initializeProviders(env: any): void {
-		// Only use Google Workspace provider
-		if (!this.config.providers.google?.enabled) {
-			throw new Error('Google Workspace email provider is not configured');
+		// Initialize providers based on configuration
+		const providers: Array<{ name: string; provider: any; config: any }> = [];
+
+		// SendGrid provider (priority 1)
+		if (this.config.providers.sendgrid?.enabled) {
+			providers.push({
+				name: 'SendGrid',
+				provider: SendGridEmailProvider,
+				config: this.config.providers.sendgrid,
+			});
 		}
 
-		try {
-			const provider = new GoogleWorkspaceEmailProvider(this.config.providers.google);
-			this.providers.push(provider);
-			logger.info(`Initialized email provider: ${provider.getName()}`);
-		} catch (error) {
-			logger.error(`Failed to initialize Google Workspace email provider`, { error });
-			throw new Error('Failed to initialize email provider');
+		// Google Workspace provider (priority 2)
+		if (this.config.providers.google?.enabled) {
+			providers.push({
+				name: 'Google Workspace',
+				provider: GoogleWorkspaceEmailProvider,
+				config: this.config.providers.google,
+			});
+		}
+
+		// Sort by priority
+		providers.sort((a, b) => (a.config.priority || 999) - (b.config.priority || 999));
+
+		// Initialize providers
+		for (const { name, provider, config } of providers) {
+			try {
+				const instance = new provider(config);
+				this.providers.push(instance);
+				logger.info(`Initialized email provider: ${name}`);
+			} catch (error) {
+				logger.error(`Failed to initialize ${name} email provider`, { error });
+				// Continue with other providers
+			}
+		}
+
+		if (this.providers.length === 0) {
+			throw new Error('No email providers could be initialized');
 		}
 	}
 

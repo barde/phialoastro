@@ -37,10 +37,12 @@ ENVIRONMENT = "production"
 [vars]
 ENVIRONMENT = "development"
 
-# Email service configuration - Google Workspace only
-# Note: GOOGLE_SERVICE_ACCOUNT_KEY and GOOGLE_DELEGATED_EMAIL
-# should be set using wrangler secret put or in the Cloudflare dashboard
-# Example: wrangler secret put GOOGLE_SERVICE_ACCOUNT_KEY
+# Email service configuration
+# SendGrid (Primary Provider):
+# - wrangler secret put SENDGRID_API_KEY
+# Google Workspace (Fallback Provider):
+# - wrangler secret put GOOGLE_SERVICE_ACCOUNT_KEY
+# - wrangler secret put GOOGLE_DELEGATED_EMAIL
 
 # Test environment for running tests
 [env.test]

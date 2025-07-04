@@ -106,17 +106,24 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			},
 		};
 
-		// Configure email service - Google Workspace only
+		// Configure email service - SendGrid as primary, Google Workspace as fallback
 		const emailConfig: EmailServiceConfig = {
 			providers: {
+				sendgrid: {
+					enabled: !!env.SENDGRID_API_KEY,
+					priority: 1,
+					apiKey: env.SENDGRID_API_KEY || '',
+					fromEmail: env.FROM_EMAIL || 'noreply@phialo.de',
+					fromName: 'Phialo Design',
+				},
 				google: {
 					enabled: !!env.GOOGLE_SERVICE_ACCOUNT_KEY,
-					priority: 1,
+					priority: 2,
 					serviceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
 					delegatedEmail: env.GOOGLE_DELEGATED_EMAIL,
 				},
 			},
-			fallbackEnabled: false, // No fallback with single provider
+			fallbackEnabled: true, // Enable fallback between providers
 			maxRetries: 3,
 			retryDelay: 1000,
 			allowedDomains: env.ALLOWED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
@@ -132,7 +139,7 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 		// Send main notification email
 		const mainEmailResponse = await emailService.send({
 			from: {
-				email: env.GOOGLE_DELEGATED_EMAIL || env.FROM_EMAIL || 'noreply@phialo.de',
+				email: env.FROM_EMAIL || 'noreply@phialo.de',
 				name: 'Phialo Website',
 			},
 			to: [{
@@ -174,7 +181,7 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 				
 				await emailService.send({
 					from: {
-						email: env.GOOGLE_DELEGATED_EMAIL || env.FROM_EMAIL || 'noreply@phialo.de',
+						email: env.FROM_EMAIL || 'noreply@phialo.de',
 						name: 'Phialo Design',
 					},
 					to: [{

@@ -42,6 +42,13 @@ export interface EmailResponse {
 
 export interface EmailServiceConfig {
 	providers: {
+		sendgrid?: {
+			enabled: boolean;
+			priority: number;
+			apiKey: string;
+			fromEmail?: string;
+			fromName?: string;
+		};
 		google?: {
 			enabled: boolean;
 			priority: number;
