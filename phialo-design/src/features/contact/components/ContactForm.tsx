@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFormPersistence } from '../hooks/useFormPersistence';
+import TurnstileWidget from './TurnstileWidget';
 
 // Translation types
 interface Translations {
@@ -20,6 +21,10 @@ interface Translations {
   messageTooShort: string;
   submitButton: string;
   submitting: string;
+  sendCopyLabel: string;
+  subjectLabel: string;
+  subjectPlaceholder: string;
+  subjectRequired: string;
   successTitle: string;
   successMessage: string;
   errorTitle: string;
@@ -37,7 +42,9 @@ interface ContactFormData {
   name: string;
   email: string;
   phone: string;
+  subject: string;
   message: string;
+  sendCopy: boolean;
 }
 
 // Validation errors interface
@@ -45,6 +52,7 @@ interface ValidationErrors {
   name?: string;
   email?: string;
   phone?: string;
+  subject?: string;
   message?: string;
 }
 
@@ -56,11 +64,15 @@ interface ContactFormProps {
 const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
   // State management
   const [isGerman, setIsGerman] = useState(true);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [turnstileError, setTurnstileError] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     phone: '',
-    message: ''
+    subject: '',
+    message: '',
+    sendCopy: true
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +112,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       messageTooShort: 'Die Nachricht sollte mindestens 10 Zeichen lang sein',
       submitButton: 'Nachricht senden',
       submitting: 'Wird gesendet...',
+      sendCopyLabel: 'Eine Kopie an meine E-Mail senden',
+      subjectLabel: 'Betreff',
+      subjectPlaceholder: 'Worum geht es?',
+      subjectRequired: 'Betreff ist erforderlich',
       successTitle: 'Erfolg!',
       successMessage: 'Ihre Nachricht wurde erfolgreich gesendet. Wir werden uns innerhalb von 24 Stunden bei Ihnen melden.',
       errorTitle: 'Fehler',
@@ -129,6 +145,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       messageTooShort: 'Message should be at least 10 characters long',
       submitButton: 'Send Message',
       submitting: 'Sending...',
+      sendCopyLabel: 'Send a copy to my email',
+      subjectLabel: 'Subject',
+      subjectPlaceholder: 'What is this about?',
+      subjectRequired: 'Subject is required',
       successTitle: 'Success!',
       successMessage: 'Your message has been sent successfully. We will get back to you within 24 hours.',
       errorTitle: 'Error',
@@ -177,6 +197,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
     // Phone validation (optional)
     if (formData.phone && !validatePhone(formData.phone)) {
       newErrors.phone = t.phoneInvalid;
+    }
+
+    // Subject validation
+    if (!formData.subject.trim()) {
+      newErrors.subject = t.subjectRequired;
     }
 
     // Message validation
@@ -229,6 +254,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
           fieldErrors.phone = t.phoneInvalid;
         }
         break;
+      case 'subject':
+        if (!formData.subject.trim()) {
+          fieldErrors.subject = t.subjectRequired;
+        }
+        break;
       case 'message':
         if (!formData.message.trim()) {
           fieldErrors.message = t.messageRequired;
@@ -250,6 +280,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       name: true,
       email: true,
       phone: true,
+      subject: true,
       message: true
     });
 
@@ -259,45 +290,50 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
       return;
     }
 
+    // Check if Turnstile is configured and valid
+    const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+    if (turnstileSiteKey && !turnstileToken) {
+      setErrorMessage(isGerman ? 'Bitte bestätigen Sie, dass Sie kein Roboter sind.' : 'Please confirm you are not a robot.');
+      setSubmitStatus('error');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
 
     try {
-      // Check for API key
-      const accessKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY;
-      if (!accessKey) {
-        throw new Error('Web3Forms access key is not configured. Please set PUBLIC_WEB3FORMS_ACCESS_KEY environment variable.');
-      }
 
-      // Prepare form data for Web3Forms
-      const web3FormData = {
-        access_key: accessKey,
-        subject: `New Contact Request - Phialo Design`,
-        from_name: formData.name,
+      // Prepare form data for API
+      const apiData = {
+        name: formData.name,
         email: formData.email,
+        phone: formData.phone || '',
+        subject: formData.subject,
         message: formData.message,
-        phone: formData.phone || 'Not provided'
+        language: isGerman ? 'de' : 'en',
+        sendCopy: formData.sendCopy,
+        turnstileToken
       };
 
-      // Submit to Web3Forms API
-      const response = await fetch('https://api.web3forms.com/submit', {
+      // Submit to new API endpoint
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(web3FormData)
+        body: JSON.stringify(apiData)
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to send message');
+        throw new Error(result.error || result.message || 'Failed to send message');
       }
       
       setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '', sendCopy: true });
       setTouched({});
       
       // Clear persisted data after successful submission
@@ -329,7 +365,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
 
   // Reset form
   const handleReset = () => {
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    setFormData({ name: '', email: '', phone: '', subject: '', message: '', sendCopy: true });
     setErrors({});
     setTouched({});
     setSubmitStatus('idle');
@@ -395,6 +431,34 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
           )}
         </div>
 
+        {/* Subject Field */}
+        <div className="form-group">
+          <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+            {t.subjectLabel} *
+          </label>
+          <input
+            type="text"
+            id="subject"
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            required
+            aria-invalid={touched.subject && !!errors.subject ? 'true' : 'false'}
+            aria-describedby={errors.subject ? 'subject-error' : undefined}
+            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-300 ${
+              touched.subject && errors.subject ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+            }`}
+            placeholder={t.subjectPlaceholder}
+            disabled={isSubmitting}
+          />
+          {touched.subject && errors.subject && (
+            <p id="subject-error" className="mt-1 text-sm text-red-400" role="alert">
+              {errors.subject}
+            </p>
+          )}
+        </div>
+
         {/* Phone Field */}
         <div className="form-group">
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
@@ -448,6 +512,49 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
               {errors.message}
             </p>
           )}
+        </div>
+
+        {/* Turnstile Widget */}
+        {import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+          <div className="form-group">
+            <TurnstileWidget
+              sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => {
+                setTurnstileToken(token);
+                setTurnstileError(false);
+              }}
+              onError={() => {
+                setTurnstileError(true);
+                setTurnstileToken('');
+              }}
+              onExpire={() => {
+                setTurnstileToken('');
+              }}
+              theme="light"
+              className="mb-2"
+            />
+            {turnstileError && (
+              <p className="mt-1 text-sm text-red-400" role="alert">
+                {isGerman ? 'Captcha-Überprüfung fehlgeschlagen. Bitte versuchen Sie es erneut.' : 'Captcha verification failed. Please try again.'}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Send Copy Checkbox */}
+        <div className="form-group">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="sendCopy"
+              name="sendCopy"
+              checked={formData.sendCopy}
+              onChange={(e) => setFormData(prev => ({ ...prev, sendCopy: e.target.checked }))}
+              className="w-4 h-4 text-gold bg-white border-gray-300 rounded focus:ring-2 focus:ring-gold focus:ring-offset-2"
+              disabled={isSubmitting}
+            />
+            <span className="ml-2 text-sm text-gray-700">{t.sendCopyLabel}</span>
+          </label>
         </div>
 
         {/* Submit Button */}
