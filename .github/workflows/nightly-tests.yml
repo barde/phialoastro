@@ -155,7 +155,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: contains(needs.prepare-matrix.outputs.test_suites, 'unit')
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./phialo-design/coverage
