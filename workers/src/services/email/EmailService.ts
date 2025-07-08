@@ -1,6 +1,7 @@
 import type { EmailProvider, EmailMessage, EmailResponse, EmailServiceConfig } from './types';
 import { GoogleWorkspaceEmailProvider } from './providers/GoogleWorkspaceEmailProvider';
 import { SendGridEmailProvider } from './providers/SendGridEmailProvider';
+import { ResendEmailProvider } from './providers/ResendEmailProvider';
 import { logger } from '../../utils/logger';
 
 export class EmailService {
@@ -16,7 +17,16 @@ export class EmailService {
 		// Initialize providers based on configuration
 		const providers: Array<{ name: string; provider: any; config: any }> = [];
 
-		// SendGrid provider (priority 1)
+		// Resend provider (priority 1)
+		if (this.config.providers.resend?.enabled) {
+			providers.push({
+				name: 'Resend',
+				provider: ResendEmailProvider,
+				config: this.config.providers.resend,
+			});
+		}
+
+		// SendGrid provider (priority 2)
 		if (this.config.providers.sendgrid?.enabled) {
 			providers.push({
 				name: 'SendGrid',
@@ -25,7 +35,7 @@ export class EmailService {
 			});
 		}
 
-		// Google Workspace provider (priority 2)
+		// Google Workspace provider (priority 3)
 		if (this.config.providers.google?.enabled) {
 			providers.push({
 				name: 'Google Workspace',

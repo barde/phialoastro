@@ -38,11 +38,15 @@ ENVIRONMENT = "production"
 ENVIRONMENT = "development"
 
 # Email service configuration
-# SendGrid (Primary Provider):
+# Resend (Primary Provider):
+# - wrangler secret put RESEND_API_KEY
+# SendGrid (Secondary Provider):
 # - wrangler secret put SENDGRID_API_KEY
 # Google Workspace (Fallback Provider):
 # - wrangler secret put GOOGLE_SERVICE_ACCOUNT_KEY
 # - wrangler secret put GOOGLE_DELEGATED_EMAIL
+# Turnstile CAPTCHA:
+# - wrangler secret put TURNSTILE_SECRET_KEY
 
 # Test environment for running tests
 [env.test]
