@@ -2,19 +2,20 @@
 
 This guide walks you through setting up email providers for the Phialo Design contact form. The system supports multiple providers with automatic failover:
 
-1. **SendGrid** (Primary - Recommended for its free tier)
-2. **Google Workspace Gmail API** (Fallback - Requires paid Google Workspace account)
+1. **Resend** (Primary - Modern, developer-friendly email service)
+2. **SendGrid** (Secondary - Great free tier option)
+3. **Google Workspace Gmail API** (Fallback - Requires paid Google Workspace account)
 
-## Quick Start (SendGrid Only)
+## Quick Start (Resend Only)
 
-For most users, SendGrid alone is sufficient. Here's the fastest setup:
+For most users, Resend alone is sufficient. Here's the fastest setup:
 
-1. **Sign up** at [signup.sendgrid.com](https://signup.sendgrid.com/)
-2. **Create API Key**: Settings → API Keys → Create API Key → Full Access
+1. **Sign up** at [resend.com](https://resend.com/)
+2. **Create API Key**: Dashboard → API Keys → Create API Key
 3. **Add to Cloudflare**:
    ```bash
-   wrangler secret put SENDGRID_API_KEY
-   # Paste your key: SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   wrangler secret put RESEND_API_KEY
+   # Paste your key: re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    ```
 4. **Deploy** and you're done!
 
@@ -22,27 +23,116 @@ That's it! For detailed instructions or to add Google Workspace as a fallback, c
 
 ## Overview
 
-### Why SendGrid as Primary?
+### Why Resend as Primary?
 
-- **Free Tier**: 100 emails/day (3,000/month) - perfect for < 1,000 emails/month
-- **Simple Setup**: Just an API key, no complex OAuth configuration
-- **High Deliverability**: Industry-leading email delivery rates
-- **Developer Friendly**: Excellent API and documentation
-- **No Domain Requirements**: Works without Google Workspace
+- **Modern API**: Built for developers with excellent DX
+- **Free Tier**: 3,000 emails/month free
+- **Simple Setup**: Just an API key, no complex configuration
+- **Great Documentation**: Clear, concise API docs
+- **React Email Support**: Native support for React email templates
 
 ### Provider Comparison
 
-| Feature | SendGrid (Primary) | Google Workspace (Fallback) |
-|---------|-------------------|----------------------------|
-| Free Tier | 100/day (3,000/month) | No free tier |
-| Setup Complexity | Simple (API key only) | Complex (OAuth + delegation) |
-| Required Account | Free SendGrid account | Paid Google Workspace |
-| Best For | Transactional emails | Complex integrations |
-| Deliverability | Excellent | Good |
+| Feature | Resend (Primary) | SendGrid (Secondary) | Google Workspace (Fallback) |
+|---------|-----------------|---------------------|----------------------------|
+| Free Tier | 3,000/month | 100/day (3,000/month) | No free tier |
+| Setup Complexity | Very Simple | Simple | Complex (OAuth + delegation) |
+| Required Account | Free Resend account | Free SendGrid account | Paid Google Workspace |
+| Best For | Modern web apps | Transactional emails | Complex integrations |
+| Deliverability | Excellent | Excellent | Good |
 
 ---
 
-## Option 1: SendGrid Setup (Recommended)
+## Option 1: Resend Setup (Primary Provider)
+
+### Prerequisites
+
+- Email address for account creation
+- Domain for verification (optional but recommended)
+
+### Step 1: Create Resend Account
+
+1. Go to **[Resend Signup](https://resend.com/signup)**
+2. Sign up with your email
+3. Verify your email address
+4. Complete the onboarding process
+
+### Step 2: Generate API Key
+
+1. Log into **[Resend Dashboard](https://resend.com/api-keys)**
+2. Click "Create API Key"
+3. Name it (e.g., "phialo-production")
+4. **Copy and save the API key** - it starts with `re_`
+
+### Step 3: Add and Verify Domain (Recommended)
+
+1. Go to **[Domains](https://resend.com/domains)**
+2. Click "Add Domain"
+3. Enter your domain (e.g., `phialo.de`)
+4. Add the DNS records shown:
+   - SPF record
+   - DKIM records
+   - Optional: DMARC record
+5. Click "Verify DNS Records"
+
+### Step 4: Configure Environment Variables
+
+#### For Local Development
+
+Create or update `workers/.dev.vars`:
+
+```bash
+# Resend configuration (Primary Provider)
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Email settings
+FROM_EMAIL=noreply@phialo.de  # Or use onboarding@resend.dev for testing
+TO_EMAIL=info@phialo.de
+
+# Optional: Turnstile for spam protection
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+```
+
+#### For Production (Cloudflare Workers)
+
+```bash
+# Add Resend API key as secret
+wrangler secret put RESEND_API_KEY
+# Paste your Resend API key when prompted
+
+# Add other secrets if needed
+wrangler secret put TURNSTILE_SECRET_KEY
+```
+
+### Step 5: Test Resend Setup
+
+Use the provided test script:
+
+```bash
+# Set your API key
+export RESEND_API_KEY='re_xxxxxxxxxxxx'
+
+# Run the test
+./test-resend-email.sh
+```
+
+Or test with curl:
+
+```bash
+curl -X POST https://api.resend.com/emails \
+  -H "Authorization: Bearer YOUR_RESEND_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "onboarding@resend.dev",
+    "to": ["test@example.com"],
+    "subject": "Test Email",
+    "html": "<p>This is a test email from Resend.</p>"
+  }'
+```
+
+---
+
+## Option 2: SendGrid Setup (Secondary Provider)
 
 ### Prerequisites
 
@@ -394,23 +484,26 @@ The service generates two email templates:
 
 The email service now supports multiple providers with automatic failover:
 
-1. **Primary**: SendGrid (Free tier, simple setup)
-2. **Fallback**: Google Workspace Gmail API (when SendGrid fails)
-3. **Removed**: Direct Web3Forms integration (security improvement)
+1. **Primary**: Resend (Modern API, great developer experience)
+2. **Secondary**: SendGrid (Free tier, battle-tested)
+3. **Fallback**: Google Workspace Gmail API (when other providers fail)
+4. **Removed**: Direct Web3Forms integration (security improvement)
 
 Benefits:
-- **Cost Savings**: SendGrid's free tier covers up to 3,000 emails/month
-- **Reliability**: Automatic failover to Google Workspace if SendGrid fails
-- **Simplicity**: SendGrid requires only an API key vs complex OAuth setup
+- **Modern Stack**: Resend offers the best developer experience
+- **Cost Efficiency**: Both Resend and SendGrid offer 3,000 emails/month free
+- **Triple Redundancy**: Three providers ensure maximum reliability
+- **Simple Setup**: Resend and SendGrid require only API keys
 - **Flexibility**: Easy to add more providers or change priority
 
 ### Provider Priority
 
 The system tries providers in this order:
-1. SendGrid (if SENDGRID_API_KEY is set)
-2. Google Workspace (if GOOGLE_SERVICE_ACCOUNT_KEY is set)
+1. Resend (if RESEND_API_KEY is set)
+2. SendGrid (if SENDGRID_API_KEY is set)
+3. Google Workspace (if GOOGLE_SERVICE_ACCOUNT_KEY is set)
 
-You can configure either one or both providers. With both configured, the system automatically falls back if the primary fails.
+You can configure any combination of providers. With multiple providers configured, the system automatically falls back if one fails.
 
 ## Deployment Checklist
 
