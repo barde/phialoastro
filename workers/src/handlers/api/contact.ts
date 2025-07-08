@@ -106,19 +106,26 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			},
 		};
 
-		// Configure email service - SendGrid as primary, Google Workspace as fallback
+		// Configure email service - Resend as primary, SendGrid as secondary, Google Workspace as fallback
 		const emailConfig: EmailServiceConfig = {
 			providers: {
+				resend: {
+					enabled: !!env.RESEND_API_KEY,
+					priority: 1,
+					apiKey: env.RESEND_API_KEY || '',
+					fromEmail: env.FROM_EMAIL || 'onboarding@resend.dev',
+					fromName: 'Phialo Design',
+				},
 				sendgrid: {
 					enabled: !!env.SENDGRID_API_KEY,
-					priority: 1,
+					priority: 2,
 					apiKey: env.SENDGRID_API_KEY || '',
 					fromEmail: env.FROM_EMAIL || 'noreply@phialo.de',
 					fromName: 'Phialo Design',
 				},
 				google: {
 					enabled: !!env.GOOGLE_SERVICE_ACCOUNT_KEY,
-					priority: 2,
+					priority: 3,
 					serviceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
 					delegatedEmail: env.GOOGLE_DELEGATED_EMAIL,
 				},

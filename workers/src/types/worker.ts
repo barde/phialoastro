@@ -10,6 +10,7 @@ export interface WorkerEnv {
   WEB3FORMS_ACCESS_KEY?: string;
   
   // Email service configuration
+  RESEND_API_KEY?: string;
   SENDGRID_API_KEY?: string;
   GOOGLE_SERVICE_ACCOUNT_KEY?: string;
   GOOGLE_DELEGATED_EMAIL?: string;
