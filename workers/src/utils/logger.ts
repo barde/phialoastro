@@ -176,7 +176,7 @@ class Logger {
  * Default logger instance
  */
 export const logger = new Logger({
-  minLevel: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
+  minLevel: LogLevel.INFO,
   prefix: 'phialo-worker',
 });
 

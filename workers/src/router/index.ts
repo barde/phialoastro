@@ -7,6 +7,7 @@ import { withCache } from '../middleware/cache';
 import { withTiming } from '../middleware/timing';
 import { withCORS } from '../middleware/cors';
 import { handleContactForm } from '../handlers/api/contact';
+import { handleTestEmail } from '../handlers/api/test-email';
 
 // Extend Request with context
 interface ContextRequest extends IRequest {
@@ -34,7 +35,7 @@ export function createRouter() {
     if (response) return response;
   });
   
-  // API routes
+  // API routes - define specific routes before wildcards
   router.post('/api/contact', async (request: ContextRequest) => {
     // Apply CORS for API routes
     return withCORS(request.context, async () => {
@@ -42,7 +43,14 @@ export function createRouter() {
     });
   });
   
-  // Apply middleware chain for GET requests
+  // Test endpoint (non-production only) - must be before wildcard
+  router.get('/api/test-email', async (request: ContextRequest) => {
+    return withCORS(request.context, async () => {
+      return handleTestEmail(request, request.context.env);
+    });
+  });
+  
+  // Apply middleware chain for GET requests - wildcard must be last
   router.get('*', async (request: ContextRequest) => {
     // Apply CORS
     const corsResponse = await withCORS(request.context, async () => {

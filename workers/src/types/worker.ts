@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@cloudflare/workers-types';
+import { ExecutionContext, Fetcher } from '@cloudflare/workers-types';
 
 /**
  * Environment variables and bindings available to the worker
@@ -9,16 +9,13 @@ export interface WorkerEnv {
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
   WEB3FORMS_ACCESS_KEY?: string;
   
-  // Email service configuration
-  SENDGRID_API_KEY?: string;
-  GOOGLE_SERVICE_ACCOUNT_KEY?: string;
-  GOOGLE_DELEGATED_EMAIL?: string;
+  // Resend configuration
+  RESEND_API_KEY?: string;
   
   // Email settings
   FROM_EMAIL?: string;
+  FROM_NAME?: string;
   TO_EMAIL?: string;
-  ALLOWED_EMAIL_DOMAINS?: string;
-  BLOCKED_EMAIL_DOMAINS?: string;
   
   // Turnstile
   TURNSTILE_SECRET_KEY?: string;

@@ -1,8 +1,7 @@
-import { Request as IttyRequest } from 'itty-router';
-import { EmailService } from '../../services/email/EmailService';
+import { IRequest as IttyRequest } from 'itty-router';
 import { TurnstileService } from '../../services/turnstile/TurnstileService';
-import { generateContactEmailTemplate, generateContactConfirmationTemplate } from '../../services/email/templates';
-import type { ContactFormData, EmailServiceConfig } from '../../services/email/types';
+import { sendContactEmails, type ResendMailerConfig } from '../../services/email/resend-mailer';
+import type { ContactFormData } from '../../services/email/types';
 import { logger } from '../../utils/logger';
 import type { CloudflareEnv } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
@@ -106,65 +105,11 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			},
 		};
 
-		// Configure email service - SendGrid as primary, Google Workspace as fallback
-		const emailConfig: EmailServiceConfig = {
-			providers: {
-				sendgrid: {
-					enabled: !!env.SENDGRID_API_KEY,
-					priority: 1,
-					apiKey: env.SENDGRID_API_KEY || '',
-					fromEmail: env.FROM_EMAIL || 'noreply@phialo.de',
-					fromName: 'Phialo Design',
-				},
-				google: {
-					enabled: !!env.GOOGLE_SERVICE_ACCOUNT_KEY,
-					priority: 2,
-					serviceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
-					delegatedEmail: env.GOOGLE_DELEGATED_EMAIL,
-				},
-			},
-			fallbackEnabled: true, // Enable fallback between providers
-			maxRetries: 3,
-			retryDelay: 1000,
-			allowedDomains: env.ALLOWED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
-			blockedDomains: env.BLOCKED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
-		};
-
-		// Initialize email service
-		const emailService = new EmailService(emailConfig, env);
-
-		// Generate email template
-		const mainEmailTemplate = generateContactEmailTemplate(contactData);
-
-		// Send main notification email
-		const mainEmailResponse = await emailService.send({
-			from: {
-				email: env.FROM_EMAIL || 'noreply@phialo.de',
-				name: 'Phialo Website',
-			},
-			to: [{
-				email: env.TO_EMAIL || 'info@phialo.de',
-				name: 'Phialo Design',
-			}],
-			replyTo: {
-				email: contactData.email,
-				name: contactData.name,
-			},
-			subject: mainEmailTemplate.subject,
-			html: mainEmailTemplate.html,
-			text: mainEmailTemplate.text,
-			tags: ['contact-form', contactData.language],
-			metadata: {
-				formId: 'contact',
-				language: contactData.language,
-			},
-		});
-
-		if (!mainEmailResponse.success) {
-			logger.error('Failed to send main email', { error: mainEmailResponse.error });
-			
+		// Check if Resend API key is configured
+		if (!env.RESEND_API_KEY) {
+			logger.error('Resend API key not configured');
 			return new Response(JSON.stringify({ 
-				error: 'Failed to send message. Please try again later.',
+				error: 'Email service not configured. Please contact administrator.',
 			}), {
 				status: 500,
 				headers: { 
@@ -174,47 +119,50 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			});
 		}
 
-		// Send confirmation email to user (Feature #151)
-		if (body.sendCopy !== false) { // Default to true
-			try {
-				const confirmationTemplate = generateContactConfirmationTemplate(contactData);
-				
-				await emailService.send({
-					from: {
-						email: env.FROM_EMAIL || 'noreply@phialo.de',
-						name: 'Phialo Design',
-					},
-					to: [{
-						email: contactData.email,
-						name: contactData.name,
-					}],
-					subject: confirmationTemplate.subject,
-					html: confirmationTemplate.html,
-					text: confirmationTemplate.text,
-					tags: ['contact-form-confirmation', contactData.language],
-					metadata: {
-						formId: 'contact-confirmation',
-						language: contactData.language,
-					},
-				});
+		// Configure email service
+		const mailerConfig: ResendMailerConfig = {
+			resendApiKey: env.RESEND_API_KEY,
+			fromEmail: env.FROM_EMAIL,
+			fromName: env.FROM_NAME,
+			toEmail: env.TO_EMAIL,
+		};
 
-				logger.info('Confirmation email sent to user', { email: contactData.email });
-			} catch (error) {
-				// Don't fail the request if confirmation email fails
-				logger.error('Failed to send confirmation email', { error });
-			}
+		// Send emails using Resend
+		logger.info('Sending contact form emails', {
+			from: contactData.email,
+			subject: contactData.subject,
+			toEmail: env.TO_EMAIL || 'info@phialo.de',
+		});
+
+		const emailResult = await sendContactEmails(contactData, mailerConfig);
+
+		if (!emailResult.success) {
+			logger.error('Failed to send emails', { error: emailResult.error });
+			return new Response(JSON.stringify({ 
+				error: 'Failed to send email. Please try again later.',
+				details: emailResult.error,
+			}), {
+				status: 500,
+				headers: { 
+					'Content-Type': 'application/json',
+					...API_SECURITY_HEADERS,
+				},
+			});
 		}
 
 		// Return success response
+		logger.info('Contact form emails sent successfully');
 		return new Response(JSON.stringify({
 			success: true,
 			message: contactData.language === 'de' 
-				? 'Ihre Nachricht wurde erfolgreich gesendet.'
-				: 'Your message has been sent successfully.',
-			messageId: mainEmailResponse.messageId,
+				? 'Vielen Dank für Ihre Nachricht. Wir werden uns in Kürze bei Ihnen melden.'
+				: 'Thank you for your message. We will get back to you soon.',
 		}), {
 			status: 200,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 
+				'Content-Type': 'application/json',
+				...API_SECURITY_HEADERS,
+			},
 		});
 
 	} catch (error) {
@@ -224,7 +172,10 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			error: 'An unexpected error occurred. Please try again later.',
 		}), {
 			status: 500,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 
+				'Content-Type': 'application/json',
+				...API_SECURITY_HEADERS,
+			},
 		});
 	}
 }

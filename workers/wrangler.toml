@@ -37,12 +37,14 @@ ENVIRONMENT = "production"
 [vars]
 ENVIRONMENT = "development"
 
-# Email service configuration
-# SendGrid (Primary Provider):
-# - wrangler secret put SENDGRID_API_KEY
-# Google Workspace (Fallback Provider):
-# - wrangler secret put GOOGLE_SERVICE_ACCOUNT_KEY
-# - wrangler secret put GOOGLE_DELEGATED_EMAIL
+# Email service configuration using Resend
+# Required secrets:
+# - wrangler secret put RESEND_API_KEY (your Resend API key from https://resend.com)
+# 
+# Optional environment variables (can be set here or as secrets):
+# - FROM_EMAIL: From email address (must be a verified domain in Resend)
+# - FROM_NAME: Name to show in email (defaults to "Phialo Design")
+# - TO_EMAIL: Email to receive contact form submissions (defaults to "info@phialo.de")
 
 # Test environment for running tests
 [env.test]

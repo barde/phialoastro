@@ -20,12 +20,14 @@
     "@types/node": "^24.0.8",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
+    "dotenv": "^17.1.0",
     "miniflare": "^4.20250617.4",
     "typescript": "^5.3.0",
     "vitest": "^3.2.4",
     "wrangler": "^4.22.0"
   },
   "dependencies": {
-    "itty-router": "^5.0.0"
+    "itty-router": "^5.0.0",
+    "resend": "^4.6.0"
   }
 }
