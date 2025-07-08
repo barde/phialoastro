@@ -42,6 +42,13 @@ export interface EmailResponse {
 
 export interface EmailServiceConfig {
 	providers: {
+		resend?: {
+			enabled: boolean;
+			priority: number;
+			apiKey: string;
+			fromEmail?: string;
+			fromName?: string;
+		};
 		sendgrid?: {
 			enabled: boolean;
 			priority: number;
