@@ -138,7 +138,23 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 		};
 
 		// Initialize email service
-		const emailService = new EmailService(emailConfig, env);
+		let emailService: EmailService;
+		try {
+			emailService = new EmailService(emailConfig, env);
+		} catch (error) {
+			logger.error('Failed to initialize email service', { error });
+			
+			return new Response(JSON.stringify({ 
+				error: 'Email service is not configured. Please contact the administrator.',
+				details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+			}), {
+				status: 503,
+				headers: { 
+					'Content-Type': 'application/json',
+					...API_SECURITY_HEADERS,
+				},
+			});
+		}
 
 		// Generate email template
 		const mainEmailTemplate = generateContactEmailTemplate(contactData);
