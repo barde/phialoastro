@@ -221,7 +221,10 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			messageId: mainEmailResponse.messageId,
 		}), {
 			status: 200,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 
+				'Content-Type': 'application/json',
+				...API_SECURITY_HEADERS,
+			},
 		});
 
 	} catch (error) {
@@ -231,7 +234,10 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			error: 'An unexpected error occurred. Please try again later.',
 		}), {
 			status: 500,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 
+				'Content-Type': 'application/json',
+				...API_SECURITY_HEADERS,
+			},
 		});
 	}
 }
