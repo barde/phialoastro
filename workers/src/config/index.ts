@@ -20,7 +20,7 @@ export const API_SECURITY_HEADERS = {
   ...SECURITY_HEADERS,
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
-  'X-API-Version': '1.0',
+  'X-API-Version': '1.0.1',
   'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Pragma': 'no-cache',
   'Expires': '0',
