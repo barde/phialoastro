@@ -1,0 +1,134 @@
+import type { EmailProvider, EmailMessage, EmailResponse } from '../types';
+import { logger } from '../../../utils/logger';
+
+interface ResendConfig {
+  apiKey: string;
+  fromEmail?: string;
+  fromName?: string;
+  enabled?: boolean;
+  priority?: number;
+}
+
+interface ResendApiResponse {
+  id?: string;
+  error?: {
+    message: string;
+    name: string;
+  };
+}
+
+export class ResendEmailProvider implements EmailProvider {
+  private apiKey: string;
+  private fromEmail: string;
+  private fromName: string;
+
+  constructor(config: ResendConfig) {
+    if (!config.apiKey) {
+      throw new Error('Resend API key is required');
+    }
+    
+    this.apiKey = config.apiKey;
+    this.fromEmail = config.fromEmail || 'onboarding@resend.dev';
+    this.fromName = config.fromName || 'Phialo Design';
+  }
+
+  getName(): string {
+    return 'Resend';
+  }
+
+  async isAvailable(): Promise<boolean> {
+    try {
+      // Check if API key is valid by making a minimal request
+      const response = await fetch('https://api.resend.com/domains', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return response.status !== 401; // 401 means invalid API key
+    } catch (error) {
+      logger.error('Resend availability check failed', { error });
+      return false;
+    }
+  }
+
+  async send(email: EmailMessage): Promise<EmailResponse> {
+    try {
+      // Prepare Resend API payload
+      const payload = {
+        from: `${email.from.name || this.fromName} <${email.from.email || this.fromEmail}>`,
+        to: email.to.map(recipient => 
+          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
+        ),
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+        reply_to: email.replyTo ? 
+          (email.replyTo.name ? `${email.replyTo.name} <${email.replyTo.email}>` : email.replyTo.email) : 
+          undefined,
+        cc: email.cc?.map(recipient => 
+          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
+        ),
+        bcc: email.bcc?.map(recipient => 
+          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
+        ),
+        tags: email.tags ? email.tags.reduce((acc, tag) => ({ ...acc, [tag]: tag }), {}) : undefined,
+      };
+
+      // Remove undefined fields
+      Object.keys(payload).forEach(key => {
+        if (payload[key as keyof typeof payload] === undefined) {
+          delete payload[key as keyof typeof payload];
+        }
+      });
+
+      logger.info('Sending email via Resend', {
+        to: email.to[0].email,
+        subject: email.subject,
+      });
+
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json() as ResendApiResponse;
+
+      if (!response.ok) {
+        const errorMessage = result.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(`Resend API error: ${errorMessage}`);
+      }
+
+      if (!result.id) {
+        throw new Error('Resend API returned no message ID');
+      }
+
+      logger.info('Email sent successfully via Resend', {
+        messageId: result.id,
+      });
+
+      return {
+        success: true,
+        messageId: result.id,
+        provider: 'Resend',
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to send email via Resend', {
+        error: errorMessage,
+      });
+
+      return {
+        success: false,
+        error: errorMessage,
+        provider: 'Resend',
+      };
+    }
+  }
+}

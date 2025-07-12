@@ -17,8 +17,8 @@ interface CORSConfig {
  */
 const defaultCORSConfig: CORSConfig = {
   allowOrigin: '*',
-  allowMethods: ['GET', 'HEAD', 'OPTIONS'],
-  allowHeaders: ['Content-Type'],
+  allowMethods: ['GET', 'HEAD', 'OPTIONS', 'POST'],
+  allowHeaders: ['Content-Type', 'Accept', 'X-Requested-With'],
   maxAge: 86400, // 24 hours
   credentials: false,
 };

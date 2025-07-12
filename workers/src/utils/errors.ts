@@ -206,7 +206,7 @@ export function validateRequest(request: Request): void {
   }
 
   // Check method
-  const allowedMethods = ['GET', 'HEAD', 'OPTIONS'];
+  const allowedMethods = ['GET', 'HEAD', 'OPTIONS', 'POST'];
   if (!allowedMethods.includes(request.method)) {
     throw new WorkerError(
       ErrorType.BAD_REQUEST,

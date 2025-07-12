@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue list:*)",
+      "WebFetch(domain:developers.cloudflare.com)"
+    ],
+    "deny": []
+  }
+}
