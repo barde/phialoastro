@@ -59,8 +59,15 @@ export class EmailService {
 			}
 		}
 
+		// Check if any providers were configured
+		const hasConfiguredProviders = Object.values(config.providers).some(p => p.enabled);
+		
 		if (this.providers.length === 0) {
-			throw new Error('No email providers could be initialized');
+			if (!hasConfiguredProviders) {
+				throw new Error('No email providers are configured. Please set at least one provider API key.');
+			} else {
+				throw new Error('No email providers could be initialized despite being configured.');
+			}
 		}
 	}
 
