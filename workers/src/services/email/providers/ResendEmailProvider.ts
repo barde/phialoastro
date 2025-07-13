@@ -37,21 +37,9 @@ export class ResendEmailProvider implements EmailProvider {
   }
 
   async isAvailable(): Promise<boolean> {
-    try {
-      // Check if API key is valid by making a minimal request
-      const response = await fetch('https://api.resend.com/domains', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      return response.status !== 401; // 401 means invalid API key
-    } catch (error) {
-      logger.error('Resend availability check failed', { error });
-      return false;
-    }
+    // Always return true - availability will be determined by actual send attempts
+    // This avoids blocking API calls before sending emails
+    return true;
   }
 
   async send(email: EmailMessage): Promise<EmailResponse> {
