@@ -16,10 +16,10 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy to Cloudflare Workers Preview
+    name: Deploy Master to Cloudflare Workers
     environment:
-      name: preview
-      url: https://phialo-design-preview.meise.workers.dev
+      name: master
+      url: https://phialo-master.meise.workers.dev
     
     steps:
       - name: Checkout code
@@ -57,22 +57,49 @@ jobs:
       - name: Build Astro site
         working-directory: ./phialo-design
         run: pnpm run build
+        
+      - name: Create temporary wrangler config
+        working-directory: ./workers
+        run: |
+          cat > wrangler-master.toml << EOF
+          name = "phialo-master"
+          main = "src/index-simple.ts"
+          compatibility_date = "2024-09-25"
+          compatibility_flags = ["nodejs_compat"]
+          workers_dev = true
+          
+          [assets]
+          directory = "../phialo-design/dist"
+          binding = "ASSETS"
+          
+          [vars]
+          ENVIRONMENT = "master"
+          EOF
+      
+      - name: Install Wrangler
+        working-directory: ./workers
+        run: npm install wrangler@4.22.0
       
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: 'workers'
-          command: deploy --env preview
-          secrets: |
-            RESEND_API_KEY
-            FROM_EMAIL
-            TO_EMAIL
+        id: deploy
+        working-directory: ./workers
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Deploy the worker
+          npx wrangler deploy --config wrangler-master.toml
+          
+          # Set secrets for the deployed worker
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-master
+          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-master
+          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-master
+      
+      - name: Clean up temporary config
+        if: always()
+        working-directory: ./workers
+        run: |
+          rm -f wrangler-master.toml
       
       - name: Create deployment
         uses: actions/github-script@v7
@@ -82,8 +109,8 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.sha,
-              environment: 'preview',
-              description: 'Cloudflare Workers Preview Deployment',
+              environment: 'master',
+              description: 'Cloudflare Workers Master Deployment',
               production_environment: false,
               auto_merge: false,
               required_contexts: []
@@ -94,6 +121,6 @@ jobs:
               repo: context.repo.repo,
               deployment_id: deployment.data.id,
               state: 'success',
-              environment_url: 'https://phialo-design-preview.meise.workers.dev',
+              environment_url: 'https://phialo-master.meise.workers.dev',
               description: 'Deployment successful'
             });
