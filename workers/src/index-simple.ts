@@ -148,7 +148,7 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
     console.log('Sending main email...');
     const mainEmailResponse = await emailService.send({
       from: {
-        email: env.FROM_EMAIL || 'noreply@phialo.de',
+        email: env.FROM_EMAIL || 'onboarding@resend.dev',
         name: 'Phialo Website',
       },
       to: [{
@@ -185,7 +185,7 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
         
         await emailService.send({
           from: {
-            email: env.FROM_EMAIL || 'noreply@phialo.de',
+            email: env.FROM_EMAIL || 'onboarding@resend.dev',
             name: 'Phialo Design',
           },
           to: [{
