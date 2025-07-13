@@ -73,6 +73,43 @@ npm run deploy:preview     # Deploy to Cloudflare Workers preview
 ./scripts/clean-project.sh # Remove .DS_Store and other junk files
 ```
 
+## Git LFS Requirements
+
+This repository uses Git Large File Storage (LFS) for managing binary files (images, etc.). **Git LFS is REQUIRED** for development and CI/CD.
+
+### Setup Instructions
+```bash
+# Install Git LFS (if not already installed)
+brew install git-lfs  # macOS
+# or
+sudo apt-get install git-lfs  # Ubuntu/Debian
+
+# Initialize Git LFS in your local repository
+git lfs install
+
+# Pull all LFS files
+git lfs pull
+```
+
+### LFS Configuration
+The repository tracks these file types with LFS (defined in `.gitattributes`):
+- `*.jpg` - JPEG images
+- `*.png` - PNG images  
+- `*.webp` - WebP images
+
+### Important Notes
+- **CI/CD requires LFS**: GitHub Actions workflows use `lfs: true` in checkout steps
+- **Check LFS status**: Run `git lfs status` before pushing to ensure files are properly tracked
+- **Storage quotas**: Be aware of GitHub LFS bandwidth and storage limits
+- **Team coordination**: All team members must have Git LFS installed
+
+### Troubleshooting
+If you encounter LFS-related errors:
+1. Ensure Git LFS is installed: `git lfs version`
+2. Pull LFS files: `git lfs pull`
+3. Check tracked files: `git lfs ls-files`
+4. Verify file status: `git lfs status`
+
 ## PR and Development Guidelines
 
 - Always wait for PR post-push checks like e2e tests
