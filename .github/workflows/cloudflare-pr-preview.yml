@@ -73,6 +73,10 @@ jobs:
           PR_NUMBER = "${{ github.event.pull_request.number }}"
           EOF
       
+      - name: Install Wrangler
+        working-directory: ./workers
+        run: npm install wrangler@4.22.0
+      
       - name: Deploy to Cloudflare Workers
         id: deploy
         working-directory: ./workers
