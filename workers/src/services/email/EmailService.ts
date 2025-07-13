@@ -7,8 +7,11 @@ export class EmailService {
 	private config: EmailServiceConfig;
 
 	constructor(config: EmailServiceConfig, env: any) {
+		logger.info('EmailService constructor called');
 		this.config = config;
+		logger.info('Starting provider initialization');
 		this.initializeProviders(env);
+		logger.info('EmailService constructor completed');
 	}
 
 	private initializeProviders(env: any): void {
@@ -42,7 +45,7 @@ export class EmailService {
 		}
 
 		// Check if any providers were configured
-		const hasConfiguredProviders = Object.values(config.providers).some(p => p.enabled);
+		const hasConfiguredProviders = Object.values(this.config.providers).some(p => p.enabled);
 		
 		if (this.providers.length === 0) {
 			if (!hasConfiguredProviders) {

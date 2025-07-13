@@ -36,8 +36,10 @@ export function createRouter() {
   
   // API routes
   router.post('/api/contact', async (request: ContextRequest) => {
+    console.log('POST /api/contact route matched');
     // Apply CORS for API routes
     return withCORS(request.context, async () => {
+      console.log('Calling handleContactForm');
       return handleContactForm(request, request.context.env);
     });
   });
