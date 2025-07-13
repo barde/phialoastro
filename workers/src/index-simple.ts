@@ -246,6 +246,9 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
 async function handleTestEmail(request: Request, env: WorkerEnv): Promise<Response> {
   try {
     console.log('Test email endpoint called');
+    console.log('API Key present:', !!env.RESEND_API_KEY);
+    console.log('API Key length:', env.RESEND_API_KEY?.length || 0);
+    console.log('API Key prefix:', env.RESEND_API_KEY?.substring(0, 10) || 'not-set');
     
     // Send a minimal test email directly to Resend API
     const payload = {
