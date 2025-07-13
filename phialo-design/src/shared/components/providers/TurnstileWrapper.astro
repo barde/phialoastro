@@ -1,0 +1,15 @@
+---
+import ClientProviders from './ClientProviders';
+---
+
+{/* Only render on client side with Turnstile enabled */}
+{import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+  <ClientProviders client:only="react">
+    <slot />
+  </ClientProviders>
+)}
+
+{/* Render children directly if Turnstile is not enabled */}
+{!import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+  <slot />
+)}
