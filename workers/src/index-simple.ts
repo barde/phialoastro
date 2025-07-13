@@ -38,6 +38,11 @@ export default {
         }, 200);
       }
       
+      // Handle test email endpoint
+      if (url.pathname === '/api/test-email' && request.method === 'POST') {
+        return handleTestEmail(request, env);
+      }
+      
       // Handle contact form API
       if (url.pathname === '/api/contact' && request.method === 'POST') {
         return handleContactForm(request, env);
@@ -234,6 +239,57 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
     return jsonResponse({ 
       error: 'An unexpected error occurred. Please try again later.',
       details: error.message,
+    }, 500);
+  }
+}
+
+async function handleTestEmail(request: Request, env: WorkerEnv): Promise<Response> {
+  try {
+    console.log('Test email endpoint called');
+    
+    // Send a minimal test email directly to Resend API
+    const payload = {
+      from: 'onboarding@resend.dev',
+      to: 'info@phialo.de',
+      subject: 'Test Email from Worker',
+      text: 'This is a test email sent directly to Resend API.',
+      html: '<p>This is a test email sent directly to Resend API.</p>',
+    };
+    
+    console.log('Sending test email with payload:', JSON.stringify(payload));
+    
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    
+    const result = await response.json() as any;
+    console.log('Resend API response:', response.status, JSON.stringify(result));
+    
+    if (!response.ok) {
+      return jsonResponse({
+        error: 'Resend API error',
+        status: response.status,
+        details: result,
+        payload: payload,
+      }, response.status);
+    }
+    
+    return jsonResponse({
+      success: true,
+      messageId: result.id,
+      details: result,
+    }, 200);
+    
+  } catch (error) {
+    console.error('Test email error:', error);
+    return jsonResponse({
+      error: 'Test email failed',
+      details: error instanceof Error ? error.message : 'Unknown error',
     }, 500);
   }
 }
