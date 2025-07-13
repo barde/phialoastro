@@ -4,7 +4,30 @@ A luxury jewelry portfolio website built with Astro, React, and TypeScript. Feat
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+This repository uses Git LFS (Large File Storage) for managing images and other binary files. **You must install Git LFS before cloning:**
+
 ```bash
+# Install Git LFS
+brew install git-lfs  # macOS
+# or
+sudo apt-get install git-lfs  # Ubuntu/Debian
+
+# Initialize Git LFS
+git lfs install
+```
+
+### Setup
+
+```bash
+# Clone the repository (Git LFS files will be downloaded automatically)
+git clone https://github.com/barde/phialoastro.git
+cd phialoastro
+
+# If you already cloned without LFS, pull the LFS files
+git lfs pull
+
 # Install dependencies
 cd phialo-design
 npm install
