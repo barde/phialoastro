@@ -62,7 +62,7 @@ export class ResendEmailProvider implements EmailProvider {
         bcc: email.bcc?.map(recipient => 
           recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
         ),
-        tags: email.tags ? email.tags.reduce((acc, tag) => ({ ...acc, [tag]: tag }), {}) : undefined,
+        tags: email.tags?.length ? email.tags : undefined,
       };
 
       // Remove undefined fields
