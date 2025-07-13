@@ -163,9 +163,11 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
 
     // Send main notification email
     console.log('Sending main email...');
+    // Use onboarding@resend.dev unless FROM_EMAIL is a verified resend.dev email
+    const fromEmail = env.FROM_EMAIL?.endsWith('@resend.dev') ? env.FROM_EMAIL : 'onboarding@resend.dev';
     const mainEmailResponse = await emailService.send({
       from: {
-        email: env.FROM_EMAIL || 'onboarding@resend.dev',
+        email: fromEmail,
         name: 'Phialo Website',
       },
       to: [{
@@ -202,7 +204,7 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
         
         await emailService.send({
           from: {
-            email: env.FROM_EMAIL || 'onboarding@resend.dev',
+            email: fromEmail,
             name: 'Phialo Design',
           },
           to: [{
