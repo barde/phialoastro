@@ -170,8 +170,8 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
 
     // Send main notification email
     console.log('Sending main email...');
-    // Use onboarding@resend.dev unless FROM_EMAIL is a verified resend.dev email
-    const fromEmail = env.FROM_EMAIL?.endsWith('@resend.dev') ? env.FROM_EMAIL : 'onboarding@resend.dev';
+    // Use FROM_EMAIL if it's set, otherwise fallback to onboarding@resend.dev
+    const fromEmail = env.FROM_EMAIL || 'onboarding@resend.dev';
     const mainEmailResponse = await emailService.send({
       from: {
         email: fromEmail,
@@ -246,14 +246,11 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
 async function handleTestEmail(request: Request, env: WorkerEnv): Promise<Response> {
   try {
     console.log('Test email endpoint called');
-    console.log('API Key present:', !!env.RESEND_API_KEY);
-    console.log('API Key length:', env.RESEND_API_KEY?.length || 0);
-    console.log('API Key prefix:', env.RESEND_API_KEY?.substring(0, 10) || 'not-set');
     
     // Send a minimal test email directly to Resend API
     const payload = {
-      from: 'onboarding@resend.dev',
-      to: 'info@phialo.de',
+      from: env.FROM_EMAIL || 'onboarding@resend.dev',
+      to: env.TO_EMAIL || 'info@phialo.de',
       subject: 'Test Email from Worker',
       text: 'This is a test email sent directly to Resend API.',
       html: '<p>This is a test email sent directly to Resend API.</p>',
