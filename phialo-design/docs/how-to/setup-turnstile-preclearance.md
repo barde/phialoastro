@@ -43,9 +43,32 @@ The implementation uses a centralized token management system that:
 2. Navigate to Turnstile section
 3. Create a new site or select existing one
 4. Configure the widget:
-   - **Widget Mode**: Managed
-   - **Pre-clearance Level**: Recommended for multi-form sites
+   - **Widget Mode**: Managed (recommended)
+   - **Pre-clearance**: Enable
+   - **Pre-clearance Level**: See recommendations below
    - **Domains**: Add your production and development domains
+
+#### Choosing the Right Pre-clearance Level
+
+For a jewelry e-commerce site with planned account system, we recommend:
+
+**🔐 Managed Level (Recommended)**
+- Best balance of security and user experience
+- Allows users to bypass Managed and JavaScript challenges
+- Ideal for contact forms, account registration, and general interactions
+
+This level is recommended because:
+- It provides adaptive security based on risk signals
+- Users only see challenges when suspicious activity is detected
+- Perfect for multi-form sites where you want smooth UX but need security
+
+#### Pre-clearance Level Options Explained
+
+| Level | Security | User Experience | Bypasses | Best For |
+|-------|----------|-----------------|----------|----------|
+| **Interactive** | Highest | Most friction | All challenge types | Payment processing, admin access |
+| **Managed** | Medium | Adaptive | Managed & JS challenges | Forms, account systems, APIs |
+| **Non-interactive** | Lowest | Frictionless | Only JS challenges | Public content, landing pages |
 
 ### 2. Set Environment Variables
 
@@ -82,6 +105,37 @@ The `TurnstileProvider` manages tokens with these features:
 - **Automatic caching**: Tokens are cached for 5 minutes
 - **Action-based tokens**: Different forms can use different action names
 - **Graceful degradation**: Falls back to per-widget mode if pre-clearance fails
+- **Security levels**: Configurable per action (interactive, managed, non-interactive)
+
+#### Security Level Configuration
+
+The TurnstileProvider includes default security levels for different actions:
+
+```typescript
+// Default security levels (can be customized)
+const securityLevels = {
+  'contact-form': 'managed',        // Adaptive security
+  'account-signup': 'managed',      // Balanced approach
+  'account-login': 'managed',       // User-friendly
+  'password-reset': 'interactive',  // High security
+  'payment-form': 'interactive',    // Maximum protection
+  'newsletter': 'non-interactive',  // Minimal friction
+  'default': 'managed'              // Fallback
+};
+```
+
+You can customize these levels when initializing the provider:
+
+```tsx
+<TurnstileProvider
+  securityLevels={{
+    'contact-form': 'interactive',  // Override to higher security
+    'custom-action': 'managed',     // Add custom actions
+  }}
+>
+  {children}
+</TurnstileProvider>
+```
 
 #### Using Pre-clearance in Forms
 
@@ -161,10 +215,75 @@ To migrate a form to pre-clearance:
 3. **Use appropriate actions**: Different forms should use different action names
 4. **Monitor usage**: Check Cloudflare analytics for suspicious patterns
 
+## Pre-clearance Strategy for Account System
+
+### Recommended Implementation for Multi-Form Sites
+
+For your planned account system with multiple forms (signup, login, password reset, etc.), here's the optimal pre-clearance strategy:
+
+#### 1. Use Managed Pre-clearance Level
+
+The **Managed level** is ideal for your use case because:
+- **Adaptive Security**: Cloudflare automatically adjusts challenge difficulty based on risk
+- **User-Friendly**: Most legitimate users won't see challenges after initial verification
+- **Bot Protection**: Still blocks sophisticated bots and automated attacks
+- **Cookie Duration**: Valid for 2-4 hours (configurable)
+
+#### 2. Progressive Security Model
+
+Implement different security levels for different areas:
+
+```typescript
+// Example: Different actions for different security needs
+const securityActions = {
+  'contact-form': 'managed',        // General inquiries
+  'account-signup': 'managed',      // New user registration
+  'account-login': 'managed',       // User authentication
+  'password-reset': 'interactive',  // Higher security for account recovery
+  'payment-form': 'interactive',    // Maximum security for payments
+  'newsletter': 'non-interactive'   // Low friction for marketing
+};
+```
+
+#### 3. Implementation Benefits
+
+With Managed pre-clearance enabled:
+- **First Visit**: User completes one Turnstile challenge
+- **Subsequent Forms**: No additional challenges for 2-4 hours
+- **Suspicious Activity**: Cloudflare may request re-verification
+- **High-Risk Actions**: Can still require explicit token validation
+
+#### 4. WAF Integration (Optional)
+
+If using Cloudflare WAF, pre-clearance provides additional benefits:
+- Automatic challenge bypass for validated users
+- Protection against API abuse
+- Rate limiting with user context
+
+### Cookie Behavior and User Flow
+
+1. **Initial Contact**: User visits site and completes contact form
+   - Turnstile challenge shown (if needed)
+   - `cf_clearance` cookie issued (Managed level)
+
+2. **Account Creation**: User decides to create account
+   - No additional challenge required
+   - Cookie validates user as legitimate
+
+3. **Future Visits**: User returns within cookie lifetime
+   - Seamless form submissions
+   - Enhanced user experience
+
+4. **Security Escalation**: User attempts sensitive action
+   - System can require new validation
+   - Higher clearance level replaces existing cookie
+
 ## Future Enhancements
 
 Potential improvements for the account system:
-1. Implement user session tracking
-2. Add progressive challenge difficulty
+1. Implement user session tracking with clearance levels
+2. Add progressive challenge difficulty based on user behavior
 3. Create form-specific security policies
 4. Add analytics for conversion tracking
+5. Integrate with Cloudflare WAF for advanced protection
+6. Implement A/B testing for optimal challenge timing
