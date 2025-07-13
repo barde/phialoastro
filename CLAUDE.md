@@ -387,10 +387,10 @@ npm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
 - **Branch**: Tagged releases only
 - **Note**: Requires zone permissions for custom domain
 
-#### Preview (`phialo-design-preview`) 
-- **URL**: https://phialo-design-preview.meise.workers.dev
-- **Deployment**: Automatic on merge to master
-- **Purpose**: Latest master branch preview
+#### Master (`phialo-master`) 
+- **URL**: https://phialo-master.meise.workers.dev
+- **Deployment**: Automatic on push to master branch
+- **Purpose**: Latest master branch deployment
 - **Manual Deploy**: Available via GitHub Actions UI
 
 #### Ephemeral PR Previews (`phialo-pr-{number}`)
