@@ -14,7 +14,7 @@ export function createErrorResponse(error: WorkerError): Response {
     error: {
       type: error.type,
       message: error.message,
-      ...(process.env.NODE_ENV === 'development' && { details: error.details }),
+      // Details are not included in production for security
     },
   };
 
@@ -206,7 +206,7 @@ export function validateRequest(request: Request): void {
   }
 
   // Check method
-  const allowedMethods = ['GET', 'HEAD', 'OPTIONS'];
+  const allowedMethods = ['GET', 'HEAD', 'OPTIONS', 'POST'];
   if (!allowedMethods.includes(request.method)) {
     throw new WorkerError(
       ErrorType.BAD_REQUEST,

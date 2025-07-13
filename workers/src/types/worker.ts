@@ -7,8 +7,25 @@ export interface WorkerEnv {
   ASSETS: Fetcher;  // Modern assets binding
   BRANCH_NAME?: string;
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
-  WEB3FORMS_ACCESS_KEY?: string;
+  
+  // Email service configuration
+  RESEND_API_KEY?: string;
+  
+  // Email settings
+  FROM_EMAIL?: string;
+  TO_EMAIL?: string;
+  ALLOWED_EMAIL_DOMAINS?: string;
+  BLOCKED_EMAIL_DOMAINS?: string;
+  
+  // Turnstile
+  TURNSTILE_SECRET_KEY?: string;
+  
+  // PR deployment
+  PR_NUMBER?: string;
 }
+
+// Type alias for CloudflareEnv (used in some files)
+export type CloudflareEnv = WorkerEnv;
 
 /**
  * Worker context with request, environment, and execution context

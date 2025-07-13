@@ -1,0 +1,23 @@
+# Email Service Configuration
+# Copy this file to .dev.vars and update with your values
+
+# Email Settings
+TO_EMAIL=test@example.com
+FROM_EMAIL=noreply@phialo.de
+
+# Turnstile (use test keys for development)
+# Always passes: 1x00000000000000000000AA
+# Always blocks: 2x00000000000000000000AB
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+
+# SendGrid (optional)
+# SENDGRID_API_KEY=your_sendgrid_api_key
+# SENDGRID_FROM_EMAIL=noreply@phialo.de
+# SENDGRID_FROM_NAME=Phialo Design
+
+# Google Workspace (optional, not fully implemented)
+# GOOGLE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
+
+# Security Settings (optional)
+# ALLOWED_EMAIL_DOMAINS=gmail.com,outlook.com,yahoo.com
+# BLOCKED_EMAIL_DOMAINS=tempmail.com,guerrillamail.com

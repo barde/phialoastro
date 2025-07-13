@@ -23,9 +23,9 @@ export default {
     try {
       // Log request
       const headers: Record<string, string> = {};
-      request.headers.forEach((value, key) => {
+      for (const [key, value] of request.headers.entries()) {
         headers[key] = value;
-      });
+      }
       
       logger.info('Incoming request', {
         method: request.method,
@@ -34,7 +34,9 @@ export default {
       });
       
       // Handle request through router
-      const response = await router.handle(context);
+      console.log('About to call router.handle');
+      const response = await router.handle(request, context);
+      console.log('Router returned response:', response);
       
       if (!response) {
         throw new Error('No response from router');

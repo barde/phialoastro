@@ -16,6 +16,9 @@ jobs:
       contents: read
       pull-requests: write
       deployments: write
+    environment:
+      name: preview
+      url: https://phialo-pr-${{ github.event.pull_request.number }}.meise.workers.dev
     
     steps:
       - name: Checkout code
@@ -59,8 +62,9 @@ jobs:
         run: |
           cat > wrangler-pr-${{ github.event.pull_request.number }}.toml << EOF
           name = "phialo-pr-${{ github.event.pull_request.number }}"
-          main = "src/index.ts"
+          main = "src/index-simple.ts"
           compatibility_date = "2024-09-25"
+          compatibility_flags = ["nodejs_compat"]
           workers_dev = true
           
           [assets]
@@ -72,15 +76,24 @@ jobs:
           PR_NUMBER = "${{ github.event.pull_request.number }}"
           EOF
       
+      - name: Install Wrangler
+        working-directory: ./workers
+        run: npm install wrangler@4.22.0
+      
       - name: Deploy to Cloudflare Workers
         id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: 'workers'
-          wranglerVersion: '4.22.0'
-          command: deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
+        working-directory: ./workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Deploy the worker
+          npx wrangler deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
+          
+          # Set secrets for the deployed worker
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }}
+          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
+          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
       
       - name: Extract deployment URL
         id: extract-url

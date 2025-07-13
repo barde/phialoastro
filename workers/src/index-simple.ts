@@ -1,154 +1,313 @@
-import { getMimeType } from './utils/mime';
-
-export interface Env {
-  ASSETS: Fetcher;
-  ENVIRONMENT?: string;
-  PR_NUMBER?: string;
-}
+import { WorkerEnv } from './types/worker';
+import { EmailService } from './services/email/EmailService';
+import { generateContactEmailTemplate, generateContactConfirmationTemplate } from './services/email/templates';
+import type { ContactFormData, EmailServiceConfig } from './services/email/types';
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    
+  async fetch(
+    request: Request,
+    env: WorkerEnv,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     try {
-      // Map request to correct asset path
-      let pathname = url.pathname;
+      const url = new URL(request.url);
       
-      // Default to index.html for directory requests
-      if (pathname === '/') {
-        pathname = '/index.html';
-      } else if (pathname.endsWith('/')) {
-        pathname = pathname + 'index.html';
-      } else if (!pathname.includes('.') && pathname !== '/404') {
-        // Try to append /index.html for paths without extensions
-        pathname = pathname + '/index.html';
+      // Handle CORS preflight
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '86400',
+          },
+        });
       }
       
-      // Create mapped request
-      const mappedUrl = new URL(request.url);
-      mappedUrl.pathname = pathname;
-      const mappedRequest = new Request(mappedUrl.toString(), request);
-      
-      // Fetch the asset using the modern ASSETS binding
-      const response = await env.ASSETS.fetch(mappedRequest);
-      
-      // If not found, return the response as-is (will be 404)
-      if (!response.ok && response.status === 404) {
-        return handle404(request, env);
+      // Handle health check
+      if (url.pathname === '/api/health' && request.method === 'GET') {
+        return jsonResponse({
+          status: 'ok',
+          hasResendKey: !!env.RESEND_API_KEY,
+          hasFromEmail: !!env.FROM_EMAIL,
+          hasToEmail: !!env.TO_EMAIL,
+          environment: env.ENVIRONMENT || 'unknown',
+          fromEmail: env.FROM_EMAIL || 'not-set',
+          toEmail: env.TO_EMAIL || 'not-set',
+        }, 200);
       }
       
-      // Create new headers with correct MIME type
-      const headers = new Headers(response.headers);
-      const contentType = getMimeType(pathname);
-      if (contentType) {
-        headers.set('Content-Type', contentType);
+      // Handle test email endpoint
+      if (url.pathname === '/api/test-email' && request.method === 'POST') {
+        return handleTestEmail(request, env);
       }
       
-      // Add cache headers based on file type
-      if (pathname.match(/\.(js|css|woff2?|ttf|otf|eot)$/)) {
-        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-      } else if (pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|avif|ico)$/)) {
-        headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
-      } else if (pathname.match(/\.html$/) || pathname === '/') {
-        headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+      // Handle contact form API
+      if (url.pathname === '/api/contact' && request.method === 'POST') {
+        return handleContactForm(request, env);
       }
       
-      // Add security headers
-      headers.set('X-Frame-Options', 'SAMEORIGIN');
-      headers.set('X-Content-Type-Options', 'nosniff');
-      headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-      
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers,
-      });
-      
-    } catch (e: any) {
-      // Log error for debugging
-      console.error('Error fetching asset:', e);
-      
-      // Return generic error response
-      return new Response('Internal Server Error', {
-        status: 500,
-        headers: {
-          'Content-Type': 'text/plain',
-          'Cache-Control': 'no-store',
-        },
-      });
+      // Serve static assets for all other requests
+      try {
+        return await env.ASSETS.fetch(request);
+      } catch (e) {
+        return new Response('Not found', { status: 404 });
+      }
+    } catch (error) {
+      console.error('Worker error:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Internal server error', 
+          message: error.message 
+        }), 
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
   },
 };
 
-// Handle 404 errors with custom page
-async function handle404(request: Request, env: Env): Promise<Response> {
+async function handleContactForm(request: Request, env: WorkerEnv): Promise<Response> {
+  console.log('handleContactForm called');
+  
   try {
-    // Try to fetch custom 404 page
-    const notFoundUrl = new URL(request.url);
-    notFoundUrl.pathname = '/404.html';
-    const notFoundRequest = new Request(notFoundUrl.toString(), request);
-    
-    const notFoundResponse = await env.ASSETS.fetch(notFoundRequest);
-    
-    if (notFoundResponse.ok) {
-      // Return 404 page with 404 status
-      return new Response(notFoundResponse.body, {
-        status: 404,
-        statusText: 'Not Found',
-        headers: notFoundResponse.headers,
-      });
+    // Parse request body
+    let body: any;
+    try {
+      body = await request.json();
+      console.log('Received body:', body);
+    } catch (error) {
+      return jsonResponse({ error: 'Invalid JSON body' }, 400);
     }
-  } catch (e) {
-    // Ignore errors, fall through to default 404
-  }
-  
-  // Fallback 404 response
-  const isApiRequest = request.headers.get('Accept')?.includes('application/json');
-  
-  if (isApiRequest) {
-    return new Response(
-      JSON.stringify({
-        error: 'Not Found',
-        message: 'The requested resource could not be found',
-        status: 404,
-      }),
-      {
-        status: 404,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
-        },
+
+    // Validate Turnstile token if enabled
+    if (env.TURNSTILE_SECRET_KEY && body.turnstileToken) {
+      const { validateTurnstileToken } = await import('./utils/turnstile');
+      const remoteIP = request.headers.get('CF-Connecting-IP') || undefined;
+      
+      const turnstileResult = await validateTurnstileToken(
+        body.turnstileToken,
+        env.TURNSTILE_SECRET_KEY,
+        remoteIP
+      );
+
+      if (!turnstileResult.success) {
+        return jsonResponse({
+          error: 'Security verification failed',
+          errorCodes: turnstileResult.error_codes,
+        }, 400);
       }
-    );
-  }
-  
-  return new Response(
-    `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 - Not Found</title>
-  <style>
-    body { font-family: system-ui, sans-serif; text-align: center; padding: 2rem; }
-    h1 { color: #333; }
-    p { color: #666; }
-    a { color: #0066cc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <h1>404 - Page Not Found</h1>
-  <p>The page you are looking for does not exist.</p>
-  <p><a href="/">Go to homepage</a></p>
-</body>
-</html>`,
-    {
-      status: 404,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=0, must-revalidate',
-      },
     }
-  );
+
+    // Validate required fields
+    const requiredFields = ['name', 'email', 'subject', 'message'];
+    const missingFields = requiredFields.filter(field => !body[field]);
+    
+    if (missingFields.length > 0) {
+      return jsonResponse({ 
+        error: 'Missing required fields',
+        fields: missingFields,
+      }, 400);
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(body.email)) {
+      return jsonResponse({ error: 'Invalid email address' }, 400);
+    }
+
+    // Prepare contact form data
+    const contactData: ContactFormData = {
+      name: body.name.trim(),
+      email: body.email.trim().toLowerCase(),
+      phone: body.phone?.trim(),
+      subject: body.subject.trim(),
+      message: body.message.trim(),
+      language: body.language || 'de',
+      metadata: {
+        userAgent: request.headers.get('User-Agent') || undefined,
+        ipAddress: request.headers.get('CF-Connecting-IP') || undefined,
+        timestamp: new Date().toISOString(),
+        referrer: request.headers.get('Referer') || undefined,
+      },
+    };
+
+    // Configure email service - Resend only
+    console.log('Configuring email service with:', {
+      hasResendKey: !!env.RESEND_API_KEY,
+      fromEmail: env.FROM_EMAIL || 'onboarding@resend.dev',
+      toEmail: env.TO_EMAIL || 'info@phialo.de',
+    });
+    
+    const emailConfig: EmailServiceConfig = {
+      providers: {
+        resend: {
+          enabled: !!env.RESEND_API_KEY,
+          priority: 1,
+          apiKey: env.RESEND_API_KEY || '',
+          fromEmail: env.FROM_EMAIL || 'onboarding@resend.dev',
+          fromName: 'Phialo Design',
+        },
+      },
+      fallbackEnabled: false,
+      maxRetries: 3,
+      retryDelay: 1000,
+    };
+
+    // Initialize email service
+    let emailService: EmailService;
+    try {
+      console.log('Initializing email service...');
+      emailService = new EmailService(emailConfig, env);
+      console.log('Email service initialized');
+    } catch (error) {
+      console.error('Failed to initialize email service:', error);
+      return jsonResponse({ 
+        error: 'Email service is not configured. Please set RESEND_API_KEY.',
+        details: env.ENVIRONMENT === 'development' ? error.message : undefined,
+      }, 503);
+    }
+
+    // Generate email template
+    const mainEmailTemplate = generateContactEmailTemplate(contactData);
+
+    // Send main notification email
+    console.log('Sending main email...');
+    // Use FROM_EMAIL if it's set, otherwise fallback to onboarding@resend.dev
+    const fromEmail = env.FROM_EMAIL || 'onboarding@resend.dev';
+    const mainEmailResponse = await emailService.send({
+      from: {
+        email: fromEmail,
+        name: 'Phialo Website',
+      },
+      to: [{
+        email: env.TO_EMAIL || 'info@phialo.de',
+        name: 'Phialo Design',
+      }],
+      replyTo: {
+        email: contactData.email,
+        name: contactData.name,
+      },
+      subject: mainEmailTemplate.subject,
+      html: mainEmailTemplate.html,
+      text: mainEmailTemplate.text,
+    });
+
+    if (!mainEmailResponse.success) {
+      console.error('Failed to send main email:', mainEmailResponse.error);
+      return jsonResponse({ 
+        error: 'Failed to send message. Please try again later.',
+      }, 500);
+    }
+
+    console.log('Main email sent successfully');
+
+    // Send confirmation email to user (optional)
+    if (body.sendCopy !== false) {
+      try {
+        const confirmationTemplate = generateContactConfirmationTemplate(contactData);
+        
+        await emailService.send({
+          from: {
+            email: fromEmail,
+            name: 'Phialo Design',
+          },
+          to: [{
+            email: contactData.email,
+            name: contactData.name,
+          }],
+          subject: confirmationTemplate.subject,
+          html: confirmationTemplate.html,
+          text: confirmationTemplate.text,
+        });
+
+        console.log('Confirmation email sent to user');
+      } catch (error) {
+        // Don't fail the request if confirmation email fails
+        console.error('Failed to send confirmation email:', error);
+      }
+    }
+
+    // Return success response
+    return jsonResponse({
+      success: true,
+      message: contactData.language === 'de' 
+        ? 'Ihre Nachricht wurde erfolgreich gesendet.'
+        : 'Your message has been sent successfully.',
+      messageId: mainEmailResponse.messageId,
+    }, 200);
+
+  } catch (error) {
+    console.error('Unexpected error in contact form handler:', error);
+    return jsonResponse({ 
+      error: 'An unexpected error occurred. Please try again later.',
+      details: error.message,
+    }, 500);
+  }
+}
+
+async function handleTestEmail(request: Request, env: WorkerEnv): Promise<Response> {
+  try {
+    console.log('Test email endpoint called');
+    
+    // Send a minimal test email directly to Resend API
+    const payload = {
+      from: env.FROM_EMAIL || 'onboarding@resend.dev',
+      to: env.TO_EMAIL || 'info@phialo.de',
+      subject: 'Test Email from Worker',
+      text: 'This is a test email sent directly to Resend API.',
+      html: '<p>This is a test email sent directly to Resend API.</p>',
+    };
+    
+    console.log('Sending test email with payload:', JSON.stringify(payload));
+    
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    
+    const result = await response.json() as any;
+    console.log('Resend API response:', response.status, JSON.stringify(result));
+    
+    if (!response.ok) {
+      return jsonResponse({
+        error: 'Resend API error',
+        status: response.status,
+        details: result,
+        payload: payload,
+      }, response.status);
+    }
+    
+    return jsonResponse({
+      success: true,
+      messageId: result.id,
+      details: result,
+    }, 200);
+    
+  } catch (error) {
+    console.error('Test email error:', error);
+    return jsonResponse({
+      error: 'Test email failed',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+}
+
+function jsonResponse(data: any, status: number): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+    },
+  });
 }
