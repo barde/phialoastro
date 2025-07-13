@@ -1,20 +1,11 @@
 import React, { useEffect, useRef } from 'react';
+import type { TurnstileOptions } from '../../../shared/types/turnstile';
 
 interface TurnstileWidgetProps {
   siteKey: string;
   onVerify: (token: string) => void;
   onError?: () => void;
   onExpire?: () => void;
-}
-
-declare global {
-  interface Window {
-    turnstile: {
-      render: (element: HTMLElement, options: any) => string;
-      reset: (widgetId: string) => void;
-      remove: (widgetId: string) => void;
-    };
-  }
 }
 
 export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
@@ -35,14 +26,15 @@ export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
     
     script.onload = () => {
       if (containerRef.current && window.turnstile) {
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+        const options: Partial<TurnstileOptions> = {
           sitekey: siteKey,
           callback: onVerify,
           'error-callback': onError,
           'expired-callback': onExpire,
           theme: 'light',
           language: 'auto',
-        });
+        };
+        widgetIdRef.current = window.turnstile!.render(containerRef.current, options);
       }
     };
 

@@ -1,0 +1,170 @@
+# Setting Up Cloudflare Turnstile with Pre-clearance
+
+This guide explains how to configure and use Cloudflare Turnstile with pre-clearance in the Phialo Design website. Pre-clearance allows users to complete a single CAPTCHA challenge that validates them for multiple form submissions across the site.
+
+## Overview
+
+The implementation uses a centralized token management system that:
+- Loads the Turnstile script globally for better performance
+- Manages tokens centrally through React Context
+- Executes challenges on-demand when needed
+- Caches tokens for 5 minutes to reduce user friction
+- Supports multiple actions with separate tokens
+
+## Architecture
+
+### Components
+
+1. **TurnstileProvider** (`src/shared/contexts/TurnstileProvider.tsx`)
+   - Central context for token management
+   - Handles script loading and initialization
+   - Manages token cache with expiration
+   - Provides methods for getting and clearing tokens
+
+2. **ClientProviders** (`src/shared/components/providers/ClientProviders.tsx`)
+   - Wrapper component that sets up providers
+   - Handles language detection for Turnstile
+   - Conditionally renders based on configuration
+
+3. **ContactFormWithPreClearance** (`src/features/contact/components/ContactFormWithPreClearance.tsx`)
+   - Enhanced contact form that uses pre-clearance
+   - Requests tokens on form submission
+   - Shows loading/error states for Turnstile
+
+4. **ContactFormWrapper** (`src/features/contact/components/ContactFormWrapper.tsx`)
+   - Smart wrapper that chooses between pre-clearance and widget forms
+   - Provides backward compatibility
+
+## Setup Instructions
+
+### 1. Configure Turnstile in Cloudflare Dashboard
+
+1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Navigate to Turnstile section
+3. Create a new site or select existing one
+4. Configure the widget:
+   - **Widget Mode**: Managed
+   - **Pre-clearance Level**: Recommended for multi-form sites
+   - **Domains**: Add your production and development domains
+
+### 2. Set Environment Variables
+
+Add your Turnstile site key to the environment:
+
+```bash
+# .env or .env.local
+PUBLIC_TURNSTILE_SITE_KEY=your_site_key_here
+```
+
+The secret key should be set in your worker environment:
+```bash
+# For local development
+echo "your_secret_key" | npx wrangler secret put TURNSTILE_SECRET_KEY
+
+# For production (via GitHub Actions)
+# Add TURNSTILE_SECRET_KEY to repository secrets
+```
+
+### 3. Implementation Details
+
+#### Global Script Loading
+
+The Turnstile script is loaded globally in `BaseLayout.astro`:
+```astro
+{import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+)}
+```
+
+#### Token Management
+
+The `TurnstileProvider` manages tokens with these features:
+- **Automatic caching**: Tokens are cached for 5 minutes
+- **Action-based tokens**: Different forms can use different action names
+- **Graceful degradation**: Falls back to per-widget mode if pre-clearance fails
+
+#### Using Pre-clearance in Forms
+
+To use pre-clearance in a form component:
+
+```tsx
+import { useTurnstile } from '@/shared/contexts/TurnstileProvider';
+
+const MyForm = () => {
+  const { getToken, isReady, error } = useTurnstile();
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // Get a token for this specific action
+      const token = await getToken('my-form-action');
+      
+      // Submit form with token
+      await submitForm({ ...formData, turnstileToken: token });
+    } catch (error) {
+      // Handle Turnstile errors
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      <button disabled={!isReady}>Submit</button>
+    </form>
+  );
+};
+```
+
+## Benefits of Pre-clearance
+
+1. **Better User Experience**: Users complete CAPTCHA once, not for every form
+2. **Improved Performance**: Script loaded once globally, not per component
+3. **Centralized Management**: Single source of truth for token state
+4. **Flexible Configuration**: Different actions can have different security levels
+5. **Graceful Degradation**: Falls back to widget mode if needed
+
+## Migration from Widget Mode
+
+The implementation maintains backward compatibility:
+- Existing `ContactForm` component still works with widget mode
+- `ContactFormWrapper` automatically chooses the right implementation
+- No breaking changes for existing integrations
+
+To migrate a form to pre-clearance:
+1. Import and use `useTurnstile` hook
+2. Call `getToken()` on form submission
+3. Remove the `TurnstileWidget` component
+4. Handle loading and error states
+
+## Troubleshooting
+
+### Script Loading Issues
+- Check browser console for CSP errors
+- Verify the site key is correct
+- Ensure domains are whitelisted in Cloudflare
+
+### Token Expiration
+- Tokens expire after 5 minutes
+- The provider automatically requests new tokens
+- Expired tokens are cleaned up automatically
+
+### Development Environment
+- Use test keys (starting with `1x` or `2x`) for development
+- Test keys always pass validation
+- Production keys require proper domain configuration
+
+## Security Considerations
+
+1. **Never expose the secret key**: Only use it server-side
+2. **Validate tokens server-side**: Always verify tokens in your backend
+3. **Use appropriate actions**: Different forms should use different action names
+4. **Monitor usage**: Check Cloudflare analytics for suspicious patterns
+
+## Future Enhancements
+
+Potential improvements for the account system:
+1. Implement user session tracking
+2. Add progressive challenge difficulty
+3. Create form-specific security policies
+4. Add analytics for conversion tracking

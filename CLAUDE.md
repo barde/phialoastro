@@ -377,6 +377,23 @@ npm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
 - [ ] Enable Astro's compression
 - [ ] Use CSS modules for component styles
 
+## Security Features
+
+### Cloudflare Turnstile Pre-clearance
+
+The site implements Cloudflare Turnstile with pre-clearance for enhanced security and user experience:
+
+- **Global Script Loading**: Turnstile script loads once in BaseLayout for performance
+- **Centralized Token Management**: TurnstileProvider manages tokens across the app
+- **Pre-clearance Support**: Users complete CAPTCHA once for multiple form submissions
+- **Graceful Degradation**: Falls back to widget mode if pre-clearance fails
+
+Implementation files:
+- `src/shared/contexts/TurnstileProvider.tsx` - Token management
+- `src/features/contact/components/ContactFormWithPreClearance.tsx` - Pre-clearance form
+- `src/shared/types/turnstile.d.ts` - TypeScript definitions
+- See [Turnstile Setup Guide](./phialo-design/docs/how-to/setup-turnstile-preclearance.md) for details
+
 ## Deployment
 
 ### Deployment Environments
