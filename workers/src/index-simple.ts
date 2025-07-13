@@ -99,6 +99,12 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
     };
 
     // Configure email service - Resend only
+    console.log('Configuring email service with:', {
+      hasResendKey: !!env.RESEND_API_KEY,
+      fromEmail: env.FROM_EMAIL || 'onboarding@resend.dev',
+      toEmail: env.TO_EMAIL || 'info@phialo.de',
+    });
+    
     const emailConfig: EmailServiceConfig = {
       providers: {
         resend: {
