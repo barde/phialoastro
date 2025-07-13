@@ -7,6 +7,7 @@ import { withCache } from '../middleware/cache';
 import { withTiming } from '../middleware/timing';
 import { withCORS } from '../middleware/cors';
 import { handleContactForm } from '../handlers/api/contact';
+import { testHandleContactForm } from '../handlers/api/test-contact';
 
 // Extend Request with context
 interface ContextRequest extends IRequest {
@@ -34,14 +35,30 @@ export function createRouter() {
     if (response) return response;
   });
   
+  // Test API route
+  router.post('/api/test-contact', async (request: ContextRequest) => {
+    console.log('POST /api/test-contact route matched');
+    return testHandleContactForm(request, request.context.env);
+  });
+
   // API routes
   router.post('/api/contact', async (request: ContextRequest) => {
     console.log('POST /api/contact route matched');
-    // Apply CORS for API routes
-    return withCORS(request.context, async () => {
-      console.log('Calling handleContactForm');
-      return handleContactForm(request, request.context.env);
-    });
+    try {
+      // Apply CORS for API routes
+      const result = await withCORS(request.context, async () => {
+        console.log('Calling handleContactForm');
+        return handleContactForm(request, request.context.env);
+      });
+      console.log('Contact form result received');
+      return result;
+    } catch (error) {
+      console.error('Error in /api/contact:', error);
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   });
   
   // Apply middleware chain for GET requests
