@@ -16,6 +16,9 @@ jobs:
       contents: read
       pull-requests: write
       deployments: write
+    environment:
+      name: preview
+      url: https://phialo-pr-${{ github.event.pull_request.number }}.meise.workers.dev
     
     steps:
       - name: Checkout code
