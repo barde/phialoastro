@@ -146,9 +146,13 @@ jobs:
           workingDirectory: 'workers'
           command: deploy --env ${{ github.event.inputs.environment }}
           secrets: |
-            WEB3FORMS_ACCESS_KEY
+            RESEND_API_KEY
+            FROM_EMAIL
+            TO_EMAIL
         env:
-          WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
       
       - name: Get deployment URL
         id: url

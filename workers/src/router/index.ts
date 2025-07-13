@@ -6,6 +6,8 @@ import { validateRequest } from '../utils/errors';
 import { withCache } from '../middleware/cache';
 import { withTiming } from '../middleware/timing';
 import { withCORS } from '../middleware/cors';
+import { handleContactForm } from '../handlers/api/contact';
+import { testHandleContactForm } from '../handlers/api/test-contact';
 
 // Extend Request with context
 interface ContextRequest extends IRequest {
@@ -31,6 +33,32 @@ export function createRouter() {
   router.all('*', async (request: ContextRequest) => {
     const response = await handleRedirect(request.context);
     if (response) return response;
+  });
+  
+  // Test API route
+  router.post('/api/test-contact', async (request: ContextRequest) => {
+    console.log('POST /api/test-contact route matched');
+    return testHandleContactForm(request, request.context.env);
+  });
+
+  // API routes
+  router.post('/api/contact', async (request: ContextRequest) => {
+    console.log('POST /api/contact route matched');
+    try {
+      // Apply CORS for API routes
+      const result = await withCORS(request.context, async () => {
+        console.log('Calling handleContactForm');
+        return handleContactForm(request, request.context.env);
+      });
+      console.log('Contact form result received');
+      return result;
+    } catch (error) {
+      console.error('Error in /api/contact:', error);
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   });
   
   // Apply middleware chain for GET requests
@@ -63,8 +91,8 @@ async function handleOptions(context: WorkerContext): Promise<Response> {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept, X-Requested-With',
       'Access-Control-Max-Age': '86400',
     },
   });
