@@ -1,5 +1,5 @@
 name = "phialo-design"
-main = "src/index.ts"
+main = "src/index-simple.ts"
 compatibility_date = "2024-09-25"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
@@ -18,15 +18,6 @@ name = "phialo-design-preview"
 workers_dev = true
 compatibility_flags = ["nodejs_compat"]
 
-[[env.preview.queues.producers]]
-queue = "email-queue-preview"
-binding = "EMAIL_QUEUE"
-
-[[env.preview.queues.consumers]]
-queue = "email-queue-preview"
-max_batch_size = 10
-max_batch_timeout = 30
-
 [env.preview.vars]
 ENVIRONMENT = "preview"
 # Note: WEB3FORMS_ACCESS_KEY is passed during build via GitHub Actions
@@ -38,15 +29,6 @@ route = "phialo.de/*"
 zone_id = "YOUR_ZONE_ID"
 workers_dev = false
 compatibility_flags = ["nodejs_compat"]
-
-[[env.production.queues.producers]]
-queue = "email-queue-production"
-binding = "EMAIL_QUEUE"
-
-[[env.production.queues.consumers]]
-queue = "email-queue-production"
-max_batch_size = 10
-max_batch_timeout = 30
 
 [env.production.vars]
 ENVIRONMENT = "production"
@@ -65,7 +47,7 @@ ENVIRONMENT = "development"
 [env.test]
 name = "phialo-design-test"
 workers_dev = true
-main = "src/index.ts" # Use full implementation for tests
+main = "src/index-simple.ts" # Use simplified implementation
 compatibility_flags = ["nodejs_compat"]
 
 [env.test.vars]
