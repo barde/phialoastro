@@ -24,6 +24,8 @@ interface TurnstileProviderProps {
   siteKey?: string;
   appearance?: 'always' | 'execute' | 'interaction-only';
   language?: 'auto' | 'de' | 'en';
+  defaultAction?: string;
+  securityLevels?: Record<string, 'interactive' | 'managed' | 'non-interactive'>;
 }
 
 export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
@@ -31,6 +33,16 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
   siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY,
   appearance = 'execute',
   language = 'auto',
+  defaultAction = 'default',
+  securityLevels = {
+    'contact-form': 'managed',
+    'account-signup': 'managed',
+    'account-login': 'managed',
+    'password-reset': 'interactive',
+    'payment-form': 'interactive',
+    'newsletter': 'non-interactive',
+    'default': 'managed'
+  }
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -108,6 +120,21 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
     return executeChallenge(action);
   }, [tokens]);
 
+  // Get the appropriate appearance mode based on security level
+  const getAppearanceForAction = useCallback((action: string): 'always' | 'execute' | 'interaction-only' => {
+    const level = securityLevels[action] || securityLevels['default'] || 'managed';
+    
+    switch (level) {
+      case 'interactive':
+        return 'always'; // Always show interactive challenge
+      case 'non-interactive':
+        return 'interaction-only'; // Never show interactive challenge
+      case 'managed':
+      default:
+        return 'execute'; // Let Cloudflare decide
+    }
+  }, [securityLevels]);
+
   // Execute a challenge to get a new token
   const executeChallenge = useCallback(async (action: string = 'default'): Promise<string> => {
     if (!isReady || !window.turnstile || !siteKey) {
@@ -136,10 +163,13 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       document.body.appendChild(backdrop);
       document.body.appendChild(challengeContainer);
 
+      // Get appropriate appearance for this action
+      const actionAppearance = getAppearanceForAction(action);
+
       const options: TurnstileOptions = {
         sitekey: siteKey,
         action,
-        appearance,
+        appearance: actionAppearance,
         language,
         theme: 'auto',
         callback: (token: string) => {
@@ -191,7 +221,7 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
         reject(error);
       }
     });
-  }, [isReady, siteKey, appearance, language]);
+  }, [isReady, siteKey, language, getAppearanceForAction]);
 
   // Clear a specific token
   const clearToken = useCallback((action: string = 'default') => {
