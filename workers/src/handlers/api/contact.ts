@@ -8,6 +8,7 @@ import type { CloudflareEnv } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
 
 export async function handleContactForm(request: IttyRequest, env: CloudflareEnv): Promise<Response> {
+	logger.info('handleContactForm called');
 	try {
 		// Check request method
 		if (request.method !== 'POST') {
@@ -140,13 +141,15 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 		// Initialize email service
 		let emailService: EmailService;
 		try {
+			logger.info('Initializing email service...');
 			emailService = new EmailService(emailConfig, env);
+			logger.info('Email service initialized successfully');
 		} catch (error) {
 			logger.error('Failed to initialize email service', { error });
 			
 			return new Response(JSON.stringify({ 
 				error: 'Email service is not configured. Please set RESEND_API_KEY.',
-				details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+				details: env.ENVIRONMENT === 'development' ? error.message : undefined,
 			}), {
 				status: 503,
 				headers: { 
