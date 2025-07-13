@@ -80,7 +80,7 @@ phialoastro/
 - **Multilingual** - German/English support with automatic detection
 - **Performance Optimized** - Static generation with selective hydration
 - **Responsive Design** - Mobile-first approach
-- **Contact Forms** - Integrated with Web3Forms
+- **Contact Forms** - Integrated with email API and Turnstile protection
 - **Tutorial Section** - Educational content for jewelry design
 
 ## 🧪 Testing
