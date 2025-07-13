@@ -83,6 +83,25 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
       return jsonResponse({ error: 'Invalid JSON body' }, 400);
     }
 
+    // Validate Turnstile token if enabled
+    if (env.TURNSTILE_SECRET_KEY && body.turnstileToken) {
+      const { validateTurnstileToken } = await import('./utils/turnstile');
+      const remoteIP = request.headers.get('CF-Connecting-IP') || undefined;
+      
+      const turnstileResult = await validateTurnstileToken(
+        body.turnstileToken,
+        env.TURNSTILE_SECRET_KEY,
+        remoteIP
+      );
+
+      if (!turnstileResult.success) {
+        return jsonResponse({
+          error: 'Security verification failed',
+          errorCodes: turnstileResult.error_codes,
+        }, 400);
+      }
+    }
+
     // Validate required fields
     const requiredFields = ['name', 'email', 'subject', 'message'];
     const missingFields = requiredFields.filter(field => !body[field]);
