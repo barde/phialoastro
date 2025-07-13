@@ -504,10 +504,21 @@ You can configure any combination of providers. With multiple providers configur
 ## Deployment Checklist
 
 - [ ] Set all required environment variables
-- [ ] Configure Google Workspace service account
-- [ ] Enable domain-wide delegation
+- [ ] **Add GitHub repository secrets** (see [setup-github-secrets.md](../../../docs/how-to/setup-github-secrets.md))
+- [ ] Configure Google Workspace service account (if using)
+- [ ] Enable domain-wide delegation (if using Google)
 - [ ] Set up Turnstile (site key + secret key)
 - [ ] Test email sending in preview environment
 - [ ] Verify email templates look correct
 - [ ] Check error handling
 - [ ] Monitor initial production deployments
+
+## GitHub Actions Configuration
+
+For the email service to work in PR previews and deployments, you must add the following secrets to your GitHub repository:
+
+1. **RESEND_API_KEY** - Your Resend API key
+2. **FROM_EMAIL** - Sender email address (use `onboarding@resend.dev` for testing)
+3. **TO_EMAIL** - Recipient email address for contact form submissions
+
+See [setup-github-secrets.md](../../../docs/how-to/setup-github-secrets.md) for detailed instructions.
