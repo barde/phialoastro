@@ -106,7 +106,7 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			},
 		};
 
-		// Configure email service - Resend as primary, SendGrid as secondary, Google Workspace as fallback
+		// Configure email service - Resend only
 		const emailConfig: EmailServiceConfig = {
 			providers: {
 				resend: {
@@ -117,20 +117,20 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 					fromName: 'Phialo Design',
 				},
 				sendgrid: {
-					enabled: !!env.SENDGRID_API_KEY,
+					enabled: false,
 					priority: 2,
-					apiKey: env.SENDGRID_API_KEY || '',
-					fromEmail: env.FROM_EMAIL || 'noreply@phialo.de',
-					fromName: 'Phialo Design',
+					apiKey: '',
+					fromEmail: '',
+					fromName: '',
 				},
 				google: {
-					enabled: !!env.GOOGLE_SERVICE_ACCOUNT_KEY,
+					enabled: false,
 					priority: 3,
-					serviceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
-					delegatedEmail: env.GOOGLE_DELEGATED_EMAIL,
+					serviceAccountKey: '',
+					delegatedEmail: undefined,
 				},
 			},
-			fallbackEnabled: true, // Enable fallback between providers
+			fallbackEnabled: false, // No fallback needed with single provider
 			maxRetries: 3,
 			retryDelay: 1000,
 			allowedDomains: env.ALLOWED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
@@ -145,7 +145,7 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			logger.error('Failed to initialize email service', { error });
 			
 			return new Response(JSON.stringify({ 
-				error: 'Email service is not configured. Please contact the administrator.',
+				error: 'Email service is not configured. Please set RESEND_API_KEY.',
 				details: process.env.NODE_ENV === 'development' ? error.message : undefined,
 			}), {
 				status: 503,

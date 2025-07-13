@@ -1,6 +1,4 @@
 import type { EmailProvider, EmailMessage, EmailResponse, EmailServiceConfig } from './types';
-import { GoogleWorkspaceEmailProvider } from './providers/GoogleWorkspaceEmailProvider';
-import { SendGridEmailProvider } from './providers/SendGridEmailProvider';
 import { ResendEmailProvider } from './providers/ResendEmailProvider';
 import { logger } from '../../utils/logger';
 
@@ -26,23 +24,7 @@ export class EmailService {
 			});
 		}
 
-		// SendGrid provider (priority 2)
-		if (this.config.providers.sendgrid?.enabled) {
-			providers.push({
-				name: 'SendGrid',
-				provider: SendGridEmailProvider,
-				config: this.config.providers.sendgrid,
-			});
-		}
-
-		// Google Workspace provider (priority 3)
-		if (this.config.providers.google?.enabled) {
-			providers.push({
-				name: 'Google Workspace',
-				provider: GoogleWorkspaceEmailProvider,
-				config: this.config.providers.google,
-			});
-		}
+		// Other providers disabled - using Resend only
 
 		// Sort by priority
 		providers.sort((a, b) => (a.config.priority || 999) - (b.config.priority || 999));
@@ -64,9 +46,9 @@ export class EmailService {
 		
 		if (this.providers.length === 0) {
 			if (!hasConfiguredProviders) {
-				throw new Error('No email providers are configured. Please set at least one provider API key.');
+				throw new Error('Resend is not configured. Please set RESEND_API_KEY.');
 			} else {
-				throw new Error('No email providers could be initialized despite being configured.');
+				throw new Error('Resend could not be initialized despite being configured.');
 			}
 		}
 	}
