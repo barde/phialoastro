@@ -25,6 +25,17 @@ export default {
         });
       }
       
+      // Handle health check
+      if (url.pathname === '/api/health' && request.method === 'GET') {
+        return jsonResponse({
+          status: 'ok',
+          hasResendKey: !!env.RESEND_API_KEY,
+          hasFromEmail: !!env.FROM_EMAIL,
+          hasToEmail: !!env.TO_EMAIL,
+          environment: env.ENVIRONMENT || 'unknown',
+        }, 200);
+      }
+      
       // Handle contact form API
       if (url.pathname === '/api/contact' && request.method === 'POST') {
         return handleContactForm(request, env);
