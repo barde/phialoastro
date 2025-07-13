@@ -1,10 +1,6 @@
 # Email Service Setup Guide
 
-This guide walks you through setting up email providers for the Phialo Design contact form. The system supports multiple providers with automatic failover:
-
-1. **Resend** (Primary - Modern, developer-friendly email service)
-2. **SendGrid** (Secondary - Great free tier option)
-3. **Google Workspace Gmail API** (Fallback - Requires paid Google Workspace account)
+This guide walks you through setting up the email service for the Phialo Design contact form using Resend.
 
 ## Quick Start (Resend Only)
 
