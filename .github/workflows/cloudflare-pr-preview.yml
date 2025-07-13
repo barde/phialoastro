@@ -81,6 +81,14 @@ jobs:
           workingDirectory: 'workers'
           wranglerVersion: '4.22.0'
           command: deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
+          secrets: |
+            RESEND_API_KEY
+            FROM_EMAIL
+            TO_EMAIL
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
       
       - name: Extract deployment URL
         id: extract-url
