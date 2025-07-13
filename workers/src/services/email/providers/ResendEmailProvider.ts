@@ -75,6 +75,7 @@ export class ResendEmailProvider implements EmailProvider {
       logger.info('Sending email via Resend', {
         to: email.to[0].email,
         subject: email.subject,
+        payload: JSON.stringify(payload),
       });
 
       const response = await fetch('https://api.resend.com/emails', {
@@ -90,6 +91,11 @@ export class ResendEmailProvider implements EmailProvider {
 
       if (!response.ok) {
         const errorMessage = result.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+        logger.error('Resend API error response', {
+          status: response.status,
+          error: result.error,
+          payload: JSON.stringify(payload),
+        });
         throw new Error(`Resend API error: ${errorMessage}`);
       }
 
