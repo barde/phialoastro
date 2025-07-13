@@ -8,16 +8,6 @@ workers_dev = true
 directory = "../phialo-design/dist"
 binding = "ASSETS"
 
-# Email queue configuration
-[[queues.producers]]
-queue = "email-queue"
-binding = "EMAIL_QUEUE"
-
-[[queues.consumers]]
-queue = "email-queue"
-max_batch_size = 10
-max_batch_timeout = 30
-
 [build]
 command = "npm run build"
 cwd = "../phialo-design"

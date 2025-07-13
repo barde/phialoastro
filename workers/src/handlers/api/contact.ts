@@ -9,6 +9,7 @@ import { API_SECURITY_HEADERS } from '../../config';
 
 export async function handleContactForm(request: IttyRequest, env: CloudflareEnv): Promise<Response> {
 	logger.info('handleContactForm called');
+	console.log('handleContactForm - start', { method: request.method });
 	try {
 		// Check request method
 		if (request.method !== 'POST') {
@@ -25,7 +26,9 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 		// Parse request body
 		let body: any;
 		try {
+			console.log('handleContactForm - parsing body');
 			body = await request.json();
+			console.log('handleContactForm - body parsed', body);
 		} catch (error) {
 			return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
 				status: 400,
