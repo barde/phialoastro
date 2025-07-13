@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleContactForm } from '../contact';
-import { EmailQueueMessageType } from '../../../types/queue';
+import { EmailService } from '../../../services/email/EmailService';
 
 // Mock dependencies
+vi.mock('../../../services/email/EmailService');
 vi.mock('../../../services/turnstile/TurnstileService', () => ({
   TurnstileService: vi.fn().mockImplementation(() => ({
     validate: vi.fn().mockResolvedValue({ success: true }),
@@ -20,17 +21,23 @@ vi.mock('../../../utils/logger', () => ({
 describe('handleContactForm', () => {
   let mockRequest: any;
   let mockEnv: any;
-  let mockQueueSend: any;
+  let mockEmailService: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
-    mockQueueSend = vi.fn().mockResolvedValue(undefined);
+    mockEmailService = {
+      send: vi.fn().mockResolvedValue({
+        success: true,
+        messageId: 'test-message-id',
+        provider: 'Resend',
+      }),
+    };
+    
+    vi.mocked(EmailService).mockImplementation(() => mockEmailService);
     
     mockEnv = {
-      EMAIL_QUEUE: {
-        send: mockQueueSend,
-      },
+      RESEND_API_KEY: 'test-key',
       FROM_EMAIL: 'noreply@test.com',
       TO_EMAIL: 'admin@test.com',
       ENVIRONMENT: 'test',
@@ -111,26 +118,28 @@ describe('handleContactForm', () => {
       language: 'en',
     };
 
-    it('should queue email and return success', async () => {
+    it('should send email and return success', async () => {
       mockRequest.json.mockResolvedValue(validFormData);
       
       const response = await handleContactForm(mockRequest, mockEnv);
       const body = await response.json();
       
-      expect(response.status).toBe(202);
+      expect(response.status).toBe(200);
       expect(body.success).toBe(true);
-      expect(body.message).toBe('Your message has been received and will be processed shortly.');
+      expect(body.message).toBe('Your message has been sent successfully.');
+      expect(body.messageId).toBe('test-message-id');
       
-      expect(mockQueueSend).toHaveBeenCalledWith(
+      expect(mockEmailService.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: EmailQueueMessageType.CONTACT_FORM,
-          data: expect.objectContaining({
-            name: 'Test User',
-            email: 'test@example.com',
-            subject: 'Test Subject',
-            message: 'Test message content',
-            language: 'en',
+          from: expect.objectContaining({
+            email: 'noreply@test.com',
           }),
+          to: expect.arrayContaining([
+            expect.objectContaining({
+              email: 'admin@test.com',
+            }),
+          ]),
+          subject: 'New Contact Request: Test Subject',
         })
       );
     });
@@ -144,7 +153,7 @@ describe('handleContactForm', () => {
       const response = await handleContactForm(mockRequest, mockEnv);
       const body = await response.json();
       
-      expect(body.message).toBe('Ihre Nachricht wurde erfolgreich empfangen und wird in Kürze bearbeitet.');
+      expect(body.message).toBe('Ihre Nachricht wurde erfolgreich gesendet.');
     });
 
     it('should include metadata in queued message', async () => {
@@ -160,23 +169,12 @@ describe('handleContactForm', () => {
       
       await handleContactForm(mockRequest, mockEnv);
       
-      expect(mockQueueSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            metadata: expect.objectContaining({
-              userAgent: 'Test Browser',
-              ipAddress: '192.168.1.1',
-              referrer: 'https://example.com',
-              timestamp: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
-            }),
-          }),
-        })
-      );
+      expect(mockEmailService.send).toHaveBeenCalled();
     });
   });
 
-  describe('queue failures', () => {
-    it('should return error when queue send fails', async () => {
+  describe('email failures', () => {
+    it('should return error when email send fails', async () => {
       mockRequest.json.mockResolvedValue({
         name: 'Test User',
         email: 'test@example.com',
@@ -184,13 +182,16 @@ describe('handleContactForm', () => {
         message: 'Test message',
       });
       
-      mockQueueSend.mockRejectedValue(new Error('Queue error'));
+      mockEmailService.send.mockResolvedValue({
+        success: false,
+        error: 'Email send failed',
+      });
       
       const response = await handleContactForm(mockRequest, mockEnv);
       const body = await response.json();
       
       expect(response.status).toBe(500);
-      expect(body.error).toBe('Failed to process your message. Please try again later.');
+      expect(body.error).toBe('Failed to send message. Please try again later.');
     });
   });
 
@@ -214,7 +215,7 @@ describe('handleContactForm', () => {
       
       const response = await handleContactForm(mockRequest, mockEnv);
       
-      expect(response.status).toBe(202);
+      expect(response.status).toBe(200);
       expect(mockValidate).toHaveBeenCalledWith('test-token', '127.0.0.1');
     });
 
