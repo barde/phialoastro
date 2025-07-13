@@ -61,6 +61,7 @@ jobs:
           name = "phialo-pr-${{ github.event.pull_request.number }}"
           main = "src/index.ts"
           compatibility_date = "2024-09-25"
+          compatibility_flags = ["nodejs_compat"]
           workers_dev = true
           
           [assets]
@@ -74,21 +75,18 @@ jobs:
       
       - name: Deploy to Cloudflare Workers
         id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: 'workers'
-          wranglerVersion: '4.22.0'
-          command: deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
-          secrets: |
-            RESEND_API_KEY
-            FROM_EMAIL
-            TO_EMAIL
+        working-directory: ./workers
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Deploy the worker
+          npx wrangler deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
+          
+          # Set secrets for the deployed worker
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }}
+          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
+          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
       
       - name: Extract deployment URL
         id: extract-url
