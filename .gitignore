@@ -54,9 +54,12 @@ temp/
 
 # Test results
 phialo-design/test-results/
+phialo-design/playwright-report/
+phialo-design/coverage/
 workers/coverage/
 coverage/
 *.lcov
+.nyc_output/
 *.zip
 *.tar
 *.tar.gz

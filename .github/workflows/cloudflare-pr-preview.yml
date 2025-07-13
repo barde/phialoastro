@@ -125,7 +125,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr_number = context.issue.number;
-            const preview_url = '${{ steps.extract-url.outputs.preview_url || "" }}';
+            const preview_url = '${{ steps.extract-url.outputs.preview_url }}' || '';
             const shouldDeploy = '${{ steps.changes.outputs.should_deploy }}' === 'true';
             
             // Create a unique identifier for this comment
