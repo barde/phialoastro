@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFormPersistence } from '../hooks/useFormPersistence';
-import TurnstileWidget from './TurnstileWidget';
+import { TurnstileWidget } from './TurnstileWidget';
 
 // Translation types
 interface Translations {
@@ -518,8 +518,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
         {import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
           <div className="form-group">
             <TurnstileWidget
-              sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
-              onSuccess={(token) => {
+              siteKey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+              onVerify={(token: string) => {
                 setTurnstileToken(token);
                 setTurnstileError(false);
               }}
@@ -530,8 +530,6 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
               onExpire={() => {
                 setTurnstileToken('');
               }}
-              theme="light"
-              className="mb-2"
             />
             {turnstileError && (
               <p className="mt-1 text-sm text-red-400" role="alert">
