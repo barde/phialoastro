@@ -33,6 +33,8 @@ export default {
           hasFromEmail: !!env.FROM_EMAIL,
           hasToEmail: !!env.TO_EMAIL,
           environment: env.ENVIRONMENT || 'unknown',
+          fromEmail: env.FROM_EMAIL || 'not-set',
+          toEmail: env.TO_EMAIL || 'not-set',
         }, 200);
       }
       
