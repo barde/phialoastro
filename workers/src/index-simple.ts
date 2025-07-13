@@ -181,11 +181,6 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
       subject: mainEmailTemplate.subject,
       html: mainEmailTemplate.html,
       text: mainEmailTemplate.text,
-      tags: ['contact-form', contactData.language],
-      metadata: {
-        formId: 'contact',
-        language: contactData.language,
-      },
     });
 
     if (!mainEmailResponse.success) {
@@ -214,11 +209,6 @@ async function handleContactForm(request: Request, env: WorkerEnv): Promise<Resp
           subject: confirmationTemplate.subject,
           html: confirmationTemplate.html,
           text: confirmationTemplate.text,
-          tags: ['contact-form-confirmation', contactData.language],
-          metadata: {
-            formId: 'contact-confirmation',
-            language: contactData.language,
-          },
         });
 
         console.log('Confirmation email sent to user');
