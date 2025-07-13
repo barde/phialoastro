@@ -1,8 +1,7 @@
 import { Request as IttyRequest } from 'itty-router';
-import { EmailService } from '../../services/email/EmailService';
 import { TurnstileService } from '../../services/turnstile/TurnstileService';
-import { generateContactEmailTemplate, generateContactConfirmationTemplate } from '../../services/email/templates';
-import type { ContactFormData, EmailServiceConfig } from '../../services/email/types';
+import type { ContactFormData } from '../../services/email/types';
+import { EmailQueueMessageType } from '../../types/queue';
 import { logger } from '../../utils/logger';
 import type { CloudflareEnv } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
@@ -107,90 +106,33 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			},
 		};
 
-		// Configure email service - Resend only
-		const emailConfig: EmailServiceConfig = {
-			providers: {
-				resend: {
-					enabled: !!env.RESEND_API_KEY,
-					priority: 1,
-					apiKey: env.RESEND_API_KEY || '',
-					fromEmail: env.FROM_EMAIL || 'onboarding@resend.dev',
-					fromName: 'Phialo Design',
-				},
-				sendgrid: {
-					enabled: false,
-					priority: 2,
-					apiKey: '',
-					fromEmail: '',
-					fromName: '',
-				},
-				google: {
-					enabled: false,
-					priority: 3,
-					serviceAccountKey: '',
-					delegatedEmail: undefined,
-				},
-			},
-			fallbackEnabled: false, // No fallback needed with single provider
-			maxRetries: 3,
-			retryDelay: 1000,
-			allowedDomains: env.ALLOWED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
-			blockedDomains: env.BLOCKED_EMAIL_DOMAINS?.split(',').map(d => d.trim()),
-		};
-
-		// Initialize email service
-		let emailService: EmailService;
+		// Queue the email for processing
 		try {
-			logger.info('Initializing email service...');
-			emailService = new EmailService(emailConfig, env);
-			logger.info('Email service initialized successfully');
-		} catch (error) {
-			logger.error('Failed to initialize email service', { error });
-			
-			return new Response(JSON.stringify({ 
-				error: 'Email service is not configured. Please set RESEND_API_KEY.',
-				details: env.ENVIRONMENT === 'development' ? error.message : undefined,
-			}), {
-				status: 503,
-				headers: { 
-					'Content-Type': 'application/json',
-					...API_SECURITY_HEADERS,
-				},
-			});
-		}
-
-		// Generate email template
-		const mainEmailTemplate = generateContactEmailTemplate(contactData);
-
-		// Send main notification email
-		const mainEmailResponse = await emailService.send({
-			from: {
-				email: env.FROM_EMAIL || 'noreply@phialo.de',
-				name: 'Phialo Website',
-			},
-			to: [{
-				email: env.TO_EMAIL || 'info@phialo.de',
-				name: 'Phialo Design',
-			}],
-			replyTo: {
+			logger.info('Queueing contact form email', {
 				email: contactData.email,
-				name: contactData.name,
-			},
-			subject: mainEmailTemplate.subject,
-			html: mainEmailTemplate.html,
-			text: mainEmailTemplate.text,
-			tags: ['contact-form', contactData.language],
-			metadata: {
-				formId: 'contact',
-				language: contactData.language,
-			},
-		});
+				subject: contactData.subject,
+			});
 
-		if (!mainEmailResponse.success) {
-			logger.error('Failed to send main email', { error: mainEmailResponse.error });
+			// Create queue message
+			const queueMessage = {
+				id: crypto.randomUUID(),
+				type: EmailQueueMessageType.CONTACT_FORM,
+				timestamp: new Date().toISOString(),
+				retryCount: 0,
+				data: contactData,
+			};
+
+			// Send to queue
+			await env.EMAIL_QUEUE.send(queueMessage);
+
+			logger.info('Contact form email queued successfully', {
+				messageId: queueMessage.id,
+			});
+		} catch (error) {
+			logger.error('Failed to queue contact form email', { error });
 			
 			return new Response(JSON.stringify({ 
-				error: 'Failed to send message. Please try again later.',
+				error: 'Failed to process your message. Please try again later.',
 			}), {
 				status: 500,
 				headers: { 
@@ -200,46 +142,14 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			});
 		}
 
-		// Send confirmation email to user (Feature #151)
-		if (body.sendCopy !== false) { // Default to true
-			try {
-				const confirmationTemplate = generateContactConfirmationTemplate(contactData);
-				
-				await emailService.send({
-					from: {
-						email: env.FROM_EMAIL || 'noreply@phialo.de',
-						name: 'Phialo Design',
-					},
-					to: [{
-						email: contactData.email,
-						name: contactData.name,
-					}],
-					subject: confirmationTemplate.subject,
-					html: confirmationTemplate.html,
-					text: confirmationTemplate.text,
-					tags: ['contact-form-confirmation', contactData.language],
-					metadata: {
-						formId: 'contact-confirmation',
-						language: contactData.language,
-					},
-				});
-
-				logger.info('Confirmation email sent to user', { email: contactData.email });
-			} catch (error) {
-				// Don't fail the request if confirmation email fails
-				logger.error('Failed to send confirmation email', { error });
-			}
-		}
-
 		// Return success response
 		return new Response(JSON.stringify({
 			success: true,
 			message: contactData.language === 'de' 
-				? 'Ihre Nachricht wurde erfolgreich gesendet.'
-				: 'Your message has been sent successfully.',
-			messageId: mainEmailResponse.messageId,
+				? 'Ihre Nachricht wurde erfolgreich empfangen und wird in Kürze bearbeitet.'
+				: 'Your message has been received and will be processed shortly.',
 		}), {
-			status: 200,
+			status: 202, // 202 Accepted - request has been accepted for processing
 			headers: { 
 				'Content-Type': 'application/json',
 				...API_SECURITY_HEADERS,

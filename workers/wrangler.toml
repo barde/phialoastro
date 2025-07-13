@@ -8,6 +8,16 @@ workers_dev = true
 directory = "../phialo-design/dist"
 binding = "ASSETS"
 
+# Email queue configuration
+[[queues.producers]]
+queue = "email-queue"
+binding = "EMAIL_QUEUE"
+
+[[queues.consumers]]
+queue = "email-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+
 [build]
 command = "npm run build"
 cwd = "../phialo-design"
@@ -17,6 +27,15 @@ cwd = "../phialo-design"
 name = "phialo-design-preview"
 workers_dev = true
 compatibility_flags = ["nodejs_compat"]
+
+[[env.preview.queues.producers]]
+queue = "email-queue-preview"
+binding = "EMAIL_QUEUE"
+
+[[env.preview.queues.consumers]]
+queue = "email-queue-preview"
+max_batch_size = 10
+max_batch_timeout = 30
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -29,6 +48,15 @@ route = "phialo.de/*"
 zone_id = "YOUR_ZONE_ID"
 workers_dev = false
 compatibility_flags = ["nodejs_compat"]
+
+[[env.production.queues.producers]]
+queue = "email-queue-production"
+binding = "EMAIL_QUEUE"
+
+[[env.production.queues.consumers]]
+queue = "email-queue-production"
+max_batch_size = 10
+max_batch_timeout = 30
 
 [env.production.vars]
 ENVIRONMENT = "production"
