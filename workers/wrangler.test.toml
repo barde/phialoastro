@@ -1,0 +1,11 @@
+name = "phialo-design-test"
+main = "src/index.ts"
+compatibility_date = "2024-09-25"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[assets]
+directory = "../phialo-design/dist"
+binding = "ASSETS"
+
+# No custom build for testing
