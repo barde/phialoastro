@@ -5,7 +5,6 @@ import { ExecutionContext } from '@cloudflare/workers-types';
  */
 export interface WorkerEnv {
   ASSETS: Fetcher;  // Modern assets binding
-  EMAIL_QUEUE: Queue<any>;  // Email queue binding
   BRANCH_NAME?: string;
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
   WEB3FORMS_ACCESS_KEY?: string;

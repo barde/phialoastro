@@ -4,7 +4,6 @@ import { handleError } from './utils/errors';
 import { applySecurityHeaders } from './handlers/security';
 import { logger, LogLevel } from './utils/logger';
 import { getEnvironmentConfig } from './config/index';
-import { handleEmailQueue } from './handlers/queue/email';
 
 // Initialize router
 const router = createRouter();
@@ -48,26 +47,6 @@ export default {
       return handleError(error, request);
     }
   },
-
-  async queue(
-    batch: MessageBatch<any>,
-    env: WorkerEnv,
-    ctx: ExecutionContext
-  ): Promise<void> {
-    // Configure logger based on environment
-    const config = getEnvironmentConfig(env);
-    logger.setLogLevel(config.logLevel);
-    
-    logger.info(`Processing queue batch with ${batch.messages.length} messages`);
-    
-    try {
-      await handleEmailQueue(batch, env, ctx);
-    } catch (error) {
-      logger.error('Queue processing failed', { error });
-      // Retry all messages on critical failure
-      batch.retryAll();
-    }
-  }
 };
 
 // Export types for external use
