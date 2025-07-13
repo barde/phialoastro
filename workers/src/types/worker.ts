@@ -7,13 +7,9 @@ export interface WorkerEnv {
   ASSETS: Fetcher;  // Modern assets binding
   BRANCH_NAME?: string;
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
-  WEB3FORMS_ACCESS_KEY?: string;
   
   // Email service configuration
   RESEND_API_KEY?: string;
-  SENDGRID_API_KEY?: string;
-  GOOGLE_SERVICE_ACCOUNT_KEY?: string;
-  GOOGLE_DELEGATED_EMAIL?: string;
   
   // Email settings
   FROM_EMAIL?: string;

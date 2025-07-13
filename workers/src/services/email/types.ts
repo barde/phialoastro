@@ -42,25 +42,12 @@ export interface EmailResponse {
 
 export interface EmailServiceConfig {
 	providers: {
-		resend?: {
+		resend: {
 			enabled: boolean;
 			priority: number;
 			apiKey: string;
 			fromEmail?: string;
 			fromName?: string;
-		};
-		sendgrid?: {
-			enabled: boolean;
-			priority: number;
-			apiKey: string;
-			fromEmail?: string;
-			fromName?: string;
-		};
-		google?: {
-			enabled: boolean;
-			priority: number;
-			serviceAccountKey: string;
-			delegatedEmail?: string;
 		};
 	};
 	fallbackEnabled: boolean;
