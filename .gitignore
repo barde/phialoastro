@@ -54,6 +54,9 @@ temp/
 
 # Test results
 phialo-design/test-results/
+workers/coverage/
+coverage/
+*.lcov
 *.zip
 *.tar
 *.tar.gz
