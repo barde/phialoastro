@@ -71,15 +71,6 @@ jobs:
           directory = "../phialo-design/dist"
           binding = "ASSETS"
           
-          [[queues.producers]]
-          queue = "email-queue-pr-${{ github.event.pull_request.number }}"
-          binding = "EMAIL_QUEUE"
-          
-          [[queues.consumers]]
-          queue = "email-queue-pr-${{ github.event.pull_request.number }}"
-          max_batch_size = 10
-          max_batch_timeout = 30
-          
           [vars]
           ENVIRONMENT = "preview"
           PR_NUMBER = "${{ github.event.pull_request.number }}"
