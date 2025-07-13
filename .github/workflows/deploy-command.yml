@@ -151,8 +151,14 @@ jobs:
             ${{ needs.check-command.outputs.environment == 'preview' && format('--name phialo-pr-{0}', needs.check-command.outputs.pr_number) || '' }}
           secrets: |
             WEB3FORMS_ACCESS_KEY
+            RESEND_API_KEY
+            FROM_EMAIL
+            TO_EMAIL
         env:
           WEB3FORMS_ACCESS_KEY: ${{ secrets.WEB3FORMS_ACCESS_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
       
       - name: Get deployment URL
         id: url
