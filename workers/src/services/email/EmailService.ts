@@ -69,14 +69,7 @@ export class EmailService {
 		for (const provider of this.providers) {
 			attempts++;
 			try {
-				// Check if provider is available
-				const isAvailable = await provider.isAvailable();
-				if (!isAvailable) {
-					logger.warn(`Provider ${provider.getName()} is not available, skipping`);
-					continue;
-				}
-
-				// Attempt to send
+				// Attempt to send directly without availability check
 				logger.info(`Attempting to send email with provider: ${provider.getName()}`);
 				const response = await provider.send(email);
 
