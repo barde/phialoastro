@@ -23,9 +23,9 @@ export default {
     try {
       // Log request
       const headers: Record<string, string> = {};
-      request.headers.forEach((value, key) => {
+      for (const [key, value] of request.headers.entries()) {
         headers[key] = value;
-      });
+      }
       
       logger.info('Incoming request', {
         method: request.method,

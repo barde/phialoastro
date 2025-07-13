@@ -14,7 +14,7 @@ export function createErrorResponse(error: WorkerError): Response {
     error: {
       type: error.type,
       message: error.message,
-      ...(process.env.NODE_ENV === 'development' && { details: error.details }),
+      // Details are not included in production for security
     },
   };
 
