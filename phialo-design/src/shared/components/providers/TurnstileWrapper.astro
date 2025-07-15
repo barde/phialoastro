@@ -1,15 +1,6 @@
 ---
-import ClientProviders from './ClientProviders';
+// TurnstileWrapper is an Astro component that conditionally wraps content
 ---
 
-{/* Only render on client side with Turnstile enabled */}
-{import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
-  <ClientProviders client:only="react">
-    <slot />
-  </ClientProviders>
-)}
-
-{/* Render children directly if Turnstile is not enabled */}
-{!import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
-  <slot />
-)}
+<!-- Always render the slot content -->
+<slot />

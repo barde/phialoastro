@@ -18,13 +18,8 @@ export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
   const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Load Turnstile script
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    script.async = true;
-    script.defer = true;
-    
-    script.onload = () => {
+    // Check if Turnstile is already loaded
+    const checkAndRender = () => {
       if (containerRef.current && window.turnstile) {
         const options: Partial<TurnstileOptions> = {
           sitekey: siteKey,
@@ -38,14 +33,38 @@ export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
       }
     };
 
-    document.head.appendChild(script);
+    // If Turnstile is already loaded, render immediately
+    if (window.turnstile) {
+      checkAndRender();
+    } else {
+      // Wait for Turnstile to load (it's loaded globally in BaseLayout)
+      const intervalId = setInterval(() => {
+        if (window.turnstile) {
+          clearInterval(intervalId);
+          checkAndRender();
+        }
+      }, 100);
+
+      // Cleanup interval after 10 seconds
+      const timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+      }, 10000);
+
+      return () => {
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+        // Cleanup widget
+        if (widgetIdRef.current && window.turnstile) {
+          window.turnstile.remove(widgetIdRef.current);
+        }
+      };
+    }
 
     return () => {
-      // Cleanup
+      // Cleanup widget
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current);
       }
-      document.head.removeChild(script);
     };
   }, [siteKey, onVerify, onError, onExpire]);
 
