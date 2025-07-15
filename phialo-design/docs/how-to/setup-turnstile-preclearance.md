@@ -46,7 +46,17 @@ The implementation uses a centralized token management system that:
    - **Widget Mode**: Managed (recommended)
    - **Pre-clearance**: Enable
    - **Pre-clearance Level**: See recommendations below
-   - **Domains**: Add your production and development domains
+   - **Domains**: Add ALL of these domains:
+     - `localhost` (for local development)
+     - `localhost:4321` (Astro dev server)
+     - `localhost:4322` (Alternative dev port)
+     - `127.0.0.1` (IP-based access)
+     - `phialo.de` (production domain)
+     - `*.phialo.de` (subdomains)
+     - `phialo-master.meise.workers.dev` (master preview)
+     - `phialo-pr-*.meise.workers.dev` (PR previews)
+
+> **Important**: Turnstile requires explicit domain configuration. If you see Error 110200, it means the current domain is not in the allowed list.
 
 #### Choosing the Right Pre-clearance Level
 
@@ -193,20 +203,54 @@ To migrate a form to pre-clearance:
 
 ## Troubleshooting
 
-### Script Loading Issues
+### Common Errors and Solutions
+
+#### Error 110200: Invalid Site Key
+This error occurs when:
+- The domain is not in the Turnstile allowed list
+- The site key is incorrect or malformed
+- The domain includes a port that's not configured
+
+**Solution**:
+1. Go to Cloudflare Dashboard > Turnstile
+2. Edit your site configuration
+3. Add the exact domain and port you're using
+4. Save and wait 30 seconds for propagation
+
+#### Script Loading Issues
 - Check browser console for CSP errors
 - Verify the site key is correct
 - Ensure domains are whitelisted in Cloudflare
+- Check for multiple Turnstile script loads
 
-### Token Expiration
+#### Token Expiration
 - Tokens expire after 5 minutes
 - The provider automatically requests new tokens
 - Expired tokens are cleaned up automatically
 
 ### Development Environment
-- Use test keys (starting with `1x` or `2x`) for development
-- Test keys always pass validation
-- Production keys require proper domain configuration
+
+#### Using Test Keys
+For local development without domain configuration, use these test keys:
+
+```env
+# Always passes (invisible challenge)
+PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+# Always blocks
+PUBLIC_TURNSTILE_SITE_KEY=2x00000000000000000000AB
+
+# Forces interactive challenge
+PUBLIC_TURNSTILE_SITE_KEY=3x00000000000000000000FF
+```
+
+#### Testing Checklist
+- [ ] Turnstile script loads without errors
+- [ ] No "multiple instances" warning in console
+- [ ] Widget renders or executes invisibly
+- [ ] Token is received on successful challenge
+- [ ] Form submission includes the token
+- [ ] Backend validates the token correctly
 
 ## Security Considerations
 
