@@ -67,19 +67,16 @@ src/
 Create a `.env` file in the root directory:
 
 ```bash
-# Web3Forms Access Key for contact form
+# Cloudflare Turnstile Site Key for bot protection
 # Note: Must use PUBLIC_ prefix for client-side access in Astro
-PUBLIC_WEB3FORMS_ACCESS_KEY=your-web3forms-access-key
+PUBLIC_TURNSTILE_SITE_KEY=your-turnstile-site-key
 
 # Site URL (optional, defaults to https://phialo.de)
 PUBLIC_SITE_URL=https://phialo.de
 ```
 
-**Getting your Web3Forms Access Key:**
-1. Visit [https://web3forms.com](https://web3forms.com)
-2. Enter your email address
-3. Receive your access key via email
-4. Add it to your `.env` file
+**Email Service Configuration:**
+The contact form uses Resend as the email provider. Configuration is handled in the workers environment. See [Email Service Setup Guide](./docs/how-to/setup-email-service.md) for details.
 
 ---
 

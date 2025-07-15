@@ -37,8 +37,11 @@ This project uses the following open source software:
    License: Apache-2.0
    Copyright (c) Microsoft Corporation
 
-8. Web3Forms (https://web3forms.com/)
-   Used for contact form submissions
+8. Cloudflare Turnstile (https://www.cloudflare.com/products/turnstile/)
+   Used for bot protection on forms
+   
+9. Resend (https://resend.com/)
+   Used for email delivery services
 
 For a complete list of dependencies and their licenses, see:
 - phialo-design/package.json

@@ -58,7 +58,10 @@ services:
     environment:
       - CLOUDFLARE_API_TOKEN
       - CLOUDFLARE_ACCOUNT_ID
-      - WEB3FORMS_ACCESS_KEY
+      - RESEND_API_KEY
+      - FROM_EMAIL
+      - TO_EMAIL
+      - TURNSTILE_SECRET_KEY
       - ENVIRONMENT=production
     volumes:
       - ../../phialo-design/dist:/workspace/phialo-design/dist:ro
@@ -73,7 +76,10 @@ services:
     environment:
       - CLOUDFLARE_API_TOKEN
       - CLOUDFLARE_ACCOUNT_ID
-      - WEB3FORMS_ACCESS_KEY
+      - RESEND_API_KEY
+      - FROM_EMAIL
+      - TO_EMAIL
+      - TURNSTILE_SECRET_KEY
       - ENVIRONMENT=preview
     volumes:
       - ../../phialo-design/dist:/workspace/phialo-design/dist:ro
@@ -88,7 +94,10 @@ services:
     environment:
       - CLOUDFLARE_API_TOKEN
       - CLOUDFLARE_ACCOUNT_ID
-      - WEB3FORMS_ACCESS_KEY
+      - RESEND_API_KEY
+      - FROM_EMAIL
+      - TO_EMAIL
+      - TURNSTILE_SECRET_KEY
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - OPTIMIZE_IMAGES=${OPTIMIZE_IMAGES:-true}
     volumes:

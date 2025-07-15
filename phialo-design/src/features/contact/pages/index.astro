@@ -1,7 +1,7 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
 import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
-import ContactForm from '../components/ContactForm';
+import ContactFormWrapper from '../components/ContactFormWrapper';
 import ContactFormErrorBoundary from '../components/ContactFormErrorBoundary';
 ---
 
@@ -21,7 +21,7 @@ import ContactFormErrorBoundary from '../components/ContactFormErrorBoundary';
         <!-- Contact Form on the left -->
         <div class="space-y-6 px-5 md:px-0">
           <ContactFormErrorBoundary client:load>
-            <ContactForm client:load />
+            <ContactFormWrapper client:load />
           </ContactFormErrorBoundary>
 
           <!-- Contact info below form -->

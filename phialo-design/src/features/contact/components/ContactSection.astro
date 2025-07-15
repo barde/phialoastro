@@ -1,5 +1,5 @@
 ---
-import ContactForm from './ContactForm';
+import ContactFormWrapper from './ContactFormWrapper';
 import ContactFormErrorBoundary from './ContactFormErrorBoundary';
 
 // Language detection based on URL pathname
@@ -58,9 +58,9 @@ const t = translations[isEnglish ? 'en' : 'de'];
         <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
           <h3 class="font-display text-2xl font-medium mb-6">{t.formTitle}</h3>
           
-          <!-- React Contact Form with Error Boundary -->
+          <!-- React Contact Form with Error Boundary and Pre-clearance -->
           <ContactFormErrorBoundary client:load>
-            <ContactForm client:load />
+            <ContactFormWrapper client:load usePreClearance={true} />
           </ContactFormErrorBoundary>
 
           <!-- Contact info below form -->

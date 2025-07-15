@@ -199,11 +199,16 @@ workers_dev = false
 
 ### Required Variables
 
-1. **WEB3FORMS_ACCESS_KEY** (Required for contact form)
-   - Get your free key at [https://web3forms.com](https://web3forms.com)
-   - Enter email: kontakt@phialo.de
+1. **PUBLIC_TURNSTILE_SITE_KEY** (Required for bot protection)
+   - Get your key from Cloudflare Dashboard > Turnstile
    - This is a public key (not secret)
-   - Without this, the contact form will not function
+   - Provides bot protection for contact forms
+
+2. **Email Service Configuration** (Workers environment)
+   - `RESEND_API_KEY`: Your Resend API key
+   - `FROM_EMAIL`: Verified sender email
+   - `TO_EMAIL`: Recipient email address
+   - `TURNSTILE_SECRET_KEY`: Turnstile secret for backend validation
 
 2. **PUBLIC_SITE_URL**
    - Set to: `https://phialo.de`
@@ -219,7 +224,10 @@ workers_dev = false
 Set these repository secrets:
 - `CLOUDFLARE_API_TOKEN`: Your API token
 - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
-- `WEB3FORMS_ACCESS_KEY`: Your Web3Forms access key
+- `RESEND_API_KEY`: Your Resend API key
+- `FROM_EMAIL`: Verified sender email
+- `TO_EMAIL`: Recipient email address
+- `TURNSTILE_SECRET_KEY`: Turnstile secret key
 
 ## Cloudflare Setup
 
@@ -256,7 +264,10 @@ Set these repository secrets:
 2. Add:
    - `CLOUDFLARE_API_TOKEN`: Your API token
    - `CLOUDFLARE_ACCOUNT_ID`: Your Account ID
-   - `WEB3FORMS_ACCESS_KEY`: Your Web3Forms key
+   - `RESEND_API_KEY`: Your Resend API key
+   - `FROM_EMAIL`: Verified sender email
+   - `TO_EMAIL`: Recipient email
+   - `TURNSTILE_SECRET_KEY`: Turnstile secret
 
 ## Domain Setup
 
@@ -438,13 +449,13 @@ Navigate to your domain in Cloudflare dashboard and enable:
 
 ### Content Security
 - Worker implements security headers
-- CSP configured for YouTube and Web3Forms
+- CSP configured for YouTube and trusted domains
 - X-Frame-Options prevents clickjacking
 
 ### Environment Variables
-- `WEB3FORMS_ACCESS_KEY` is a public key (not secret)
-- Required for contact form functionality
-- Safe to expose in client-side code
+- `PUBLIC_TURNSTILE_SITE_KEY` is safe to expose in frontend
+- `TURNSTILE_SECRET_KEY` must be kept secret (backend only)
+- Email configuration handled securely in workers
 
 ## Emergency Procedures
 

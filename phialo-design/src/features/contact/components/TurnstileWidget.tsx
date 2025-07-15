@@ -1,20 +1,11 @@
 import React, { useEffect, useRef } from 'react';
+import type { TurnstileOptions } from '../../../shared/types/turnstile';
 
 interface TurnstileWidgetProps {
   siteKey: string;
   onVerify: (token: string) => void;
   onError?: () => void;
   onExpire?: () => void;
-}
-
-declare global {
-  interface Window {
-    turnstile: {
-      render: (element: HTMLElement, options: any) => string;
-      reset: (widgetId: string) => void;
-      remove: (widgetId: string) => void;
-    };
-  }
 }
 
 export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
@@ -27,33 +18,53 @@ export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
   const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Load Turnstile script
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    script.async = true;
-    script.defer = true;
-    
-    script.onload = () => {
+    // Check if Turnstile is already loaded
+    const checkAndRender = () => {
       if (containerRef.current && window.turnstile) {
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+        const options: Partial<TurnstileOptions> = {
           sitekey: siteKey,
           callback: onVerify,
           'error-callback': onError,
           'expired-callback': onExpire,
           theme: 'light',
           language: 'auto',
-        });
+        };
+        widgetIdRef.current = window.turnstile!.render(containerRef.current, options);
       }
     };
 
-    document.head.appendChild(script);
+    // If Turnstile is already loaded, render immediately
+    if (window.turnstile) {
+      checkAndRender();
+    } else {
+      // Wait for Turnstile to load (it's loaded globally in BaseLayout)
+      const intervalId = setInterval(() => {
+        if (window.turnstile) {
+          clearInterval(intervalId);
+          checkAndRender();
+        }
+      }, 100);
+
+      // Cleanup interval after 10 seconds
+      const timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+      }, 10000);
+
+      return () => {
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+        // Cleanup widget
+        if (widgetIdRef.current && window.turnstile) {
+          window.turnstile.remove(widgetIdRef.current);
+        }
+      };
+    }
 
     return () => {
-      // Cleanup
+      // Cleanup widget
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current);
       }
-      document.head.removeChild(script);
     };
   }, [siteKey, onVerify, onError, onExpire]);
 

@@ -136,6 +136,7 @@ jobs:
         run: npm run build
         env:
           DEBUG: ${{ github.event.inputs.debug }}
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
       
       - name: Deploy to Cloudflare Workers
         id: deploy
@@ -149,10 +150,12 @@ jobs:
             RESEND_API_KEY
             FROM_EMAIL
             TO_EMAIL
+            TURNSTILE_SECRET_KEY
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
       
       - name: Get deployment URL
         id: url
