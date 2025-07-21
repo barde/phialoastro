@@ -108,18 +108,18 @@ jobs:
         with:
           script: |
             const date = '${{ steps.date.outputs.date }}';
-            const issueTitle = `📊 Daily E2E Test Report - ${date}`;
+            const SINGLE_ISSUE_TITLE = '📊 E2E Test Results Tracker';
             
-            // Search for existing issue
+            // Search for the single tracking issue
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'all',
-              labels: 'daily-e2e-report',
-              since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // Last 7 days
+              state: 'open',
+              labels: 'e2e-tracker',
+              per_page: 1
             });
             
-            let existingIssue = issues.data.find(issue => issue.title === issueTitle);
+            let trackingIssue = issues.data[0];
             
             const timestamp = '${{ steps.date.outputs.timestamp }}';
             const runFound = '${{ steps.test-results.outputs.found }}' === 'true';
@@ -150,13 +150,10 @@ jobs:
               statusText = 'Startup failure';
             }
             
-            const body = `## ${statusEmoji} Daily E2E Test Summary
+            // Generate the new test result entry
+            const newEntry = `### ${statusEmoji} ${date} - ${statusText}
             
-            **Last Updated**: ${timestamp}
-            **Date**: ${date}
-            **Status**: ${statusText}
-            
-            ### Test Statistics
+            **Updated**: ${timestamp}
             
             | Metric | Count |
             |--------|-------|
@@ -165,90 +162,88 @@ jobs:
             | **❌ Failed** | ${failedTests} |
             | **⏭️ Skipped** | ${skippedTests} |
             
-            ${runFound ? `### Test Run Details
+            ${runFound ? `**Details**: [View Run](${runUrl})${`${{ steps.test-results.outputs.report_url }}` ? ` | [Download Report](${{ steps.test-results.outputs.report_url }})` : ''}` : '**No test run found**'}
             
-            - **Workflow Run**: [View Run](${runUrl})
-            - **Run ID**: ${`${{ steps.test-results.outputs.run_id }}`}
-            ${`${{ steps.test-results.outputs.report_url }}` ? `- **Test Report**: [Download Artifact](${{ steps.test-results.outputs.report_url }})` : ''}
+            ---
+            `;
             
-            ### Test Coverage
+            let body;
+            if (trackingIssue) {
+              // Prepend new result to existing body
+              const existingBody = trackingIssue.body || '';
+              const headerEnd = existingBody.indexOf('## Test Results History') + '## Test Results History'.length;
+              const beforeHistory = existingBody.substring(0, headerEnd);
+              const afterHistory = existingBody.substring(headerEnd);
+              
+              body = beforeHistory + '\n\n' + newEntry + afterHistory.trim();
+            } else {
+              // Create new issue body
+              body = `# E2E Test Results Tracker
             
-            The nightly E2E tests include:
+            This issue tracks the daily E2E test results. New results are added at the top.
+            
+            ## Test Results History
+            
+            ${newEntry}
+            
+            ---
+            
+            <details>
+            <summary>About this tracker</summary>
+            
+            This issue automatically updates with the latest E2E test results from our nightly test runs. The tests include:
             - 🌐 Cross-browser testing (Chromium, Firefox, WebKit)
             - 📱 Mobile viewport testing
             - 🎭 Visual regression testing
             - ⚡ Performance testing (Lighthouse)
             - 🔒 Security scanning
             - ♿ Accessibility testing
-            ` : `### ⚠️ No Test Run Found
             
-            No nightly test run was found for ${date}. This could be due to:
-            - The scheduled workflow was disabled
-            - The workflow failed to start
-            - Infrastructure issues
-            
-            Please check the [workflow configuration](https://github.com/${{ github.repository }}/blob/master/.github/workflows/nightly-tests.yml) and [recent runs](https://github.com/${{ github.repository }}/actions/workflows/nightly-tests.yml).
-            `}
-            
-            ### Actions
-            
-            ${status === 'failure' ? `- [ ] Review failing tests
-            - [ ] Fix identified issues
-            - [ ] Re-run tests if needed` : 
-            status === 'startup_failure' ? `- [ ] Check workflow configuration
-            - [ ] Verify runner availability
-            - [ ] Check for infrastructure issues` :
-            status === 'success' ? `- [x] All tests passed - no action needed` :
-            `- [ ] Investigate why tests didn't run`}
-            
-            ---
-            
-            <details>
-            <summary>About this report</summary>
-            
-            This is an automated daily summary of the nightly E2E test suite. The report is generated at 3 AM UTC and includes:
-            - Test execution status
-            - Pass/fail statistics
-            - Links to detailed results
-            - Action items for failures
-            
-            The full test suite runs in a containerized environment to ensure consistency and includes comprehensive browser, performance, and security testing.
+            Results are updated daily at 3 AM UTC.
             </details>`;
             
-            if (existingIssue) {
-              // Update existing issue
+            if (trackingIssue) {
+              // Update existing tracking issue
               await github.rest.issues.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: existingIssue.number,
-                body: body,
-                state: status === 'success' ? 'closed' : 'open'
+                issue_number: trackingIssue.number,
+                body: body
               });
               
-              console.log(`Updated issue #${existingIssue.number}`);
-              core.setOutput('issue_number', existingIssue.number);
-              core.setOutput('issue_url', existingIssue.html_url);
+              // Add a comment for the new result
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: trackingIssue.number,
+                body: `## ${statusEmoji} Test Results Updated - ${date}\n\nStatus: **${statusText}**\n\n${runFound ? `[View Full Run](${runUrl})` : 'No test run found for this date.'}`
+              });
+              
+              console.log(`Updated tracking issue #${trackingIssue.number}`);
+              core.setOutput('issue_number', trackingIssue.number);
+              core.setOutput('issue_url', trackingIssue.html_url);
             } else {
-              // Create new issue
+              // Create new tracking issue
               const newIssue = await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: issueTitle,
+                title: SINGLE_ISSUE_TITLE,
                 body: body,
-                labels: ['daily-e2e-report', 'automated', status === 'failure' ? 'test-failure' : 'test-success']
+                labels: ['e2e-tracker', 'automated'],
+                pinned: true
               });
               
-              console.log(`Created issue #${newIssue.data.number}`);
+              console.log(`Created tracking issue #${newIssue.data.number}`);
               core.setOutput('issue_number', newIssue.data.number);
               core.setOutput('issue_url', newIssue.data.html_url);
             }
 
       - name: Summary
         run: |
-          echo "## Daily E2E Test Report Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## E2E Test Results Updated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Date**: ${{ steps.date.outputs.date }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Issue**: [#${{ steps.issue.outputs.issue_number }}](${{ steps.issue.outputs.issue_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "**Tracking Issue**: [#${{ steps.issue.outputs.issue_number }}](${{ steps.issue.outputs.issue_url }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.test-results.outputs.found }}" == "true" ]; then
             echo "### Test Results" >> $GITHUB_STEP_SUMMARY
