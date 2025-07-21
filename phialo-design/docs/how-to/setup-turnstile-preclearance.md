@@ -227,6 +227,25 @@ This error occurs when:
 - Tokens expire after 5 minutes
 - The provider automatically requests new tokens
 - Expired tokens are cleaned up automatically
+- **Important**: Tokens are single-use only and are removed from cache after use
+
+#### Pre-clearance Not Working on Workers.dev Subdomains
+**Important Limitation**: Cloudflare Turnstile's pre-clearance feature requires the site to be running on a proper Cloudflare Zone with custom domain configuration. It does **NOT** work on `*.workers.dev` subdomains.
+
+**Symptoms**:
+- First form submission works correctly
+- Second submission fails with "Security verification failed" (HTTP 400)
+- Console warning: "Cannot determine Turnstile's embedded location, aborting clearance redemption"
+
+**Affected Environments**:
+- ❌ `phialo-master.meise.workers.dev` - Pre-clearance will NOT work
+- ❌ `phialo-pr-*.meise.workers.dev` - Pre-clearance will NOT work
+- ✅ `phialo.de` - Pre-clearance WILL work (production with Cloudflare Zone)
+
+**Testing Pre-clearance**:
+- Pre-clearance features MUST be tested on the production environment (`phialo.de`)
+- On workers.dev domains, each form submission will require a new token
+- This is a Cloudflare platform limitation, not a code issue
 
 ### Development Environment
 
@@ -251,6 +270,8 @@ PUBLIC_TURNSTILE_SITE_KEY=3x00000000000000000000FF
 - [ ] Token is received on successful challenge
 - [ ] Form submission includes the token
 - [ ] Backend validates the token correctly
+- [ ] **Production Only**: Test pre-clearance by submitting form twice on `phialo.de`
+- [ ] **Note**: Pre-clearance will NOT work on `*.workers.dev` preview environments
 
 ## Security Considerations
 
