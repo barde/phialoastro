@@ -1,3 +1,5 @@
+import { CSP_DIRECTIVES } from '../config';
+
 export function applyHeaders(response: Response, request: Request): Response {
   const headers = new Headers(response.headers);
   
@@ -7,22 +9,7 @@ export function applyHeaders(response: Response, request: Request): Response {
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: https: blob:",
-    "media-src 'self' https:",
-    "connect-src 'self'",
-    "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests"
-  ].join('; ');
-  
+  const csp = CSP_DIRECTIVES.join('; ');
   headers.set('Content-Security-Policy', csp);
   
   const pathname = new URL(request.url).pathname;
