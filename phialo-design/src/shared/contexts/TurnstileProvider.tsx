@@ -5,8 +5,6 @@ interface TurnstileToken {
   token: string;
   timestamp: number;
   action?: string;
-  uses?: number;
-  maxUses?: number;
 }
 
 interface TurnstileContextValue {
@@ -109,25 +107,9 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
   // Check if a token is still valid
   const isTokenValid = (token: TurnstileToken): boolean => {
     const isExpired = Date.now() - token.timestamp > TOKEN_EXPIRY;
-    const isOverused = token.uses !== undefined && token.maxUses !== undefined 
-      ? token.uses >= token.maxUses 
-      : false;
-    return !isExpired && !isOverused;
+    return !isExpired;
   };
 
-  // Get maximum uses for an action based on security level
-  const getMaxUsesForAction = (action: string): number => {
-    const level = securityLevels[action] || securityLevels['default'] || 'managed';
-    switch (level) {
-      case 'interactive':
-        return 1; // Single use for high-security
-      case 'non-interactive':
-        return 10; // Multiple uses for low-security
-      case 'managed':
-      default:
-        return 5; // Moderate use for balanced security
-    }
-  };
 
   // Get or create a token for a specific action
   const getToken = useCallback(async (action: string = 'default'): Promise<string> => {
@@ -140,11 +122,12 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
     // Check if we have a valid cached token
     const cachedToken = tokens.get(action);
     if (cachedToken && isTokenValid(cachedToken)) {
-      // Increment usage if tracking is enabled
-      if (cachedToken.uses !== undefined) {
-        cachedToken.uses++;
-        setTokens(prev => new Map(prev).set(action, cachedToken));
-      }
+      // Remove the token from cache after retrieving it (single-use)
+      setTokens(prev => {
+        const newTokens = new Map(prev);
+        newTokens.delete(action);
+        return newTokens;
+      });
       return cachedToken.token;
     }
 
@@ -169,67 +152,78 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
 
   // Execute a challenge to get a new token
   const executeChallenge = useCallback(async (action: string = 'default'): Promise<string> => {
-    if (!isReady || !window.turnstile || !siteKey) {
+    if (!isReady || !window.turnstile || !siteKey || !containerRef.current) {
       throw new Error('Turnstile is not ready');
     }
 
     return new Promise((resolve, reject) => {
-      // Store currently focused element for restoration
-      const previouslyFocusedElement = document.activeElement as HTMLElement;
-
-      // Create a container for this specific challenge
-      const challengeContainer = document.createElement('div');
-      challengeContainer.setAttribute('role', 'dialog');
-      challengeContainer.setAttribute('aria-modal', 'true');
-      challengeContainer.setAttribute('aria-label', language === 'de' ? 'Sicherheitsüberprüfung' : 'Security verification');
-      challengeContainer.style.position = 'fixed';
-      challengeContainer.style.top = '50%';
-      challengeContainer.style.left = '50%';
-      challengeContainer.style.transform = 'translate(-50%, -50%)';
-      challengeContainer.style.zIndex = '9999';
+      // Get appropriate appearance for this action
+      const actionAppearance = getAppearanceForAction(action);
       
-      // Add backdrop
-      const backdrop = document.createElement('div');
-      backdrop.setAttribute('aria-hidden', 'true');
-      backdrop.style.position = 'fixed';
-      backdrop.style.top = '0';
-      backdrop.style.left = '0';
-      backdrop.style.width = '100%';
-      backdrop.style.height = '100%';
-      backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-      backdrop.style.zIndex = '9998';
-
+      // For non-interactive challenges, use the hidden container
+      const isInteractive = actionAppearance === 'always';
+      let challengeContainer: HTMLElement;
+      let backdrop: HTMLElement | null = null;
+      let previouslyFocusedElement: HTMLElement | null = null;
       let widgetId: string;
 
       const cleanup = () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.removeChild(challengeContainer);
-        document.body.removeChild(backdrop);
-        // Restore focus
-        if (previouslyFocusedElement && document.contains(previouslyFocusedElement)) {
-          previouslyFocusedElement.focus();
+        if (isInteractive && backdrop && challengeContainer) {
+          document.removeEventListener('keydown', handleKeyDown);
+          document.body.removeChild(challengeContainer);
+          document.body.removeChild(backdrop);
+          // Restore focus
+          if (previouslyFocusedElement && document.contains(previouslyFocusedElement)) {
+            previouslyFocusedElement.focus();
+          }
         }
-        if (widgetId) {
-          window.turnstile?.remove(widgetId);
+        if (widgetId && window.turnstile) {
+          window.turnstile.remove(widgetId);
           widgetRefs.current.delete(action);
         }
       };
 
-      // Keyboard handling for accessibility
+      // Keyboard handling for accessibility (only for interactive challenges)
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           cleanup();
           reject(new Error('Challenge cancelled by user'));
         }
       };
-      document.addEventListener('keydown', handleKeyDown);
 
+      if (isInteractive) {
+        // Store currently focused element for restoration
+        previouslyFocusedElement = document.activeElement as HTMLElement;
 
-      document.body.appendChild(backdrop);
-      document.body.appendChild(challengeContainer);
+        // Create a visible container for interactive challenges
+        challengeContainer = document.createElement('div');
+        challengeContainer.setAttribute('role', 'dialog');
+        challengeContainer.setAttribute('aria-modal', 'true');
+        challengeContainer.setAttribute('aria-label', language === 'de' ? 'Sicherheitsüberprüfung' : 'Security verification');
+        challengeContainer.style.position = 'fixed';
+        challengeContainer.style.top = '50%';
+        challengeContainer.style.left = '50%';
+        challengeContainer.style.transform = 'translate(-50%, -50%)';
+        challengeContainer.style.zIndex = '9999';
+        
+        // Add backdrop
+        backdrop = document.createElement('div');
+        backdrop.setAttribute('aria-hidden', 'true');
+        backdrop.style.position = 'fixed';
+        backdrop.style.top = '0';
+        backdrop.style.left = '0';
+        backdrop.style.width = '100%';
+        backdrop.style.height = '100%';
+        backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        backdrop.style.zIndex = '9998';
 
-      // Get appropriate appearance for this action
-      const actionAppearance = getAppearanceForAction(action);
+        document.addEventListener('keydown', handleKeyDown);
+        document.body.appendChild(backdrop);
+        document.body.appendChild(challengeContainer);
+      } else {
+        // Use the hidden container for non-interactive challenges
+        challengeContainer = containerRef.current;
+      }
 
       const options: TurnstileOptions = {
         sitekey: siteKey,
@@ -238,13 +232,11 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
         language,
         theme: 'auto',
         callback: (token: string) => {
-          // Store the token with usage tracking
+          // Store the token (single-use)
           const newToken: TurnstileToken = {
             token,
             timestamp: Date.now(),
             action,
-            uses: 0,
-            maxUses: getMaxUsesForAction(action),
           };
           setTokens(prev => new Map(prev).set(action, newToken));
 
@@ -275,7 +267,7 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
         reject(error);
       }
     });
-  }, [isReady, siteKey, language, getAppearanceForAction, getMaxUsesForAction]);
+  }, [isReady, siteKey, language, getAppearanceForAction, containerRef]);
 
   // Preload a token for better UX (optional)
   const preloadToken = useCallback(async (action: string = 'pageload'): Promise<void> => {
