@@ -5,6 +5,8 @@ interface TurnstileToken {
   token: string;
   timestamp: number;
   action?: string;
+  uses?: number;
+  maxUses?: number;
 }
 
 interface TurnstileContextValue {
@@ -15,6 +17,7 @@ interface TurnstileContextValue {
   getToken: (action?: string) => Promise<string>;
   clearToken: (action?: string) => void;
   executeChallenge: (action?: string) => Promise<string>;
+  preloadToken?: (action?: string) => Promise<void>;
 }
 
 const TurnstileContext = createContext<TurnstileContextValue | null>(null);
@@ -105,20 +108,49 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
 
   // Check if a token is still valid
   const isTokenValid = (token: TurnstileToken): boolean => {
-    return Date.now() - token.timestamp < TOKEN_EXPIRY;
+    const isExpired = Date.now() - token.timestamp > TOKEN_EXPIRY;
+    const isOverused = token.uses !== undefined && token.maxUses !== undefined 
+      ? token.uses >= token.maxUses 
+      : false;
+    return !isExpired && !isOverused;
+  };
+
+  // Get maximum uses for an action based on security level
+  const getMaxUsesForAction = (action: string): number => {
+    const level = securityLevels[action] || securityLevels['default'] || 'managed';
+    switch (level) {
+      case 'interactive':
+        return 1; // Single use for high-security
+      case 'non-interactive':
+        return 10; // Multiple uses for low-security
+      case 'managed':
+      default:
+        return 5; // Moderate use for balanced security
+    }
   };
 
   // Get or create a token for a specific action
   const getToken = useCallback(async (action: string = 'default'): Promise<string> => {
+    // Always fetch new token for high-security actions
+    const isHighSecurity = securityLevels[action] === 'interactive';
+    if (isHighSecurity) {
+      return executeChallenge(action);
+    }
+
     // Check if we have a valid cached token
     const cachedToken = tokens.get(action);
     if (cachedToken && isTokenValid(cachedToken)) {
+      // Increment usage if tracking is enabled
+      if (cachedToken.uses !== undefined) {
+        cachedToken.uses++;
+        setTokens(prev => new Map(prev).set(action, cachedToken));
+      }
       return cachedToken.token;
     }
 
     // Execute challenge to get a new token
     return executeChallenge(action);
-  }, [tokens]);
+  }, [tokens, securityLevels]);
 
   // Get the appropriate appearance mode based on security level
   const getAppearanceForAction = useCallback((action: string): 'always' | 'execute' | 'interaction-only' => {
@@ -142,8 +174,14 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
     }
 
     return new Promise((resolve, reject) => {
+      // Store currently focused element for restoration
+      const previouslyFocusedElement = document.activeElement as HTMLElement;
+
       // Create a container for this specific challenge
       const challengeContainer = document.createElement('div');
+      challengeContainer.setAttribute('role', 'dialog');
+      challengeContainer.setAttribute('aria-modal', 'true');
+      challengeContainer.setAttribute('aria-label', language === 'de' ? 'Sicherheitsüberprüfung' : 'Security verification');
       challengeContainer.style.position = 'fixed';
       challengeContainer.style.top = '50%';
       challengeContainer.style.left = '50%';
@@ -152,6 +190,7 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       
       // Add backdrop
       const backdrop = document.createElement('div');
+      backdrop.setAttribute('aria-hidden', 'true');
       backdrop.style.position = 'fixed';
       backdrop.style.top = '0';
       backdrop.style.left = '0';
@@ -159,6 +198,32 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       backdrop.style.height = '100%';
       backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
       backdrop.style.zIndex = '9998';
+
+      let widgetId: string;
+
+      const cleanup = () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.body.removeChild(challengeContainer);
+        document.body.removeChild(backdrop);
+        // Restore focus
+        if (previouslyFocusedElement && document.contains(previouslyFocusedElement)) {
+          previouslyFocusedElement.focus();
+        }
+        if (widgetId) {
+          window.turnstile?.remove(widgetId);
+          widgetRefs.current.delete(action);
+        }
+      };
+
+      // Keyboard handling for accessibility
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          cleanup();
+          reject(new Error('Challenge cancelled by user'));
+        }
+      };
+      document.addEventListener('keydown', handleKeyDown);
+
 
       document.body.appendChild(backdrop);
       document.body.appendChild(challengeContainer);
@@ -173,33 +238,23 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
         language,
         theme: 'auto',
         callback: (token: string) => {
-          // Store the token
+          // Store the token with usage tracking
           const newToken: TurnstileToken = {
             token,
             timestamp: Date.now(),
             action,
+            uses: 0,
+            maxUses: getMaxUsesForAction(action),
           };
           setTokens(prev => new Map(prev).set(action, newToken));
 
           // Clean up
-          document.body.removeChild(challengeContainer);
-          document.body.removeChild(backdrop);
-          if (widgetId) {
-            window.turnstile?.remove(widgetId);
-            widgetRefs.current.delete(action);
-          }
-
+          cleanup();
           resolve(token);
         },
         'error-callback': () => {
           // Clean up
-          document.body.removeChild(challengeContainer);
-          document.body.removeChild(backdrop);
-          if (widgetId) {
-            window.turnstile?.remove(widgetId);
-            widgetRefs.current.delete(action);
-          }
-
+          cleanup();
           reject(new Error('Turnstile challenge failed'));
         },
         'expired-callback': () => {
@@ -213,15 +268,33 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       };
 
       try {
-        const widgetId = window.turnstile.render(challengeContainer, options);
+        widgetId = window.turnstile.render(challengeContainer, options);
         widgetRefs.current.set(action, widgetId);
       } catch (error) {
-        document.body.removeChild(challengeContainer);
-        document.body.removeChild(backdrop);
+        cleanup();
         reject(error);
       }
     });
-  }, [isReady, siteKey, language, getAppearanceForAction]);
+  }, [isReady, siteKey, language, getAppearanceForAction, getMaxUsesForAction]);
+
+  // Preload a token for better UX (optional)
+  const preloadToken = useCallback(async (action: string = 'pageload'): Promise<void> => {
+    if (!isReady) return;
+    
+    try {
+      await getToken(action);
+    } catch (error) {
+      // Silently fail preloading
+      console.warn('Failed to preload token:', error);
+    }
+  }, [isReady, getToken]);
+
+  // Optional: Pre-warm cache on initialization
+  useEffect(() => {
+    if (isReady && !tokens.has('pageload')) {
+      preloadToken().catch(() => {});
+    }
+  }, [isReady, tokens, preloadToken]);
 
   // Clear a specific token
   const clearToken = useCallback((action: string = 'default') => {
@@ -247,6 +320,7 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
     getToken,
     clearToken,
     executeChallenge,
+    preloadToken,
   };
 
   return (
