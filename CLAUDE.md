@@ -387,6 +387,9 @@ The site implements Cloudflare Turnstile with pre-clearance for enhanced securit
 - **Centralized Token Management**: TurnstileProvider manages tokens across the app
 - **Pre-clearance Support**: Users complete CAPTCHA once for multiple form submissions
 - **Graceful Degradation**: Falls back to widget mode if pre-clearance fails
+- **Single-Use Tokens**: Tokens are removed from cache after use (fixed in PR #235)
+
+**IMPORTANT LIMITATION**: Pre-clearance does NOT work on `*.workers.dev` subdomains. It requires a proper Cloudflare Zone with custom domain. Test pre-clearance features ONLY on production (`phialo.de`).
 
 Implementation files:
 - `src/shared/contexts/TurnstileProvider.tsx` - Token management
