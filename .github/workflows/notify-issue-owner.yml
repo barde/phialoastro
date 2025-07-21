@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: read
-      pull-requests: write
+      issues: write
+      pull-requests: read
     
     steps:
       - name: Checkout code
@@ -50,7 +50,7 @@ jobs:
             core.setOutput('pr_number', pr.number);
             core.setOutput('pr_author', pr.user.login);
             
-      - name: Get issue details and notify owners
+      - name: Get issue details and notify in issues
         if: steps.extract-issue.outputs.issue_numbers
         uses: actions/github-script@v7
         with:
@@ -60,7 +60,12 @@ jobs:
             const prNumber = '${{ steps.extract-issue.outputs.pr_number }}';
             const prAuthor = '${{ steps.extract-issue.outputs.pr_author }}';
             
-            const issueOwners = new Set();
+            // Get PR details for the link
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: parseInt(prNumber)
+            });
             
             for (const issueNumber of issueNumbers) {
               try {
@@ -70,51 +75,55 @@ jobs:
                   issue_number: parseInt(issueNumber)
                 });
                 
-                if (issue.data.user.login !== prAuthor) {
-                  issueOwners.add(issue.data.user.login);
+                // Skip if issue was created by a bot
+                if (issue.data.user.type === 'Bot') {
+                  console.log(`Skipping issue #${issueNumber} - created by bot ${issue.data.user.login}`);
+                  continue;
                 }
+                
+                // Skip if PR author is the issue owner
+                if (issue.data.user.login === prAuthor) {
+                  console.log(`Skipping issue #${issueNumber} - PR author is issue owner`);
+                  continue;
+                }
+                
+                // Check if we've already commented on this issue about this PR
+                const comments = await github.rest.issues.listComments({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: parseInt(issueNumber)
+                });
+                
+                const existingComment = comments.data.find(comment => 
+                  comment.user.type === 'Bot' && 
+                  comment.body.includes('<!-- notify-issue-owner-bot -->') &&
+                  comment.body.includes(`#${prNumber}`)
+                );
+                
+                if (existingComment) {
+                  console.log(`Already notified issue #${issueNumber} about PR #${prNumber}`);
+                  continue;
+                }
+                
+                // Post comment in the issue
+                const commentBody = '<!-- notify-issue-owner-bot -->\n' +
+                  `Hi @${issue.data.user.login}! 👋\n\n` +
+                  `PR #${prNumber} has been created to address this issue.\n\n` +
+                  `🔗 **Pull Request**: ${pr.data.title} (#${prNumber})\n` +
+                  `👤 **Author**: @${prAuthor}\n` +
+                  `📊 **Status**: ${pr.data.state}\n\n` +
+                  `Please feel free to review the changes and provide feedback on the PR.\n\n` +
+                  'Thank you for reporting this issue!';
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: parseInt(issueNumber),
+                  body: commentBody
+                });
+                
+                console.log(`Notified issue #${issueNumber} owner @${issue.data.user.login} about PR #${prNumber}`);
               } catch (error) {
-                console.log(`Could not fetch issue #${issueNumber}: ${error.message}`);
+                console.log(`Could not process issue #${issueNumber}: ${error.message}`);
               }
             }
-            
-            if (issueOwners.size === 0) {
-              console.log('No issue owners to notify (or PR author is the issue owner)');
-              return;
-            }
-            
-            // Check if we've already commented
-            const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber
-            });
-            
-            const botComment = comments.data.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('<!-- notify-issue-owner-bot -->')
-            );
-            
-            if (botComment) {
-              console.log('Already notified issue owners');
-              return;
-            }
-            
-            // Post comment notifying issue owners
-            const ownerMentions = Array.from(issueOwners).map(owner => `@${owner}`).join(', ');
-            const issueLinks = issueNumbers.map(num => `#${num}`).join(', ');
-            
-            const commentBody = '<!-- notify-issue-owner-bot -->\n' +
-              `Hi ${ownerMentions}! 👋\n\n` +
-              `This PR addresses the issue(s) you reported: ${issueLinks}\n\n` +
-              `The automated tests have passed successfully. Please feel free to review the changes and let us know if they meet your requirements or if any adjustments are needed.\n\n` +
-              'Thank you for reporting this issue!';
-            
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: commentBody
-            });
-            
-            console.log(`Notified issue owners: ${ownerMentions}`);
