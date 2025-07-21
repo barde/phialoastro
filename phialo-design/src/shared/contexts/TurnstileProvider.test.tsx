@@ -182,11 +182,10 @@ describe('TurnstileProvider', () => {
       
       const cachedToken = result.current.tokens.get('test-action');
       expect(cachedToken?.token).toBe('test-token');
-      expect(cachedToken?.uses).toBe(0);
       expect(cachedToken?.action).toBe('test-action');
     });
 
-    it('should return cached token and increment usage', async () => {
+    it('should return cached token once and then remove it (single-use)', async () => {
       mockTurnstile.render.mockImplementation((container, options) => {
         setTimeout(() => options.callback('test-token'), 10);
         return 'widget-id';
@@ -219,8 +218,9 @@ describe('TurnstileProvider', () => {
       expect(mockTurnstile.render).toHaveBeenCalledTimes(1); // No new render
       expect(cachedToken!).toBe('test-token');
       
+      // Token should be removed from cache after use (single-use)
       const tokenData = result.current.tokens.get('test-action');
-      expect(tokenData?.uses).toBe(1); // Usage incremented
+      expect(tokenData).toBeUndefined();
     });
 
     it('should always fetch new token for high-security actions', async () => {
@@ -283,8 +283,6 @@ describe('TurnstileProvider', () => {
         result.current.tokens.set('test-action', {
           token: 'expired-token',
           timestamp: Date.now() - 6 * 60 * 1000, // 6 minutes ago
-          uses: 0,
-          maxUses: 5,
         });
       });
       
@@ -314,8 +312,6 @@ describe('TurnstileProvider', () => {
         result.current.tokens.set('test-action', {
           token: 'test-token',
           timestamp: Date.now(),
-          uses: 0,
-          maxUses: 5,
         });
       });
       
