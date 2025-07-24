@@ -97,11 +97,6 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     />
     
     <ViewTransitions />
-    
-    {/* Conditionally load Turnstile script globally for pre-clearance */}
-    {import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
-      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback" async defer></script>
-    )}
   </head>
   <body class="min-h-screen antialiased">
     <SmoothScroll client:load />
