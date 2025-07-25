@@ -80,7 +80,7 @@ phialoastro/
 - **Multilingual** - German/English support with automatic detection
 - **Performance Optimized** - Static generation with selective hydration
 - **Responsive Design** - Mobile-first approach
-- **Contact Forms** - Integrated with Web3Forms
+- **Contact Forms** - Integrated with email API and Turnstile protection
 - **Tutorial Section** - Educational content for jewelry design
 
 ## 🧪 Testing
@@ -124,6 +124,7 @@ npm run deploy:preview
 - [Project Structure](./docs/architecture/project-structure.md) - Architecture overview
 - [Development Guide](./phialo-design/README.md) - Detailed development instructions
 - [Deployment Instructions](./docs/how-to/DEPLOYMENT_INSTRUCTIONS.md) - Deployment configuration
+- [Turnstile Pre-clearance Setup](./phialo-design/docs/how-to/setup-turnstile-preclearance.md) - Security configuration
 - [AI Development Guide](./CLAUDE.md) - Guidelines for AI-assisted development
 
 ## 🤝 Contributing

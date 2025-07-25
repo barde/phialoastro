@@ -70,16 +70,39 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 
 		// Validate Turnstile token if enabled
 		if (env.TURNSTILE_SECRET_KEY && body.turnstileToken) {
-			const turnstileService = new TurnstileService(env.TURNSTILE_SECRET_KEY);
+			// Use enhanced service if environment is configured
+			const turnstileService = env.TURNSTILE_ALLOWED_HOSTNAMES || env.TURNSTILE_ALLOWED_ORIGINS
+				? TurnstileService.fromEnv(env)
+				: new TurnstileService(env.TURNSTILE_SECRET_KEY);
+				
 			const turnstileResult = await turnstileService.validate(
 				body.turnstileToken,
-				request.headers.get('CF-Connecting-IP') || undefined
+				request.headers.get('CF-Connecting-IP') || undefined,
+				{
+					origin: request.headers.get('Origin') || undefined,
+					hostname: new URL(request.url).hostname,
+				}
 			);
 
 			if (!turnstileResult.success) {
 				logger.warn('Turnstile validation failed', {
 					error_codes: turnstileResult.error_codes,
 				});
+				
+				// Track failed attempts if KV is available
+				if (env.TURNSTILE_ANALYTICS) {
+					try {
+						const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+						const key = `turnstile:failed:${ip}`;
+						const count = parseInt(await env.TURNSTILE_ANALYTICS.get(key) || '0', 10);
+						await env.TURNSTILE_ANALYTICS.put(key, String(count + 1), {
+							expirationTtl: 3600, // 1 hour
+						});
+					} catch (e) {
+						// Don't fail request if analytics fails
+						logger.error('Failed to track Turnstile failure', { error: e });
+					}
+				}
 				
 				return new Response(JSON.stringify({ 
 					error: 'Captcha validation failed',

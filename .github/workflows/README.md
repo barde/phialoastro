@@ -46,7 +46,10 @@ Configure these in Settings → Secrets and variables → Actions:
 | `GITHUB_TOKEN` | Auto-provided by GitHub | All workflows |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare deployment | Deployment |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account | Deployment |
-| `WEB3FORMS_ACCESS_KEY` | Contact form | Runtime only |
+| `RESEND_API_KEY` | Email service | Workers runtime |
+| `FROM_EMAIL` | Sender email | Workers runtime |
+| `TO_EMAIL` | Recipient email | Workers runtime |
+| `TURNSTILE_SECRET_KEY` | Bot protection | Workers runtime |
 
 ## Permissions
 

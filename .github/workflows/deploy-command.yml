@@ -137,6 +137,8 @@ jobs:
       
       - name: Build Astro site
         working-directory: ./phialo-design
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
         run: pnpm run build
       
       - name: Deploy to Cloudflare Workers
@@ -153,10 +155,12 @@ jobs:
             RESEND_API_KEY
             FROM_EMAIL
             TO_EMAIL
+            TURNSTILE_SECRET_KEY
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
       
       - name: Get deployment URL
         id: url
