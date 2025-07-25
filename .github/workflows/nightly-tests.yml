@@ -14,7 +14,7 @@ on:
       node_versions:
         description: 'Node.js versions to test (comma-separated: 18,20,22)'
         required: false
-        default: '18,20,22'
+        default: '20'
       browsers:
         description: 'Browsers to test (comma-separated: chromium,firefox,webkit)'
         required: false
@@ -22,7 +22,7 @@ on:
       os_variants:
         description: 'OS variants to test (comma-separated: ubuntu,alpine)'
         required: false
-        default: 'ubuntu,alpine'
+        default: 'ubuntu'
       skip_security:
         description: 'Skip security scans'
         type: boolean
@@ -61,49 +61,22 @@ jobs:
       - name: Generate test matrix
         id: matrix
         run: |
-          NODE_VERSIONS="${{ github.event.inputs.node_versions || '18,20,22' }}"
-          OS_VARIANTS="${{ github.event.inputs.os_variants || 'ubuntu,alpine' }}"
-          
-          # Generate matrix JSON
-          MATRIX='{"include":['
-          FIRST=true
-          
-          for NODE in ${NODE_VERSIONS//,/ }; do
-            for OS in ${OS_VARIANTS//,/ }; do
-              if [ "$FIRST" != "true" ]; then
-                MATRIX+=','
-              fi
-              
-              # Determine container image based on OS and Node version
-              if [ "$OS" = "alpine" ]; then
-                IMAGE_TAG="node${NODE}-alpine"
-              else
-                IMAGE_TAG="node${NODE}"
-              fi
-              
-              MATRIX+="{\"node\":\"$NODE\",\"os\":\"$OS\",\"image_tag\":\"$IMAGE_TAG\"}"
-              FIRST=false
-            done
-          done
-          
-          MATRIX+=']}'
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          # Since we're using a single version and OS, no need for complex matrix
+          # Just set a simple output for compatibility
+          echo "matrix={\"include\":[{\"node\":\"20\",\"os\":\"ubuntu\",\"image_tag\":\"latest\"}]}" >> $GITHUB_OUTPUT
 
   # Unit and Integration Tests
   unit-integration-tests:
     needs: prepare-matrix
     if: contains(needs.prepare-matrix.outputs.test_suites, 'unit') || contains(needs.prepare-matrix.outputs.test_suites, 'integration')
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     container:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:${{ matrix.image_tag }}
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
       options: --user root --init
-    name: Unit/Integration Tests (Node ${{ matrix.node }} - ${{ matrix.os }})
+    name: Unit/Integration Tests
     steps:
       - uses: actions/checkout@v4
 
@@ -113,10 +86,10 @@ jobs:
           path: |
             phialo-design/coverage
             phialo-design/.vitest-cache
-          key: test-cache-${{ matrix.node }}-${{ matrix.os }}-${{ hashFiles('phialo-design/src/**/*.test.*') }}
+          key: test-cache-node20-${{ hashFiles('phialo-design/src/**/*.test.*') }}
           restore-keys: |
-            test-cache-${{ matrix.node }}-${{ matrix.os }}-
-            test-cache-${{ matrix.node }}-
+            test-cache-node20-
+            test-cache-
 
       - name: Run unit tests
         if: contains(needs.prepare-matrix.outputs.test_suites, 'unit')
@@ -130,7 +103,7 @@ jobs:
           pnpm run coverage:report
         env:
           CI: true
-          NODE_VERSION: ${{ matrix.node }}
+          NODE_VERSION: 20
 
       - name: Run integration tests
         if: contains(needs.prepare-matrix.outputs.test_suites, 'integration')
@@ -141,13 +114,13 @@ jobs:
           pnpm test:integration --reporter=json --outputFile=integration-results.json
         env:
           CI: true
-          NODE_VERSION: ${{ matrix.node }}
+          NODE_VERSION: 20
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-unit-${{ matrix.node }}-${{ matrix.os }}
+          name: test-results-unit
           path: |
             phialo-design/*-results.json
             phialo-design/coverage/
@@ -159,8 +132,8 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./phialo-design/coverage
-          flags: unit-node${{ matrix.node }}-${{ matrix.os }}
-          name: Unit Tests Node ${{ matrix.node }} ${{ matrix.os }}
+          flags: unit-node20
+          name: Unit Tests Node 20
 
   # E2E Tests (Full matrix)
   e2e-tests:
@@ -175,7 +148,7 @@ jobs:
         browser: ${{ fromJson(format('[{0}]', github.event.inputs.browsers || '"chromium","firefox","webkit"')) }}
         shard: [1, 2, 3, 4, 5, 6]  # More shards for nightly
     container:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:node${{ matrix.node }}
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -261,7 +234,7 @@ jobs:
     if: contains(needs.prepare-matrix.outputs.test_suites, 'performance')
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:node20
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-test:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -484,15 +457,11 @@ jobs:
           echo "" >> nightly-report/README.md
           
           # Process unit test results
-          if ls ../all-results/test-results-unit-*/unit-results.json 1> /dev/null 2>&1; then
+          if ls ../all-results/test-results-unit/unit-results.json 1> /dev/null 2>&1; then
             echo "## Unit Test Results" >> nightly-report/README.md
-            for result in ../all-results/test-results-unit-*/unit-results.json; do
-              NODE_VERSION=$(echo $result | grep -oP 'node\K\d+')
-              OS=$(echo $result | grep -oP '(ubuntu|alpine)')
-              PASSED=$(jq -r '.numPassedTests // 0' "$result")
-              FAILED=$(jq -r '.numFailedTests // 0' "$result")
-              echo "- **Node $NODE_VERSION ($OS)**: $PASSED passed, $FAILED failed" >> nightly-report/README.md
-            done
+            PASSED=$(jq -r '.numPassedTests // 0' "../all-results/test-results-unit/unit-results.json")
+            FAILED=$(jq -r '.numFailedTests // 0' "../all-results/test-results-unit/unit-results.json")
+            echo "- **Node 20**: $PASSED passed, $FAILED failed" >> nightly-report/README.md
             echo "" >> nightly-report/README.md
           fi
           

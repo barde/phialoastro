@@ -28,12 +28,8 @@ jobs:
       contents: read
       packages: read
       security-events: write
-    outputs:
-      base-vulnerabilities: ${{ steps.scan-base.outputs.vulnerabilities }}
-      test-vulnerabilities: ${{ steps.scan-test.outputs.vulnerabilities }}
-      build-vulnerabilities: ${{ steps.scan-build.outputs.vulnerabilities }}
-      rebuild-needed: ${{ steps.check.outputs.rebuild }}
     strategy:
+      fail-fast: false
       matrix:
         image:
           - name: ci-base
@@ -44,118 +40,156 @@ jobs:
             id: build
     steps:
       - name: Run Trivy vulnerability scanner
-        id: scan-${{ matrix.image.id }}
+        id: scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image.name }}:latest
           format: 'json'
           output: 'trivy-${{ matrix.image.name }}.json'
           severity: ${{ github.event.inputs.severity_threshold || 'HIGH' }}
-          exit-code: '1'
+          exit-code: '0'
         continue-on-error: true
 
-      - name: Parse scan results
-        id: parse-${{ matrix.image.id }}
+      - name: Parse and display results
         run: |
           if [ -f "trivy-${{ matrix.image.name }}.json" ]; then
             VULN_COUNT=$(jq '[.Results[].Vulnerabilities | length] | add // 0' trivy-${{ matrix.image.name }}.json)
-            echo "vulnerabilities=$VULN_COUNT" >> $GITHUB_OUTPUT
+            echo "Found $VULN_COUNT vulnerabilities in ${{ matrix.image.name }} image"
             
             if [ "$VULN_COUNT" -gt 0 ]; then
               echo "::warning::Found $VULN_COUNT vulnerabilities in ${{ matrix.image.name }} image"
-              jq -r '.Results[].Vulnerabilities[] | "\(.Severity): \(.VulnerabilityID) - \(.Title)"' trivy-${{ matrix.image.name }}.json
+              jq -r '.Results[].Vulnerabilities[] | "\(.Severity): \(.VulnerabilityID) - \(.Title)"' trivy-${{ matrix.image.name }}.json | head -20
             fi
           else
-            echo "vulnerabilities=0" >> $GITHUB_OUTPUT
+            echo "No scan results for ${{ matrix.image.name }}"
           fi
 
-      - name: Upload scan results
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload scan results as artifact
+        uses: actions/upload-artifact@v4
         if: always()
+        with:
+          name: trivy-scan-${{ matrix.image.name }}
+          path: trivy-${{ matrix.image.name }}.json
+          retention-days: 7
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && steps.scan.outcome == 'success'
         with:
           sarif_file: 'trivy-${{ matrix.image.name }}.json'
           category: 'security-scan-${{ matrix.image.name }}'
+        continue-on-error: true
 
-  # Check if rebuild is needed
-  check-rebuild:
+  # Analyze scan results and decide on rebuild
+  analyze-and-rebuild:
     needs: security-scan
     runs-on: ubuntu-latest
-    outputs:
-      rebuild-base: ${{ steps.check.outputs.base }}
-      rebuild-test: ${{ steps.check.outputs.test }}
-      rebuild-build: ${{ steps.check.outputs.build }}
-    steps:
-      - name: Check vulnerability counts
-        id: check
-        run: |
-          BASE_VULN=${{ needs.security-scan.outputs.base-vulnerabilities || 0 }}
-          TEST_VULN=${{ needs.security-scan.outputs.test-vulnerabilities || 0 }}
-          BUILD_VULN=${{ needs.security-scan.outputs.build-vulnerabilities || 0 }}
-          
-          echo "Base image vulnerabilities: $BASE_VULN"
-          echo "Test image vulnerabilities: $TEST_VULN"
-          echo "Build image vulnerabilities: $BUILD_VULN"
-          
-          echo "base=$([[ $BASE_VULN -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-          echo "test=$([[ $TEST_VULN -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-          echo "build=$([[ $BUILD_VULN -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-
-  # Rebuild images with security updates
-  rebuild-images:
-    needs: check-rebuild
-    if: needs.check-rebuild.outputs.rebuild-base == 'true' || needs.check-rebuild.outputs.rebuild-test == 'true' || needs.check-rebuild.outputs.rebuild-build == 'true'
-    uses: ./.github/workflows/docker-images.yml
-    with:
-      force_rebuild: true
-    secrets: inherit
     permissions:
       contents: read
       packages: write
-
-  # Create issue if vulnerabilities found
-  create-issue:
-    needs: [security-scan, rebuild-images]
-    if: always() && (needs.security-scan.outputs.base-vulnerabilities > 0 || needs.security-scan.outputs.test-vulnerabilities > 0 || needs.security-scan.outputs.build-vulnerabilities > 0)
-    runs-on: ubuntu-latest
-    permissions:
       issues: write
+    outputs:
+      rebuild-needed: ${{ steps.analyze.outputs.rebuild-needed }}
+      vulnerability-summary: ${{ steps.analyze.outputs.vulnerability-summary }}
     steps:
+      - name: Download all scan results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: trivy-scan-*
+          path: scan-results
+
+      - name: Analyze results and create summary
+        id: analyze
+        run: |
+          set -e
+          TOTAL_VULN_COUNT=0
+          REBUILD_NEEDED=false
+          SUMMARY_JSON='{}'
+          
+          # Process each scan result
+          for dir in scan-results/trivy-scan-*; do
+            if [ -d "$dir" ]; then
+              IMAGE_NAME=$(basename "$dir" | sed 's/trivy-scan-//')
+              JSON_FILE="$dir/trivy-${IMAGE_NAME}.json"
+              
+              if [ -f "$JSON_FILE" ]; then
+                COUNT=$(jq '[.Results[].Vulnerabilities | length] | add // 0' "$JSON_FILE")
+                TOTAL_VULN_COUNT=$((TOTAL_VULN_COUNT + COUNT))
+                
+                if [ "$COUNT" -gt 0 ]; then
+                  REBUILD_NEEDED=true
+                fi
+                
+                SUMMARY_JSON=$(echo "$SUMMARY_JSON" | jq ". + {\"$IMAGE_NAME\": $COUNT}")
+                echo "Image '$IMAGE_NAME' has $COUNT vulnerabilities"
+              else
+                echo "No results for $IMAGE_NAME"
+                SUMMARY_JSON=$(echo "$SUMMARY_JSON" | jq ". + {\"$IMAGE_NAME\": 0}")
+              fi
+            fi
+          done
+          
+          echo "Total vulnerabilities found: $TOTAL_VULN_COUNT"
+          echo "Rebuild needed: $REBUILD_NEEDED"
+          
+          echo "rebuild-needed=$REBUILD_NEEDED" >> $GITHUB_OUTPUT
+          echo "vulnerability-summary=$SUMMARY_JSON" >> $GITHUB_OUTPUT
+
+      - name: Trigger rebuild if needed
+        if: steps.analyze.outputs.rebuild-needed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Trigger the docker-images workflow
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'docker-images.yml',
+              ref: 'main',
+              inputs: {
+                force_rebuild: 'true'
+              }
+            });
+            console.log('Triggered docker-images workflow rebuild');
+
       - name: Create security issue
+        if: steps.analyze.outputs.rebuild-needed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
             const title = `🔒 Docker Security Alert - ${date}`;
-            const body = `## Security Vulnerabilities Detected
+            const summary = JSON.parse('${{ steps.analyze.outputs.vulnerability-summary }}');
             
-            The following Docker images have security vulnerabilities:
+            let body = `## Security Vulnerabilities Detected\n\n`;
+            body += `The following Docker images have security vulnerabilities:\n\n`;
+            body += `| Image | Vulnerabilities | Action |\n`;
+            body += `|-------|-----------------|--------|\n`;
             
-            | Image | Vulnerabilities | Status |
-            |-------|----------------|--------|
-            | ci-base | ${{ needs.security-scan.outputs.base-vulnerabilities || 0 }} | ${{ needs.rebuild-images.result == 'success' && '✅ Rebuilt' || '⚠️ Needs attention' }} |
-            | test | ${{ needs.security-scan.outputs.test-vulnerabilities || 0 }} | ${{ needs.rebuild-images.result == 'success' && '✅ Rebuilt' || '⚠️ Needs attention' }} |
-            | build-deploy | ${{ needs.security-scan.outputs.build-vulnerabilities || 0 }} | ${{ needs.rebuild-images.result == 'success' && '✅ Rebuilt' || '⚠️ Needs attention' }} |
+            for (const [image, count] of Object.entries(summary)) {
+              if (count > 0) {
+                body += `| ${image} | ${count} | ⚠️ Rebuild triggered |\n`;
+              }
+            }
             
-            ### Actions Taken
-            - [x] Security scan completed
-            - [${{ needs.rebuild-images.result == 'success' && 'x' || ' ' }}] Images rebuilt with latest security patches
-            - [ ] Manual review required
-            
-            ### Next Steps
-            1. Review the security scan results in the Actions tab
-            2. If automatic rebuild failed, manually trigger the rebuild workflow
-            3. Update base image versions if needed
-            4. Close this issue once resolved
-            
-            Severity threshold: ${{ github.event.inputs.severity_threshold || 'HIGH' }}
-            `;
+            body += `\n### Actions Taken\n`;
+            body += `- [x] Security scan completed\n`;
+            body += `- [x] Rebuild workflow triggered\n`;
+            body += `- [ ] Verify rebuild completion\n`;
+            body += `- [ ] Re-scan after rebuild\n`;
+            body += `\n### Next Steps\n`;
+            body += `1. Monitor the [docker-images workflow](https://github.com/${{ github.repository }}/actions/workflows/docker-images.yml)\n`;
+            body += `2. Once rebuild completes, manually re-run this security scan\n`;
+            body += `3. Close this issue once vulnerabilities are resolved\n\n`;
+            body += `**Severity threshold**: ${{ github.event.inputs.severity_threshold || 'HIGH' }}\n`;
+            body += `**Workflow run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n`;
             
             // Check if similar issue already exists
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              labels: ['security', 'docker']
+              labels: ['security', 'automated']
             });
             
             const existingIssue = issues.data.find(issue => 
@@ -169,6 +203,31 @@ jobs:
                 repo: context.repo.repo,
                 title: title,
                 body: body,
-                labels: ['security', 'docker', 'automated']
+                labels: ['security', 'automated']
               });
+              console.log('Created security issue');
+            } else {
+              console.log('Security issue already exists for today');
             }
+
+  # Summary job for workflow status
+  summary:
+    needs: [security-scan, analyze-and-rebuild]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate workflow summary
+        run: |
+          echo "## Docker Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Severity Threshold**: ${{ github.event.inputs.severity_threshold || 'HIGH' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rebuild Triggered**: ${{ needs.analyze-and-rebuild.outputs.rebuild-needed }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.analyze-and-rebuild.outputs.vulnerability-summary }}" != "" ]; then
+            echo "### Vulnerability Summary" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            echo '${{ needs.analyze-and-rebuild.outputs.vulnerability-summary }}' | jq '.' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
