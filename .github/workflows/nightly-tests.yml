@@ -204,6 +204,8 @@ jobs:
           else
             echo "Using cached build"
           fi
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
 
       - name: Start preview server
         run: |
@@ -274,6 +276,8 @@ jobs:
           
           # Analyze bundle size
           pnpm run analyze > bundle-analysis.txt || true
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
 
       - name: Run Lighthouse CI
         run: |

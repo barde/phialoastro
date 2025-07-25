@@ -199,11 +199,16 @@ workers_dev = false
 
 ### Required Variables
 
-1. **WEB3FORMS_ACCESS_KEY** (Required for contact form)
-   - Get your free key at [https://web3forms.com](https://web3forms.com)
-   - Enter email: kontakt@phialo.de
+1. **PUBLIC_TURNSTILE_SITE_KEY** (Required for bot protection)
+   - Get your key from Cloudflare Dashboard > Turnstile
    - This is a public key (not secret)
-   - Without this, the contact form will not function
+   - Provides bot protection for contact forms
+
+2. **Email Service Configuration** (Workers environment)
+   - `RESEND_API_KEY`: Your Resend API key
+   - `FROM_EMAIL`: Verified sender email
+   - `TO_EMAIL`: Recipient email address
+   - `TURNSTILE_SECRET_KEY`: Turnstile secret for backend validation
 
 2. **PUBLIC_SITE_URL**
    - Set to: `https://phialo.de`
@@ -219,7 +224,10 @@ workers_dev = false
 Set these repository secrets:
 - `CLOUDFLARE_API_TOKEN`: Your API token
 - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
-- `WEB3FORMS_ACCESS_KEY`: Your Web3Forms access key
+- `RESEND_API_KEY`: Your Resend API key
+- `FROM_EMAIL`: Verified sender email
+- `TO_EMAIL`: Recipient email address
+- `TURNSTILE_SECRET_KEY`: Turnstile secret key
 
 ## Cloudflare Setup
 
@@ -256,7 +264,10 @@ Set these repository secrets:
 2. Add:
    - `CLOUDFLARE_API_TOKEN`: Your API token
    - `CLOUDFLARE_ACCOUNT_ID`: Your Account ID
-   - `WEB3FORMS_ACCESS_KEY`: Your Web3Forms key
+   - `RESEND_API_KEY`: Your Resend API key
+   - `FROM_EMAIL`: Verified sender email
+   - `TO_EMAIL`: Recipient email
+   - `TURNSTILE_SECRET_KEY`: Turnstile secret
 
 ## Domain Setup
 
@@ -438,13 +449,50 @@ Navigate to your domain in Cloudflare dashboard and enable:
 
 ### Content Security
 - Worker implements security headers
-- CSP configured for YouTube and Web3Forms
+- CSP configured for YouTube and trusted domains
 - X-Frame-Options prevents clickjacking
 
 ### Environment Variables
-- `WEB3FORMS_ACCESS_KEY` is a public key (not secret)
-- Required for contact form functionality
-- Safe to expose in client-side code
+- `PUBLIC_TURNSTILE_SITE_KEY` is safe to expose in frontend
+- `TURNSTILE_SECRET_KEY` must be kept secret (backend only)
+- Email configuration handled securely in workers
+
+### Cloudflare Turnstile Deployment Notes
+
+#### Environment-Specific Behavior
+
+Cloudflare Turnstile behaves differently depending on the deployment environment:
+
+| Environment | Basic CAPTCHA | Pre-clearance Cookie | Console Warning |
+|-------------|---------------|---------------------|-----------------|
+| **Development** (`localhost`) | ✅ Works | ✅ Works with test keys | None |
+| **PR Previews** (`*.workers.dev`) | ✅ Works | ❌ Not supported | Yes (expected) |
+| **Production** (`phialo.de`) | ✅ Works | ✅ Full support | None |
+
+#### Important Production Considerations
+
+1. **Pre-clearance Feature**: Only works on custom domains with proper Cloudflare Zone configuration
+   - ✅ Will work on `phialo.de` (production)
+   - ❌ Will NOT work on `*.workers.dev` domains
+
+2. **Expected Console Warning on Workers.dev**:
+   ```
+   [Cloudflare Turnstile] Cannot determine Turnstile's embedded location, 
+   aborting clearance redemption, are you running Turnstile on a Cloudflare Zone?
+   ```
+   This warning is normal on workers.dev domains and doesn't affect basic protection.
+
+3. **Testing Strategy**:
+   - **Basic functionality**: Test on any environment
+   - **Pre-clearance features**: MUST test on production only
+   - **Multi-form submissions**: Will require new challenges on workers.dev
+
+4. **Domain Configuration**:
+   - Add all deployment domains to Turnstile dashboard
+   - Include both workers.dev and production domains
+   - Configure appropriate challenge levels per environment
+
+See [Turnstile Setup Guide](./setup-turnstile-preclearance.md) for detailed configuration instructions.
 
 ## Emergency Procedures
 
