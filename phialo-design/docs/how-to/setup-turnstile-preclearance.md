@@ -229,23 +229,40 @@ This error occurs when:
 - Expired tokens are cleaned up automatically
 - **Important**: Tokens are single-use only and are removed from cache after use
 
-#### Pre-clearance Not Working on Workers.dev Subdomains
-**Important Limitation**: Cloudflare Turnstile's pre-clearance feature requires the site to be running on a proper Cloudflare Zone with custom domain configuration. It does **NOT** work on `*.workers.dev` subdomains.
+#### Workers.dev Domain Limitations
+**Important Clarification**: Cloudflare Turnstile has different behavior on `*.workers.dev` domains compared to custom domains with proper Cloudflare Zone configuration.
 
-**Symptoms**:
-- First form submission works correctly
-- Second submission fails with "Security verification failed" (HTTP 400)
-- Console warning: "Cannot determine Turnstile's embedded location, aborting clearance redemption"
+**What Works on Workers.dev**:
+- ✅ Basic Turnstile CAPTCHA protection
+- ✅ Form validation with invisible challenges
+- ✅ Token generation and verification
+- ✅ All security features except pre-clearance
 
-**Affected Environments**:
-- ❌ `phialo-master.meise.workers.dev` - Pre-clearance will NOT work
-- ❌ `phialo-pr-*.meise.workers.dev` - Pre-clearance will NOT work
-- ✅ `phialo.de` - Pre-clearance WILL work (production with Cloudflare Zone)
+**What Doesn't Work on Workers.dev**:
+- ❌ Pre-clearance cookie (`cf_clearance`) - Cannot be set
+- ❌ Clearance redemption - Console warning appears
+- ❌ Multi-form token reuse - Each form needs new challenge
 
-**Testing Pre-clearance**:
-- Pre-clearance features MUST be tested on the production environment (`phialo.de`)
-- On workers.dev domains, each form submission will require a new token
-- This is a Cloudflare platform limitation, not a code issue
+**Console Warning on Workers.dev**:
+```
+[Cloudflare Turnstile] Cannot determine Turnstile's embedded location, 
+aborting clearance redemption, are you running Turnstile on a Cloudflare Zone?
+```
+
+This warning is **expected behavior** on workers.dev domains and does not affect basic Turnstile functionality.
+
+**Environment Behavior Summary**:
+| Environment | Basic Protection | Pre-clearance | Notes |
+|------------|------------------|---------------|-------|
+| `localhost:4321` | ✅ Works | ✅ Works* | *With test keys only |
+| `phialo-pr-*.meise.workers.dev` | ✅ Works | ❌ Not supported | Console warning expected |
+| `phialo-master.meise.workers.dev` | ✅ Works | ❌ Not supported | Console warning expected |
+| `phialo.de` (production) | ✅ Works | ✅ Works | Full functionality |
+
+**Testing Recommendations**:
+- **Basic functionality**: Test on any environment including workers.dev
+- **Pre-clearance features**: MUST test on production (`phialo.de`) only
+- **Development**: Use test keys for local testing without domain restrictions
 
 ### Development Environment
 
