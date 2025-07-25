@@ -383,16 +383,36 @@ npm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
 
 The site implements Cloudflare Turnstile with pre-clearance for enhanced security and user experience:
 
-- **Global Script Loading**: Turnstile script loads once in BaseLayout for performance
-- **Centralized Token Management**: TurnstileProvider manages tokens across the app
+- **Centralized Token Management**: TurnstileProvider manages all script loading and tokens
 - **Pre-clearance Support**: Users complete CAPTCHA once for multiple form submissions
 - **Graceful Degradation**: Falls back to widget mode if pre-clearance fails
-- **Single-Use Tokens**: Tokens are removed from cache after use (fixed in PR #235)
+- **Single-Use Tokens**: Tokens are removed from cache after use
+- **No Race Conditions**: Fixed script loading issue from PR #235
 
-**IMPORTANT LIMITATION**: Pre-clearance does NOT work on `*.workers.dev` subdomains. It requires a proper Cloudflare Zone with custom domain. Test pre-clearance features ONLY on production (`phialo.de`).
+**IMPORTANT: Environment-Specific Behavior**:
+
+| Environment | Basic CAPTCHA | Pre-clearance | Console Warning |
+|-------------|---------------|---------------|-----------------|
+| `localhost` | ✅ Works | ✅ Works* | None |
+| `*.workers.dev` | ✅ Works | ❌ Not supported | Yes (expected) |
+| `phialo.de` | ✅ Works | ✅ Full support | None |
+
+*With test keys only
+
+**Expected Console Warning on workers.dev**:
+```
+[Cloudflare Turnstile] Cannot determine Turnstile's embedded location, 
+aborting clearance redemption, are you running Turnstile on a Cloudflare Zone?
+```
+This is normal behavior and doesn't affect basic protection functionality.
+
+**Testing Guidelines**:
+- Basic functionality: Test on any environment
+- Pre-clearance features: Test ONLY on production (`phialo.de`)
+- Form protection works everywhere, only multi-form token reuse requires production
 
 Implementation files:
-- `src/shared/contexts/TurnstileProvider.tsx` - Token management
+- `src/shared/contexts/TurnstileProvider.tsx` - Token management and script loading
 - `src/features/contact/components/ContactFormWithPreClearance.tsx` - Pre-clearance form
 - `src/shared/types/turnstile.d.ts` - TypeScript definitions
 - See [Turnstile Setup Guide](./phialo-design/docs/how-to/setup-turnstile-preclearance.md) for details

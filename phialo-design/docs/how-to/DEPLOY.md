@@ -457,6 +457,43 @@ Navigate to your domain in Cloudflare dashboard and enable:
 - `TURNSTILE_SECRET_KEY` must be kept secret (backend only)
 - Email configuration handled securely in workers
 
+### Cloudflare Turnstile Deployment Notes
+
+#### Environment-Specific Behavior
+
+Cloudflare Turnstile behaves differently depending on the deployment environment:
+
+| Environment | Basic CAPTCHA | Pre-clearance Cookie | Console Warning |
+|-------------|---------------|---------------------|-----------------|
+| **Development** (`localhost`) | ✅ Works | ✅ Works with test keys | None |
+| **PR Previews** (`*.workers.dev`) | ✅ Works | ❌ Not supported | Yes (expected) |
+| **Production** (`phialo.de`) | ✅ Works | ✅ Full support | None |
+
+#### Important Production Considerations
+
+1. **Pre-clearance Feature**: Only works on custom domains with proper Cloudflare Zone configuration
+   - ✅ Will work on `phialo.de` (production)
+   - ❌ Will NOT work on `*.workers.dev` domains
+
+2. **Expected Console Warning on Workers.dev**:
+   ```
+   [Cloudflare Turnstile] Cannot determine Turnstile's embedded location, 
+   aborting clearance redemption, are you running Turnstile on a Cloudflare Zone?
+   ```
+   This warning is normal on workers.dev domains and doesn't affect basic protection.
+
+3. **Testing Strategy**:
+   - **Basic functionality**: Test on any environment
+   - **Pre-clearance features**: MUST test on production only
+   - **Multi-form submissions**: Will require new challenges on workers.dev
+
+4. **Domain Configuration**:
+   - Add all deployment domains to Turnstile dashboard
+   - Include both workers.dev and production domains
+   - Configure appropriate challenge levels per environment
+
+See [Turnstile Setup Guide](./setup-turnstile-preclearance.md) for detailed configuration instructions.
+
 ## Emergency Procedures
 
 ### Emergency Rollback
