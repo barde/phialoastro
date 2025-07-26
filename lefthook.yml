@@ -1,42 +1,41 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://lefthook.dev/configuration/
-#
-# pre-push:
-#   jobs:
-#     - name: packages audit
-#       tags:
-#         - frontend
-#         - security
-#       run: yarn audit
-#
-#     - name: gems audit
-#       tags:
-#         - backend
-#         - security
-#       run: bundle audit
-#
-# pre-commit:
-#   parallel: true
-#   jobs:
-#     - run: yarn eslint {staged_files}
-#       glob: "*.{js,ts,jsx,tsx}"
-#
-#     - name: rubocop
-#       glob: "*.rb"
-#       exclude:
-#         - config/application.rb
-#         - config/routes.rb
-#       run: bundle exec rubocop --force-exclusion {all_files}
-#
-#     - name: govet
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet {files}
-#
-#     - script: "hello.js"
-#       runner: node
-#
-#     - script: "hello.go"
-#       runner: go run
+# Lefthook configuration for git hooks
+# https://github.com/evilmartians/lefthook
+
+# Run before committing
+pre-commit:
+  parallel: true
+  commands:
+    # Lint GitHub Actions workflows
+    actionlint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: |
+        if [ -f .tools/actionlint ]; then
+          .tools/actionlint {staged_files}
+        else
+          echo "⚠️  actionlint not found. Install with: mkdir -p .tools && cd .tools && bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)"
+        fi
+
+# Run before pushing
+pre-push:
+  parallel: true
+  commands:
+    # Check repository size
+    check-size:
+      run: |
+        SIZE=$(du -sm .git | cut -f1)
+        if [ "$SIZE" -gt 100 ]; then
+          echo "⚠️  Repository size is ${SIZE}MB (limit: 100MB)"
+          echo "Consider running: git gc --aggressive"
+        else
+          echo "✅ Repository size: ${SIZE}MB"
+        fi
+    
+    # Lint all GitHub Actions workflows before push
+    actionlint-all:
+      run: |
+        if [ -f .tools/actionlint ]; then
+          echo "🔍 Linting GitHub Actions workflows..."
+          .tools/actionlint
+        else
+          echo "⚠️  actionlint not found. Skipping workflow linting."
+        fi

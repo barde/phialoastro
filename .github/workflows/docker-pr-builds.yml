@@ -195,4 +195,4 @@ jobs:
           package-name: 'phialo-${{ matrix.image }}'
           package-type: 'container'
           delete-only-pre-release-versions: 'true'
-          version-pattern: 'pr-${{ github.event.pull_request.number }}-${{ matrix.image }}'
+          ignore-versions: '^(?!pr-${{ github.event.pull_request.number }}-${{ matrix.image }})'

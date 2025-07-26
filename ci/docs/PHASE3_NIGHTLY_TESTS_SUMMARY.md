@@ -54,8 +54,8 @@ Successfully created and containerized the nightly comprehensive test workflow, 
 
 ### 1. Comprehensive Test Matrix
 ```yaml
-- Node.js versions: 18, 20, 22
-- OS variants: ubuntu, alpine
+- Node.js version: 20 (standardized)
+- OS variant: ubuntu
 - Browsers: chromium, firefox, webkit
 - Test suites: unit, integration, e2e, performance, security
 ```
@@ -153,11 +153,8 @@ workflow_dispatch:
 
 ## Container Images Used
 
-1. **Test Containers**: Node.js specific versions
-   - `ghcr.io/barde/phialo-test:node18`
-   - `ghcr.io/barde/phialo-test:node20`
-   - `ghcr.io/barde/phialo-test:node22`
-   - Alpine variants available
+1. **Test Container**: Standardized Node.js 20
+   - `ghcr.io/barde/phialo-test:latest`
 
 2. **Security Container**
    - `ghcr.io/barde/phialo-security:latest`
