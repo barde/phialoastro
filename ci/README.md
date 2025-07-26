@@ -146,10 +146,8 @@ ghcr.io/[owner]/phialo-test:latest
 ghcr.io/[owner]/phialo-build-deploy:latest
 ghcr.io/[owner]/phialo-security:latest
 
-# Node.js specific versions
-ghcr.io/[owner]/phialo-test:node18
-ghcr.io/[owner]/phialo-test:node20
-ghcr.io/[owner]/phialo-test:node22
+# Node.js version (standardized on Node 20)
+ghcr.io/[owner]/phialo-test:latest
 
 # PR-specific versions
 ghcr.io/[owner]/phialo-ci-base:pr-123-ci-base
