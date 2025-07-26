@@ -1,0 +1,14 @@
+# actionlint configuration
+# https://github.com/rhysd/actionlint/blob/main/docs/config.md
+
+# Ignore SC2086 shellcheck rule for word splitting (we use it intentionally in some places)
+sc-shellcheck-args:
+  - "-e"
+  - "SC2086"
+
+# Define self-hosted runner labels if used
+self-hosted-runner:
+  labels: []
+
+# Use pyflakes for Python scripts in workflows
+pyflakes: true

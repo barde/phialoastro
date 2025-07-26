@@ -13,9 +13,9 @@ Daily at 2:00 AM UTC
 # Via GitHub CLI:
 gh workflow run nightly-tests.yml \
   -f test_suites="unit,integration,e2e,performance,security" \
-  -f node_versions="18,20,22" \
+  -f node_versions="20" \
   -f browsers="chromium,firefox,webkit" \
-  -f os_variants="ubuntu,alpine" \
+  -f os_variants="ubuntu" \
   -f skip_security=false
 ```
 
@@ -25,7 +25,7 @@ gh workflow run nightly-tests.yml \
 - **Command**: `npm run test:unit:coverage`
 - **Config**: `vitest.config.ts`
 - **Coverage**: Uploaded to Codecov
-- **Matrix**: All Node versions × OS variants
+- **Environment**: Node 20 on Ubuntu
 
 ### Integration Tests
 - **Command**: `npm run test:integration`
