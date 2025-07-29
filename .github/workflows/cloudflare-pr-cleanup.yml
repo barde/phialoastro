@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Delete PR preview worker
+        if: github.actor != 'dependabot[bot]'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -30,13 +31,20 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr_number = context.issue.number;
+            const isDependabot = '${{ github.actor }}' === 'dependabot[bot]';
             
             // Create a unique identifier for this comment
             const identifier = '<!-- cloudflare-preview-cleanup -->';
             
-            const body = identifier + '\n' +
-              '## 🧹 Preview Deployment Cleaned Up\n\n' +
-              'The Cloudflare preview deployment for this PR has been removed.\n';
+            let body;
+            if (isDependabot) {
+              // Skip comment for Dependabot PRs since they don't have deployments
+              return;
+            } else {
+              body = identifier + '\n' +
+                '## 🧹 Preview Deployment Cleaned Up\n\n' +
+                'The Cloudflare preview deployment for this PR has been removed.\n';
+            }
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
