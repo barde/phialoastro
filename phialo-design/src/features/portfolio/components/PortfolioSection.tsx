@@ -131,22 +131,13 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   return (
     <section id="portfolio" className="portfolio-section py-24 bg-white" ref={ref} aria-label="Portfolio">
       <div className="container mx-auto px-6">
-        {/* Section Header */}
+        {/* Instagram Link */}
         <motion.div
           variants={itemVariants}
           initial="visible"
           animate="visible"
           className="text-center mb-16"
         >
-          <h2 className="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
-            Portfolio
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
-            {isEnglish 
-              ? "Discover our handcrafted 3D designs and realized jewelry pieces."
-              : "Entdecken Sie unsere handgefertigten 3D-Designs und realisierten Schmuckstücke."
-            }
-          </p>
           <div className="text-center">
             <a 
               href="https://www.instagram.com/phialo_design/" 
