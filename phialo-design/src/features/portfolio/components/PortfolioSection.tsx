@@ -184,21 +184,21 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           <PortfolioModal
             isOpen={isModalOpen}
             onClose={() => {
+              // Find the specific portfolio item element that was clicked
+              const itemElement = document.querySelector(`[data-item-id="${selectedItem.id}"]`);
+
+              if (itemElement) {
+                // Add a class to temporarily disable the hover effect
+                itemElement.classList.add('no-hover-until-leave');
+
+                // Add a one-time event listener to remove the class when the mouse leaves
+                itemElement.addEventListener('mouseleave', () => {
+                  itemElement.classList.remove('no-hover-until-leave');
+                }, { once: true });
+              }
+              
               setIsModalOpen(false);
               setSelectedItem(null);
-              
-              // Force all portfolio items to reset their hover state
-              // by removing the :hover pseudo-class temporarily
-              const portfolioItems = document.querySelectorAll('.portfolio-item-container');
-              portfolioItems.forEach(item => {
-                const parent = item.parentElement?.parentElement; // Get the group element
-                if (parent) {
-                  parent.classList.add('pointer-events-none');
-                  setTimeout(() => {
-                    parent.classList.remove('pointer-events-none');
-                  }, 100);
-                }
-              });
             }}
             portfolioItem={selectedItem}
             lang={actualLang}
