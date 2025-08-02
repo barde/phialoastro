@@ -423,14 +423,11 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
 
                     {/* YouTube Video */}
                     {portfolioItem.youtubeVideoId && (
-                      <div className="mt-8">
-                        <h3 className="font-semibold text-midnight mb-4">
-                          {isEnglish ? 'Video' : 'Video'}
-                        </h3>
+                      <div className="mt-6">
                         <YouTubeEmbed 
                           videoId={portfolioItem.youtubeVideoId}
                           title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
-                          aspectRatio="16:9"
+                          aspectRatio="9:16"
                         />
                       </div>
                     )}
