@@ -23,6 +23,7 @@ export interface PortfolioItemData {
   availability?: string;
   price?: string;
   tags?: string[];
+  videoUrl?: string;
 }
 
 // Function to get portfolio items with correct language
