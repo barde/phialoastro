@@ -184,6 +184,19 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           <PortfolioModal
             isOpen={isModalOpen}
             onClose={() => {
+              // Find the specific portfolio item element that was clicked
+              const itemElement = document.querySelector(`[data-item-id="${selectedItem.id}"]`);
+
+              if (itemElement) {
+                // Add a class to temporarily disable the hover effect
+                itemElement.classList.add('no-hover-until-leave');
+
+                // Add a one-time event listener to remove the class when the mouse leaves
+                itemElement.addEventListener('mouseleave', () => {
+                  itemElement.classList.remove('no-hover-until-leave');
+                }, { once: true });
+              }
+              
               setIsModalOpen(false);
               setSelectedItem(null);
             }}
