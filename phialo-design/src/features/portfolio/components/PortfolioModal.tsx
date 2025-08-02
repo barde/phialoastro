@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from '../../../lib/framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { YouTubeEmbed } from './YouTubeEmbed';
 
 import type { PortfolioItemData } from './PortfolioSection';
 
@@ -216,6 +217,32 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
     }
   };
 
+  // Helper function to extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
+    
+    // Handle embed URLs
+    const embedMatch = url.match(/embed\/([a-zA-Z0-9_-]+)/);
+    if (embedMatch) return embedMatch[1];
+    
+    // Handle regular YouTube URLs
+    const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+    if (watchMatch) return watchMatch[1];
+    
+    // Handle short URLs
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+    if (shortMatch) return shortMatch[1];
+    
+    return null;
+  };
+
+  // Determine if we have a video (either youtubeVideoId or videoUrl)
+  const videoId = portfolioItem.youtubeVideoId || (portfolioItem.videoUrl ? getYouTubeVideoId(portfolioItem.videoUrl) : null);
+  const hasVideo = !!videoId;
+  
+  // For backward compatibility, if aspectRatio is not specified but we have a videoUrl, assume 16:9
+  const videoAspectRatio = portfolioItem.youtubeAspectRatio || '16:9';
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -354,90 +381,232 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                     <p>{portfolioItem.description}</p>
                   </div>
 
-                  {/* Video embed */}
-                  {portfolioItem.videoUrl && (
-                    <div className="mb-8">
-                      <div className="aspect-video w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
-                        <iframe
-                          className="w-full h-full"
-                          src={portfolioItem.videoUrl}
-                          title={`${portfolioItem.title} Video`}
-                          loading="lazy"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          referrerPolicy="strict-origin-when-cross-origin"
-                          allowFullScreen
-                        />
+                  {/* Determine layout based on video aspect ratio */}
+                  {hasVideo ? (
+                    videoAspectRatio === '9:16' ? (
+                      /* Vertical video (9:16) - show side by side with text */
+                      <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+                        {/* Text content - left side */}
+                        <div className="space-y-6">
+                        {/* Materials */}
+                        {portfolioItem.materials && portfolioItem.materials.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-midnight mb-2">{t.materials}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {portfolioItem.materials.map((material, index) => (
+                                <span
+                                  key={index}
+                                  className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                                >
+                                  {material}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Additional details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {portfolioItem.client && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.client}</h4>
+                              <p className="text-midnight">{portfolioItem.client}</p>
+                            </div>
+                          )}
+                          {portfolioItem.projectDate && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
+                              <p className="text-midnight">{portfolioItem.projectDate}</p>
+                            </div>
+                          )}
+                          {portfolioItem.availability && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
+                              <p className="text-midnight capitalize">
+                                {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
+                              </p>
+                            </div>
+                          )}
+                          {portfolioItem.price && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.price}</h4>
+                              <p className="text-midnight">{portfolioItem.price}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        {portfolioItem.tags && portfolioItem.tags.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-midnight mb-2">{t.tags}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {portfolioItem.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
+
+                        {/* YouTube Video - right side for vertical videos */}
+                        <div className="mt-6 lg:mt-0">
+                          <YouTubeEmbed 
+                            videoId={videoId}
+                            title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
+                            aspectRatio={videoAspectRatio}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      /* Horizontal video (16:9) - show below text in full width */
+                      <div className="space-y-6">
+                        {/* Materials */}
+                        {portfolioItem.materials && portfolioItem.materials.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-midnight mb-2">{t.materials}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {portfolioItem.materials.map((material, index) => (
+                                <span
+                                  key={index}
+                                  className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                                >
+                                  {material}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Additional details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {portfolioItem.client && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.client}</h4>
+                              <p className="text-midnight">{portfolioItem.client}</p>
+                            </div>
+                          )}
+                          {portfolioItem.projectDate && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
+                              <p className="text-midnight">{portfolioItem.projectDate}</p>
+                            </div>
+                          )}
+                          {portfolioItem.availability && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
+                              <p className="text-midnight capitalize">
+                                {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
+                              </p>
+                            </div>
+                          )}
+                          {portfolioItem.price && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.price}</h4>
+                              <p className="text-midnight">{portfolioItem.price}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        {portfolioItem.tags && portfolioItem.tags.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-midnight mb-2">{t.tags}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {portfolioItem.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* YouTube Video - below text for horizontal videos */}
+                        <div className="mt-6">
+                          <YouTubeEmbed 
+                            videoId={videoId}
+                            title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
+                            aspectRatio={videoAspectRatio}
+                          />
+                        </div>
+                      </div>
+                    )
+                  ) : (
+                    /* Original layout without video */
+                    <div className="space-y-6">
+                      {/* Materials */}
+                      {portfolioItem.materials && portfolioItem.materials.length > 0 && (
+                        <div>
+                          <h3 className="font-semibold text-midnight mb-2">{t.materials}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {portfolioItem.materials.map((material, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                              >
+                                {material}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Additional details */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {portfolioItem.client && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">{t.client}</h4>
+                            <p className="text-midnight">{portfolioItem.client}</p>
+                          </div>
+                        )}
+                        {portfolioItem.projectDate && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
+                            <p className="text-midnight">{portfolioItem.projectDate}</p>
+                          </div>
+                        )}
+                        {portfolioItem.availability && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
+                            <p className="text-midnight capitalize">
+                              {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
+                            </p>
+                          </div>
+                        )}
+                        {portfolioItem.price && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">{t.price}</h4>
+                            <p className="text-midnight">{portfolioItem.price}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tags */}
+                      {portfolioItem.tags && portfolioItem.tags.length > 0 && (
+                        <div>
+                          <h3 className="font-semibold text-midnight mb-2">{t.tags}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {portfolioItem.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
-
-                  {/* Details grid */}
-                  <div className="space-y-6">
-                    {/* Materials */}
-                    {portfolioItem.materials && portfolioItem.materials.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-midnight mb-2">{t.materials}</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {portfolioItem.materials.map((material, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
-                            >
-                              {material}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Additional details */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {portfolioItem.client && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.client}</h4>
-                          <p className="text-midnight">{portfolioItem.client}</p>
-                        </div>
-                      )}
-                      {portfolioItem.projectDate && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
-                          <p className="text-midnight">{portfolioItem.projectDate}</p>
-                        </div>
-                      )}
-                      {portfolioItem.availability && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
-                          <p className="text-midnight capitalize">
-                            {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
-                          </p>
-                        </div>
-                      )}
-                      {portfolioItem.price && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.price}</h4>
-                          <p className="text-midnight">{portfolioItem.price}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Tags */}
-                    {portfolioItem.tags && portfolioItem.tags.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-midnight mb-2">{t.tags}</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {portfolioItem.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </motion.div>
               </div>
             </div>

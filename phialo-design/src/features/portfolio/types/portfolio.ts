@@ -11,6 +11,9 @@ export interface PortfolioItemData {
   techniques: string[];
   details: string;
   gallery: string[];
+  youtubeVideoId?: string;
+  youtubeAspectRatio?: '16:9' | '9:16';
+  videoUrl?: string; // For backward compatibility
 }
 
 // Portfolio filter types
