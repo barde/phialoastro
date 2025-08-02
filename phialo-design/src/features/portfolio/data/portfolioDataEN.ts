@@ -3,6 +3,29 @@ import type { PortfolioItemData } from '../components/PortfolioSection';
 export const portfolioItemsEN: PortfolioItemData[] = [
   {
     id: 1,
+    title: "Winged Ring",
+    category: "Rings",
+    image: "/images/portfolio/winged-ring-1.jpg",
+    slug: "winged-ring",
+    description: "Bespoke winged ring with intricate details, 3D-printed and cast in yellow gold, set with custom cut roman glass, finished with sandblasting and polishing",
+    year: 2025,
+    materials: ["18kt gold", "Ancient green roman glass"],
+    techniques: ["3D Printing", "Casting", "Sandblasting", "Polishing"],
+    details: "This extraordinary ring combines cutting-edge 3D printing technology with traditional goldsmithing techniques. The complex wing design was first digitally modeled and then realized through 3D printing in wax before being cast in 18-karat gold.",
+    gallery: [
+      "/images/portfolio/winged-ring-1.jpg",
+      "/images/portfolio/winged-ring-2.jpg",
+      "/images/portfolio/winged-ring-3.jpg",
+      "/images/portfolio/winged-ring-4.jpg",
+      "/images/portfolio/winged-ring-5.jpg",
+      "/images/portfolio/winged-ring-6.jpg",
+      "/images/portfolio/winged-ring-7.jpg"
+    ],
+    youtubeVideoId: "P6dbNl9xsc8",
+    youtubeAspectRatio: "9:16" as const
+  },
+  {
+    id: 2,
     title: "DNA Spiral Earrings",
     category: "Earrings",
     image: "/images/portfolio/dna_spirale_freigestellt_refl.jpg",
@@ -17,7 +40,7 @@ export const portfolioItemsEN: PortfolioItemData[] = [
     ]
   },
   {
-    id: 2,
+    id: 3,
     title: "Tourmaline Ring Masterpiece",
     category: "Rings",
     image: "/images/portfolio/turmalinring_refl.jpg",
@@ -32,7 +55,7 @@ export const portfolioItemsEN: PortfolioItemData[] = [
     ]
   },
   {
-    id: 3,
+    id: 4,
     title: "Silver Castle Piggy Bank",
     category: "Sculptures",
     image: "/images/portfolio/silver_piggy_bank.jpg",
@@ -44,21 +67,6 @@ export const portfolioItemsEN: PortfolioItemData[] = [
     details: "This unique piece combines the functionality of a savings container with the aesthetics of a medieval castle. The fine details were achieved through precise 3D modeling and traditionally cast in silver.",
     gallery: [
       "/images/portfolio/silver_piggy_bank.jpg"
-    ]
-  },
-  {
-    id: 4,
-    title: "Möbius Sculpture",
-    category: "Sculptures",
-    image: "/images/portfolio/moebius.jpg",
-    slug: "moebius-skulptur",
-    description: "A fascinating interpretation of the Möbius strip as a jewelry sculpture. The infinite loop symbolizes continuity and eternity.",
-    year: 2023,
-    materials: ["925 Silver", "High Polish"],
-    techniques: ["Parametric Design", "3D Printing", "Fine Casting"],
-    details: "The mathematically perfect form was created through parametric design in Blender. The seamless, one-sided surface was carefully hand-worked to a mirror finish.",
-    gallery: [
-      "/images/portfolio/moebius.jpg"
     ]
   },
   {

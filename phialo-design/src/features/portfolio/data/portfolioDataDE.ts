@@ -3,6 +3,29 @@ import type { PortfolioItemData } from '../components/PortfolioSection';
 export const portfolioItemsDE: PortfolioItemData[] = [
   {
     id: 1,
+    title: "Geflügelter Ring",
+    category: "Ringe",
+    image: "/images/portfolio/winged-ring-1.jpg",
+    slug: "winged-ring",
+    description: "Maßgefertigter geflügelter Ring mit aufwendigen Details, 3D-gedruckt und in Gelbgold gegossen, mit maßgeschliffenem römischem Glas besetzt, veredelt durch Sandstrahlen und Polieren",
+    year: 2025,
+    materials: ["18kt Gold", "Antikes grünes römisches Glas"],
+    techniques: ["3D-Druck", "Gussverfahren", "Sandstrahlen", "Polieren"],
+    details: "Dieser außergewöhnliche Ring verbindet modernste 3D-Drucktechnologie mit traditioneller Goldschmiedekunst. Das komplexe Design der Flügel wurde zunächst digital modelliert und mittels 3D-Druck in Wachs umgesetzt.",
+    gallery: [
+      "/images/portfolio/winged-ring-1.jpg",
+      "/images/portfolio/winged-ring-2.jpg",
+      "/images/portfolio/winged-ring-3.jpg",
+      "/images/portfolio/winged-ring-4.jpg",
+      "/images/portfolio/winged-ring-5.jpg",
+      "/images/portfolio/winged-ring-6.jpg",
+      "/images/portfolio/winged-ring-7.jpg"
+    ],
+    youtubeVideoId: "P6dbNl9xsc8",
+    youtubeAspectRatio: "9:16" as const
+  },
+  {
+    id: 2,
     title: "DNA-Spirale Ohrhänger",
     category: "Ohrringe",
     image: "/images/portfolio/dna_spirale_freigestellt_refl.jpg",
@@ -17,7 +40,7 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     ]
   },
   {
-    id: 2,
+    id: 3,
     title: "Turmalinring Masterpiece",
     category: "Ringe",
     image: "/images/portfolio/turmalinring_refl.jpg",
@@ -32,7 +55,7 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     ]
   },
   {
-    id: 3,
+    id: 4,
     title: "Silbernes Schloss-Münzkästchen",
     category: "Skulpturen",
     image: "/images/portfolio/silver_piggy_bank.jpg",
@@ -44,21 +67,6 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     details: "Dieses einzigartige Stück vereint die Funktionalität eines Sparbehälters mit der Ästhetik eines mittelalterlichen Schlosses. Die feinen Details wurden durch präzise 3D-Modellierung erreicht und traditionell in Silber gegossen.",
     gallery: [
       "/images/portfolio/silver_piggy_bank.jpg"
-    ]
-  },
-  {
-    id: 4,
-    title: "Möbius-Skulptur",
-    category: "Skulpturen",
-    image: "/images/portfolio/moebius.jpg",
-    slug: "moebius-skulptur",
-    description: "Eine faszinierende Interpretation des Möbiusbandes als Schmuckskulptur. Die unendliche Schleife symbolisiert Kontinuität und Ewigkeit.",
-    year: 2023,
-    materials: ["925er Silber", "Hochglanzpoliert"],
-    techniques: ["Parametrisches Design", "3D-Druck", "Feinguss"],
-    details: "Die mathematisch perfekte Form wurde durch parametrisches Design in Blender erstellt. Die nahtlose, einseitige Oberfläche wurde durch sorgfältige Handarbeit zu einem spiegelnden Finish poliert.",
-    gallery: [
-      "/images/portfolio/moebius.jpg"
     ]
   },
   {
