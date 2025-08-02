@@ -8,11 +8,7 @@ vi.mock('../../../shared/components/effects/MagneticCursor', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-// Mock lucide-react icons
-vi.mock('lucide-react', () => ({
-  ExternalLink: () => <span data-testid="external-link-icon">ExternalLink</span>,
-  Eye: () => <span data-testid="eye-icon">Eye</span>,
-}));
+// No lucide-react icons used anymore
 
 describe('PortfolioItem', () => {
   const mockItem: PortfolioItemData = {
@@ -53,45 +49,51 @@ describe('PortfolioItem', () => {
       expect(screen.getByText('Test Portfolio Item')).toBeInTheDocument();
       expect(screen.getByText('Test Category')).toBeInTheDocument();
       expect(screen.getByRole('img')).toHaveAttribute('src', '/images/test-item.jpg');
-      expect(screen.getByRole('img')).toHaveAttribute('alt', 'Test Portfolio Item');
+      expect(screen.getByRole('img')).toHaveAttribute('alt', 'Test Portfolio Item - Test Category');
     });
 
     it('should render with hover overlay structure', () => {
       render(<PortfolioItem item={mockItem} />);
 
       const container = screen.getByTestId('portfolio-item');
-      expect(container).toHaveClass('portfolio-item-container', 'group');
+      expect(container).toHaveClass('group');
+      
+      // Check for inner container with portfolio-item-container class
+      const innerContainer = container.querySelector('.portfolio-item-container');
+      expect(innerContainer).toBeInTheDocument();
       
       // Check for overlay that appears on hover
       const overlay = container.querySelector('.group-hover\\:opacity-100');
       expect(overlay).toBeInTheDocument();
     });
 
-    it('should render action buttons', () => {
+    it('should render clickable card', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      expect(screen.getByTestId('portfolio-details-button')).toBeInTheDocument();
-      expect(screen.getByTestId('eye-icon')).toBeInTheDocument();
-      expect(screen.getByTestId('external-link-icon')).toBeInTheDocument();
+      const card = screen.getByTestId('portfolio-item');
+      expect(card).toHaveAttribute('role', 'button');
+      expect(card).toHaveAttribute('tabIndex', '0');
     });
   });
 
   describe('Language Support', () => {
-    it('should show German text by default', async () => {
+    it('should have German aria-label by default', async () => {
       window.location.pathname = '/';
       render(<PortfolioItem item={mockItem} />);
 
       await waitFor(() => {
-        expect(screen.getByText('Ansehen')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio-Element'));
       });
     });
 
-    it('should show English text on English pages', async () => {
+    it('should have English aria-label on English pages', async () => {
       window.location.pathname = '/en/portfolio';
       render(<PortfolioItem item={mockItem} />);
 
       await waitFor(() => {
-        expect(screen.getByText('Details')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio item'));
       });
     });
 
@@ -101,16 +103,35 @@ describe('PortfolioItem', () => {
 
       // After useEffect runs, should show English
       await waitFor(() => {
-        expect(screen.getByText('Details')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio item'));
       });
     });
   });
 
   describe('Interactions', () => {
-    it('should call onItemClick when clicking details button', () => {
+    it('should call onItemClick when clicking the card', () => {
       render(<PortfolioItem item={mockItem} onItemClick={mockOnItemClick} />);
 
-      fireEvent.click(screen.getByTestId('portfolio-details-button'));
+      fireEvent.click(screen.getByTestId('portfolio-item'));
+      
+      expect(mockOnItemClick).toHaveBeenCalledTimes(1);
+      expect(mockOnItemClick).toHaveBeenCalledWith(mockItem);
+    });
+
+    it('should call onItemClick when pressing Enter key', () => {
+      render(<PortfolioItem item={mockItem} onItemClick={mockOnItemClick} />);
+
+      fireEvent.keyDown(screen.getByTestId('portfolio-item'), { key: 'Enter' });
+      
+      expect(mockOnItemClick).toHaveBeenCalledTimes(1);
+      expect(mockOnItemClick).toHaveBeenCalledWith(mockItem);
+    });
+
+    it('should call onItemClick when pressing Space key', () => {
+      render(<PortfolioItem item={mockItem} onItemClick={mockOnItemClick} />);
+
+      fireEvent.keyDown(screen.getByTestId('portfolio-item'), { key: ' ' });
       
       expect(mockOnItemClick).toHaveBeenCalledTimes(1);
       expect(mockOnItemClick).toHaveBeenCalledWith(mockItem);
@@ -120,23 +141,16 @@ describe('PortfolioItem', () => {
       render(<PortfolioItem item={mockItem} />);
 
       expect(() => {
-        fireEvent.click(screen.getByTestId('portfolio-details-button'));
+        fireEvent.click(screen.getByTestId('portfolio-item'));
       }).not.toThrow();
     });
 
-    it('should prevent event propagation when clicking buttons', () => {
-      const containerClick = vi.fn();
-      
-      const { container } = render(
-        <div onClick={containerClick}>
-          <PortfolioItem item={mockItem} onItemClick={mockOnItemClick} />
-        </div>
-      );
+    it('should not call onItemClick for other keys', () => {
+      render(<PortfolioItem item={mockItem} onItemClick={mockOnItemClick} />);
 
-      fireEvent.click(screen.getByTestId('portfolio-details-button'));
+      fireEvent.keyDown(screen.getByTestId('portfolio-item'), { key: 'Tab' });
       
-      // Should call item click but not container click (due to proper event handling)
-      expect(mockOnItemClick).toHaveBeenCalled();
+      expect(mockOnItemClick).not.toHaveBeenCalled();
     });
   });
 
@@ -152,7 +166,7 @@ describe('PortfolioItem', () => {
       render(<PortfolioItem item={mockItem} />);
 
       const img = screen.getByRole('img');
-      expect(img).toHaveClass('w-full', 'h-full', 'object-contain');
+      expect(img).toHaveClass('w-full', 'h-full', 'object-cover');
     });
 
     it('should apply hover scale effect', () => {
@@ -167,15 +181,24 @@ describe('PortfolioItem', () => {
     it('should have proper container styling', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      const container = screen.getByTestId('portfolio-item');
-      expect(container).toHaveClass(
-        'portfolio-item-container',
+      const outerContainer = screen.getByTestId('portfolio-item');
+      expect(outerContainer).toHaveClass(
         'group',
         'relative',
+        'cursor-pointer',
+        'focus:outline-none',
+        'focus:ring-2',
+        'focus:ring-gold',
+        'focus:ring-offset-2',
+        'rounded-lg'
+      );
+      
+      const innerContainer = outerContainer.querySelector('.portfolio-item-container');
+      expect(innerContainer).toHaveClass(
         'overflow-hidden',
         'rounded-lg',
         'bg-gray-100',
-        'h-full'
+        'aspect-[4/5]'
       );
     });
 
@@ -191,16 +214,15 @@ describe('PortfolioItem', () => {
       );
     });
 
-    it('should style details button correctly', () => {
+    it('should have proper focus styles', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      const button = screen.getByTestId('portfolio-details-button');
-      expect(button).toHaveClass(
-        'inline-flex',
-        'items-center',
-        'bg-white/20',
-        'backdrop-blur-sm',
-        'rounded-full'
+      const card = screen.getByTestId('portfolio-item');
+      expect(card).toHaveClass(
+        'focus:outline-none',
+        'focus:ring-2',
+        'focus:ring-gold',
+        'focus:ring-offset-2'
       );
     });
   });
@@ -210,16 +232,18 @@ describe('PortfolioItem', () => {
       render(<PortfolioItem item={mockItem} />);
 
       const img = screen.getByRole('img');
-      expect(img).toHaveAttribute('alt', mockItem.title);
+      expect(img).toHaveAttribute('alt', 'Test Portfolio Item - Test Category');
     });
 
-    it('should have accessible button', () => {
+    it('should have accessible card with proper ARIA attributes', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      const button = screen.getByTestId('portfolio-details-button');
-      expect(button.tagName).toBe('BUTTON');
-      expect(button).toHaveTextContent(/Ansehen|Details/);
+      const card = screen.getByTestId('portfolio-item');
+      expect(card).toHaveAttribute('role', 'button');
+      expect(card).toHaveAttribute('tabIndex', '0');
+      expect(card).toHaveAttribute('aria-label');
     });
+
   });
 
   describe('MagneticCursor Integration', () => {
@@ -261,27 +285,26 @@ describe('PortfolioItem', () => {
 
       // Should default to German when pathname is empty
       await waitFor(() => {
-        expect(screen.getByText('Ansehen')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio-Element'));
       });
     });
   });
 
-  describe('Multiple Icons', () => {
-    it('should render both Eye and ExternalLink icons', () => {
+  describe('Hover Overlay', () => {
+    it('should have overlay with proper styling', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      expect(screen.getByTestId('eye-icon')).toBeInTheDocument();
-      expect(screen.getByTestId('external-link-icon')).toBeInTheDocument();
+      const overlay = screen.getByTestId('portfolio-item').querySelector('.absolute.inset-0');
+      expect(overlay).toHaveClass('pointer-events-none');
     });
 
-    it('should position icons correctly', () => {
+    it('should display title and category on hover', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      const detailsButton = screen.getByTestId('portfolio-details-button');
-      const eyeIcon = screen.getByTestId('eye-icon');
-      
-      // Eye icon should be inside the details button
-      expect(detailsButton).toContainElement(eyeIcon);
+      // Title and category are always in DOM but hidden until hover
+      expect(screen.getByText(mockItem.title)).toBeInTheDocument();
+      expect(screen.getByText(mockItem.category)).toBeInTheDocument();
     });
   });
 
@@ -291,7 +314,7 @@ describe('PortfolioItem', () => {
 
       const title = screen.getByText(mockItem.title);
       expect(title.tagName).toBe('H3');
-      expect(title).toHaveClass('font-display', 'text-xl', 'font-medium');
+      expect(title).toHaveClass('font-display', 'text-3xl', 'font-medium');
     });
 
     it('should style category text correctly', () => {
@@ -299,7 +322,7 @@ describe('PortfolioItem', () => {
 
       const category = screen.getByText(mockItem.category);
       expect(category.tagName).toBe('P');
-      expect(category).toHaveClass('text-sm', 'text-white/80');
+      expect(category).toHaveClass('text-lg', 'text-white/90');
     });
   });
 });
