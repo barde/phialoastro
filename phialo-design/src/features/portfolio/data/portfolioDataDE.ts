@@ -9,12 +9,11 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     slug: "dna-spirale-ohrhaenger",
     description: "Elegante Ohrhänger inspiriert von der DNA-Doppelhelix-Struktur. Diese einzigartigen Schmuckstücke verbinden wissenschaftliche Ästhetik mit kunstvoller Handwerkskunst.",
     year: 2023,
-    materials: ["925er Silber", "Rhodiniert"],
+    materials: ["Platin", "Fancy Diamanten"],
     techniques: ["3D-Modellierung", "Wachsausschmelzverfahren", "Handpolitur"],
     details: "Die spiralförmige Struktur wurde in Blender entworfen und durch präzise 3D-Drucktechnologie in Wachs umgesetzt. Nach dem Guss in 925er Silber wurden die Ohrhänger sorgfältig von Hand poliert und rhodiniert für dauerhaften Glanz.",
     gallery: [
-      "/images/portfolio/dna_spirale_freigestellt_refl.jpg",
-      "/images/portfolio/ohrhaenger_energetic_freigestellt_refl.jpg"
+      "/images/portfolio/dna_spirale_freigestellt_refl.jpg"
     ]
   },
   {
