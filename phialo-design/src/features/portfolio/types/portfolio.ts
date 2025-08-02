@@ -11,6 +11,7 @@ export interface PortfolioItemData {
   techniques: string[];
   details: string;
   gallery: string[];
+  youtubeVideoId?: string;
 }
 
 // Portfolio filter types

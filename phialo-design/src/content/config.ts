@@ -11,6 +11,7 @@ const portfolioCollection = defineCollection({
     featured: z.boolean().default(false),
     image: z.string(),
     gallery: z.array(z.string()).optional(),
+    youtubeVideoId: z.string().optional(),
     materials: z.array(z.string()).optional(),
     client: z.string().optional(),
     projectDate: z.string().optional(),
