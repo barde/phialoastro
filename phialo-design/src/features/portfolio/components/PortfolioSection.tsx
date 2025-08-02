@@ -23,6 +23,8 @@ export interface PortfolioItemData {
   availability?: string;
   price?: string;
   tags?: string[];
+  youtubeVideoId?: string;
+  youtubeAspectRatio?: '16:9' | '9:16';
 }
 
 // Function to get portfolio items with correct language

@@ -12,11 +12,11 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
   aspectRatio = '16:9' 
 }) => {
   const aspectClass = aspectRatio === '9:16' ? 'aspect-[9/16]' : 'aspect-video';
-  const maxWidthClass = aspectRatio === '9:16' ? 'max-w-sm' : 'max-w-2xl';
+  const maxWidthClass = aspectRatio === '9:16' ? 'max-w-sm mx-auto lg:mx-0' : 'max-w-3xl mx-auto';
 
   return (
     <div className="w-full">
-      <div className={`relative ${aspectClass} ${maxWidthClass} mx-auto lg:mx-0`}>
+      <div className={`relative ${aspectClass} ${maxWidthClass}`}>
         <iframe
           className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
           src={`https://www.youtube.com/embed/${videoId}`}

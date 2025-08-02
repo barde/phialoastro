@@ -21,7 +21,8 @@ export const portfolioItemsDE: PortfolioItemData[] = [
       "/images/portfolio/winged-ring-6.jpg",
       "/images/portfolio/winged-ring-7.jpg"
     ],
-    youtubeVideoId: "P6dbNl9xsc8"
+    youtubeVideoId: "P6dbNl9xsc8",
+    youtubeAspectRatio: "9:16" as const
   },
   {
     id: 2,
