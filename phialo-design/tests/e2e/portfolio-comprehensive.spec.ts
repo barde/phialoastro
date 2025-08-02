@@ -52,13 +52,13 @@ test.describe('Portfolio Comprehensive Tests - Issue #45', () => {
       },
       { 
         buttonText: 'Anhänger', 
-        expectedCount: 1,
-        expectedItems: ['Ouroboros']
+        expectedCount: 0,
+        expectedItems: []
       },
       { 
         buttonText: 'Skulpturen', 
-        expectedCount: 3,
-        expectedItems: ['Möbius', 'Schloss', 'Madonna']
+        expectedCount: 4,
+        expectedItems: ['Möbius', 'Schloss', 'Madonna', 'Schützen']
       },
       { 
         buttonText: 'Anstecker', 

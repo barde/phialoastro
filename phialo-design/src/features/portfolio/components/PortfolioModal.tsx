@@ -354,6 +354,24 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                     <p>{portfolioItem.description}</p>
                   </div>
 
+                  {/* Video embed */}
+                  {portfolioItem.videoUrl && (
+                    <div className="mb-8">
+                      <div className="aspect-video w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
+                        <iframe
+                          className="w-full h-full"
+                          src={portfolioItem.videoUrl}
+                          title={`${portfolioItem.title} Video`}
+                          loading="lazy"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Details grid */}
                   <div className="space-y-6">
                     {/* Materials */}
