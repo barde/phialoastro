@@ -12,6 +12,7 @@ export interface PortfolioItemData {
   details: string;
   gallery: string[];
   youtubeVideoId?: string;
+  youtubeAspectRatio?: '16:9' | '9:16';
 }
 
 // Portfolio filter types

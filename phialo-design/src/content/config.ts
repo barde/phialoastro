@@ -12,6 +12,7 @@ const portfolioCollection = defineCollection({
     image: z.string(),
     gallery: z.array(z.string()).optional(),
     youtubeVideoId: z.string().optional(),
+    youtubeAspectRatio: z.enum(['16:9', '9:16']).optional().default('16:9'),
     materials: z.array(z.string()).optional(),
     client: z.string().optional(),
     projectDate: z.string().optional(),

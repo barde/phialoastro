@@ -355,11 +355,13 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                     <p>{portfolioItem.description}</p>
                   </div>
 
-                  {/* Check if we have a vertical video to determine layout */}
+                  {/* Determine layout based on video aspect ratio */}
                   {portfolioItem.youtubeVideoId ? (
-                    <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-                      {/* Text content - left side on desktop */}
-                      <div className="space-y-6">
+                    portfolioItem.youtubeAspectRatio === '9:16' ? (
+                      /* Vertical video (9:16) - show side by side with text */
+                      <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+                        {/* Text content - left side */}
+                        <div className="space-y-6">
                         {/* Materials */}
                         {portfolioItem.materials && portfolioItem.materials.length > 0 && (
                           <div>
@@ -425,15 +427,92 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                         )}
                       </div>
 
-                      {/* YouTube Video - right side on desktop, below on mobile */}
-                      <div className="mt-6 lg:mt-0">
-                        <YouTubeEmbed 
-                          videoId={portfolioItem.youtubeVideoId}
-                          title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
-                          aspectRatio="9:16"
-                        />
+                        {/* YouTube Video - right side for vertical videos */}
+                        <div className="mt-6 lg:mt-0">
+                          <YouTubeEmbed 
+                            videoId={portfolioItem.youtubeVideoId}
+                            title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
+                            aspectRatio={portfolioItem.youtubeAspectRatio || '16:9'}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      /* Horizontal video (16:9) - show below text in full width */
+                      <div className="space-y-6">
+                        {/* Materials */}
+                        {portfolioItem.materials && portfolioItem.materials.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-midnight mb-2">{t.materials}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {portfolioItem.materials.map((material, index) => (
+                                <span
+                                  key={index}
+                                  className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                                >
+                                  {material}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Additional details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {portfolioItem.client && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.client}</h4>
+                              <p className="text-midnight">{portfolioItem.client}</p>
+                            </div>
+                          )}
+                          {portfolioItem.projectDate && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
+                              <p className="text-midnight">{portfolioItem.projectDate}</p>
+                            </div>
+                          )}
+                          {portfolioItem.availability && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
+                              <p className="text-midnight capitalize">
+                                {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
+                              </p>
+                            </div>
+                          )}
+                          {portfolioItem.price && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-500 mb-1">{t.price}</h4>
+                              <p className="text-midnight">{portfolioItem.price}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        {portfolioItem.tags && portfolioItem.tags.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold text-midnight mb-2">{t.tags}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {portfolioItem.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* YouTube Video - below text for horizontal videos */}
+                        <div className="mt-6">
+                          <YouTubeEmbed 
+                            videoId={portfolioItem.youtubeVideoId}
+                            title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
+                            aspectRatio={portfolioItem.youtubeAspectRatio || '16:9'}
+                          />
+                        </div>
+                      </div>
+                    )
                   ) : (
                     /* Original layout without video */
                     <div className="space-y-6">
