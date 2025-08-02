@@ -15,6 +15,7 @@ gallery: [
   "/images/portfolio/winged-ring-6.jpg",
   "/images/portfolio/winged-ring-7.jpg"
 ]
+youtubeVideoId: "P6dbNl9xsc8"
 materials: ["18kt gold", "Ancient green roman glass"]
 client: "Private Client"
 projectDate: "December 2019"

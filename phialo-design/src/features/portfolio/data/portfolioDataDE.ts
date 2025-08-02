@@ -20,7 +20,8 @@ export const portfolioItemsDE: PortfolioItemData[] = [
       "/images/portfolio/winged-ring-5.jpg",
       "/images/portfolio/winged-ring-6.jpg",
       "/images/portfolio/winged-ring-7.jpg"
-    ]
+    ],
+    youtubeVideoId: "P6dbNl9xsc8"
   },
   {
     id: 2,
