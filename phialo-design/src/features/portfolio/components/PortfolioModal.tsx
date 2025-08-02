@@ -217,6 +217,32 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
     }
   };
 
+  // Helper function to extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
+    
+    // Handle embed URLs
+    const embedMatch = url.match(/embed\/([a-zA-Z0-9_-]+)/);
+    if (embedMatch) return embedMatch[1];
+    
+    // Handle regular YouTube URLs
+    const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+    if (watchMatch) return watchMatch[1];
+    
+    // Handle short URLs
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+    if (shortMatch) return shortMatch[1];
+    
+    return null;
+  };
+
+  // Determine if we have a video (either youtubeVideoId or videoUrl)
+  const videoId = portfolioItem.youtubeVideoId || (portfolioItem.videoUrl ? getYouTubeVideoId(portfolioItem.videoUrl) : null);
+  const hasVideo = !!videoId;
+  
+  // For backward compatibility, if aspectRatio is not specified but we have a videoUrl, assume 16:9
+  const videoAspectRatio = portfolioItem.youtubeAspectRatio || '16:9';
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -356,8 +382,8 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                   </div>
 
                   {/* Determine layout based on video aspect ratio */}
-                  {portfolioItem.youtubeVideoId ? (
-                    portfolioItem.youtubeAspectRatio === '9:16' ? (
+                  {hasVideo ? (
+                    videoAspectRatio === '9:16' ? (
                       /* Vertical video (9:16) - show side by side with text */
                       <div className="lg:grid lg:grid-cols-2 lg:gap-8">
                         {/* Text content - left side */}
@@ -430,9 +456,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                         {/* YouTube Video - right side for vertical videos */}
                         <div className="mt-6 lg:mt-0">
                           <YouTubeEmbed 
-                            videoId={portfolioItem.youtubeVideoId}
+                            videoId={videoId}
                             title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
-                            aspectRatio={portfolioItem.youtubeAspectRatio || '16:9'}
+                            aspectRatio={videoAspectRatio}
                           />
                         </div>
                       </div>
@@ -506,9 +532,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                         {/* YouTube Video - below text for horizontal videos */}
                         <div className="mt-6">
                           <YouTubeEmbed 
-                            videoId={portfolioItem.youtubeVideoId}
+                            videoId={videoId}
                             title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
-                            aspectRatio={portfolioItem.youtubeAspectRatio || '16:9'}
+                            aspectRatio={videoAspectRatio}
                           />
                         </div>
                       </div>

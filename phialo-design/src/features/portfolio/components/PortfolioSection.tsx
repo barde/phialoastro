@@ -25,6 +25,7 @@ export interface PortfolioItemData {
   tags?: string[];
   youtubeVideoId?: string;
   youtubeAspectRatio?: '16:9' | '9:16';
+  videoUrl?: string; // For backward compatibility
 }
 
 // Function to get portfolio items with correct language

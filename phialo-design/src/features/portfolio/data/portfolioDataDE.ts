@@ -32,12 +32,11 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     slug: "dna-spirale-ohrhaenger",
     description: "Elegante Ohrhänger inspiriert von der DNA-Doppelhelix-Struktur. Diese einzigartigen Schmuckstücke verbinden wissenschaftliche Ästhetik mit kunstvoller Handwerkskunst.",
     year: 2023,
-    materials: ["925er Silber", "Rhodiniert"],
+    materials: ["Platin", "Fancy Diamanten"],
     techniques: ["3D-Modellierung", "Wachsausschmelzverfahren", "Handpolitur"],
     details: "Die spiralförmige Struktur wurde in Blender entworfen und durch präzise 3D-Drucktechnologie in Wachs umgesetzt. Nach dem Guss in 925er Silber wurden die Ohrhänger sorgfältig von Hand poliert und rhodiniert für dauerhaften Glanz.",
     gallery: [
-      "/images/portfolio/dna_spirale_freigestellt_refl.jpg",
-      "/images/portfolio/ohrhaenger_energetic_freigestellt_refl.jpg"
+      "/images/portfolio/dna_spirale_freigestellt_refl.jpg"
     ]
   },
   {
@@ -102,19 +101,20 @@ export const portfolioItemsDE: PortfolioItemData[] = [
   },
   {
     id: 7,
-    title: "Ouroboros Anhänger",
-    category: "Anhänger",
-    image: "/images/portfolio/ouroboros-freigestellt-refl.jpg",
-    slug: "ouroboros-anhaenger",
-    description: "Der mythische Ouroboros - eine Schlange, die sich in den eigenen Schwanz beißt. Ein kraftvolles Symbol für Unendlichkeit und Wiedergeburt.",
-    year: 2023,
-    materials: ["925er Silber", "Patiniert"],
-    techniques: ["Skulpturale Modellierung", "Feinguss", "Antik-Finish"],
-    details: "Jede Schuppe wurde einzeln modelliert, um maximale Detailtreue zu erreichen. Die Patinierung betont die Textur und verleiht dem Stück eine antike Ausstrahlung.",
+    title: "Schützenplakette",
+    category: "Skulpturen",
+    image: "/images/portfolio/schuetzenplakette-1.jpg",
+    slug: "schuetzenplakette",
+    description: "Originalplastik einer Schützenplakette als detailreiche 3D-druckbare Datei nachmodelliert, dann in Sterlingsilber gegossen und als tragbare Ehrenplakette fertiggestellt.",
+    year: 2024,
+    materials: ["Sterling Silber"],
+    techniques: ["3D-Digitalisierung", "3D-Druck", "Silberguss"],
+    details: "Die originale Schützenplakette wurde sorgfältig digitalisiert und als hochdetaillierte 3D-Datei aufbereitet. Nach dem 3D-Druck des Modells erfolgte der Guss in Sterling Silber mit anschließender Feinbearbeitung.",
     gallery: [
-      "/images/portfolio/ouroboros-freigestellt-refl.jpg",
-      "/images/portfolio/ouroboros.jpg"
-    ]
+      "/images/portfolio/schuetzenplakette-1.jpg",
+      "/images/portfolio/schuetzenplakette-2.jpg"
+    ],
+    videoUrl: "https://www.youtube.com/embed/PLoXu-trLcQ"
   },
   {
     id: 8,

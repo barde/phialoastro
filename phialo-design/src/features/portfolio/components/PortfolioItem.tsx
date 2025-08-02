@@ -36,7 +36,7 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
   return (
     <MagneticCursor>
       <div 
-        className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 h-full" 
+        className="portfolio-item-container group relative overflow-hidden rounded-lg bg-gray-100 aspect-[4/5]" 
         data-testid="portfolio-item"
         data-item-id={item.id}
       >
@@ -44,7 +44,7 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
         <img
           src={item.image}
           alt={item.title}
-          className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
           loading="lazy"
         />
 
