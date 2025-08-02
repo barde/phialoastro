@@ -106,7 +106,8 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     gallery: [
       "/images/portfolio/schuetzenplakette-1.jpg",
       "/images/portfolio/schuetzenplakette-2.jpg"
-    ]
+    ],
+    videoUrl: "https://www.youtube.com/embed/PLoXu-trLcQ"
   },
   {
     id: 8,
