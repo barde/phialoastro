@@ -186,6 +186,19 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
             onClose={() => {
               setIsModalOpen(false);
               setSelectedItem(null);
+              
+              // Force all portfolio items to reset their hover state
+              // by removing the :hover pseudo-class temporarily
+              const portfolioItems = document.querySelectorAll('.portfolio-item-container');
+              portfolioItems.forEach(item => {
+                const parent = item.parentElement?.parentElement; // Get the group element
+                if (parent) {
+                  parent.classList.add('pointer-events-none');
+                  setTimeout(() => {
+                    parent.classList.remove('pointer-events-none');
+                  }, 100);
+                }
+              });
             }}
             portfolioItem={selectedItem}
             lang={actualLang}
