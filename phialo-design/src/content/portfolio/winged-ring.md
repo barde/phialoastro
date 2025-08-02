@@ -41,6 +41,3 @@ Dieser außergewöhnliche Ring verbindet modernste 3D-Drucktechnologie mit tradi
 
 Das Herzstück des Rings bildet ein speziell geschliffenes Stück antiken römischen Glases in leuchtendem Grün. Die Oberfläche wurde durch eine Kombination aus Sandstrahlen und Polieren veredelt, wodurch ein faszinierender Kontrast zwischen matten und glänzenden Bereichen entsteht.
 
-### Video
-
-[Sehen Sie den Herstellungsprozess](https://youtube.com/shorts/P6dbNl9xsc8?feature=share)

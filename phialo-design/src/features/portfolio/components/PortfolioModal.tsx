@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from '../../../lib/framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { YouTubeEmbed } from './YouTubeEmbed';
 
 import type { PortfolioItemData } from './PortfolioSection';
 
@@ -103,35 +104,17 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
     ? portfolioItem.gallery 
     : [portfolioItem.image];
   
-  // Check if we have a YouTube video
-  const hasYouTubeVideo = !!portfolioItem.youtubeVideoId;
-  
-  // Total media count includes images + video (if present)
-  const totalMediaCount = allImages.length + (hasYouTubeVideo ? 1 : 0);
-  const hasMultipleMedia = totalMediaCount > 1;
-  
-  // Check if current index is showing the video
-  const isShowingVideo = hasYouTubeVideo && currentImageIndex === allImages.length;
+  const hasMultipleImages = allImages.length > 1;
 
   // Navigation function needs to be stable for useEffect dependencies
-  const navigateMedia = useCallback((direction: 'prev' | 'next') => {
-    if (!isShowingVideo) {
-      setImageLoading(true);
-    }
+  const navigateImage = useCallback((direction: 'prev' | 'next') => {
+    setImageLoading(true);
     if (direction === 'prev') {
-      setCurrentImageIndex((prev) => {
-        if (prev === 0) {
-          return hasYouTubeVideo ? allImages.length : allImages.length - 1;
-        }
-        return prev - 1;
-      });
+      setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
     } else {
-      setCurrentImageIndex((prev) => {
-        const maxIndex = hasYouTubeVideo ? allImages.length : allImages.length - 1;
-        return prev === maxIndex ? 0 : prev + 1;
-      });
+      setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
     }
-  }, [allImages.length, hasYouTubeVideo, isShowingVideo]);
+  }, [allImages.length]);
 
   // Handle keyboard events
   useEffect(() => {
@@ -145,13 +128,13 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
           onClose();
           break;
         case 'ArrowLeft':
-          if (hasMultipleMedia) {
-            navigateMedia('prev');
+          if (hasMultipleImages) {
+            navigateImage('prev');
           }
           break;
         case 'ArrowRight':
-          if (hasMultipleMedia) {
-            navigateMedia('next');
+          if (hasMultipleImages) {
+            navigateImage('next');
           }
           break;
       }
@@ -159,7 +142,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, hasMultipleMedia, navigateMedia, isHydrated]);
+  }, [isOpen, onClose, hasMultipleImages, navigateImage, isHydrated]);
 
   // Reset states when modal opens
   useEffect(() => {
@@ -286,83 +269,63 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
               {/* Image section */}
               <div className="relative flex-1 bg-gray-100 flex items-center justify-center p-8 lg:p-12">
                 {/* Loading spinner */}
-                {imageLoading && !isShowingVideo && (
+                {imageLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                     <div className="w-8 h-8 border-2 border-gray-300 border-t-gold rounded-full animate-spin" />
                   </div>
                 )}
                 
-                {/* Main content: image or video */}
-                {isShowingVideo ? (
-                  <div className="w-full max-w-4xl">
-                    <div className="relative pb-[56.25%]">
-                      <iframe
-                        className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
-                        src={`https://www.youtube.com/embed/${portfolioItem.youtubeVideoId}`}
-                        title={`${portfolioItem.title} Video`}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <motion.img
-                    key={currentImageIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: imageLoading ? 0 : 1 }}
-                    transition={{ duration: 0.3 }}
-                    src={allImages[currentImageIndex]}
-                    alt={portfolioItem.title}
-                    className="max-w-full max-h-full object-contain rounded-lg"
-                    onLoad={() => setImageLoading(false)}
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      // Set a fallback placeholder image
-                      target.src = '/images/placeholder.svg';
-                      target.alt = 'Image not available';
-                      setImageLoading(false);
-                    }}
-                  />
-                )}
+                {/* Main image */}
+                <motion.img
+                  key={currentImageIndex}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: imageLoading ? 0 : 1 }}
+                  transition={{ duration: 0.3 }}
+                  src={allImages[currentImageIndex]}
+                  alt={portfolioItem.title}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    // Set a fallback placeholder image
+                    target.src = '/images/placeholder.svg';
+                    target.alt = 'Image not available';
+                    setImageLoading(false);
+                  }}
+                />
 
                 {/* Gallery navigation */}
-                {hasMultipleMedia && (
+                {hasMultipleImages && (
                   <>
                     <button
-                      onClick={() => navigateMedia('prev')}
+                      onClick={() => navigateImage('prev')}
                       className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
                       aria-label={t.previousImage}
                     >
                       <ChevronLeft size={24} className="text-gray-700" />
                     </button>
                     <button
-                      onClick={() => navigateMedia('next')}
+                      onClick={() => navigateImage('next')}
                       className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200 shadow-lg"
                       aria-label={t.nextImage}
                     >
                       <ChevronRight size={24} className="text-gray-700" />
                     </button>
 
-                    {/* Media indicators */}
+                    {/* Image indicators */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                      {[...Array(totalMediaCount)].map((_, index) => {
-                        const isVideo = hasYouTubeVideo && index === allImages.length;
-                        return (
-                          <button
-                            key={index}
-                            onClick={() => setCurrentImageIndex(index)}
-                            className={`transition-all duration-200 ${
-                              index === currentImageIndex
-                                ? 'bg-gold w-8 h-2'
-                                : 'bg-gray-400 hover:bg-gray-600 w-2 h-2'
-                            } ${
-                              isVideo ? 'rounded' : 'rounded-full'
-                            }`}
-                            aria-label={isVideo ? 'Video' : `${t.goToImage} ${index + 1}`}
-                          />
-                        );
-                      })}
+                      {allImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                            index === currentImageIndex
+                              ? 'bg-gold w-8'
+                              : 'bg-gray-400 hover:bg-gray-600'
+                          }`}
+                          aria-label={`${t.goToImage} ${index + 1}`}
+                        />
+                      ))}
                     </div>
                   </>
                 )}
@@ -455,6 +418,20 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                             </span>
                           ))}
                         </div>
+                      </div>
+                    )}
+
+                    {/* YouTube Video */}
+                    {portfolioItem.youtubeVideoId && (
+                      <div className="mt-8">
+                        <h3 className="font-semibold text-midnight mb-4">
+                          {isEnglish ? 'Video' : 'Video'}
+                        </h3>
+                        <YouTubeEmbed 
+                          videoId={portfolioItem.youtubeVideoId}
+                          title={`${portfolioItem.title} ${isEnglish ? 'Video' : 'Video'}`}
+                          aspectRatio="16:9"
+                        />
                       </div>
                     )}
                   </div>

@@ -41,6 +41,3 @@ This extraordinary ring combines cutting-edge 3D printing technology with tradit
 
 The centerpiece of the ring features a specially cut piece of ancient Roman glass in vibrant green. The surface has been refined through a combination of sandblasting and polishing, creating a captivating contrast between matte and glossy areas.
 
-### Video
-
-[Watch the creation process](https://youtube.com/shorts/P6dbNl9xsc8?feature=share)
