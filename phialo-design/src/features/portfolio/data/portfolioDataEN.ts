@@ -9,12 +9,11 @@ export const portfolioItemsEN: PortfolioItemData[] = [
     slug: "dna-spirale-ohrhaenger",
     description: "Elegant earrings inspired by the DNA double helix structure. These unique pieces of jewelry combine scientific aesthetics with artistic craftsmanship.",
     year: 2023,
-    materials: ["925 Silver", "Rhodium-plated"],
+    materials: ["Platinum", "Fancy diamonds"],
     techniques: ["3D Modeling", "Lost-wax Casting", "Hand Polishing"],
     details: "The spiral structure was designed in Blender and realized through precise 3D printing technology in wax. After casting in 925 silver, the earrings were carefully hand-polished and rhodium-plated for lasting brilliance.",
     gallery: [
-      "/images/portfolio/dna_spirale_freigestellt_refl.jpg",
-      "/images/portfolio/ohrhaenger_energetic_freigestellt_refl.jpg"
+      "/images/portfolio/dna_spirale_freigestellt_refl.jpg"
     ]
   },
   {
