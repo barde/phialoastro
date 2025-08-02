@@ -8,10 +8,7 @@ vi.mock('../../../shared/components/effects/MagneticCursor', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-// Mock lucide-react icons
-vi.mock('lucide-react', () => ({
-  Eye: () => <span data-testid="eye-icon">Eye</span>,
-}));
+// No lucide-react icons used anymore
 
 describe('PortfolioItem', () => {
   const mockItem: PortfolioItemData = {
@@ -66,32 +63,33 @@ describe('PortfolioItem', () => {
       expect(overlay).toBeInTheDocument();
     });
 
-    it('should render clickable card with visual indicator', () => {
+    it('should render clickable card', () => {
       render(<PortfolioItem item={mockItem} />);
 
       const card = screen.getByTestId('portfolio-item');
       expect(card).toHaveAttribute('role', 'button');
       expect(card).toHaveAttribute('tabIndex', '0');
-      expect(screen.getByTestId('eye-icon')).toBeInTheDocument();
     });
   });
 
   describe('Language Support', () => {
-    it('should show German text by default', async () => {
+    it('should have German aria-label by default', async () => {
       window.location.pathname = '/';
       render(<PortfolioItem item={mockItem} />);
 
       await waitFor(() => {
-        expect(screen.getByText('Details ansehen')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio-Element'));
       });
     });
 
-    it('should show English text on English pages', async () => {
+    it('should have English aria-label on English pages', async () => {
       window.location.pathname = '/en/portfolio';
       render(<PortfolioItem item={mockItem} />);
 
       await waitFor(() => {
-        expect(screen.getByText('View Details')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio item'));
       });
     });
 
@@ -101,7 +99,8 @@ describe('PortfolioItem', () => {
 
       // After useEffect runs, should show English
       await waitFor(() => {
-        expect(screen.getByText('View Details')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio item'));
       });
     });
   });
@@ -232,25 +231,6 @@ describe('PortfolioItem', () => {
       expect(card).toHaveAttribute('aria-label');
     });
 
-    it('should have proper aria-label in German', async () => {
-      window.location.pathname = '/';
-      render(<PortfolioItem item={mockItem} />);
-
-      await waitFor(() => {
-        const card = screen.getByTestId('portfolio-item');
-        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio-Element'));
-      });
-    });
-
-    it('should have proper aria-label in English', async () => {
-      window.location.pathname = '/en/';
-      render(<PortfolioItem item={mockItem} />);
-
-      await waitFor(() => {
-        const card = screen.getByTestId('portfolio-item');
-        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio item'));
-      });
-    });
   });
 
   describe('MagneticCursor Integration', () => {
@@ -292,25 +272,26 @@ describe('PortfolioItem', () => {
 
       // Should default to German when pathname is empty
       await waitFor(() => {
-        expect(screen.getByText('Details ansehen')).toBeInTheDocument();
+        const card = screen.getByTestId('portfolio-item');
+        expect(card).toHaveAttribute('aria-label', expect.stringContaining('Portfolio-Element'));
       });
     });
   });
 
-  describe('Visual Indicators', () => {
-    it('should render Eye icon as visual indicator', () => {
+  describe('Hover Overlay', () => {
+    it('should have overlay with proper styling', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      expect(screen.getByTestId('eye-icon')).toBeInTheDocument();
+      const overlay = screen.getByTestId('portfolio-item').querySelector('.absolute.inset-0');
+      expect(overlay).toHaveClass('pointer-events-none');
     });
 
-    it('should show view details text with icon', async () => {
-      window.location.pathname = '/';
+    it('should display title and category on hover', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      await waitFor(() => {
-        expect(screen.getByText('Details ansehen')).toBeInTheDocument();
-      });
+      // Title and category are always in DOM but hidden until hover
+      expect(screen.getByText(mockItem.title)).toBeInTheDocument();
+      expect(screen.getByText(mockItem.category)).toBeInTheDocument();
     });
   });
 
@@ -320,7 +301,7 @@ describe('PortfolioItem', () => {
 
       const title = screen.getByText(mockItem.title);
       expect(title.tagName).toBe('H3');
-      expect(title).toHaveClass('font-display', 'text-xl', 'font-medium');
+      expect(title).toHaveClass('font-display', 'text-3xl', 'font-medium');
     });
 
     it('should style category text correctly', () => {
@@ -328,7 +309,7 @@ describe('PortfolioItem', () => {
 
       const category = screen.getByText(mockItem.category);
       expect(category.tagName).toBe('P');
-      expect(category).toHaveClass('text-sm', 'text-white/80');
+      expect(category).toHaveClass('text-lg', 'text-white/90');
     });
   });
 });
