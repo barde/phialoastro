@@ -94,18 +94,18 @@ export const portfolioItemsEN: PortfolioItemData[] = [
   },
   {
     id: 7,
-    title: "Ouroboros Pendant",
-    category: "Pendants",
-    image: "/images/portfolio/ouroboros-freigestellt-refl.jpg",
-    slug: "ouroboros-anhaenger",
-    description: "The mythical Ouroboros - a serpent eating its own tail. A powerful symbol of infinity and rebirth.",
-    year: 2023,
-    materials: ["925 Silver", "Patinated"],
-    techniques: ["Sculptural Modeling", "Fine Casting", "Antique Finish"],
-    details: "Each scale was individually modeled to achieve maximum detail. The patination emphasizes the texture and gives the piece an antique appearance.",
+    title: "Plaque of Honor",
+    category: "Sculptures",
+    image: "/images/portfolio/schuetzenplakette-1.jpg",
+    slug: "plaque-of-honor-en",
+    description: "Remodeled an original sculptural plaque as an intricate 3D-printable file, then cast in sterling silver and finished as a wearable plaque of honor.",
+    year: 2024,
+    materials: ["Sterling Silver"],
+    techniques: ["3D Digitization", "3D Printing", "Silver Casting"],
+    details: "The original marksman's plaque was carefully digitized and prepared as a highly detailed 3D file. After 3D printing the model, it was cast in sterling silver followed by fine finishing.",
     gallery: [
-      "/images/portfolio/ouroboros-freigestellt-refl.jpg",
-      "/images/portfolio/ouroboros.jpg"
+      "/images/portfolio/schuetzenplakette-1.jpg",
+      "/images/portfolio/schuetzenplakette-2.jpg"
     ]
   },
   {
