@@ -56,7 +56,11 @@ describe('PortfolioItem', () => {
       render(<PortfolioItem item={mockItem} />);
 
       const container = screen.getByTestId('portfolio-item');
-      expect(container).toHaveClass('portfolio-item-container', 'group');
+      expect(container).toHaveClass('group');
+      
+      // Check for inner container with portfolio-item-container class
+      const innerContainer = container.querySelector('.portfolio-item-container');
+      expect(innerContainer).toBeInTheDocument();
       
       // Check for overlay that appears on hover
       const overlay = container.querySelector('.group-hover\\:opacity-100');
@@ -177,11 +181,20 @@ describe('PortfolioItem', () => {
     it('should have proper container styling', () => {
       render(<PortfolioItem item={mockItem} />);
 
-      const container = screen.getByTestId('portfolio-item');
-      expect(container).toHaveClass(
-        'portfolio-item-container',
+      const outerContainer = screen.getByTestId('portfolio-item');
+      expect(outerContainer).toHaveClass(
         'group',
         'relative',
+        'cursor-pointer',
+        'focus:outline-none',
+        'focus:ring-2',
+        'focus:ring-gold',
+        'focus:ring-offset-2',
+        'rounded-lg'
+      );
+      
+      const innerContainer = outerContainer.querySelector('.portfolio-item-container');
+      expect(innerContainer).toHaveClass(
         'overflow-hidden',
         'rounded-lg',
         'bg-gray-100',
