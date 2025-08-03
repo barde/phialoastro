@@ -45,7 +45,7 @@ const commonTranslations: Translations = {
   'nav.portfolio': { en: 'Portfolio', de: 'Portfolio' },
   'nav.services': { en: '3D for You', de: '3D für Sie' },
   'nav.tutorials': { en: 'Tutorials', de: 'Tutorials' },
-  'nav.about': { en: 'About Me', de: 'Über mich' },
+  'nav.about': { en: 'About', de: 'Über mich' },
   'nav.contact': { en: 'Contact', de: 'Kontakt' },
   
   // Common UI elements

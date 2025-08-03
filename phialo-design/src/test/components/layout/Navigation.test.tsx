@@ -77,7 +77,7 @@ describe('Navigation', () => {
       expect(screen.getByText('Portfolio')).toBeInTheDocument();
       expect(screen.getByText('3D for You')).toBeInTheDocument();
       expect(screen.getByText('Classes')).toBeInTheDocument();
-      expect(screen.getByText('About Me')).toBeInTheDocument();
+      expect(screen.getByText('About')).toBeInTheDocument();
       expect(screen.getByText('Contact')).toBeInTheDocument();
     });
 
@@ -87,7 +87,7 @@ describe('Navigation', () => {
       const portfolioLink = screen.getByRole('link', { name: 'Portfolio' });
       const servicesLink = screen.getByRole('link', { name: '3D for You' });
       const classesLink = screen.getByRole('link', { name: 'Classes' });
-      const aboutLink = screen.getByRole('link', { name: 'About Me' });
+      const aboutLink = screen.getByRole('link', { name: 'About' });
       const contactLink = screen.getByRole('link', { name: 'Contact' });
 
       expect(portfolioLink).toHaveAttribute('href', '/en/portfolio');
