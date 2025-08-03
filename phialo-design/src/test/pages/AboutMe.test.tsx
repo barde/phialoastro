@@ -7,7 +7,7 @@ vi.mock('../../components/common/AnimatedText', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }));
 
-describe('About Me Page', () => {
+describe('About Page', () => {
   it('should display German content correctly', () => {
     const germanContent = {
       title: 'Über mich',
@@ -56,7 +56,7 @@ describe('About Me Page', () => {
 
   it('should display English content correctly', () => {
     const englishContent = {
-      title: 'About Me',
+      title: 'About',
       greeting: "Hi! I'm Gesa Pickbrenner.",
       intro: 'From a young age, I was mesmerized with anything artistic. Drawing, painting and sculpting have always been my way of expression.',
       goldsmithing: '2015 I graduated in the traditional art of goldsmithing as the best graduate in the whole of Northern Germany.',
@@ -104,7 +104,7 @@ describe('About Me Page', () => {
     const AboutMePage = () => (
       <main className="pt-32 pb-16">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h1>About Me</h1>
+          <h1>About</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <div className="space-y-6">
               <p>Text content</p>
