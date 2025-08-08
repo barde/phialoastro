@@ -102,7 +102,7 @@ export const portfolioItemsEN: PortfolioItemData[] = [
   {
     id: 7,
     title: "Plaque of Honor",
-    category: "Sculptures",
+    category: "Pendants",
     image: "/images/portfolio/schuetzenplakette-1.jpg",
     slug: "plaque-of-honor-en",
     description: "Remodeled an original sculptural plaque as an intricate 3D-printable file, then cast in sterling silver and finished as a wearable plaque of honor.",
