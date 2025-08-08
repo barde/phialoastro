@@ -145,9 +145,9 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     details: "Die filigrane Federstruktur wurde durch präzise 3D-Modellierung erreicht. Die natürliche Form des Vogels wird durch rhodiniertes Silber perfekt zur Geltung gebracht.",
     gallery: [
       "/images/portfolio/bartmeise_reflect.jpg",
+      "/images/portfolio/meisenpin_seitlich.jpg",
       "/images/portfolio/meise_frontal.jpg",
-      "/images/portfolio/meise_seitlich.jpg",
-      "/images/portfolio/meisenpin_seitlich.jpg"
+      "/images/portfolio/meise_seitlich.jpg"
     ]
   }
 ];

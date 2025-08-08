@@ -145,9 +145,9 @@ export const portfolioItemsEN: PortfolioItemData[] = [
     details: "The delicate feather structure was achieved through precise 3D modeling. The natural form of the bird is perfectly showcased through rhodium-plated silver.",
     gallery: [
       "/images/portfolio/bartmeise_reflect.jpg",
+      "/images/portfolio/meisenpin_seitlich.jpg",
       "/images/portfolio/meise_frontal.jpg",
-      "/images/portfolio/meise_seitlich.jpg",
-      "/images/portfolio/meisenpin_seitlich.jpg"
+      "/images/portfolio/meise_seitlich.jpg"
     ]
   }
 ];
