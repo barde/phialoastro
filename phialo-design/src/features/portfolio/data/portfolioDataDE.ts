@@ -140,9 +140,9 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     slug: "meisen-anstecker",
     description: "Naturgetreue Nachbildung einer Bartmeise als eleganter Anstecker. Perfekt für Naturliebhaber und Vogelbeobachter.",
     year: 2023,
-    materials: ["925er Silber", "Emaille", "Saphir"],
-    techniques: ["Detailmodellierung", "Emaillearbeit", "Mikrogravur"],
-    details: "Die filigrane Federstruktur wurde durch präzise 3D-Modellierung erreicht. Die Emaille-Details verleihen dem Vogel lebensechte Farben, während ein kleiner Saphir als Auge funkelt.",
+    materials: ["925er Silber"],
+    techniques: ["Detailmodellierung", "Mikrogravur"],
+    details: "Die filigrane Federstruktur wurde durch präzise 3D-Modellierung erreicht. Die natürliche Form des Vogels wird durch rhodiniertes Silber perfekt zur Geltung gebracht.",
     gallery: [
       "/images/portfolio/bartmeise_reflect.jpg",
       "/images/portfolio/meise_frontal.jpg",
