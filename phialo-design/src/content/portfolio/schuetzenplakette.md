@@ -1,7 +1,7 @@
 ---
 title: "Schützenplakette"
 description: "Originalplastik einer Schützenplakette als detailreiche 3D-druckbare Datei nachmodelliert, dann in Sterlingsilber gegossen und als tragbare Ehrenplakette fertiggestellt."
-category: "sculptures"
+category: "pendants"
 language: "de"
 price: "Auf Anfrage"
 featured: true
