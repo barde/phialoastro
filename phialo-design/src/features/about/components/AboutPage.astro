@@ -1,0 +1,182 @@
+---
+import PageLayout from '../../../shared/layouts/PageLayout.astro';
+import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
+import TeamMemberImage from './TeamMemberImage.tsx';
+import { type Language, getTranslation } from '../../../i18n/ui';
+
+export interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const t = (key: any) => getTranslation(lang, key);
+
+// Content arrays for each language
+const content = {
+  de: {
+    gesaContent: [
+      'Hallo! Ich bin Gesa Pickbrenner, Gründerin von Phialo.',
+      'Schon von klein auf war ich fasziniert von allem Künstlerischen. Das Zeichnen, Malen und die Bildhauerei waren schon immer der Weg, meiner kreativen Energie Ausdruck zu verleihen.',
+      '2015 schloss ich meine Ausbildung in der traditionellen Goldschmiedekunst als Landessiegerin in Hamburg/Schleswig-Holstein ab. Wissen weiterzugeben ist mir besonders wichtig, daher habe ich auch einen offiziellen Abschluss als Ausbilderin im Handwerk. Dies hat mir dabei geholfen, der Community zu dienen: indem ich Online-Kurse erstelle, die bislang rund 10.000 Menschen erreicht haben. Zudem biete ich Einzelstunden an.',
+      'Ich bin Autodidaktin im 3D-Design und in der Illustration. Seit über 10 Jahren erwecke ich kreative Ideen mit 3D zum Leben und bringe sie mit 3D-Druck und Goldschmiedekunst in die reale Welt. Ich habe zahlreiche Kunden von der Idee bis zum fertigen Projekt begleitet und verschiedene Schmuckkollektionen sowie einzigartige Einzelstücke geschaffen.',
+      '2023 schloss ich mein Studium mit einem Bachelor in Wirtschaftswissenschaften an der Fernuni Hagen ab. Die künstlerische Vision verbinde ich mit einem hohen Bildungsstandard sowie einem ausgeprägten Sinn für ein rationales und effizientes Vorgehen.',
+      'Ich setze mich als Lehrende dafür ein, dass jeder seinen eigenen einzigartigen kreativen Ausdruck und seine künstlerische Stimme findet. Als Handwerkerin schätze ich eine tiefe Wissensbasis über die verwendeten alten und neuen Technologien, wie 3D-Programme, 3D-Druck, Goldschmiedekunst und AI. Als Künstlerin liebe ich es, ungewohnte Wege zu gehen und völlig neue Schmuckwelten zu erschaffen.'
+    ],
+    gesaName: 'Gesa Pickbrenner',
+    bartholomausName: 'Bartholomäus Dedersen',
+    bartholomausContent: [
+      'Als Co-Founder & IT-Experte bringe ich digitale Innovation zu Phialo Design. Meine Expertise in modernen Technologien ermöglicht es uns, traditionelles Handwerk mit digitaler Exzellenz zu verbinden.',
+      'Durch die Entwicklung maßgeschneiderter Lösungen für unsere Online-Präsenz und digitale Werkzeuge unterstütze ich Gesas kreative Vision mit technischer Präzision.',
+      'Mein Fokus liegt darauf, die Brücke zwischen traditioneller Handwerkskunst und modernster Technologie zu schlagen, um einzigartige Kundenerlebnisse zu schaffen.'
+    ]
+  },
+  en: {
+    gesaContent: [
+      'Hello! I am Gesa Pickbrenner, founder of Phialo.',
+      'From an early age, I was fascinated by everything artistic. Drawing, painting, and sculpting have always been ways to express my creative energy.',
+      'In 2015, I completed my training in traditional goldsmithing as the state champion in Hamburg/Schleswig-Holstein. Sharing knowledge is particularly important to me, which is why I also have an official qualification as an instructor in crafts. This has helped me serve the community by creating online courses that have reached around 10,000 people so far. I also offer individual lessons.',
+      'I am self-taught in 3D design and illustration. For over 10 years, I have been bringing creative ideas to life with 3D and bringing them into the real world with 3D printing and goldsmithing. I have accompanied numerous clients from idea to finished project and created various jewelry collections as well as unique individual pieces.',
+      'In 2023, I completed my studies with a Bachelor\'s degree in Economics at Fernuni Hagen. I combine artistic vision with a high educational standard and a strong sense of rational and efficient approach.',
+      'As a teacher, I am committed to helping everyone find their own unique creative expression and artistic voice. As a craftswoman, I value a deep knowledge base about the old and new technologies used, such as 3D programs, 3D printing, goldsmithing, and AI. As an artist, I love to take unconventional paths and create completely new jewelry worlds.'
+    ],
+    gesaName: 'Gesa Pickbrenner',
+    bartholomausName: 'Bartholomäus Dedersen',
+    bartholomausContent: [
+      'As Co-Founder & IT expert, I bring digital innovation to Phialo Design. My expertise in modern technologies enables us to combine traditional craftsmanship with digital excellence.',
+      'By developing tailored solutions for our online presence and digital tools, I support Gesa\'s creative vision with technical precision.',
+      'My focus is on bridging traditional craftsmanship and cutting-edge technology to create unique customer experiences.'
+    ]
+  }
+};
+
+const currentContent = content[lang];
+---
+
+<PageLayout title={t('about.title')} description={t('about.description')}>
+  <section class="py-24 bg-white">
+    <div class="container mx-auto px-6 md:px-8 max-w-6xl">
+      <!-- Title -->
+      <div class="text-center mb-16">
+        <AnimatedText client:visible>
+          <h1 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
+            {t('about.heading')}
+          </h1>
+        </AnimatedText>
+      </div>
+
+      <!-- Gesa Pickbrenner Section -->
+      <div class="mb-20">
+        <h2 class="font-display text-3xl md:text-4xl font-medium text-midnight mb-12 text-center">
+          {currentContent.gesaName}
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <!-- Text content on the left -->
+          <div class="space-y-6 px-5 md:px-0">
+            {currentContent.gesaContent.map((paragraph) => (
+              <p class="text-lg leading-relaxed text-gray-700">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <!-- Image and Social Links on the right -->
+          <div class="flex flex-col items-center px-5 md:px-0">
+            <TeamMemberImage
+              primaryImage="/gesa-portrait.jpg"
+              hoverImage="/gesa-portrait-alt.jpg"
+              alt={currentContent.gesaName}
+              client:visible
+            />
+            
+            <!-- Social Links -->
+            <div class="flex gap-4 mt-8">
+              <!-- Instagram -->
+              <a
+                href="https://instagram.com/phialodesign"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                aria-label={t('footer.social.instagram')}
+              >
+                <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/>
+                </svg>
+              </a>
+
+              <!-- Facebook -->
+              <a
+                href="https://facebook.com/phialodesign"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                aria-label={t('footer.social.facebook')}
+              >
+                <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+
+              <!-- Pinterest -->
+              <a
+                href="https://pinterest.com/phialodesign"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                aria-label={t('footer.social.pinterest')}
+              >
+                <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bartholomäus Dedersen Section -->
+      <div class="mb-20">
+        <h2 class="font-display text-3xl md:text-4xl font-medium text-midnight mb-12 text-center">
+          {currentContent.bartholomausName}
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <!-- Text content on the left -->
+          <div class="space-y-6 px-5 md:px-0">
+            {currentContent.bartholomausContent.map((paragraph) => (
+              <p class="text-lg leading-relaxed text-gray-700">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <!-- Image and Social Links on the right -->
+          <div class="flex flex-col items-center px-5 md:px-0">
+            <TeamMemberImage
+              primaryImage="/bartholomaeus-portrait.jpg"
+              hoverImage="/bartholomaeus-portrait-alt.jpg"
+              alt={currentContent.bartholomausName}
+              client:visible
+            />
+            
+            <!-- Social Links -->
+            <div class="flex gap-4 mt-8">
+              <!-- GitHub -->
+              <a
+                href="https://github.com/barde"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                aria-label="GitHub Profile"
+              >
+                <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>
