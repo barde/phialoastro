@@ -23,7 +23,7 @@ export default function LazyImage({
 }: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Use the language prop directly
   const isEnglish = lang === 'en';
@@ -45,8 +45,8 @@ export default function LazyImage({
       }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => observer.disconnect();
@@ -58,6 +58,7 @@ export default function LazyImage({
 
   return (
     <div 
+      ref={containerRef}
       className={`relative overflow-hidden ${className}`}
       style={{ aspectRatio }}
     >
@@ -76,7 +77,6 @@ export default function LazyImage({
       {/* Actual image */}
       {isInView && (
         <img
-          ref={imgRef}
           src={src}
           alt={alt}
           onLoad={handleLoad}

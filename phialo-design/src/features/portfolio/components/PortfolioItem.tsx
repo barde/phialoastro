@@ -1,6 +1,5 @@
 import React from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
-import LazyImage from '../../../shared/components/ui/LazyImage';
 import type { PortfolioItemData } from './PortfolioSection';
 
 interface PortfolioItemProps {
@@ -44,14 +43,11 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de' }: Portfo
           className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
         >
           {/* Image with proper scaling */}
-          <LazyImage
+          <img
             src={item.image}
             alt={`${item.title} - ${item.category}`}
-            className="w-full h-full transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
-            aspectRatio="4/5"
-            objectFit="cover"
-            lang={lang}
-            showBadge={true}
+            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
+            loading="lazy"
           />
 
           {/* Overlay - Fixed opacity transition */}
