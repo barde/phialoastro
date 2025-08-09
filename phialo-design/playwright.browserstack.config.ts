@@ -6,8 +6,17 @@ import baseConfig from './playwright.config';
  * Requires BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY environment variables
  */
 
-const BS_USERNAME = process.env.BROWSERSTACK_USERNAME || 'bartholomusdeder_nJUBTZ';
-const BS_ACCESS_KEY = process.env.BROWSERSTACK_ACCESS_KEY || 'LR111gJnb7cEqyzUbjiL';
+const BS_USERNAME = process.env.BROWSERSTACK_USERNAME;
+const BS_ACCESS_KEY = process.env.BROWSERSTACK_ACCESS_KEY;
+
+// Validate that required environment variables are set
+if (!BS_USERNAME || !BS_ACCESS_KEY) {
+  throw new Error(
+    'BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY must be set as environment variables.\n' +
+    'Please set these variables before running BrowserStack tests.\n' +
+    'Example: export BROWSERSTACK_USERNAME=your_username && export BROWSERSTACK_ACCESS_KEY=your_access_key'
+  );
+}
 
 // BrowserStack capabilities
 const bsCapabilities = {

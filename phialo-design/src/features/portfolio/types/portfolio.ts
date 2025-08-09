@@ -11,6 +11,11 @@ export interface PortfolioItemData {
   techniques: string[];
   details: string;
   gallery: string[];
+  client?: string;
+  projectDate?: string;
+  availability?: string;
+  price?: string;
+  tags?: string[];
   youtubeVideoId?: string;
   youtubeAspectRatio?: '16:9' | '9:16';
   videoUrl?: string; // For backward compatibility

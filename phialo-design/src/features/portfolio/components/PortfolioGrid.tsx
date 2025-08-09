@@ -5,9 +5,10 @@ import type { PortfolioItemData } from './PortfolioSection';
 interface PortfolioGridProps {
   items: PortfolioItemData[];
   onItemClick?: (item: PortfolioItemData) => void;
+  lang?: 'en' | 'de';
 }
 
-export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps) {
+export default function PortfolioGrid({ items, onItemClick, lang = 'de' }: PortfolioGridProps) {
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -28,7 +29,7 @@ export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps
           layout
           className="portfolio-item"
         >
-          <PortfolioItem item={item} onItemClick={onItemClick} />
+          <PortfolioItem item={item} onItemClick={onItemClick} lang={lang} />
         </motion.div>
       ))}
     </div>
