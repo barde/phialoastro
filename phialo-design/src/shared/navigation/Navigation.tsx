@@ -8,7 +8,7 @@ const navItems = [
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/services', label: '3D für Sie', labelEn: '3D for You' },
   { href: '/classes', label: 'Classes' },
-  { href: '/about', label: 'Über mich', labelEn: 'About' },
+  { href: '/about', label: 'Über Phialo', labelEn: 'About Phialo' },
   { href: '/contact', label: 'Kontakt', labelEn: 'Contact' }
 ];
 
