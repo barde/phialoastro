@@ -69,9 +69,6 @@
     @apply transition-all duration-300;
   }
 
-  input:focus, textarea:focus, select:focus {
-    @apply outline-none ring-2 ring-primary-500 ring-opacity-50;
-  }
 
   /* Smooth scrolling for anchor links */
   html {
@@ -111,23 +108,23 @@
 
   /* Button variants */
   .btn-base {
-    @apply inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center font-medium transition-all duration-300;
   }
 
   .btn-primary {
-    @apply btn-base bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply btn-base bg-primary-600 text-white hover:bg-primary-700;
   }
 
   .btn-secondary {
-    @apply btn-base bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500;
+    @apply btn-base bg-secondary-600 text-white hover:bg-secondary-700;
   }
 
   .btn-outline {
-    @apply btn-base border-2 border-current hover:bg-current hover:text-white focus:ring-current;
+    @apply btn-base border-2 border-current hover:bg-current hover:text-white;
   }
 
   .btn-ghost {
-    @apply btn-base hover:bg-neutral-100 focus:ring-neutral-500;
+    @apply btn-base hover:bg-neutral-100;
   }
 
   /* Card patterns */
@@ -199,7 +196,7 @@
 
   /* Form styles */
   .form-input {
-    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white;
+    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg transition-colors bg-white;
   }
 
   .form-textarea {
@@ -368,7 +365,7 @@ select {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid var(--color-secondary);
+  outline: 2px solid #D4A259;
   outline-offset: 2px;
 }
 

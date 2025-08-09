@@ -11,6 +11,7 @@ interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   isGerman: boolean;
+  isHydrated: boolean;
 }
 
 class ContactFormErrorBoundary extends Component<Props, State> {
@@ -20,14 +21,16 @@ class ContactFormErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      isGerman: true
+      isGerman: true,
+      isHydrated: false
     };
   }
 
   componentDidMount() {
     // Check language on mount
     this.setState({
-      isGerman: !window.location.pathname.startsWith('/en/')
+      isGerman: !window.location.pathname.startsWith('/en/'),
+      isHydrated: true
     });
   }
 
@@ -50,6 +53,10 @@ class ContactFormErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      // Don't render error UI until hydrated to prevent mismatch
+      if (!this.state.isHydrated) {
+        return null;
+      }
       const { isGerman } = this.state;
 
       // Translations for error messages
