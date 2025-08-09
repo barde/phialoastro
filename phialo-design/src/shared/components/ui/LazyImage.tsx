@@ -7,6 +7,8 @@ interface LazyImageProps {
   placeholder?: string;
   aspectRatio?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  lang?: 'en' | 'de';
+  showBadge?: boolean;
 }
 
 export default function LazyImage({ 
@@ -15,19 +17,16 @@ export default function LazyImage({
   className = '', 
   placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect width="400" height="400" fill="%23f0f0f0"/%3E%3C/svg%3E', // Simple gray placeholder
   aspectRatio = '1/1',
-  objectFit = 'cover'
+  objectFit = 'cover',
+  lang = 'de',
+  showBadge = false
 }: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
-  const [isEnglish, setIsEnglish] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Language detection
-  useEffect(() => {
-    setIsEnglish(window.location.pathname.startsWith('/en/'));
-    setIsHydrated(true);
-  }, []);
+  // Use the language prop directly
+  const isEnglish = lang === 'en';
 
   // Translations
   const qualityBadge = isEnglish ? 'Handcrafted' : 'Handgefertigt';
@@ -46,8 +45,8 @@ export default function LazyImage({
       }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => observer.disconnect();
@@ -59,6 +58,7 @@ export default function LazyImage({
 
   return (
     <div 
+      ref={containerRef}
       className={`relative overflow-hidden ${className}`}
       style={{ aspectRatio }}
     >
@@ -77,7 +77,6 @@ export default function LazyImage({
       {/* Actual image */}
       {isInView && (
         <img
-          ref={imgRef}
           src={src}
           alt={alt}
           onLoad={handleLoad}
@@ -97,7 +96,7 @@ export default function LazyImage({
       )}
 
       {/* Quality badge overlay */}
-      {isHydrated && (
+      {showBadge && (
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gold bg-white/90 backdrop-blur-sm rounded-full">
             {qualityBadge}
