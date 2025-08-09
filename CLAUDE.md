@@ -50,24 +50,24 @@ find . -size +10M -not -path "./node_modules/*"
 
 ```bash
 # Development
-npm run dev                 # Start dev server on localhost:4321
-npm run build              # Build for production
-npm run preview            # Preview production build locally
+pnpm run dev                 # Start dev server on localhost:4321
+pnpm run build              # Build for production
+pnpm run preview            # Preview production build locally
 
 # Testing
-npm run test               # Run tests in watch mode
-npm run test:run           # Run tests once
-npm run test:ui            # Run tests with UI
+pnpm run test               # Run tests in watch mode
+pnpm run test:run           # Run tests once
+pnpm run test:ui            # Run tests with UI
 
 # Code Quality (MUST RUN BEFORE PR)
-npm run lint               # Run linter
-npm run typecheck         # Run TypeScript checks
-npm run format:check      # Check code formatting
-npm run pre-push          # Run all pre-push checks
+pnpm run lint               # Run linter
+pnpm run typecheck         # Run TypeScript checks
+pnpm run format:check      # Check code formatting
+pnpm run pre-push          # Run all pre-push checks
 
 # Deployment
-npm run deploy             # Deploy to Cloudflare Workers production
-npm run deploy:preview     # Deploy to Cloudflare Workers preview
+pnpm run deploy             # Deploy to Cloudflare Workers production
+pnpm run deploy:preview     # Deploy to Cloudflare Workers preview
 
 # Maintenance
 ./scripts/clean-project.sh # Remove .DS_Store and other junk files
@@ -131,7 +131,7 @@ If you encounter LFS-related errors:
 ## Development Environment
 
 - If dev server is not on http://localhost:4321/, run the website on http://localhost:4322/ for dev purposes. If the site is not reachable then kill it
-- **Docker is OPTIONAL**: Local development does not require Docker. Use standard npm commands for development.
+- **Docker is OPTIONAL**: Local development does not require Docker. Use standard pnpm commands for development.
 - For CI/CD testing or containerized development, see [Local CI Setup](./phialo-design/docs/how-to/local-ci-setup.md)
 
 ## Architecture Overview
@@ -218,12 +218,12 @@ Before submitting ANY React component PR:
 4. [ ] Test rapid navigation between pages
 5. [ ] Verify localStorage persistence works correctly
 6. [ ] Check that initial render matches server render
-7. [ ] Run `npm run build && npm run preview` and test in production mode
+7. [ ] Run `pnpm run build && pnpm run preview` and test in production mode
 
 Test command sequence:
 ```bash
-npm run build
-npm run preview
+pnpm run build
+pnpm run preview
 # Open in browser with DevTools
 # Check Console for hydration errors
 # Test with Network throttling
@@ -280,8 +280,8 @@ import myImage from '../assets/image.jpg';
 2. Check repository size: `du -sh .git`
 3. Verify no large files: `git ls-files -z | xargs -0 du -h | sort -hr | head -20`
 4. Ensure .gitignore is complete
-5. Run linting: `npm run lint`
-6. Run type checking: `npm run typecheck`
+5. Run linting: `pnpm run lint`
+6. Run type checking: `pnpm run typecheck`
 
 ### If you accidentally commit large files:
 ```bash
@@ -323,12 +323,12 @@ Tailwind configuration includes:
 ## Testing Requirements
 
 ### Before ANY PR
-1. Run full test suite: `npm run test:run`
+1. Run full test suite: `pnpm run test:run`
 2. Test multilingual features manually
 3. Check for console errors in browser
 4. Verify mobile responsiveness
 5. Test with slow network (Chrome DevTools)
-6. Run lint and typecheck: `npm run lint && npm run typecheck`
+6. Run lint and typecheck: `pnpm run lint && pnpm run typecheck`
 
 ### Multilingual Testing Script
 ```typescript
@@ -361,13 +361,13 @@ describe('Multilingual Component', () => {
 ### Monitoring Commands
 ```bash
 # Check bundle size
-npm run build && npm run analyze
+pnpm run build && pnpm run analyze
 
 # Test performance
-npm run lighthouse
+pnpm run lighthouse
 
 # Find large dependencies
-npm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
+pnpm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
 ```
 
 ### Optimization Checklist
@@ -586,6 +586,6 @@ rg "useState.*useEffect" --type tsx -A 5 -B 5
 
 ### If build fails:
 1. Clear cache: `rm -rf .astro node_modules package-lock.json`
-2. Reinstall: `npm install`
+2. Reinstall: `pnpm install`
 3. Check Node version: `node --version` (should be 18+)
 4. Verify all imports resolve correctly
