@@ -1,6 +1,7 @@
 ---
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
 import AnimatedText from '../../../../shared/components/ui/AnimatedText.tsx';
+import TeamMemberImage from '../../components/TeamMemberImage.tsx';
 ---
 
 <PageLayout title="About Phialo - Gesa Pickbrenner | Phialo Design" description="Learn about Phialo Design and Gesa Pickbrenner - from traditional goldsmithing to 3D design and education.">
@@ -88,10 +89,12 @@ import AnimatedText from '../../../../shared/components/ui/AnimatedText.tsx';
 
           <!-- Image on the right -->
           <div class="relative px-5 md:px-0">
-            <img 
-              src="/gesa-portrait.jpg" 
+            <TeamMemberImage
+              primaryImage="/gesa-portrait.jpg"
+              hoverImage="/gesa-portrait-alt.jpg"
               alt="Gesa Pickbrenner"
-              class="w-full h-auto rounded-lg shadow-xl"
+              className="w-full h-auto rounded-lg shadow-xl"
+              client:visible
             />
             <div class="absolute inset-0 bg-gradient-to-t from-midnight/10 to-transparent rounded-lg pointer-events-none"></div>
           </div>
@@ -142,10 +145,12 @@ import AnimatedText from '../../../../shared/components/ui/AnimatedText.tsx';
 
           <!-- Image on the right -->
           <div class="relative px-5 md:px-0 order-1 lg:order-2">
-            <img 
-              src="/bartholomaeus-portrait.jpg" 
+            <TeamMemberImage
+              primaryImage="/bartholomaeus-portrait.jpg"
+              hoverImage="/bartholomaeus-portrait-alt.jpg"
               alt="Bartholomäus Dedersen"
-              class="w-full h-auto rounded-lg shadow-xl"
+              className="w-full h-auto rounded-lg shadow-xl"
+              client:visible
             />
             <div class="absolute inset-0 bg-gradient-to-t from-midnight/10 to-transparent rounded-lg pointer-events-none"></div>
           </div>
