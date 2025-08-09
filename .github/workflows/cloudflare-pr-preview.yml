@@ -77,7 +77,7 @@ jobs:
         run: |
           cat > wrangler-pr-${{ github.event.pull_request.number }}.toml << EOF
           name = "phialo-pr-${{ github.event.pull_request.number }}"
-          main = "src/index-simple.ts"
+          main = "src/index.ts"
           compatibility_date = "2024-09-25"
           compatibility_flags = ["nodejs_compat"]
           workers_dev = true

@@ -150,10 +150,7 @@ describe('ResendEmailProvider', () => {
       const callArgs = (global.fetch as any).mock.calls[0];
       const body = JSON.parse(callArgs[1].body);
       
-      expect(body.tags).toEqual({
-        'contact-form': 'contact-form',
-        'urgent': 'urgent',
-      });
+      expect(body.tags).toEqual(['contact-form', 'urgent']);
     });
   });
 });

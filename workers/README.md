@@ -6,32 +6,50 @@ This directory contains the Cloudflare Worker implementation for serving the Phi
 
 ## Architecture
 
-The Worker handles:
+The Worker uses a modular architecture with comprehensive features:
 - Static file serving with proper MIME types
-- Security headers (CSP, X-Frame-Options, etc.)
+- Contact form API with Turnstile CAPTCHA and email integration
+- Security headers (CSP with YouTube support, X-Frame-Options, etc.)
 - Cache management with edge caching
 - URL redirects and trailing slash removal
 - 404 page handling
+- Structured logging and error handling
+- Performance monitoring with timing middleware
 
 ## Project Structure
 
 ```
 workers/
 ├── src/
-│   ├── index.ts          # Main worker entry point
+│   ├── index.ts          # Main worker entry point (modular architecture)
+│   ├── router/           # Routing configuration
+│   │   └── index.ts      # itty-router setup with middleware chain
 │   ├── handlers/
-│   │   ├── static.ts     # Static file serving
-│   │   ├── headers.ts    # Security and cache headers
-│   │   └── redirects.ts  # URL redirect logic
+│   │   ├── api/          # API endpoints
+│   │   │   └── contact.ts # Contact form handler
+│   │   ├── assets.ts     # Static file serving
+│   │   ├── redirects.ts  # URL redirect logic
+│   │   └── security.ts   # Security headers
+│   ├── services/
+│   │   ├── email/        # Email service providers
+│   │   │   ├── EmailService.ts
+│   │   │   └── providers/
+│   │   │       └── ResendEmailProvider.ts
+│   │   └── turnstile.ts  # Turnstile CAPTCHA validation
+│   ├── middleware/
+│   │   ├── cache.ts      # Caching middleware
+│   │   ├── cors.ts       # CORS handling
+│   │   ├── timing.ts     # Performance monitoring
+│   │   └── validation.ts # Request validation
 │   ├── utils/
-│   │   ├── cache.ts      # Edge caching utilities
+│   │   ├── errors.ts     # Error handling utilities
+│   │   ├── logger.ts     # Structured logging
 │   │   └── mime.ts       # MIME type detection
-│   └── types/
-│       └── index.d.ts    # TypeScript definitions
-├── test/
-│   ├── static.test.ts    # Static handler tests
-│   ├── headers.test.ts   # Headers handler tests
-│   └── redirects.test.ts # Redirect handler tests
+│   ├── config/
+│   │   └── index.ts      # Configuration management
+│   ├── types/            # TypeScript definitions
+│   └── archive/          # Archived implementations (for reference)
+├── test/                 # Comprehensive test suite (115 tests)
 ├── wrangler.toml         # Worker configuration
 ├── package.json          # Dependencies
 └── tsconfig.json         # TypeScript config
@@ -154,6 +172,16 @@ Edit `wrangler.toml` to configure:
 - Trailing slash removal (except root)
 - Custom redirect rules (currently disabled due to Firefox issue)
 - Query parameters and hash fragments preserved
+
+## Implementation Consolidation (Issue #313)
+
+As of January 2025, the Workers implementation has been consolidated to use a single, production-ready modular architecture (`src/index.ts`). Previous implementations have been archived in `src/archive/` for reference. The modular architecture provides:
+
+- **Better Maintainability**: Clear separation of concerns with dedicated modules
+- **Enhanced Reliability**: Comprehensive error handling and structured logging
+- **Production Debugging**: Environment-aware logging and performance monitoring
+- **Security**: Centralized security headers with CSP support for YouTube embeds
+- **Scalability**: Easy to extend with new features via the middleware system
 
 ## Migration from Cloudflare Pages
 
