@@ -8,6 +8,7 @@ featured: true
 image: "/images/portfolio/schuetzenplakette-1.jpg"
 gallery: [
   "/images/portfolio/schuetzenplakette-1.jpg",
+  "/images/portfolio/schuetzenplakette-3.jpg",
   "/images/portfolio/schuetzenplakette-2.jpg"
 ]
 materials: ["Sterling Silver"]
