@@ -109,6 +109,32 @@ The site uses automatic deployments:
 - Master branch deploys to phialo-master worker
 - Production deployments are manual
 
+### Required GitHub Secrets
+
+Before deploying, ensure these secrets are configured in your repository:
+
+```bash
+# Cloudflare API credentials
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ZONE_ID
+
+# Email configuration
+RESEND_API_KEY
+FROM_EMAIL
+TO_EMAIL
+
+# Turnstile CAPTCHA protection
+PUBLIC_TURNSTILE_SITE_KEY    # Site key (public, used during build)
+TURNSTILE_SECRET_KEY         # Secret key (confidential, for validation)
+```
+
+For production deployment on phialo.de:
+- Site Key: `0x4AAAAAABqCQ4FwHKMUuQnB`
+- Secret Key: Obtain from Cloudflare Dashboard
+
+See [Turnstile Production Setup](./phialo-design/docs/how-to/configure-turnstile-production.md) for detailed configuration.
+
 ### Deploy Commands
 
 ```bash
