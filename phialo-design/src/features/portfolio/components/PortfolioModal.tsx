@@ -18,36 +18,8 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
   
-  // Initialize state with prop value to match SSR
-  const [detectedLang, setDetectedLang] = useState<'en' | 'de'>(lang);
-  const [isHydrated, setIsHydrated] = useState(false);
-  
-  // Detect language from URL AFTER hydration to avoid mismatches
-  useEffect(() => {
-    // Mark as hydrated
-    setIsHydrated(true);
-    
-    if (typeof window !== 'undefined' && window.location) {
-      const pathname = window.location.pathname || '';
-      const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
-      
-      // Only update if different from prop
-      if (urlLang !== lang) {
-        setDetectedLang(urlLang);
-      }
-      
-      // Debug logging
-      console.log('PortfolioModal Language Detection:', {
-        propLang: lang,
-        urlLang,
-        pathname,
-        category: portfolioItem.category,
-        isHydrated: true
-      });
-    }
-  }, [lang, portfolioItem.category]); // Re-run when props change
-  
-  const isEnglish = detectedLang === 'en';
+  // Use the language prop directly - no client-side detection needed
+  const isEnglish = lang === 'en';
 
   // Translations
   const translations = {

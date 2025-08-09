@@ -1,34 +1,17 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
+import LazyImage from '../../../shared/components/ui/LazyImage';
 import type { PortfolioItemData } from './PortfolioSection';
 
 interface PortfolioItemProps {
   item: PortfolioItemData;
   onItemClick?: (item: PortfolioItemData) => void;
+  lang?: 'en' | 'de';
 }
 
-export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
-  // Initialize with false to match SSR (German is default)
-  const [isEnglish, setIsEnglish] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Language detection after hydration
-  useEffect(() => {
-    // Mark as hydrated
-    setIsHydrated(true);
-    
-    if (typeof window !== 'undefined') {
-      const pathname = window.location.pathname;
-      const shouldBeEnglish = pathname.startsWith('/en');
-      setIsEnglish(shouldBeEnglish);
-      
-      // Mark component as hydrated for testing
-      const element = document.querySelector(`[data-testid="portfolio-item"][data-item-id="${item.id}"]`);
-      if (element) {
-        element.setAttribute('data-hydrated', 'true');
-      }
-    }
-  }, [item.id]);
+export default function PortfolioItem({ item, onItemClick, lang = 'de' }: PortfolioItemProps) {
+  // Use the language prop directly - no client-side detection needed
+  const isEnglish = lang === 'en';
 
   // Keyboard handler for accessibility
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -39,7 +22,7 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
   };
 
   // Translations for accessibility
-  const cardLabel = isHydrated && isEnglish 
+  const cardLabel = isEnglish 
     ? `Portfolio item: ${item.title}. Category: ${item.category}. Press Enter or Space to view details.`
     : `Portfolio-Element: ${item.title}. Kategorie: ${item.category}. Drücken Sie Enter oder Leertaste, um Details anzuzeigen.`;
 
@@ -61,11 +44,14 @@ export default function PortfolioItem({ item, onItemClick }: PortfolioItemProps)
           className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
         >
           {/* Image with proper scaling */}
-          <img
+          <LazyImage
             src={item.image}
             alt={`${item.title} - ${item.category}`}
-            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
-            loading="lazy"
+            className="w-full h-full transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
+            aspectRatio="4/5"
+            objectFit="cover"
+            lang={lang}
+            showBadge={true}
           />
 
           {/* Overlay - Fixed opacity transition */}

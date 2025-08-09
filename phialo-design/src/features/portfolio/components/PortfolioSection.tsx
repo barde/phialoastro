@@ -4,29 +4,10 @@ import PortfolioGrid from './PortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
 import PortfolioModal from './PortfolioModal';
 import { portfolioItemsDE, portfolioItemsEN, categoryMap, categories } from '../data';
+import type { PortfolioItemData } from '../types/portfolio';
 
-// Export Portfolio item interface for use in other components
-export interface PortfolioItemData {
-  id: number;
-  title: string;
-  category: string;
-  image: string;
-  slug: string;
-  description: string;
-  year: number;
-  materials: string[];
-  techniques: string[];
-  details: string;
-  gallery: string[];
-  client?: string;
-  projectDate?: string;
-  availability?: string;
-  price?: string;
-  tags?: string[];
-  youtubeVideoId?: string;
-  youtubeAspectRatio?: '16:9' | '9:16';
-  videoUrl?: string; // For backward compatibility
-}
+// Re-export for backward compatibility
+export type { PortfolioItemData } from '../types/portfolio';
 
 // Function to get portfolio items with correct language
 const getPortfolioItems = (lang: 'en' | 'de'): PortfolioItemData[] => {
@@ -38,35 +19,8 @@ interface PortfolioProps {
 }
 
 export default function Portfolio({ lang = 'de' }: PortfolioProps) {
-  // Initialize state with the prop value to match SSR
-  const [actualLang, setActualLang] = useState<'en' | 'de'>(lang);
-  const [isHydrated, setIsHydrated] = useState(false);
-  
-  // Detect language from URL AFTER hydration to avoid mismatches
-  useEffect(() => {
-    // Mark as hydrated
-    setIsHydrated(true);
-    
-    if (typeof window !== 'undefined') {
-      const pathname = window.location.pathname;
-      const urlLang = pathname.startsWith('/en') ? 'en' : 'de';
-      
-      // Only update if different from prop to avoid unnecessary re-renders
-      if (urlLang !== lang) {
-        setActualLang(urlLang);
-      }
-      
-      // Debug logging
-      console.log('Portfolio Language Detection:', {
-        propLang: lang,
-        urlLang,
-        pathname,
-        isHydrated: true
-      });
-    }
-  }, [lang]); // Re-run if lang prop changes
-  
-  const isEnglish = actualLang === 'en';
+  // Use the language prop directly - no client-side detection needed
+  const isEnglish = lang === 'en';
   
   const [activeFilter, setActiveFilter] = useState('all');
   const [filteredItems, setFilteredItems] = useState<PortfolioItemData[]>([]);
@@ -76,7 +30,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   // Get portfolio items with correct language using useMemo to recalculate when language changes
-  const portfolioItems = useMemo(() => getPortfolioItems(actualLang), [actualLang]);
+  const portfolioItems = useMemo(() => getPortfolioItems(lang), [lang]);
   
   useEffect(() => {
     let items = portfolioItems;
@@ -88,10 +42,10 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
         if (item.category === activeFilter) return true;
         
         // For German items, check if the active filter (English) maps to the item's German category
-        if (actualLang === 'de' && categoryMap[activeFilter as keyof typeof categoryMap] === item.category) return true;
+        if (lang === 'de' && categoryMap[activeFilter as keyof typeof categoryMap] === item.category) return true;
         
         // For English page with German filter IDs
-        if (actualLang === 'en' && item.category === activeFilter) return true;
+        if (lang === 'en' && item.category === activeFilter) return true;
         
         return false;
       });
@@ -101,7 +55,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
     items = [...items].sort((a, b) => b.year - a.year);
     
     setFilteredItems(items);
-  }, [activeFilter, portfolioItems, actualLang]);
+  }, [activeFilter, portfolioItems, lang]);
 
   const handleItemClick = (item: PortfolioItemData) => {
     setSelectedItem(item);
@@ -176,7 +130,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           initial="visible"
           animate="visible"
         >
-          <PortfolioGrid items={filteredItems} onItemClick={handleItemClick} />
+          <PortfolioGrid items={filteredItems} onItemClick={handleItemClick} lang={lang} />
         </motion.div>
 
         {/* Portfolio Modal */}
@@ -201,7 +155,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
               setSelectedItem(null);
             }}
             portfolioItem={selectedItem}
-            lang={actualLang}
+            lang={lang}
           />
         )}
       </div>
