@@ -102,7 +102,7 @@ export const portfolioItemsDE: PortfolioItemData[] = [
   {
     id: 7,
     title: "Schützenplakette",
-    category: "Skulpturen",
+    category: "Anhänger",
     image: "/images/portfolio/schuetzenplakette-1.jpg",
     slug: "schuetzenplakette",
     description: "Originalplastik einer Schützenplakette als detailreiche 3D-druckbare Datei nachmodelliert, dann in Sterlingsilber gegossen und als tragbare Ehrenplakette fertiggestellt.",
@@ -112,6 +112,7 @@ export const portfolioItemsDE: PortfolioItemData[] = [
     details: "Die originale Schützenplakette wurde sorgfältig digitalisiert und als hochdetaillierte 3D-Datei aufbereitet. Nach dem 3D-Druck des Modells erfolgte der Guss in Sterling Silber mit anschließender Feinbearbeitung.",
     gallery: [
       "/images/portfolio/schuetzenplakette-1.jpg",
+      "/images/portfolio/schuetzenplakette-3.jpg",
       "/images/portfolio/schuetzenplakette-2.jpg"
     ],
     videoUrl: "https://www.youtube.com/embed/PLoXu-trLcQ"

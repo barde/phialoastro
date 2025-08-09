@@ -102,7 +102,7 @@ export const portfolioItemsEN: PortfolioItemData[] = [
   {
     id: 7,
     title: "Plaque of Honor",
-    category: "Sculptures",
+    category: "Pendants",
     image: "/images/portfolio/schuetzenplakette-1.jpg",
     slug: "plaque-of-honor-en",
     description: "Remodeled an original sculptural plaque as an intricate 3D-printable file, then cast in sterling silver and finished as a wearable plaque of honor.",
@@ -112,6 +112,7 @@ export const portfolioItemsEN: PortfolioItemData[] = [
     details: "The original marksman's plaque was carefully digitized and prepared as a highly detailed 3D file. After 3D printing the model, it was cast in sterling silver followed by fine finishing.",
     gallery: [
       "/images/portfolio/schuetzenplakette-1.jpg",
+      "/images/portfolio/schuetzenplakette-3.jpg",
       "/images/portfolio/schuetzenplakette-2.jpg"
     ],
     videoUrl: "https://www.youtube.com/embed/PLoXu-trLcQ"

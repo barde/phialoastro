@@ -1,13 +1,14 @@
 ---
 title: "Plaque of Honor"
 description: "Remodeled an original sculptural plaque as an intricate 3D-printable file, then cast in sterling silver and finished as a wearable plaque of honor."
-category: "sculptures"
+category: "pendants"
 language: "en"
 price: "On request"
 featured: true
 image: "/images/portfolio/schuetzenplakette-1.jpg"
 gallery: [
   "/images/portfolio/schuetzenplakette-1.jpg",
+  "/images/portfolio/schuetzenplakette-3.jpg",
   "/images/portfolio/schuetzenplakette-2.jpg"
 ]
 materials: ["Sterling Silver"]
