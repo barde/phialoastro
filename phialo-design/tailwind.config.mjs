@@ -209,7 +209,7 @@ export default {
   plugins: [
     typography,
     // Custom plugin for luxury design utilities
-    function({ addUtilities, theme }) {
+    function({ addUtilities }) {
       const newUtilities = {
         '.text-balance': {
           'text-wrap': 'balance',
