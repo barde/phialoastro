@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, useInView, type Variants } from '../../../lib/framer-motion';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, type Variants } from '../../../lib/framer-motion';
 import PortfolioGrid from './PortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
 import PortfolioModal from './PortfolioModal';
@@ -26,8 +26,6 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   const [filteredItems, setFilteredItems] = useState<PortfolioItemData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItemData | null>(null);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   // Get portfolio items with correct language using useMemo to recalculate when language changes
   const portfolioItems = useMemo(() => getPortfolioItems(lang), [lang]);
@@ -86,7 +84,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   };
 
   return (
-    <section id="portfolio" className="portfolio-section py-24 bg-white" ref={ref} aria-label="Portfolio">
+    <section id="portfolio" className="portfolio-section py-24 bg-white" aria-label="Portfolio">
       <div className="container mx-auto px-6">
         {/* Instagram Link */}
         <motion.div

@@ -17,9 +17,15 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
   
   // Use the language prop directly - no client-side detection needed
   const isEnglish = lang === 'en';
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Translations
   const translations = {
