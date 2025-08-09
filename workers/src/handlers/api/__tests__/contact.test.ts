@@ -4,11 +4,19 @@ import { EmailService } from '../../../services/email/EmailService';
 
 // Mock dependencies
 vi.mock('../../../services/email/EmailService');
-vi.mock('../../../services/turnstile/TurnstileService', () => ({
-  TurnstileService: vi.fn().mockImplementation(() => ({
-    validate: vi.fn().mockResolvedValue({ success: true }),
-  })),
-}));
+vi.mock('../../../services/turnstile/TurnstileService', () => {
+  const mockValidate = vi.fn().mockResolvedValue({ success: true });
+  const mockTurnstileInstance = {
+    validate: mockValidate,
+  };
+
+  const MockTurnstileService = vi.fn().mockImplementation(() => mockTurnstileInstance);
+  MockTurnstileService.fromEnv = vi.fn().mockReturnValue(mockTurnstileInstance);
+
+  return {
+    TurnstileService: MockTurnstileService,
+  };
+});
 
 vi.mock('../../../utils/logger', () => ({
   logger: {
@@ -196,13 +204,21 @@ describe('handleContactForm', () => {
   });
 
   describe('Turnstile validation', () => {
+    let TurnstileService: any;
+    
+    beforeEach(async () => {
+      vi.clearAllMocks();
+      // Get the mocked module
+      const module = await import('../../../services/turnstile/TurnstileService');
+      TurnstileService = module.TurnstileService;
+    });
+
     it('should validate Turnstile token when configured', async () => {
-      const TurnstileService = vi.mocked(await import('../../../services/turnstile/TurnstileService')).TurnstileService;
-      const mockValidate = vi.fn().mockResolvedValue({ success: true });
-      
-      TurnstileService.mockImplementation(() => ({
-        validate: mockValidate,
-      }) as any);
+      // Configure the mock to return success
+      const mockInstance = new TurnstileService();
+      mockInstance.validate.mockResolvedValue({ success: true });
+      TurnstileService.mockImplementation(() => mockInstance);
+      TurnstileService.fromEnv.mockReturnValue(mockInstance);
       
       mockEnv.TURNSTILE_SECRET_KEY = 'test-secret';
       mockRequest.json.mockResolvedValue({
@@ -213,22 +229,30 @@ describe('handleContactForm', () => {
         turnstileToken: 'test-token',
       });
       
+      // Add the request URL for the handler
+      mockRequest.url = 'http://localhost:3000/api/contact';
+      
       const response = await handleContactForm(mockRequest, mockEnv);
       
       expect(response.status).toBe(200);
-      expect(mockValidate).toHaveBeenCalledWith('test-token', '127.0.0.1');
+      expect(mockInstance.validate).toHaveBeenCalledWith(
+        'test-token', 
+        '127.0.0.1',
+        expect.objectContaining({
+          hostname: 'localhost',
+        })
+      );
     });
 
     it('should reject when Turnstile validation fails', async () => {
-      const TurnstileService = vi.mocked(await import('../../../services/turnstile/TurnstileService')).TurnstileService;
-      const mockValidate = vi.fn().mockResolvedValue({ 
+      // Configure the mock to return failure
+      const mockInstance = new TurnstileService();
+      mockInstance.validate.mockResolvedValue({ 
         success: false, 
         error_codes: ['invalid-input-response'] 
       });
-      
-      TurnstileService.mockImplementation(() => ({
-        validate: mockValidate,
-      }) as any);
+      TurnstileService.mockImplementation(() => mockInstance);
+      TurnstileService.fromEnv.mockReturnValue(mockInstance);
       
       mockEnv.TURNSTILE_SECRET_KEY = 'test-secret';
       mockRequest.json.mockResolvedValue({
@@ -238,6 +262,9 @@ describe('handleContactForm', () => {
         message: 'Test message',
         turnstileToken: 'invalid-token',
       });
+      
+      // Add the request URL for the handler
+      mockRequest.url = 'http://localhost:3000/api/contact';
       
       const response = await handleContactForm(mockRequest, mockEnv);
       const body = await response.json();
