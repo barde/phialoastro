@@ -56,17 +56,25 @@ export const portfolioItemsDE: PortfolioItemData[] = [
   },
   {
     id: 4,
-    title: "Silbernes Schloss-Münzkästchen",
+    title: "Münzkästchen in Form eines Schlosses",
     category: "Skulpturen",
     image: "/images/portfolio/silver_piggy_bank.jpg",
     slug: "silber-piggy-bank",
-    description: "Eine kunstvolle Neuinterpretation des klassischen Sparschweins als elegantes Schloss-Münzkästchen. Funktionale Kunst trifft auf traditionelle Silberschmiedekunst.",
+    description: "Die Umsetzung eines real existierenden Schlosses als wertvolles Münzkästchen. In authentischen Proportionen, nur sehr viel kleiner als das Original aus Schleswig-Holstein.",
     year: 2022,
-    materials: ["925er Silber", "Vergoldet"],
+    materials: ["Sterling Silber", "18kt Gelbgold"],
     techniques: ["3D-Modellierung", "Silberguss", "Gravur", "Teilvergoldung"],
     details: "Dieses einzigartige Stück vereint die Funktionalität eines Sparbehälters mit der Ästhetik eines mittelalterlichen Schlosses. Die feinen Details wurden durch präzise 3D-Modellierung erreicht und traditionell in Silber gegossen.",
     gallery: [
-      "/images/portfolio/silver_piggy_bank.jpg"
+      "/images/portfolio/silver_piggy_bank.jpg",
+      "/images/portfolio/castle_piggy_bank_2.jpg",
+      "/images/portfolio/castle_piggy_bank_3.jpg",
+      "/images/portfolio/castle_piggy_bank_4.jpg",
+      "/images/portfolio/castle_piggy_bank_5.jpg",
+      "/images/portfolio/castle_piggy_bank_6.jpg",
+      "/images/portfolio/castle_piggy_bank_7.jpg",
+      "/images/portfolio/castle_piggy_bank_8.jpg",
+      "/images/portfolio/castle_piggy_bank_9.jpg"
     ]
   },
   {
