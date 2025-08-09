@@ -21,6 +21,10 @@ const {
   lang,
   headerTransparent = false
 } = Astro.props;
+
+// Language detection for the skip link text
+const isEnglish = Astro.url.pathname.startsWith('/en');
+const skipLinkText = isEnglish ? 'Skip to main content' : 'Zum Hauptinhalt springen';
 ---
 
 <BaseLayout 
@@ -31,8 +35,16 @@ const {
   lang={lang}
 >
   <TurnstileWrapper>
+    {/* Skip navigation link for accessibility */}
+    <a 
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-gold focus:text-midnight focus:z-[9999] focus:rounded-md transition-all"
+    >
+      {skipLinkText}
+    </a>
+    
     <Header transparent={headerTransparent} />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <Footer />

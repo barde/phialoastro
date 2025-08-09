@@ -20,11 +20,13 @@ export default function LazyImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [isEnglish, setIsEnglish] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   // Language detection
   useEffect(() => {
     setIsEnglish(window.location.pathname.startsWith('/en/'));
+    setIsHydrated(true);
   }, []);
 
   // Translations
@@ -95,11 +97,13 @@ export default function LazyImage({
       )}
 
       {/* Quality badge overlay */}
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gold bg-white/90 backdrop-blur-sm rounded-full">
-          {qualityBadge}
-        </span>
-      </div>
+      {isHydrated && (
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gold bg-white/90 backdrop-blur-sm rounded-full">
+            {qualityBadge}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
