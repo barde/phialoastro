@@ -56,17 +56,25 @@ export const portfolioItemsEN: PortfolioItemData[] = [
   },
   {
     id: 4,
-    title: "Silver Castle Piggy Bank",
+    title: "Castle Piggy Bank",
     category: "Sculptures",
     image: "/images/portfolio/silver_piggy_bank.jpg",
     slug: "silber-piggy-bank",
-    description: "An artistic reinterpretation of the classic piggy bank as an elegant castle coin box. Functional art meets traditional silversmithing.",
+    description: "The transformation of a real castle into a valuable coin box. With authentic proportions - just much smaller than the original, which stands in Schleswig-Holstein.",
     year: 2022,
-    materials: ["925 Silver", "Gold-plated"],
+    materials: ["Sterling Silver", "18kt Yellow Gold"],
     techniques: ["3D Modeling", "Silver Casting", "Engraving", "Partial Gilding"],
     details: "This unique piece combines the functionality of a savings container with the aesthetics of a medieval castle. The fine details were achieved through precise 3D modeling and traditionally cast in silver.",
     gallery: [
-      "/images/portfolio/silver_piggy_bank.jpg"
+      "/images/portfolio/silver_piggy_bank.jpg",
+      "/images/portfolio/castle_piggy_bank_2.jpg",
+      "/images/portfolio/castle_piggy_bank_3.jpg",
+      "/images/portfolio/castle_piggy_bank_4.jpg",
+      "/images/portfolio/castle_piggy_bank_5.jpg",
+      "/images/portfolio/castle_piggy_bank_6.jpg",
+      "/images/portfolio/castle_piggy_bank_7.jpg",
+      "/images/portfolio/castle_piggy_bank_8.jpg",
+      "/images/portfolio/castle_piggy_bank_9.jpg"
     ]
   },
   {
