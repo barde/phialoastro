@@ -1,15 +1,23 @@
 ---
-title: "Silver Castle Coin Box"
-description: "A silver box with golden details, designed to open, modeled after a castle. An extraordinary project with a coin slot in the chimney."
+title: "Castle Piggy Bank"
+description: "The transformation of a real castle into a valuable coin box. With authentic proportions - just much smaller than the original, which stands in Schleswig-Holstein."
 category: "sculptures"
 language: "en"
 price: "Upon request"
 featured: true
 image: "/images/portfolio/silver_piggy_bank.jpg"
 gallery: [
-  "/images/portfolio/silver_piggy_bank.jpg"
+  "/images/portfolio/silver_piggy_bank.jpg",
+  "/images/portfolio/castle_piggy_bank_2.jpg",
+  "/images/portfolio/castle_piggy_bank_3.jpg",
+  "/images/portfolio/castle_piggy_bank_4.jpg",
+  "/images/portfolio/castle_piggy_bank_5.jpg",
+  "/images/portfolio/castle_piggy_bank_6.jpg",
+  "/images/portfolio/castle_piggy_bank_7.jpg",
+  "/images/portfolio/castle_piggy_bank_8.jpg",
+  "/images/portfolio/castle_piggy_bank_9.jpg"
 ]
-materials: ["Silver", "Gold Details"]
+materials: ["Sterling Silver", "18kt Yellow Gold"]
 client: "Jeweler Willer"
 projectDate: "August 2019"
 dimensions: "150x55x65mm"
@@ -19,13 +27,17 @@ tags: ["silver", "castle", "box", "sculpture", "unique"]
 publishedAt: 2017-04-01
 ---
 
-## Silver Castle Coin Box
+## Castle Piggy Bank
 
-This project was extraordinary and very exciting. The castle was to be replicated in silver as a coin box that opens, with a coin slot in the "chimney". An excursion to the castle, numerous photos, and detailed remodeling as a 3D model made the implementation possible.
+The transformation of a real castle into a valuable coin box. With authentic proportions - just much smaller than the original, which stands in Schleswig-Holstein. Material: Sterling silver, the second iteration consists entirely of 750/- gold.
+
+### Manufacturing
+
+In collaboration with Herterich GmbH. A 3D wax print was created from the 3D model, which was then cast in precious metal. With great craftsmanship, the locking system was developed and the surface refined.
 
 ### Project Highlights
 
-- **Material**: Silver with golden details
+- **Material**: Sterling Silver, 18kt Yellow Gold
 - **Function**: Openable coin box with coin slot
 - **Technique**: 3D modeling based on original castle
 - **Project Duration**: 7 months (3 months for 3D model)
@@ -39,10 +51,6 @@ This project required exceptional attention to architectural detail. Every turre
 ### Functional Design
 
 The decorative element in the roof - the tympanum, designed according to the original coat of arms - serves as a push button to open the box. This ingenious integration of form and function exemplifies the marriage of art and utility.
-
-### Collaborative Excellence
-
-The model was cast and assembled in collaboration with Roger Cermak, ensuring the highest standards of precious metal craftsmanship. The collaboration brought together 3D design expertise with traditional goldsmithing skills.
 
 ### Historical Reference
 
@@ -58,7 +66,3 @@ By recreating an actual historical castle, this piece bridges past and present, 
 ### Collectible Appeal
 
 This unique piece appeals to collectors of both fine metalwork and architectural miniatures. Its dual function as both savings bank and display piece makes it exceptionally versatile.
-
-### Cultural Significance
-
-The project demonstrates how traditional craftsmanship can preserve and celebrate architectural heritage in miniature form, creating lasting connections between place, memory, and artisanship.
