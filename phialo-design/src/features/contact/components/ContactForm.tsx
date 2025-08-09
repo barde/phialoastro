@@ -63,6 +63,7 @@ interface ContactFormProps {
 
 const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
   // State management
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isGerman, setIsGerman] = useState(true);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState(false);
@@ -90,6 +91,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
   // Check language on mount
   useEffect(() => {
     setIsGerman(!window.location.pathname.startsWith('/en/'));
+    setIsHydrated(true);
   }, []);
 
   // Translations
@@ -372,9 +374,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
     setErrorMessage('');
   };
 
+  // Prevent hydration mismatch by not rendering until client-side language is determined
+  if (!isHydrated) {
+    return null;
+  }
+
   return (
     <div className="relative">
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      <form action="/api/contact" method="POST" onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Name Field */}
         <div className="form-group">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -590,13 +597,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
 
       {/* Error Modal */}
       {submitStatus === 'error' && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div role="dialog" aria-modal="true" aria-labelledby="error-title" className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white border border-red-200 rounded-lg p-6 max-w-md w-full shadow-xl">
             <div className="flex items-center mb-4">
               <svg className="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              <h3 className="text-xl font-medium text-gray-900">{t.errorTitle}</h3>
+              <h3 id="error-title" className="text-xl font-medium text-gray-900">{t.errorTitle}</h3>
             </div>
             <p className="text-gray-600 mb-6">{errorMessage}</p>
             <div className="flex space-x-3">
