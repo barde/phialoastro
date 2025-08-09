@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "AGPL-3.0",
   "private": true,
+  "packageManager": "pnpm@9.14.4",
   "scripts": {
     "dev": "wrangler dev --local --live-reload",
     "deploy": "wrangler deploy",

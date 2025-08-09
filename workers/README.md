@@ -59,7 +59,7 @@ workers/
 
 ### Prerequisites
 - Node.js 20+
-- npm
+- pnpm 9.14+
 - Cloudflare account with Workers enabled
 
 ### Setup
@@ -67,7 +67,7 @@ workers/
 1. Install dependencies:
 ```bash
 cd workers
-npm install
+pnpm install
 ```
 
 2. Configure Wrangler:
@@ -78,21 +78,21 @@ npm install
 
 Run the worker locally:
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Run both Astro dev server and Worker together:
 ```bash
 cd ../phialo-design
-npm run dev:full
+pnpm run dev:full
 ```
 
 ### Testing
 
 Run tests:
 ```bash
-npm test           # Watch mode
-npm run test:run   # Run once
+pnpm test           # Watch mode
+pnpm run test:run   # Run once
 ```
 
 ## Deployment
@@ -100,13 +100,13 @@ npm run test:run   # Run once
 ### Preview Deployment
 Deploy to preview environment:
 ```bash
-npm run deploy:preview
+pnpm run deploy:preview
 ```
 
 ### Production Deployment
 Deploy to production (requires proper configuration):
 ```bash
-npm run deploy:production
+pnpm run deploy:production
 ```
 
 ### PR Preview Deployments
@@ -215,7 +215,7 @@ This Worker replaces Cloudflare Pages deployment with benefits:
 
 View live logs:
 ```bash
-npm run tail
+pnpm run tail
 ```
 
 Check worker status:
