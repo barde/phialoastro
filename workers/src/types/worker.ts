@@ -14,6 +14,7 @@ export interface WorkerEnv {
   // Email settings
   FROM_EMAIL?: string;
   TO_EMAIL?: string;
+  REPLY_TO_EMAIL?: string;
   ALLOWED_EMAIL_DOMAINS?: string;
   BLOCKED_EMAIL_DOMAINS?: string;
   

@@ -199,8 +199,8 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 				name: 'Phialo Design',
 			}],
 			replyTo: {
-				email: contactData.email,
-				name: contactData.name,
+				email: env.REPLY_TO_EMAIL || env.FROM_EMAIL || 'noreply@phialo.de',
+				name: 'Phialo Design',
 			},
 			subject: mainEmailTemplate.subject,
 			html: mainEmailTemplate.html,
@@ -209,6 +209,8 @@ export async function handleContactForm(request: IttyRequest, env: CloudflareEnv
 			metadata: {
 				formId: 'contact',
 				language: contactData.language,
+				originalSenderEmail: contactData.email,
+				originalSenderName: contactData.name,
 			},
 		});
 

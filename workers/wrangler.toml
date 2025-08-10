@@ -38,6 +38,8 @@ ENVIRONMENT = "development"
 # Email service configuration
 # Resend:
 # - wrangler secret put RESEND_API_KEY
+# Reply-to email (optional, defaults to FROM_EMAIL if not set):
+# - wrangler secret put REPLY_TO_EMAIL
 # Turnstile CAPTCHA (optional):
 # - wrangler secret put TURNSTILE_SECRET_KEY
 

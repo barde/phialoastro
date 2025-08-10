@@ -147,7 +147,15 @@ describe('handleContactForm', () => {
               email: 'admin@test.com',
             }),
           ]),
+          replyTo: expect.objectContaining({
+            email: 'noreply@test.com', // Uses FROM_EMAIL as default
+            name: 'Phialo Design',
+          }),
           subject: 'New Contact Request: Test Subject',
+          metadata: expect.objectContaining({
+            originalSenderEmail: 'test@example.com',
+            originalSenderName: 'Test User',
+          }),
         })
       );
     });
@@ -178,6 +186,46 @@ describe('handleContactForm', () => {
       await handleContactForm(mockRequest, mockEnv);
       
       expect(mockEmailService.send).toHaveBeenCalled();
+    });
+
+    it('should use REPLY_TO_EMAIL environment variable when set', async () => {
+      mockRequest.json.mockResolvedValue(validFormData);
+      mockEnv.REPLY_TO_EMAIL = 'hello@phialo.de';
+      
+      const response = await handleContactForm(mockRequest, mockEnv);
+      const body = await response.json();
+      
+      expect(response.status).toBe(200);
+      expect(body.success).toBe(true);
+      
+      // Verify the first call (main notification email) has correct reply-to
+      const firstCall = mockEmailService.send.mock.calls[0][0];
+      expect(firstCall.replyTo).toEqual({
+        email: 'hello@phialo.de',
+        name: 'Phialo Design',
+      });
+      
+      // Verify metadata contains original sender info
+      expect(firstCall.metadata).toEqual(expect.objectContaining({
+        originalSenderEmail: 'test@example.com',
+        originalSenderName: 'Test User',
+      }));
+    });
+
+    it('should fallback to FROM_EMAIL when REPLY_TO_EMAIL is not set', async () => {
+      mockRequest.json.mockResolvedValue(validFormData);
+      delete mockEnv.REPLY_TO_EMAIL;
+      mockEnv.FROM_EMAIL = 'noreply@test.com';
+      
+      const response = await handleContactForm(mockRequest, mockEnv);
+      
+      expect(response.status).toBe(200);
+      
+      const firstCall = mockEmailService.send.mock.calls[0][0];
+      expect(firstCall.replyTo).toEqual({
+        email: 'noreply@test.com',
+        name: 'Phialo Design',
+      });
     });
   });
 
