@@ -8,8 +8,17 @@ import { WorkerContext } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
 
 export async function handleContactForm(context: WorkerContext): Promise<Response> {
-	const { request, env } = context;
-	logger.info('handleContactForm called');
+	const { request, env, ctx } = context;
+	logger.info('handleContactForm called', {
+		method: request.method,
+		url: request.url,
+		hasEnvVars: {
+			RESEND_API_KEY: !!env.RESEND_API_KEY,
+			FROM_EMAIL: !!env.FROM_EMAIL,
+			TO_EMAIL: !!env.TO_EMAIL,
+			REPLY_TO_EMAIL: !!env.REPLY_TO_EMAIL
+		}
+	});
 	console.log('handleContactForm - start', { method: request.method });
 	try {
 		// Check request method
@@ -62,6 +71,30 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 		if (!emailRegex.test(body.email)) {
 			return new Response(JSON.stringify({ error: 'Invalid email address' }), {
 				status: 400,
+				headers: { 
+					'Content-Type': 'application/json',
+					...API_SECURITY_HEADERS,
+				},
+			});
+		}
+
+		// Check for required environment variables early
+		if (!env.RESEND_API_KEY || !env.TO_EMAIL || !env.FROM_EMAIL) {
+			logger.error('Email service is not configured properly', {
+				hasResendKey: !!env.RESEND_API_KEY,
+				hasToEmail: !!env.TO_EMAIL,
+				hasFromEmail: !!env.FROM_EMAIL,
+				resendKeyLength: env.RESEND_API_KEY?.length || 0
+			});
+			console.error('Missing environment variables:', {
+				RESEND_API_KEY: env.RESEND_API_KEY ? 'SET' : 'MISSING',
+				TO_EMAIL: env.TO_EMAIL || 'MISSING',
+				FROM_EMAIL: env.FROM_EMAIL || 'MISSING'
+			});
+			return new Response(JSON.stringify({
+				error: 'Service configuration error. Please contact support.',
+			}), {
+				status: 503,
 				headers: { 
 					'Content-Type': 'application/json',
 					...API_SECURITY_HEADERS,
@@ -190,7 +223,10 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 		const mainEmailTemplate = generateContactEmailTemplate(contactData);
 
 		// Send main notification email
-		const mainEmailResponse = await emailService.send({
+		logger.info('Sending main email...');
+		let mainEmailResponse;
+		try {
+			mainEmailResponse = await emailService.send({
 			from: {
 				email: env.FROM_EMAIL || 'noreply@phialo.de',
 				name: 'Phialo Website',
@@ -213,9 +249,16 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 				originalSenderEmail: contactData.email,
 				originalSenderName: contactData.name,
 			},
-		});
+			});
+		} catch (emailError) {
+			logger.error('Exception while sending email', { 
+				error: emailError instanceof Error ? emailError.message : String(emailError),
+				stack: emailError instanceof Error ? emailError.stack : undefined
+			});
+			mainEmailResponse = { success: false, error: emailError };
+		}
 
-		if (!mainEmailResponse.success) {
+		if (!mainEmailResponse?.success) {
 			logger.error('Failed to send main email', { error: mainEmailResponse.error });
 			
 			return new Response(JSON.stringify({ 
@@ -229,35 +272,41 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 			});
 		}
 
-		// Send confirmation email to user (Feature #151)
+		// Send confirmation email to user (Feature #151) - Non-blocking
 		if (body.sendCopy !== false) { // Default to true
-			try {
-				const confirmationTemplate = generateContactConfirmationTemplate(contactData);
-				
-				await emailService.send({
-					from: {
-						email: env.FROM_EMAIL || 'noreply@phialo.de',
-						name: 'Phialo Design',
-					},
-					to: [{
-						email: contactData.email,
-						name: contactData.name,
-					}],
-					subject: confirmationTemplate.subject,
-					html: confirmationTemplate.html,
-					text: confirmationTemplate.text,
-					tags: ['contact-form-confirmation', contactData.language],
-					metadata: {
-						formId: 'contact-confirmation',
-						language: contactData.language,
-					},
-				});
+			ctx.waitUntil(
+				(async () => {
+					try {
+						const confirmationTemplate = generateContactConfirmationTemplate(contactData);
+						
+						await emailService.send({
+							from: {
+								email: env.FROM_EMAIL || 'noreply@phialo.de',
+								name: 'Phialo Design',
+							},
+							to: [{
+								email: contactData.email,
+								name: contactData.name,
+							}],
+							subject: confirmationTemplate.subject,
+							html: confirmationTemplate.html,
+							text: confirmationTemplate.text,
+							tags: ['contact-form-confirmation', contactData.language],
+							metadata: {
+								formId: 'contact-confirmation',
+								language: contactData.language,
+							},
+						});
 
-				logger.info('Confirmation email sent to user', { email: contactData.email });
-			} catch (error) {
-				// Don't fail the request if confirmation email fails
-				logger.error('Failed to send confirmation email', { error });
-			}
+						logger.info('Confirmation email sent to user', { email: contactData.email });
+					} catch (error) {
+						// Don't fail the request if confirmation email fails
+						logger.error('Failed to send confirmation email', { 
+							error: error instanceof Error ? error.message : String(error)
+						});
+					}
+				})()
+			);
 		}
 
 		// Return success response
@@ -276,7 +325,26 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 		});
 
 	} catch (error) {
-		logger.error('Unexpected error in contact form handler', { error });
+		const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+		const errorStack = error instanceof Error ? error.stack : undefined;
+		logger.error('Unexpected error in contact form handler', { 
+			error: errorMessage,
+			stack: errorStack,
+			type: error?.constructor?.name
+		});
+		
+		// Log more details for debugging
+		console.error('Contact form error details:', {
+			errorMessage,
+			errorStack,
+			errorType: error?.constructor?.name,
+			hasEnvVars: {
+				RESEND_API_KEY: !!env.RESEND_API_KEY,
+				FROM_EMAIL: !!env.FROM_EMAIL,
+				TO_EMAIL: !!env.TO_EMAIL,
+				REPLY_TO_EMAIL: !!env.REPLY_TO_EMAIL
+			}
+		});
 		
 		return new Response(JSON.stringify({ 
 			error: 'An unexpected error occurred. Please try again later.',
