@@ -1,4 +1,4 @@
-name: Deploy Master to Cloudflare
+name: Auto-Deploy Master Branch
 
 on:
   push:
@@ -16,9 +16,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy Master to Cloudflare Workers
+    name: Deploy Master Branch to Preview Environment
     environment:
-      name: master
+      name: preview
       url: https://phialo-master.meise.workers.dev
     
     steps:
