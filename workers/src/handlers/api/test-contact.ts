@@ -1,4 +1,4 @@
-import { Request as IttyRequest } from 'itty-router';
+import { IRequest as IttyRequest } from 'itty-router';
 import type { CloudflareEnv } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
 

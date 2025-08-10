@@ -1,4 +1,4 @@
-import { Request as IttyRequest } from 'itty-router';
+import { IRequest as IttyRequest } from 'itty-router';
 import { EmailService } from '../../services/email/EmailService';
 import { TurnstileServiceEnhanced } from '../../services/turnstile/TurnstileServiceEnhanced';
 import { generateContactEmailTemplate, generateContactConfirmationTemplate } from '../../services/email/templates';
