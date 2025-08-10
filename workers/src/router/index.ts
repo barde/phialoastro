@@ -1,5 +1,5 @@
 import { Router, IRequest } from 'itty-router';
-import { WorkerContext } from '../types/worker';
+import { WorkerContext, WorkerEnv } from '../types/worker';
 import { handleStaticAsset } from './handlers/static';
 import { handleRedirect } from './handlers/redirect';
 import { validateRequest } from '../utils/errors';
@@ -11,7 +11,7 @@ import { testHandleContactForm } from '../handlers/api/test-contact';
 
 // Extend Request with context
 interface ContextRequest extends IRequest {
-  context: WorkerContext;
+  context?: WorkerContext;
 }
 
 /**
@@ -24,31 +24,33 @@ export function createRouter() {
   // We'll adapt our middleware to work with this pattern
   
   // Global middleware - these modify the request/response flow
-  router.all('*', async (request: ContextRequest, context: WorkerContext) => {
+  router.all('*', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
     validateRequest(request);
-    request.context = context;
+    request.context = { request, env, ctx };
   });
   
   // Handle redirects first
-  router.all('*', async (request: ContextRequest) => {
+  router.all('*', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
+    if (!request.context) request.context = { request, env, ctx };
     const response = await handleRedirect(request.context);
     if (response) return response;
   });
   
   // Test API route
-  router.post('/api/test-contact', async (request: ContextRequest) => {
+  router.post('/api/test-contact', async (request: ContextRequest, env: WorkerEnv) => {
     console.log('POST /api/test-contact route matched');
-    return testHandleContactForm(request, request.context.env);
+    return testHandleContactForm(request, env);
   });
 
   // API routes
-  router.post('/api/contact', async (request: ContextRequest) => {
+  router.post('/api/contact', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
     console.log('POST /api/contact route matched');
+    if (!request.context) request.context = { request, env, ctx };
     try {
       // Apply CORS for API routes
       const result = await withCORS(request.context, async () => {
         console.log('Calling handleContactForm');
-        return handleContactForm(request, request.context.env);
+        return handleContactForm(request, env);
       });
       console.log('Contact form result received');
       return result;
@@ -62,7 +64,8 @@ export function createRouter() {
   });
   
   // Apply middleware chain for GET requests
-  router.get('*', async (request: ContextRequest) => {
+  router.get('*', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
+    if (!request.context) request.context = { request, env, ctx };
     // Apply CORS
     const corsResponse = await withCORS(request.context, async () => {
       // Apply timing
@@ -76,7 +79,8 @@ export function createRouter() {
   });
   
   // Handle OPTIONS requests
-  router.options('*', async (request: ContextRequest) => {
+  router.options('*', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
+    if (!request.context) request.context = { request, env, ctx };
     return handleOptions(request.context);
   });
 
