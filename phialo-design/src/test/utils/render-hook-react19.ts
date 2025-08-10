@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import type { RenderOptions } from '@testing-library/react';
-import React, { useRef } from 'react';
+import React from 'react';
 import type { ReactNode } from 'react';
 
 type RenderHookOptions<Props> = {
