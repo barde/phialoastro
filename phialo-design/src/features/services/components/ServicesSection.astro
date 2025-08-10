@@ -260,7 +260,7 @@ const t = isEnglish ? content.en : content.de;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.style.animationPlayState = 'running';
+          (entry.target as HTMLElement).style.animationPlayState = 'running';
         }
       });
     }, {
@@ -269,7 +269,7 @@ const t = isEnglish ? content.en : content.de;
     });
     
     cards.forEach((card) => {
-      card.style.animationPlayState = 'paused';
+      (card as HTMLElement).style.animationPlayState = 'paused';
       observer.observe(card);
     });
   }
