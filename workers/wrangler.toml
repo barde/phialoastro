@@ -23,10 +23,8 @@ ENVIRONMENT = "preview"
 
 # Production environment
 [env.production]
-name = "phialo-design"
-# route = "phialo.de/*"  # Temporarily disabled for emergency deployment
-# zone_id = "YOUR_ZONE_ID"
-workers_dev = true  # Using workers.dev URL temporarily
+name = "phialo-design-production"
+workers_dev = true  # Using workers.dev URL until custom domain is configured
 compatibility_flags = ["nodejs_compat"]
 
 [env.production.vars]
