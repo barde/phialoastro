@@ -98,6 +98,12 @@ npm run test:e2e
 
 ## 🚀 Deployment
 
+### Environment Setup
+
+For complete environment setup instructions, see **[Environment Setup Guide](./phialo-design/docs/how-to/ENVIRONMENT-SETUP-GUIDE.md)**.
+
+### Quick Deploy
+
 ### Environments
 
 - **Production**: [phialo.de](https://phialo.de) - Custom domain

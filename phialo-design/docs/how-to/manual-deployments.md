@@ -2,6 +2,8 @@
 
 This guide covers all the ways to manually trigger Cloudflare Workers deployments without pushing code.
 
+> **Prerequisites**: Before using any deployment method, ensure your environment is properly configured. See [Environment Setup Guide](./ENVIRONMENT-SETUP-GUIDE.md) for complete setup instructions.
+
 ## Table of Contents
 1. [GitHub Actions UI (workflow_dispatch)](#github-actions-ui)
 2. [PR Comments (Bot Commands)](#pr-comments)
@@ -18,8 +20,8 @@ The easiest way to trigger manual deployments is through the GitHub Actions UI.
 2. Click on "Manual Cloudflare Deployment" workflow
 3. Click "Run workflow" button
 4. Fill in the parameters:
-   - **Environment**: Choose `preview` or `production`
-   - **Branch**: Leave empty for current branch or specify a branch name
+   - **Environment**: Choose `production` (default) or `preview`
+   - **Branch**: Defaults to `master`, or specify a different branch
    - **Skip tests**: Check to skip tests (not recommended)
    - **Debug**: Enable debug logging
 5. Click "Run workflow"
