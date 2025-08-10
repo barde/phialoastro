@@ -197,37 +197,92 @@ workers_dev = false
 
 ## Environment Variables
 
-### Required Variables
+### GitHub Configuration Overview
 
-1. **PUBLIC_TURNSTILE_SITE_KEY** (Required for bot protection)
-   - Get your key from Cloudflare Dashboard > Turnstile
-   - This is a public key (not secret)
-   - Provides bot protection for contact forms
+⚠️ **IMPORTANT**: This project uses **environment-specific secrets only**. There are NO repository-level secrets or variables. Each environment must have ALL required configuration values.
 
-2. **Email Service Configuration** (Workers environment)
-   - `RESEND_API_KEY`: Your Resend API key
-   - `FROM_EMAIL`: Verified sender email
-   - `TO_EMAIL`: Recipient email address
-   - `TURNSTILE_SECRET_KEY`: Turnstile secret for backend validation
+### Required Environment Secrets
 
-2. **PUBLIC_SITE_URL**
-   - Set to: `https://phialo.de`
+Each environment (production, preview, master) must have ALL of these secrets configured:
 
-### Setting Environment Variables
+| Secret Name | Description | Where to Get It | Sensitive? |
+|------------|-------------|------------------|------------|
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID | Cloudflare Dashboard → Account ID | No |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (public) | Cloudflare Dashboard → Turnstile | No |
+| `CLOUDFLARE_API_TOKEN` | API token with Workers permissions | Cloudflare Dashboard → API Tokens | Yes |
+| `RESEND_API_KEY` | Email service API key | Resend Dashboard → API Keys | Yes |
+| `FROM_EMAIL` | Verified sender email | Your verified email in Resend | No |
+| `TO_EMAIL` | Recipient for contact forms | Your business email | No |
+| `TURNSTILE_SECRET_KEY` | Turnstile secret for validation | Cloudflare Dashboard → Turnstile | Yes |
 
-#### In Cloudflare Dashboard:
-1. Go to Workers & Pages → phialo-design → Settings → Variables
-2. Add each variable with its value
-3. Save changes
+**How to add Environment Secrets:**
+1. Go to Settings → Environments
+2. Create/select environment (production, preview, master)
+3. Click "Add secret" under Environment secrets
+4. Add EACH secret listed above with its value
+5. Repeat for EACH environment you want to deploy to
 
-#### For GitHub Actions:
-Set these repository secrets:
-- `CLOUDFLARE_API_TOKEN`: Your API token
-- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
-- `RESEND_API_KEY`: Your Resend API key
-- `FROM_EMAIL`: Verified sender email
-- `TO_EMAIL`: Recipient email address
-- `TURNSTILE_SECRET_KEY`: Turnstile secret key
+### Setting Up a New Environment
+
+When creating a new deployment environment:
+
+1. **Create the Environment in GitHub:**
+   ```
+   Settings → Environments → New environment
+   ```
+
+2. **Add Required Secrets to the Environment:**
+   - `CLOUDFLARE_API_TOKEN`
+   - `RESEND_API_KEY`
+   - `FROM_EMAIL`
+   - `TO_EMAIL`
+   - `TURNSTILE_SECRET_KEY`
+
+3. **Repository Variables are Shared:**
+   - `CLOUDFLARE_ACCOUNT_ID` (already set at repository level)
+   - `PUBLIC_TURNSTILE_SITE_KEY` (already set at repository level)
+
+### Environment-Specific Configuration
+
+#### Production Environment
+- **Name:** `production`
+- **URL:** `https://phialo.de`
+- **Protection Rules:** Consider adding required reviewers
+- **Deployment Branch:** `master` or `main`
+
+#### Preview Environment  
+- **Name:** `preview`
+- **URL:** `https://phialo-design-preview.meise.workers.dev`
+- **Protection Rules:** None
+- **Deployment Branch:** Any PR branch
+
+#### Master Environment
+- **Name:** `master`
+- **URL:** `https://phialo-master.meise.workers.dev`
+- **Protection Rules:** None
+- **Deployment Branch:** `master`
+
+### Quick Setup Checklist
+
+**For EACH environment, you need to add ALL these secrets:**
+
+✅ **Environment Secrets** (must be added to EACH environment separately):
+```
+CLOUDFLARE_ACCOUNT_ID = Your Cloudflare Account ID
+PUBLIC_TURNSTILE_SITE_KEY = Your public Turnstile key  
+CLOUDFLARE_API_TOKEN = Your Cloudflare API token
+RESEND_API_KEY = Your Resend API key
+FROM_EMAIL = sender@example.com
+TO_EMAIL = recipient@example.com
+TURNSTILE_SECRET_KEY = Your secret Turnstile key
+```
+
+✅ **Cloudflare Resources**:
+- Cloudflare account with Workers enabled
+- Turnstile site configured
+- Resend account with verified sender domain
+
+⚠️ **Remember**: No repository-level configuration! Everything is environment-specific.
 
 ## Cloudflare Setup
 
@@ -258,16 +313,19 @@ Set these repository secrets:
 2. Look for **Zone ID** in the right sidebar
 3. Copy this value
 
-### 4. Add GitHub Secrets
+### 4. Configure GitHub Environments
 
-1. Go to repository Settings → Secrets and variables → Actions
-2. Add:
-   - `CLOUDFLARE_API_TOKEN`: Your API token
-   - `CLOUDFLARE_ACCOUNT_ID`: Your Account ID
-   - `RESEND_API_KEY`: Your Resend API key
-   - `FROM_EMAIL`: Verified sender email
-   - `TO_EMAIL`: Recipient email
-   - `TURNSTILE_SECRET_KEY`: Turnstile secret
+**Add ALL secrets to EACH environment** (Settings → Environments → [Select Environment] → Add secret):
+
+1. `CLOUDFLARE_ACCOUNT_ID`: Your Account ID
+2. `PUBLIC_TURNSTILE_SITE_KEY`: Your Turnstile site key (public)
+3. `CLOUDFLARE_API_TOKEN`: Your API token
+4. `RESEND_API_KEY`: Your Resend API key
+5. `FROM_EMAIL`: Verified sender email
+6. `TO_EMAIL`: Recipient email  
+7. `TURNSTILE_SECRET_KEY`: Turnstile secret key
+
+**Important**: Each environment needs ALL 7 secrets. There are no shared repository secrets.
 
 ## Domain Setup
 

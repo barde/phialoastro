@@ -115,10 +115,9 @@ skipOutdated('Portfolio Component', () => {
       // Initially modal should not be visible
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       
-      // Click on the first portfolio item's details button
-      const portfolioItems = document.querySelectorAll('.portfolio-item-container');
-      const firstItemDetailsButton = portfolioItems[0].querySelector('button');
-      fireEvent.click(firstItemDetailsButton!);
+      // Click on the first portfolio item (now the entire card is clickable)
+      const portfolioItems = screen.getAllByTestId('portfolio-item');
+      fireEvent.click(portfolioItems[0]);
       
       // Modal should open
       await waitFor(() => {
@@ -140,9 +139,8 @@ skipOutdated('Portfolio Component', () => {
       });
       
       // Find and click the DNA-Spirale item
-      const dnaItem = screen.getByText('DNA-Spirale Ohrhänger').closest('.portfolio-item-container');
-      const detailsButton = dnaItem?.querySelector('button');
-      fireEvent.click(detailsButton!);
+      const dnaItem = screen.getByText('DNA-Spirale Ohrhänger').closest('[data-testid="portfolio-item"]');
+      fireEvent.click(dnaItem!);
       
       // Check modal content
       await waitFor(() => {
@@ -169,9 +167,9 @@ skipOutdated('Portfolio Component', () => {
         expect(screen.getByText('Turmalinring Masterpiece')).toBeInTheDocument();
       });
       
-      // Open modal
-      const detailsButtons = screen.getAllByText('Ansehen');
-      fireEvent.click(detailsButtons[0]);
+      // Open modal by clicking portfolio item
+      const portfolioItems = screen.getAllByTestId('portfolio-item');
+      fireEvent.click(portfolioItems[0]);
       
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -194,9 +192,9 @@ skipOutdated('Portfolio Component', () => {
         expect(screen.getByText('Turmalinring Masterpiece')).toBeInTheDocument();
       });
       
-      // Open modal
-      const detailsButtons = screen.getAllByText('Ansehen');
-      fireEvent.click(detailsButtons[0]);
+      // Open modal by clicking portfolio item
+      const portfolioItems = screen.getAllByTestId('portfolio-item');
+      fireEvent.click(portfolioItems[0]);
       
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -218,9 +216,9 @@ skipOutdated('Portfolio Component', () => {
         expect(screen.getByText('Turmalinring Masterpiece')).toBeInTheDocument();
       });
       
-      // Open modal
-      const detailsButtons = screen.getAllByText('Ansehen');
-      fireEvent.click(detailsButtons[0]);
+      // Open modal by clicking portfolio item
+      const portfolioItems = screen.getAllByTestId('portfolio-item');
+      fireEvent.click(portfolioItems[0]);
       
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -244,8 +242,8 @@ skipOutdated('Portfolio Component', () => {
       });
       
       // Open first item
-      const detailsButtons = screen.getAllByText('Ansehen');
-      fireEvent.click(detailsButtons[0]);
+      const portfolioItems = screen.getAllByTestId('portfolio-item');
+      fireEvent.click(portfolioItems[0]);
       
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -263,7 +261,7 @@ skipOutdated('Portfolio Component', () => {
       });
       
       // Open second item
-      fireEvent.click(detailsButtons[1]);
+      fireEvent.click(portfolioItems[1]);
       
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -325,8 +323,8 @@ skipOutdated('Portfolio Component', () => {
     });
     
     // Open modal
-    const detailsButtons = screen.getAllByText('Ansehen');
-    fireEvent.click(detailsButtons[0]);
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
+    fireEvent.click(portfolioItems[0]);
     
     await waitFor(() => {
       const modal = screen.getByRole('dialog');
@@ -346,8 +344,8 @@ skipOutdated('Portfolio Component', () => {
     expect(document.body.style.overflow).toBe('');
     
     // Open modal
-    const detailsButtons = screen.getAllByText('Ansehen');
-    fireEvent.click(detailsButtons[0]);
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
+    fireEvent.click(portfolioItems[0]);
     
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();

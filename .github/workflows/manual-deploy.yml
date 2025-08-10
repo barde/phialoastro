@@ -6,14 +6,15 @@ on:
       environment:
         description: 'Deployment environment'
         required: true
-        default: 'preview'
+        default: 'production'
         type: choice
         options:
-          - preview
           - production
+          - preview
       branch:
-        description: 'Branch to deploy (leave empty for current branch)'
+        description: 'Branch to deploy'
         required: false
+        default: 'master'
         type: string
       skip_tests:
         description: 'Skip tests before deployment'
@@ -44,7 +45,8 @@ jobs:
           if [ -n "${{ github.event.inputs.branch }}" ]; then
             DEPLOY_BRANCH="${{ github.event.inputs.branch }}"
           else
-            DEPLOY_BRANCH="${{ github.ref_name }}"
+            # Default to master if no branch specified
+            DEPLOY_BRANCH="master"
           fi
           
           echo "deploy_branch=$DEPLOY_BRANCH" >> $GITHUB_OUTPUT
