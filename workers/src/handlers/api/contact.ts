@@ -87,9 +87,9 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 				resendKeyLength: env.RESEND_API_KEY?.length || 0
 			});
 			console.error('Missing environment variables:', {
-				RESEND_API_KEY: env.RESEND_API_KEY ? 'SET' : 'MISSING',
-				TO_EMAIL: env.TO_EMAIL || 'MISSING',
-				FROM_EMAIL: env.FROM_EMAIL || 'MISSING'
+				RESEND_API_KEY: !!env.RESEND_API_KEY ? 'SET' : 'MISSING',  // Only log presence, not value
+				TO_EMAIL: !!env.TO_EMAIL ? 'SET' : 'MISSING',
+				FROM_EMAIL: !!env.FROM_EMAIL ? 'SET' : 'MISSING'
 			});
 			return new Response(JSON.stringify({
 				error: 'Service configuration error. Please contact support.',
