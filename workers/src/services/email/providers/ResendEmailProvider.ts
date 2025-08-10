@@ -47,9 +47,8 @@ export class ResendEmailProvider implements EmailProvider {
       // Prepare Resend API payload
       const payload = {
         from: `${email.from.name || this.fromName} <${email.from.email || this.fromEmail}>`,
-        to: email.to.map(recipient => 
-          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
-        ),
+        // to, cc, bcc must be arrays of email addresses only (no names) in Resend API
+        to: email.to.map(recipient => recipient.email),
         subject: email.subject,
         text: email.text,
         html: email.html,
@@ -57,12 +56,8 @@ export class ResendEmailProvider implements EmailProvider {
         reply_to: email.replyTo ? 
           [email.replyTo.email] : 
           undefined,
-        cc: email.cc?.map(recipient => 
-          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
-        ),
-        bcc: email.bcc?.map(recipient => 
-          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
-        ),
+        cc: email.cc?.map(recipient => recipient.email),
+        bcc: email.bcc?.map(recipient => recipient.email),
         tags: email.tags?.length ? email.tags : undefined,
       };
 
