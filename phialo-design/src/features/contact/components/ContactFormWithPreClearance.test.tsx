@@ -180,7 +180,7 @@ describe('ContactFormWithPreClearance', () => {
   describe('Form Submission with Turnstile', () => {
     it('should get Turnstile token before submission', async () => {
       // Mock Turnstile to be ready and provide token
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('test-turnstile-token'), 10);
         return 'widget-id';
       });
@@ -223,7 +223,7 @@ describe('ContactFormWithPreClearance', () => {
 
     it('should handle Turnstile failure gracefully', async () => {
       // Mock Turnstile to fail
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options['error-callback'](), 10);
         return 'widget-id';
       });
@@ -438,7 +438,7 @@ describe('ContactFormWithPreClearance', () => {
 
     it('should show Turnstile error but allow submission', async () => {
       // Mock Turnstile error state
-      const TurnstileContext = React.createContext({
+      const mockContextValue = {
         isReady: true,
         isLoading: false,
         error: { type: 'script', message: 'Failed to load script' },
@@ -449,10 +449,12 @@ describe('ContactFormWithPreClearance', () => {
         executeChallenge: vi.fn(),
         resetAnalytics: vi.fn(),
         preloadToken: vi.fn(),
-      });
+      };
+
+      const TurnstileContext = React.createContext(mockContextValue);
 
       render(
-        <TurnstileContext.Provider value={TurnstileContext._currentValue as any}>
+        <TurnstileContext.Provider value={mockContextValue}>
           <ContactFormWithPreClearance {...defaultProps} />
         </TurnstileContext.Provider>
       );

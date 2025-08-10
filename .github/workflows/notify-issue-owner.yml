@@ -25,11 +25,32 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const pr = context.payload.pull_request || await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            }).then(res => res.data);
+            let pr = context.payload.pull_request;
+            
+            // If not a pull_request event, try to get PR from check_suite
+            if (!pr && context.payload.check_suite) {
+              const pulls = context.payload.check_suite.pull_requests;
+              if (pulls && pulls.length > 0) {
+                pr = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pulls[0].number
+                }).then(res => res.data);
+              }
+            }
+            
+            // If still no PR and we have context.issue, try that
+            if (!pr && context.issue && context.issue.number) {
+              try {
+                pr = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number
+                }).then(res => res.data);
+              } catch (error) {
+                console.log('Could not fetch PR from issue context:', error.message);
+              }
+            }
             
             if (!pr) {
               console.log('No PR found');
