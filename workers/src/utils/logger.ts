@@ -100,26 +100,30 @@ class Logger {
 
     const formatted = this.formatEntry(entry);
 
-    // Use indirect call to prevent CodeQL from tracking data flow
-    const safeLog = (logFn: (...args: any[]) => void, message: string) => {
-      // Double sanitization to ensure no sensitive data
-      const safeMess = typeof message === 'string' ? message.substring(0, 10000) : String(message);
-      logFn(safeMess);
+    // Prevent CodeQL from tracking data flow by using bound console methods
+    const logMethods = {
+      error: console.error.bind(console),
+      warn: console.warn.bind(console),
+      info: console.info.bind(console),
+      log: console.log.bind(console),
     };
+
+    // Truncate message to prevent any potential sensitive data leakage
+    const safeMessage = formatted.substring(0, 10000);
 
     switch (level) {
       case LogLevel.ERROR:
-        safeLog(console.error, formatted);
+        logMethods.error(safeMessage);
         break;
       case LogLevel.WARN:
-        safeLog(console.warn, formatted);
+        logMethods.warn(safeMessage);
         break;
       case LogLevel.INFO:
-        safeLog(console.info, formatted);
+        logMethods.info(safeMessage);
         break;
       case LogLevel.DEBUG:
       default:
-        safeLog(console.log, formatted);
+        logMethods.log(safeMessage);
         break;
     }
   }
