@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { render as rtlRender, RenderOptions } from '@testing-library/react';
+import { render as rtlRender } from '@testing-library/react';
+import type { RenderOptions } from '@testing-library/react';
 import { vi } from 'vitest';
 
 // Check if we're running React 19
@@ -46,8 +47,8 @@ export function renderHookCompat<TResult>(
 
   return {
     result,
-    rerender,
     ...utils,
+    rerender,  // Override utils.rerender with our custom one
   };
 }
 

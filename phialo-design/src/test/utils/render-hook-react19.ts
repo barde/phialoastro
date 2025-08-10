@@ -1,5 +1,7 @@
-import { render, RenderOptions } from '@testing-library/react';
-import React, { ReactNode, useRef } from 'react';
+import { render } from '@testing-library/react';
+import type { RenderOptions } from '@testing-library/react';
+import React, { useRef } from 'react';
+import type { ReactNode } from 'react';
 
 type RenderHookOptions<Props> = {
   initialProps?: Props;
@@ -41,7 +43,7 @@ export function renderHookReact19<Result, Props = undefined>(
     const TestComp = () => React.createElement(TestComponent, { hookProps });
     
     return Wrapper ? (
-      React.createElement(Wrapper, {}, TestComp())
+      React.createElement(Wrapper, { children: TestComp() })
     ) : (
       TestComp()
     );
