@@ -243,12 +243,7 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 			html: mainEmailTemplate.html,
 			text: mainEmailTemplate.text,
 			tags: ['contact-form', contactData.language],
-			metadata: {
-				formId: 'contact',
-				language: contactData.language,
-				originalSenderEmail: contactData.email,
-				originalSenderName: contactData.name,
-			},
+			// Note: Resend doesn't support metadata field - use tags instead
 			});
 		} catch (emailError) {
 			logger.error('Exception while sending email', { 
@@ -292,10 +287,6 @@ export async function handleContactForm(context: WorkerContext): Promise<Respons
 							html: confirmationTemplate.html,
 							text: confirmationTemplate.text,
 							tags: ['contact-form-confirmation', contactData.language],
-							metadata: {
-								formId: 'contact-confirmation',
-								language: contactData.language,
-							},
 						});
 
 						logger.info('Confirmation email sent to user', { email: contactData.email });
