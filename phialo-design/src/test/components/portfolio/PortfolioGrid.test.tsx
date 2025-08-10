@@ -82,18 +82,18 @@ describe('PortfolioGrid', () => {
     const images = screen.getAllByRole('img');
     expect(images).toHaveLength(mockItems.length);
     expect(images[0]).toHaveAttribute('src', '/images/test1.jpg');
-    expect(images[0]).toHaveAttribute('alt', 'Test Item 1');
+    expect(images[0]).toHaveAttribute('alt', 'Test Item 1 - Category 1');
     expect(images[1]).toHaveAttribute('src', '/images/test2.jpg');
-    expect(images[1]).toHaveAttribute('alt', 'Test Item 2');
+    expect(images[1]).toHaveAttribute('alt', 'Test Item 2 - Category 2');
   });
 
-  it('calls onItemClick when clicking details button on a portfolio item', () => {
+  it('calls onItemClick when clicking a portfolio item', () => {
     const mockOnItemClick = vi.fn();
     render(<PortfolioGrid items={mockItems} onItemClick={mockOnItemClick} />);
 
-    // Find the first details button (German text by default)
-    const detailsButtons = screen.getAllByText('Ansehen');
-    fireEvent.click(detailsButtons[0]);
+    // Portfolio items are now clickable cards with test ID
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
+    fireEvent.click(portfolioItems[0]);
 
     expect(mockOnItemClick).toHaveBeenCalledTimes(1);
     expect(mockOnItemClick).toHaveBeenCalledWith(mockItems[0]);
@@ -103,14 +103,14 @@ describe('PortfolioGrid', () => {
     const mockOnItemClick = vi.fn();
     render(<PortfolioGrid items={mockItems} onItemClick={mockOnItemClick} />);
 
-    const detailsButtons = screen.getAllByText('Ansehen');
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
     
     // Click first item
-    fireEvent.click(detailsButtons[0]);
+    fireEvent.click(portfolioItems[0]);
     expect(mockOnItemClick).toHaveBeenCalledWith(mockItems[0]);
     
     // Click second item
-    fireEvent.click(detailsButtons[1]);
+    fireEvent.click(portfolioItems[1]);
     expect(mockOnItemClick).toHaveBeenCalledWith(mockItems[1]);
     
     expect(mockOnItemClick).toHaveBeenCalledTimes(2);
@@ -119,10 +119,10 @@ describe('PortfolioGrid', () => {
   it('renders without onItemClick prop', () => {
     render(<PortfolioGrid items={mockItems} />);
     
-    const detailsButtons = screen.getAllByText('Ansehen');
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
     
     // Should not throw error when clicking without handler
-    expect(() => fireEvent.click(detailsButtons[0])).not.toThrow();
+    expect(() => fireEvent.click(portfolioItems[0])).not.toThrow();
   });
 
   it('applies correct CSS classes for grid layout', () => {
@@ -154,7 +154,7 @@ describe('PortfolioGrid', () => {
     expect(overlay).toBeInTheDocument();
   });
 
-  it('shows English text when on English path', () => {
+  it('shows portfolio items regardless of language', () => {
     // Mock window.location for English
     Object.defineProperty(window, 'location', {
       value: {
@@ -167,8 +167,8 @@ describe('PortfolioGrid', () => {
 
     render(<PortfolioGrid items={mockItems} />);
 
-    // Should show English text
-    const detailsButtons = screen.getAllByText('Details');
-    expect(detailsButtons).toHaveLength(mockItems.length);
+    // Portfolio items should be present
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
+    expect(portfolioItems).toHaveLength(mockItems.length);
   });
 });
