@@ -130,7 +130,7 @@ describe('ResendEmailProvider', () => {
       const callArgs = (global.fetch as any).mock.calls[0];
       const body = JSON.parse(callArgs[1].body);
       
-      expect(body.reply_to).toBe('Reply Person <reply@example.com>');
+      expect(body.reply_to).toEqual(['reply@example.com']);
     });
 
     it('should include tags when provided', async () => {
@@ -150,7 +150,10 @@ describe('ResendEmailProvider', () => {
       const callArgs = (global.fetch as any).mock.calls[0];
       const body = JSON.parse(callArgs[1].body);
       
-      expect(body.tags).toEqual(['contact-form', 'urgent']);
+      expect(body.tags).toEqual([
+        { name: 'contact-form', value: 'contact-form' },
+        { name: 'urgent', value: 'urgent' }
+      ]);
     });
   });
 });

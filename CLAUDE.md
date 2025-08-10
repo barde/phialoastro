@@ -46,28 +46,43 @@ ALWAYS check file size before committing:
 find . -size +10M -not -path "./node_modules/*"
 ```
 
+## Package Manager Requirements
+
+**IMPORTANT: This project uses pnpm v9.14.4 exclusively. DO NOT use npm, yarn, or any other package manager.**
+
+### Setup
+```bash
+# Install pnpm if not already installed
+npm install -g pnpm@9.14.4
+
+# Install dependencies (always use pnpm)
+cd phialo-design && pnpm install
+cd ../workers && pnpm install
+```
+
 ## Common Development Commands
 
 ```bash
-# Development
+# Main Application (phialo-design/)
 pnpm run dev                 # Start dev server on localhost:4321
 pnpm run build              # Build for production
 pnpm run preview            # Preview production build locally
 
-# Testing
+# Workers (workers/)
+pnpm run dev                # Start worker dev server
+pnpm run deploy:preview     # Deploy to preview environment
+pnpm run deploy:production  # Deploy to production
+
+# Testing (phialo-design/)
 pnpm run test               # Run tests in watch mode
 pnpm run test:run           # Run tests once
 pnpm run test:ui            # Run tests with UI
 
-# Code Quality (MUST RUN BEFORE PR)
+# Code Quality (phialo-design/) - MUST RUN BEFORE PR
 pnpm run lint               # Run linter
 pnpm run typecheck         # Run TypeScript checks
 pnpm run format:check      # Check code formatting
 pnpm run pre-push          # Run all pre-push checks
-
-# Deployment
-pnpm run deploy             # Deploy to Cloudflare Workers production
-pnpm run deploy:preview     # Deploy to Cloudflare Workers preview
 
 # Maintenance
 ./scripts/clean-project.sh # Remove .DS_Store and other junk files
@@ -130,6 +145,7 @@ If you encounter LFS-related errors:
 
 ## Development Environment
 
+- **Package Manager**: Use pnpm v9.14.4 exclusively (configured in packageManager field)
 - If dev server is not on http://localhost:4321/, run the website on http://localhost:4322/ for dev purposes. If the site is not reachable then kill it
 - **Docker is OPTIONAL**: Local development does not require Docker. Use standard pnpm commands for development.
 - For CI/CD testing or containerized development, see [Local CI Setup](./phialo-design/docs/how-to/local-ci-setup.md)
@@ -585,7 +601,7 @@ rg "useState.*useEffect" --type tsx -A 5 -B 5
 4. Verify language detection logic
 
 ### If build fails:
-1. Clear cache: `rm -rf .astro node_modules package-lock.json`
+1. Clear cache: `rm -rf .astro node_modules pnpm-lock.yaml`
 2. Reinstall: `pnpm install`
 3. Check Node version: `node --version` (should be 18+)
 4. Verify all imports resolve correctly

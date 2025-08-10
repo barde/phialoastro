@@ -37,9 +37,10 @@ export function createRouter() {
   });
   
   // Test API route
-  router.post('/api/test-contact', async (request: ContextRequest, env: WorkerEnv) => {
+  router.post('/api/test-contact', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
     console.log('POST /api/test-contact route matched');
-    return testHandleContactForm(request, env);
+    if (!request.context) request.context = { request, env, ctx };
+    return testHandleContactForm(request.context);
   });
 
   // API routes
@@ -50,7 +51,7 @@ export function createRouter() {
       // Apply CORS for API routes
       const result = await withCORS(request.context, async () => {
         console.log('Calling handleContactForm');
-        return handleContactForm(request, env);
+        return handleContactForm(request.context!);
       });
       console.log('Contact form result received');
       return result;

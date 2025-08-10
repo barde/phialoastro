@@ -1,8 +1,9 @@
 import { IRequest as IttyRequest } from 'itty-router';
-import type { CloudflareEnv } from '../../types/worker';
+import { WorkerContext } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
 
-export async function testHandleContactForm(request: IttyRequest, env: CloudflareEnv): Promise<Response> {
+export async function testHandleContactForm(context: WorkerContext): Promise<Response> {
+  const { request } = context;
   console.log('testHandleContactForm - START');
   
   try {
