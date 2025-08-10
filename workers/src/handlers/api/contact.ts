@@ -4,10 +4,11 @@ import { TurnstileService } from '../../services/turnstile/TurnstileService';
 import { generateContactEmailTemplate, generateContactConfirmationTemplate } from '../../services/email/templates';
 import type { ContactFormData, EmailServiceConfig } from '../../services/email/types';
 import { logger } from '../../utils/logger';
-import type { CloudflareEnv } from '../../types/worker';
+import { WorkerContext } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
 
-export async function handleContactForm(request: IttyRequest, env: CloudflareEnv): Promise<Response> {
+export async function handleContactForm(context: WorkerContext): Promise<Response> {
+	const { request, env } = context;
 	logger.info('handleContactForm called');
 	console.log('handleContactForm - start', { method: request.method });
 	try {
