@@ -93,6 +93,12 @@ pnpm run dev
 - **Environment**: preview
 - **URL**: https://phialo-pr-{number}.meise.workers.dev
 
+When you create or update a PR that modifies files in `workers/` or `phialo-design/`, the workflow automatically:
+1. Builds the Astro site
+2. Deploys a preview Worker
+3. Comments the preview URL on the PR
+4. Cleans up the worker when PR is closed
+
 ## Troubleshooting
 
 ### Common Issues
