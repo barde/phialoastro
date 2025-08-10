@@ -102,7 +102,7 @@ describe('TurnstileProvider', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         '[Turnstile] No site key provided. Turnstile will not be initialized.'
       );
-      expect(result.current.error?.code).toBe('MISSING_SITE_KEY');
+      expect((result.current.error as any)?.code).toBe('MISSING_SITE_KEY');
     });
 
     it('should load script and become ready', async () => {
@@ -138,7 +138,7 @@ describe('TurnstileProvider', () => {
         defer: true,
       };
       
-      document.createElement = vi.fn(() => scriptElement);
+      document.createElement = vi.fn(() => scriptElement) as any;
       document.head.appendChild = vi.fn((script) => {
         setTimeout(() => script.onerror?.(), 5);
         return script;
@@ -147,7 +147,7 @@ describe('TurnstileProvider', () => {
       const { result } = renderHook(() => useTurnstile(), { wrapper });
       
       await waitFor(() => {
-        expect(result.current.error?.code).toBe('SCRIPT_LOAD_FAILED');
+        expect((result.current.error as any)?.code).toBe('SCRIPT_LOAD_FAILED');
         expect(result.current.isLoading).toBe(false);
       });
     });
@@ -155,7 +155,7 @@ describe('TurnstileProvider', () => {
 
   describe('Token Management', () => {
     it('should execute challenge and cache token', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         // Simulate successful challenge
         setTimeout(() => options.callback('test-token'), 10);
         return 'widget-id';
@@ -186,7 +186,7 @@ describe('TurnstileProvider', () => {
     });
 
     it('should return cached token once and then remove it (single-use)', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('test-token'), 10);
         return 'widget-id';
       });
@@ -225,7 +225,7 @@ describe('TurnstileProvider', () => {
 
     it('should always fetch new token for high-security actions', async () => {
       let tokenCount = 0;
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback(`token-${++tokenCount}`), 10);
         return `widget-${tokenCount}`;
       });
@@ -262,7 +262,7 @@ describe('TurnstileProvider', () => {
     });
 
     it('should handle token expiration', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('new-token'), 10);
         return 'widget-id';
       });
@@ -344,9 +344,9 @@ describe('TurnstileProvider', () => {
           challengeContainer = element;
         }
         return element;
-      });
+      }) as any;
 
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('test-token'), 10);
         return 'widget-id';
       });
@@ -379,7 +379,7 @@ describe('TurnstileProvider', () => {
         }
       });
 
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         // Don't resolve immediately to test key handling
         return 'widget-id';
       });
@@ -437,112 +437,11 @@ describe('TurnstileProvider', () => {
     });
   });
 
-  describe('Analytics', () => {
-    it('should track challenge metrics', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
-        setTimeout(() => options.callback('test-token'), 50);
-        return 'widget-id';
-      });
-
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <TurnstileProvider siteKey="test-key" enableAnalytics={true}>{children}</TurnstileProvider>
-      );
-      
-      const { result } = renderHook(() => useTurnstile(), { wrapper });
-      
-      // Make component ready
-      act(() => {
-        window.onloadTurnstileCallback?.();
-      });
-      
-      expect(result.current.analytics.challengesRequested).toBe(0);
-      expect(result.current.analytics.challengesCompleted).toBe(0);
-      
-      await act(async () => {
-        await result.current.getToken();
-      });
-      
-      expect(result.current.analytics.challengesRequested).toBe(1);
-      expect(result.current.analytics.challengesCompleted).toBe(1);
-      expect(result.current.analytics.tokenCacheMisses).toBe(1);
-      expect(result.current.analytics.avgChallengeTime).toBeGreaterThan(0);
-    });
-
-    it('should track cache hits and misses', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
-        setTimeout(() => options.callback('test-token'), 10);
-        return 'widget-id';
-      });
-
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <TurnstileProvider siteKey="test-key" enableAnalytics={true}>{children}</TurnstileProvider>
-      );
-      
-      const { result } = renderHook(() => useTurnstile(), { wrapper });
-      
-      // Make component ready
-      act(() => {
-        window.onloadTurnstileCallback?.();
-      });
-      
-      // First call - cache miss
-      await act(async () => {
-        await result.current.getToken('test');
-      });
-      
-      expect(result.current.analytics.tokenCacheMisses).toBe(1);
-      expect(result.current.analytics.tokenCacheHits).toBe(0);
-      
-      // Second call - cache hit
-      await act(async () => {
-        await result.current.getToken('test');
-      });
-      
-      expect(result.current.analytics.tokenCacheMisses).toBe(1);
-      expect(result.current.analytics.tokenCacheHits).toBe(1);
-    });
-
-    it('should reset analytics', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
-        setTimeout(() => options.callback('test-token'), 10);
-        return 'widget-id';
-      });
-
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <TurnstileProvider siteKey="test-key" enableAnalytics={true}>{children}</TurnstileProvider>
-      );
-      
-      const { result } = renderHook(() => useTurnstile(), { wrapper });
-      
-      // Make component ready
-      act(() => {
-        window.onloadTurnstileCallback?.();
-      });
-      
-      await act(async () => {
-        await result.current.getToken();
-      });
-      
-      expect(result.current.analytics.challengesCompleted).toBe(1);
-      
-      act(() => {
-        result.current.resetAnalytics();
-      });
-      
-      expect(result.current.analytics).toEqual({
-        challengesRequested: 0,
-        challengesCompleted: 0,
-        challengesFailed: 0,
-        avgChallengeTime: 0,
-        tokenCacheHits: 0,
-        tokenCacheMisses: 0,
-      });
-    });
-  });
+  // Analytics tests removed - analytics functionality no longer exists in TurnstileProvider
 
   describe('Error Handling', () => {
     it('should handle challenge failure', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options['error-callback'](), 10);
         return 'widget-id';
       });
@@ -567,7 +466,7 @@ describe('TurnstileProvider', () => {
 
     it('should retry challenge on failure', async () => {
       let attemptCount = 0;
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         attemptCount++;
         if (attemptCount < 3) {
           setTimeout(() => options['error-callback'](), 10);
@@ -604,13 +503,13 @@ describe('TurnstileProvider', () => {
 
   describe('Preloading', () => {
     it('should preload token on initialization', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('preloaded-token'), 10);
         return 'widget-id';
       });
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <TurnstileProvider siteKey="test-key" enableAnalytics={true}>{children}</TurnstileProvider>
+        <TurnstileProvider siteKey="test-key">{children}</TurnstileProvider>
       );
       
       const { result } = renderHook(() => useTurnstile(), { wrapper });
@@ -630,13 +529,13 @@ describe('TurnstileProvider', () => {
     });
 
     it('should manually preload token', async () => {
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('manual-preload'), 10);
         return 'widget-id';
       });
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <TurnstileProvider siteKey="test-key" enableAnalytics={false}>{children}</TurnstileProvider>
+        <TurnstileProvider siteKey="test-key">{children}</TurnstileProvider>
       );
       
       const { result } = renderHook(() => useTurnstile(), { wrapper });
@@ -647,7 +546,7 @@ describe('TurnstileProvider', () => {
       });
       
       await act(async () => {
-        await result.current.preloadToken('custom-action');
+        await result.current.preloadToken?.('custom-action');
       });
       
       expect(result.current.tokens.has('custom-action')).toBe(true);

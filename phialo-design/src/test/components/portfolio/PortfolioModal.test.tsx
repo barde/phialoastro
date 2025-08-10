@@ -47,14 +47,14 @@ describe('PortfolioModal', () => {
     
     // Mock window.location
     delete (window as any).location;
-    window.location = { ...originalLocation };
+    (window as any).location = { ...originalLocation };
     
     // Mock document methods
     document.body.style.overflow = '';
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    (window as any).location = originalLocation;
     vi.clearAllMocks();
     document.body.style.overflow = '';
   });

@@ -97,7 +97,7 @@ test.describe('BrowserStack Real Device Tests', () => {
     );
   });
 
-  test('@browserstack Language persistence across navigation', async ({ page, context }) => {
+  test('@browserstack Language persistence across navigation', async ({ page }) => {
     // Start in German (default)
     await page.goto('/');
     

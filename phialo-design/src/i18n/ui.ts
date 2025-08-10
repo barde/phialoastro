@@ -211,7 +211,8 @@ export function getTranslation(
   key: UIKeys,
   replacements?: Record<string, string | number>
 ): string {
-  let translation = ui[lang]?.[key] || ui[defaultLang][key];
+  // Add explicit type annotation to allow string mutations
+  let translation: string = ui[lang]?.[key] || ui[defaultLang][key];
   
   if (replacements) {
     Object.entries(replacements).forEach(([placeholder, value]) => {

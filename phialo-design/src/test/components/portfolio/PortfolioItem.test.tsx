@@ -33,11 +33,11 @@ describe('PortfolioItem', () => {
     
     // Mock window.location
     delete (window as any).location;
-    window.location = { ...originalLocation };
+    (window as any).location = { ...originalLocation };
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    (window as any).location = originalLocation;
     vi.clearAllMocks();
   });
 

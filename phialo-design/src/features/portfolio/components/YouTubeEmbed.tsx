@@ -18,11 +18,10 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
     <div className="w-full">
       <div className={`relative ${aspectClass} ${maxWidthClass}`}>
         <iframe
-          className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
+          className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg border-0"
           src={`https://www.youtube.com/embed/${videoId}`}
           title={title}
           loading="lazy"
-          frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen

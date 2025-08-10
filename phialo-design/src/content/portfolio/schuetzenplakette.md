@@ -27,11 +27,10 @@ Eine originalgetreue Nachbildung einer traditionellen Schützenplakette, die als
 
 <div class="mb-8 flex justify-center">
   <iframe 
-    class="w-full max-w-sm aspect-[9/16] rounded-lg shadow-lg" 
+    class="w-full max-w-sm aspect-[9/16] rounded-lg shadow-lg border-0" 
     src="https://www.youtube.com/embed/PLoXu-trLcQ" 
     title="Schützenplakette Animation" 
-    loading="lazy"
-    frameborder="0" 
+    loading="lazy" 
     allow="web-share" 
     referrerpolicy="strict-origin-when-cross-origin" 
     allowfullscreen>

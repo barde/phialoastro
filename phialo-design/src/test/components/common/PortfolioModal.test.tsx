@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PortfolioModal from '../../../features/portfolio/components/PortfolioModal';
+import type { PortfolioItemData } from '../../../features/portfolio/components/PortfolioSection';
+import { createMockPortfolioItem } from '../../factories/portfolio';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
@@ -20,7 +22,7 @@ vi.mock('lucide-react', () => ({
 
 describe('PortfolioModal', () => {
   const mockOnClose = vi.fn();
-  const mockPortfolioItem = {
+  const mockPortfolioItem = createMockPortfolioItem({
     title: 'Test Portfolio Item',
     description: 'Test description',
     category: 'Test Category',
@@ -32,7 +34,7 @@ describe('PortfolioModal', () => {
     availability: 'available',
     price: '$1,000',
     tags: ['modern', 'minimal']
-  };
+  });
 
   beforeEach(() => {
     mockOnClose.mockClear();
@@ -99,13 +101,13 @@ describe('PortfolioModal', () => {
       });
       
       // Check additional details
-      expect(screen.getByText(mockPortfolioItem.client)).toBeInTheDocument();
-      expect(screen.getByText(mockPortfolioItem.projectDate)).toBeInTheDocument();
+      expect(screen.getByText(mockPortfolioItem.client!)).toBeInTheDocument();
+      expect(screen.getByText(mockPortfolioItem.projectDate!)).toBeInTheDocument();
       expect(screen.getByText('Available')).toBeInTheDocument(); // Translated from 'available'
-      expect(screen.getByText(mockPortfolioItem.price)).toBeInTheDocument();
+      expect(screen.getByText(mockPortfolioItem.price!)).toBeInTheDocument();
       
       // Check tags
-      mockPortfolioItem.tags.forEach(tag => {
+      mockPortfolioItem.tags?.forEach(tag => {
         expect(screen.getByText(`#${tag}`)).toBeInTheDocument();
       });
     });
@@ -117,10 +119,10 @@ describe('PortfolioModal', () => {
         writable: true
       });
 
-      const singleImageItem = {
+      const singleImageItem: PortfolioItemData = {
         ...mockPortfolioItem,
         gallery: undefined
-      };
+      } as unknown as PortfolioItemData;
 
       render(
         <PortfolioModal

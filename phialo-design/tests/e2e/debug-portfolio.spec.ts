@@ -13,7 +13,7 @@ test('Debug portfolio rendering', async ({ page }) => {
   
   // Check React component state
   const portfolioSection = await page.locator('astro-island[component-url*="PortfolioSection"]').first();
-  const hasPortfolioSection = await portfolioSection.count() > 0;
+  const hasPortfolioSection = (await portfolioSection.count()) > 0;
   console.log('Has portfolio section astro-island:', hasPortfolioSection);
   
   // Check if the portfolio grid has been populated
@@ -38,7 +38,7 @@ test('Debug portfolio rendering', async ({ page }) => {
   
   // Force click on portfolio section to trigger any lazy loading
   const portfolioContainer = await page.locator('#portfolio').first();
-  if (await portfolioContainer.count() > 0) {
+  if ((await portfolioContainer.count()) > 0) {
     await portfolioContainer.scrollIntoViewIfNeeded();
     console.log('Scrolled to portfolio section');
   }

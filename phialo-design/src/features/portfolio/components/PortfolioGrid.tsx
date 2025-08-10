@@ -22,7 +22,7 @@ export default function PortfolioGrid({ items, onItemClick, lang = 'de' }: Portf
     }
   };  return (
     <div className="portfolio-grid" data-testid="portfolio-grid">
-      {items.map((item, index) => (
+      {items.map((item) => (
         <motion.div
           key={item.id}
           variants={itemVariants}
