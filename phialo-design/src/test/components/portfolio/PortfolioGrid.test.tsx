@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PortfolioGrid from '../../../features/portfolio/components/PortfolioGrid';
 import type { PortfolioItemData } from '../../../features/portfolio/components/PortfolioSection';

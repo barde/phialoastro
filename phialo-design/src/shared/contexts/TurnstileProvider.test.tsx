@@ -102,7 +102,7 @@ describe('TurnstileProvider', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         '[Turnstile] No site key provided. Turnstile will not be initialized.'
       );
-      expect(result.current.error?.code).toBe('MISSING_SITE_KEY');
+      expect((result.current.error as any)?.code).toBe('MISSING_SITE_KEY');
     });
 
     it('should load script and become ready', async () => {
@@ -138,7 +138,7 @@ describe('TurnstileProvider', () => {
         defer: true,
       };
       
-      document.createElement = vi.fn(() => scriptElement);
+      document.createElement = vi.fn(() => scriptElement) as any;
       document.head.appendChild = vi.fn((script) => {
         setTimeout(() => script.onerror?.(), 5);
         return script;
@@ -147,7 +147,7 @@ describe('TurnstileProvider', () => {
       const { result } = renderHook(() => useTurnstile(), { wrapper });
       
       await waitFor(() => {
-        expect(result.current.error?.code).toBe('SCRIPT_LOAD_FAILED');
+        expect((result.current.error as any)?.code).toBe('SCRIPT_LOAD_FAILED');
         expect(result.current.isLoading).toBe(false);
       });
     });
@@ -344,7 +344,7 @@ describe('TurnstileProvider', () => {
           challengeContainer = element;
         }
         return element;
-      });
+      }) as any;
 
       mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('test-token'), 10);
@@ -546,7 +546,7 @@ describe('TurnstileProvider', () => {
       });
       
       await act(async () => {
-        await result.current.preloadToken('custom-action');
+        await result.current.preloadToken?.('custom-action');
       });
       
       expect(result.current.tokens.has('custom-action')).toBe(true);

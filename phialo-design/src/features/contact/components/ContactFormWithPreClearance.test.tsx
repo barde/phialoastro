@@ -438,34 +438,12 @@ describe('ContactFormWithPreClearance', () => {
 
     it('should show Turnstile error but allow submission', async () => {
       // Mock Turnstile error state
-      const TurnstileContext = React.createContext({
-        isReady: true,
-        isLoading: false,
-        error: { type: 'script', message: 'Failed to load script' },
-        tokens: new Map(),
-        analytics: {},
-        getToken: vi.fn().mockRejectedValue(new Error('Turnstile error')),
-        clearToken: vi.fn(),
-        executeChallenge: vi.fn(),
-        resetAnalytics: vi.fn(),
-        preloadToken: vi.fn(),
-      });
-
-      const mockContextValue = {
-        isReady: true,
-        isLoading: false,
-        error: null,
-        tokens: new Map(),
-        getToken: vi.fn(),
-        clearToken: vi.fn(),
-        executeChallenge: vi.fn(),
-        preloadToken: vi.fn()
-      };
+      const mockGetToken = vi.fn().mockRejectedValue(new Error('Turnstile error'));
 
       render(
-        <TurnstileContext.Provider value={mockContextValue}>
+        <TurnstileProvider siteKey="test-key">
           <ContactFormWithPreClearance {...defaultProps} />
-        </TurnstileContext.Provider>
+        </TurnstileProvider>
       );
       
       const user = userEvent.setup();

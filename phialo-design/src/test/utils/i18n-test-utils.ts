@@ -3,7 +3,7 @@
  * Provides helpers for testing bilingual content and language switching
  */
 
-import { vi, expect } from 'vitest';
+import { vi, expect, describe } from 'vitest';
 
 export interface LanguageContext {
   isEnglish: boolean;
