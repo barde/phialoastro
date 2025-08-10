@@ -47,22 +47,25 @@ export class ResendEmailProvider implements EmailProvider {
       // Prepare Resend API payload
       const payload = {
         from: `${email.from.name || this.fromName} <${email.from.email || this.fromEmail}>`,
-        to: email.to.map(recipient => 
-          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
-        ),
+        // to, cc, bcc must be arrays of email addresses only (no names) in Resend API
+        to: email.to.map(recipient => recipient.email),
         subject: email.subject,
         text: email.text,
         html: email.html,
+        // reply_to must be an array of email addresses (no names) in Resend API
         reply_to: email.replyTo ? 
-          (email.replyTo.name ? `${email.replyTo.name} <${email.replyTo.email}>` : email.replyTo.email) : 
+          [email.replyTo.email] : 
           undefined,
-        cc: email.cc?.map(recipient => 
-          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
-        ),
-        bcc: email.bcc?.map(recipient => 
-          recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
-        ),
-        tags: email.tags?.length ? email.tags : undefined,
+        cc: email.cc?.map(recipient => recipient.email),
+        bcc: email.bcc?.map(recipient => recipient.email),
+        // Resend requires tags as objects with name/value pairs, not simple strings
+        // We use the tag itself as both name and value for simplicity
+        tags: email.tags?.length ? 
+          email.tags.map(tag => ({
+            name: tag.replace(/[^a-zA-Z0-9_-]/g, '_'), // Ensure ASCII letters, numbers, underscores, dashes
+            value: tag
+          })) : 
+          undefined,
       };
 
       // Remove undefined fields
@@ -75,6 +78,9 @@ export class ResendEmailProvider implements EmailProvider {
       logger.info('Sending email via Resend', {
         to: email.to[0].email,
         subject: email.subject,
+        hasReplyTo: !!payload.reply_to,
+        replyToValue: payload.reply_to,
+        payloadKeys: Object.keys(payload),
         payload: JSON.stringify(payload),
       });
 

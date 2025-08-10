@@ -30,6 +30,7 @@ describe('handleContactForm', () => {
   let mockRequest: any;
   let mockEnv: any;
   let mockEmailService: any;
+  let mockContext: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -64,13 +65,19 @@ describe('handleContactForm', () => {
       },
       json: vi.fn(),
     };
+
+    // Add mock ExecutionContext
+    mockContext = {
+      waitUntil: vi.fn(),
+      passThroughOnException: vi.fn(),
+    };
   });
 
   describe('request validation', () => {
     it('should reject non-POST requests', async () => {
       mockRequest.method = 'GET';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(405);
@@ -80,7 +87,7 @@ describe('handleContactForm', () => {
     it('should reject invalid JSON', async () => {
       mockRequest.json.mockRejectedValue(new Error('Invalid JSON'));
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
@@ -93,7 +100,7 @@ describe('handleContactForm', () => {
         // missing email, subject, message
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
@@ -109,7 +116,7 @@ describe('handleContactForm', () => {
         message: 'Test message',
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
@@ -129,7 +136,7 @@ describe('handleContactForm', () => {
     it('should send email and return success', async () => {
       mockRequest.json.mockResolvedValue(validFormData);
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(200);
@@ -137,8 +144,12 @@ describe('handleContactForm', () => {
       expect(body.message).toBe('Your message has been sent successfully.');
       expect(body.messageId).toBe('test-message-id');
       
-      expect(mockEmailService.send).toHaveBeenCalledWith(
-        expect.objectContaining({
+      // Check that send was called
+      expect(mockEmailService.send).toHaveBeenCalled();
+      
+      // Get the actual call to verify the structure
+      const actualCall = mockEmailService.send.mock.calls[0][0];
+      expect(actualCall).toMatchObject({
           from: expect.objectContaining({
             email: 'noreply@test.com',
           }),
@@ -147,17 +158,12 @@ describe('handleContactForm', () => {
               email: 'admin@test.com',
             }),
           ]),
-          replyTo: expect.objectContaining({
+          replyTo: {
             email: 'noreply@test.com', // Uses FROM_EMAIL as default
             name: 'Phialo Design',
-          }),
+          },
           subject: 'New Contact Request: Test Subject',
-          metadata: expect.objectContaining({
-            originalSenderEmail: 'test@example.com',
-            originalSenderName: 'Test User',
-          }),
-        })
-      );
+      });
     });
 
     it('should return German message for German language', async () => {
@@ -166,7 +172,7 @@ describe('handleContactForm', () => {
         language: 'de',
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(body.message).toBe('Ihre Nachricht wurde erfolgreich gesendet.');
@@ -183,7 +189,7 @@ describe('handleContactForm', () => {
         return headers[key] || null;
       });
       
-      await handleContactForm(mockRequest, mockEnv);
+      await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       
       expect(mockEmailService.send).toHaveBeenCalled();
     });
@@ -192,7 +198,7 @@ describe('handleContactForm', () => {
       mockRequest.json.mockResolvedValue(validFormData);
       mockEnv.REPLY_TO_EMAIL = 'hello@phialo.de';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(200);
@@ -205,11 +211,7 @@ describe('handleContactForm', () => {
         name: 'Phialo Design',
       });
       
-      // Verify metadata contains original sender info
-      expect(firstCall.metadata).toEqual(expect.objectContaining({
-        originalSenderEmail: 'test@example.com',
-        originalSenderName: 'Test User',
-      }));
+      // Note: metadata field was removed from Resend API as it's not supported
     });
 
     it('should fallback to FROM_EMAIL when REPLY_TO_EMAIL is not set', async () => {
@@ -217,7 +219,7 @@ describe('handleContactForm', () => {
       delete mockEnv.REPLY_TO_EMAIL;
       mockEnv.FROM_EMAIL = 'noreply@test.com';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       
       expect(response.status).toBe(200);
       
@@ -243,7 +245,7 @@ describe('handleContactForm', () => {
         error: 'Email send failed',
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(500);
@@ -280,7 +282,7 @@ describe('handleContactForm', () => {
       // Add the request URL for the handler
       mockRequest.url = 'http://localhost:3000/api/contact';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       
       expect(response.status).toBe(200);
       expect(mockInstance.validate).toHaveBeenCalledWith(
@@ -314,7 +316,7 @@ describe('handleContactForm', () => {
       // Add the request URL for the handler
       mockRequest.url = 'http://localhost:3000/api/contact';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
