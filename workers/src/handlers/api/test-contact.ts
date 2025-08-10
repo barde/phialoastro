@@ -3,7 +3,7 @@ import { WorkerContext } from '../../types/worker';
 import { API_SECURITY_HEADERS } from '../../config';
 
 export async function testHandleContactForm(context: WorkerContext): Promise<Response> {
-  const { request, env } = context;
+  const { request } = context;
   console.log('testHandleContactForm - START');
   
   try {
