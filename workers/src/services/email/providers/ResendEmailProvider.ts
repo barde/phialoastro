@@ -58,7 +58,14 @@ export class ResendEmailProvider implements EmailProvider {
           undefined,
         cc: email.cc?.map(recipient => recipient.email),
         bcc: email.bcc?.map(recipient => recipient.email),
-        tags: email.tags?.length ? email.tags : undefined,
+        // Resend requires tags as objects with name/value pairs, not simple strings
+        // We use the tag itself as both name and value for simplicity
+        tags: email.tags?.length ? 
+          email.tags.map(tag => ({
+            name: tag.replace(/[^a-zA-Z0-9_-]/g, '_'), // Ensure ASCII letters, numbers, underscores, dashes
+            value: tag
+          })) : 
+          undefined,
       };
 
       // Remove undefined fields
