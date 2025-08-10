@@ -96,9 +96,20 @@ jobs:
         working-directory: ./workers
         run: npm install wrangler@4.22.0
       
+      - name: Check if secrets are configured
+        id: check-secrets
+        if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "has_secrets=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Preview environment secrets not configured. Skipping deployment."
+          else
+            echo "has_secrets=true" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Deploy to Cloudflare Workers
         id: deploy
-        if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
+        if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]' && steps.check-secrets.outputs.has_secrets == 'true'
         working-directory: ./workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -115,7 +126,7 @@ jobs:
       
       - name: Extract deployment URL
         id: extract-url
-        if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
+        if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]' && steps.check-secrets.outputs.has_secrets == 'true'
         working-directory: ./workers
         run: |
           # The deployment URL will be in the format: https://phialo-pr-<number>.meise.workers.dev
@@ -131,6 +142,7 @@ jobs:
             const preview_url = '${{ steps.extract-url.outputs.preview_url }}' || '';
             const shouldDeploy = '${{ steps.changes.outputs.should_deploy }}' === 'true';
             const isDependabot = '${{ github.actor }}' === 'dependabot[bot]';
+            const hasSecrets = '${{ steps.check-secrets.outputs.has_secrets }}' === 'true';
             
             // Create a unique identifier for this comment
             const identifier = '<!-- cloudflare-preview-deployment -->';
@@ -152,6 +164,14 @@ jobs:
                 '## 🤖 Cloudflare Preview Deployment Skipped\n\n' +
                 'Preview deployments are not available for Dependabot PRs due to security restrictions.\n\n' +
                 'Once this PR is reviewed and merged, the changes will be deployed automatically.\n';
+            } else if (shouldDeploy && !hasSecrets) {
+              body = identifier + '\n' +
+                '## ⚠️ Cloudflare Preview Deployment - Configuration Required\n\n' +
+                'Preview deployment was skipped because the `preview` environment is not configured.\n\n' +
+                '**To enable preview deployments:**\n' +
+                '1. Go to Settings → Environments → Create "preview" environment\n' +
+                '2. Add all required secrets (see [Environment Setup Guide](https://github.com/barde/phialoastro/blob/master/phialo-design/docs/how-to/ENVIRONMENT-SETUP-GUIDE.md))\n' +
+                '3. Re-run this workflow or push a new commit\n';
             } else if (shouldDeploy && preview_url) {
               body = identifier + '\n' +
                 '## 🚀 Cloudflare Preview Deployment\n\n' +
