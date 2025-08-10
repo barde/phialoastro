@@ -97,9 +97,8 @@ const description = 'Privacy Policy of Phialo Design - Information about the pro
               (window as any)[disableStr] = true;
             }
             
-            // Opt-out function (used in onclick handler above)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            function gaOptout() {
+            // Opt-out function
+            (window as any).gaOptout = function() {
               document.cookie = disableStr + '=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/';
               (window as any)[disableStr] = true;
             }

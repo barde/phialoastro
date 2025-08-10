@@ -28,7 +28,7 @@ export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
           'expired-callback': onExpire,
           theme: 'light',
           language: 'auto',
-        };
+        } as TurnstileOptions;
         widgetIdRef.current = window.turnstile!.render(containerRef.current, options);
       }
     };

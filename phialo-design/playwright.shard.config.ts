@@ -36,9 +36,7 @@ export default defineConfig({
     screenshot: {
       mode: 'only-on-failure',
       fullPage: true,
-      // Include shard number in filename
-      ['nameTemplate' as any]: '{testName}-{projectName}-shard{shardIndex}-{arg}{ext}'
-    },
+    } as any,
   },
 });
 

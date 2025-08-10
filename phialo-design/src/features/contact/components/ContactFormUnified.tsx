@@ -521,7 +521,7 @@ const ContactFormUnified: React.FC<ContactFormProps> = ({
                 <button
                   onClick={() => {
                     setSubmitStatus('idle');
-                    const submitEvent = new Event('submit') as unknown as React.FormEvent;
+                    const submitEvent = { preventDefault: () => {} } as React.FormEvent;
                     handleSubmit(submitEvent);
                   }}
                   className="flex-1 py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
