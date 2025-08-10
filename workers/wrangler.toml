@@ -23,10 +23,10 @@ ENVIRONMENT = "preview"
 
 # Production environment
 [env.production]
-name = "phialo-design"
-route = "phialo.de/*"
-zone_id = "YOUR_ZONE_ID"
-workers_dev = false
+name = "phialo"
+# Custom domain will be configured when zone permissions are set up
+# route = { pattern = "phialo.de/*", zone_name = "phialo.de" }
+workers_dev = true
 compatibility_flags = ["nodejs_compat"]
 
 [env.production.vars]
