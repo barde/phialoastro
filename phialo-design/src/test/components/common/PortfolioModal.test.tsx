@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PortfolioModal from '../../../features/portfolio/components/PortfolioModal';
+import { createMockPortfolioItem } from '../../factories/portfolio';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
@@ -20,7 +21,7 @@ vi.mock('lucide-react', () => ({
 
 describe('PortfolioModal', () => {
   const mockOnClose = vi.fn();
-  const mockPortfolioItem = {
+  const mockPortfolioItem = createMockPortfolioItem({
     title: 'Test Portfolio Item',
     description: 'Test description',
     category: 'Test Category',
@@ -32,7 +33,7 @@ describe('PortfolioModal', () => {
     availability: 'available',
     price: '$1,000',
     tags: ['modern', 'minimal']
-  };
+  });
 
   beforeEach(() => {
     mockOnClose.mockClear();

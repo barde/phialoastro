@@ -1,5 +1,4 @@
 ---
-import Button from '../../../shared/components/ui/Button.astro';
 
 // Language detection
 const currentPath = Astro.url.pathname;
@@ -292,6 +291,7 @@ const classes = isEnglish ? classesData.en : classesData.de;
     if (!scrollContainer || !indicators.length) return;
 
     function updateIndicators() {
+      if (!scrollContainer) return;
       const scrollLeft = scrollContainer.scrollLeft;
       const cardWidth = 320 + 32; // card width + gap
       const activeIndex = Math.round(scrollLeft / cardWidth);
@@ -308,6 +308,7 @@ const classes = isEnglish ? classesData.en : classesData.de;
     }
 
     function scrollToCard(index: number) {
+      if (!scrollContainer) return;
       const cardWidth = 320 + 32; // card width + gap
       const scrollLeft = index * cardWidth;
       scrollContainer.scrollTo({

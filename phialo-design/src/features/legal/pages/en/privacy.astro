@@ -94,13 +94,14 @@ const description = 'Privacy Policy of Phialo Design - Information about the pro
             // Disable tracking if the opt-out cookie exists.
             var disableStr = 'ga-disable-' + gaProperty;
             if (document.cookie.indexOf(disableStr + '=true') > -1) {
-              window[disableStr] = true;
+              (window as any)[disableStr] = true;
             }
             
-            // Opt-out function
+            // Opt-out function (used in onclick handler above)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             function gaOptout() {
               document.cookie = disableStr + '=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/';
-              window[disableStr] = true;
+              (window as any)[disableStr] = true;
             }
           </script>
         </div>

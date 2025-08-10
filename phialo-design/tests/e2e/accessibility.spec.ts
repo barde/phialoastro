@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { injectAxe, checkA11y } from 'axe-playwright';
+import { injectAxe } from 'axe-playwright';
 
 test.describe('Accessibility Tests', () => {
   test('Homepage should have no critical accessibility violations', async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('Accessibility Tests', () => {
     });
     
     // Filter out known acceptable violations
-    const criticalViolations = results.violations.filter(violation => {
+    const criticalViolations = results.violations.filter((violation: any) => {
       // Allow color contrast issues as they might be design choices
       if (violation.id === 'color-contrast') return false;
       // Allow duplicate landmarks as site may have multiple nav elements
@@ -67,7 +67,7 @@ test.describe('Accessibility Tests', () => {
       const img = images.nth(i);
       const alt = await img.getAttribute('alt');
       expect(alt).toBeTruthy();
-      expect(alt.length).toBeGreaterThan(0);
+      expect(alt!.length).toBeGreaterThan(0);
     }
   });
 

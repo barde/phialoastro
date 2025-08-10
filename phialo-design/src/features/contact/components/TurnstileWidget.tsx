@@ -21,7 +21,7 @@ export const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
     // Check if Turnstile is already loaded
     const checkAndRender = () => {
       if (containerRef.current && window.turnstile) {
-        const options: Partial<TurnstileOptions> = {
+        const options: TurnstileOptions = {
           sitekey: siteKey,
           callback: onVerify,
           'error-callback': onError,

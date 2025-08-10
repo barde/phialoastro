@@ -77,7 +77,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         channel: 'chrome',
         browserName: 'chromium',
-        'browserstack:options': {
+        ['browserstack:options' as any]: {
           ...bsCapabilities,
           os: 'Windows',
           osVersion: '11',
@@ -91,7 +91,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         browserName: 'webkit',
-        'browserstack:options': {
+        ['browserstack:options' as any]: {
           ...bsCapabilities,
           os: 'OS X',
           osVersion: 'Sonoma',
@@ -106,7 +106,7 @@ export default defineConfig({
         ...devices['Desktop Edge'],
         channel: 'msedge',
         browserName: 'chromium',
-        'browserstack:options': {
+        ['browserstack:options' as any]: {
           ...bsCapabilities,
           os: 'Windows',
           osVersion: '11',
@@ -121,7 +121,7 @@ export default defineConfig({
       name: 'iPhone-14-Pro',
       use: {
         ...devices['iPhone 14 Pro'],
-        'browserstack:options': {
+        ['browserstack:options' as any]: {
           ...bsCapabilities,
           deviceName: 'iPhone 14 Pro',
           osVersion: '16',
@@ -133,7 +133,7 @@ export default defineConfig({
       name: 'Samsung-S23',
       use: {
         ...devices['Galaxy S23'],
-        'browserstack:options': {
+        ['browserstack:options' as any]: {
           ...bsCapabilities,
           deviceName: 'Samsung Galaxy S23',
           osVersion: '13.0',
@@ -145,7 +145,7 @@ export default defineConfig({
       name: 'iPad-Pro-12.9',
       use: {
         ...devices['iPad Pro 11'],
-        'browserstack:options': {
+        ['browserstack:options' as any]: {
           ...bsCapabilities,
           deviceName: 'iPad Pro 12.9 2022',
           osVersion: '16',

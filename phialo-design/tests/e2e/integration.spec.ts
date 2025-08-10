@@ -193,7 +193,16 @@ test.describe('Integration Tests - All Fixes', () => {
     
     // Measure initial load performance
     const performanceTiming = await page.evaluate(() => {
-      const timing = performance.timing;
+      const navEntries = performance.getEntriesByType('navigation');
+      if (navEntries.length > 0) {
+        const navTiming = navEntries[0] as PerformanceNavigationTiming;
+        return {
+          loadTime: navTiming.loadEventEnd - navTiming.fetchStart,
+          domContentLoaded: navTiming.domContentLoadedEventEnd - navTiming.fetchStart
+        };
+      }
+      // Fallback for older browsers (using type assertion to avoid deprecation warning)
+      const timing = (performance as any).timing;
       return {
         loadTime: timing.loadEventEnd - timing.navigationStart,
         domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart

@@ -27,11 +27,10 @@ A faithful reproduction of a traditional marksman's plaque, digitally remodeled 
 
 <div class="mb-8 flex justify-center">
   <iframe 
-    class="w-full max-w-sm aspect-[9/16] rounded-lg shadow-lg" 
+    class="w-full max-w-sm aspect-[9/16] rounded-lg shadow-lg border-0" 
     src="https://www.youtube.com/embed/PLoXu-trLcQ" 
     title="Plaque of Honor Animation" 
-    loading="lazy"
-    frameborder="0" 
+    loading="lazy" 
     allow="web-share" 
     referrerpolicy="strict-origin-when-cross-origin" 
     allowfullscreen>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import ContactFormWithPreClearance from './ContactFormWithPreClearance';
@@ -180,7 +180,7 @@ describe('ContactFormWithPreClearance', () => {
   describe('Form Submission with Turnstile', () => {
     it('should get Turnstile token before submission', async () => {
       // Mock Turnstile to be ready and provide token
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options.callback('test-turnstile-token'), 10);
         return 'widget-id';
       });
@@ -223,7 +223,7 @@ describe('ContactFormWithPreClearance', () => {
 
     it('should handle Turnstile failure gracefully', async () => {
       // Mock Turnstile to fail
-      mockTurnstile.render.mockImplementation((container, options) => {
+      mockTurnstile.render.mockImplementation((_container, options) => {
         setTimeout(() => options['error-callback'](), 10);
         return 'widget-id';
       });
@@ -451,8 +451,19 @@ describe('ContactFormWithPreClearance', () => {
         preloadToken: vi.fn(),
       });
 
+      const mockContextValue = {
+        isReady: true,
+        isLoading: false,
+        error: null,
+        tokens: new Map(),
+        getToken: vi.fn(),
+        clearToken: vi.fn(),
+        executeChallenge: vi.fn(),
+        preloadToken: vi.fn()
+      };
+
       render(
-        <TurnstileContext.Provider value={TurnstileContext._currentValue as any}>
+        <TurnstileContext.Provider value={mockContextValue}>
           <ContactFormWithPreClearance {...defaultProps} />
         </TurnstileContext.Provider>
       );

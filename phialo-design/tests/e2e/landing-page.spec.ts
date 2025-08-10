@@ -82,7 +82,7 @@ test.describe('Landing Page Tests (Issue #4)', () => {
     // No elements should be off-screen or have broken animations
     const offScreenElements = await page.evaluate(() => {
       const elements = document.querySelectorAll('*');
-      const offScreen = [];
+      const offScreen: Array<{tag: string, class: string, rect: DOMRect}> = [];
       
       elements.forEach(el => {
         const rect = el.getBoundingClientRect();

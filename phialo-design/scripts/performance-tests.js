@@ -55,7 +55,6 @@ async function runPerformanceTests() {
 
   // Test 2: Build time measurement
   console.log('\n⏱️  Measuring build performance...');
-  const buildStart = performance.now();
   
   // Simulate build time measurement (in real scenario, would trigger actual build)
   results.tests.push({

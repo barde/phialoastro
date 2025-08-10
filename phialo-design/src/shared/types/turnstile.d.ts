@@ -24,8 +24,8 @@ export interface TurnstileInstance {
   render: (element: HTMLElement | string, options: TurnstileOptions) => string;
   reset: (widgetId: string) => void;
   remove: (widgetId: string) => void;
-  getResponse: (widgetId: string) => string | null;
-  execute: (container: HTMLElement | string, options?: TurnstileOptions) => void;
+  getResponse: (widgetId: string) => string | undefined;
+  execute: (container: HTMLElement | string, options?: TurnstileOptions) => Promise<string>;
 }
 
 declare global {
