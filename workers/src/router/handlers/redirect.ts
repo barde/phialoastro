@@ -12,10 +12,34 @@ interface RedirectRule {
 }
 
 /**
+ * List of paths that should keep their trailing slashes
+ * These are typically directory-based routes that Astro generates with index.html
+ */
+const preserveTrailingSlashPaths = [
+  '/contact/',
+  '/en/contact/',
+  '/about/',
+  '/en/about/',
+  '/portfolio/',
+  '/en/portfolio/',
+  '/services/',
+  '/en/services/',
+  '/classes/',
+  '/en/classes/',
+  '/imprint/',
+  '/en/imprint/',
+  '/privacy/',
+  '/en/privacy/',
+  '/terms/',
+  '/en/terms/',
+];
+
+/**
  * Redirect rules configuration
  */
 const redirectRules: RedirectRule[] = [
-  // Remove trailing slashes (except for root)
+  // Remove trailing slashes (except for root and specific paths)
+  // The logic for preserving specific paths is handled in handleRedirect function
   {
     from: /^(.+)\/$/,
     to: (match) => match[1],
@@ -38,6 +62,11 @@ export async function handleRedirect(context: WorkerContext): Promise<Response |
   
   // Skip redirect for root path
   if (pathname === '/') {
+    return;
+  }
+  
+  // Skip trailing slash removal for paths that should preserve them
+  if (pathname.endsWith('/') && preserveTrailingSlashPaths.includes(pathname)) {
     return;
   }
   
@@ -64,6 +93,12 @@ export async function handleRedirect(context: WorkerContext): Promise<Response |
       match = pathname.match(rule.from);
       if (match) {
         const newPath = typeof rule.to === 'string' ? rule.to : rule.to(match);
+        
+        // Skip redirect if the path doesn't actually change
+        if (newPath === pathname) {
+          continue;
+        }
+        
         const newUrl = new URL(url);
         newUrl.pathname = newPath;
         
