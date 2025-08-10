@@ -76,6 +76,9 @@ export class ResendEmailProvider implements EmailProvider {
       logger.info('Sending email via Resend', {
         to: email.to[0].email,
         subject: email.subject,
+        hasReplyTo: !!payload.reply_to,
+        replyToValue: payload.reply_to,
+        payloadKeys: Object.keys(payload),
         payload: JSON.stringify(payload),
       });
 
