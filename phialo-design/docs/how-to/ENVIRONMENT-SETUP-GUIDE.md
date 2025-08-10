@@ -16,7 +16,7 @@ This is the **single source of truth** for setting up deployment environments fo
 
 ## Overview
 
-**Important**: This project uses **environment-specific secrets only**. There are NO repository-level secrets or variables. Each environment must have ALL required secrets configured independently.
+**Important**: This project uses **environment-specific secrets only**. There are NO repository-level secrets or variables. Both environments (production and preview) must have ALL required secrets configured independently.
 
 ### Available Environments
 

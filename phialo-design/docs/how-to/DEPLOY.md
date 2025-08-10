@@ -84,7 +84,7 @@ pnpm run dev
 ### Master Auto-Deploy
 - **File**: `.github/workflows/deploy-master.yml`
 - **Trigger**: Push to master branch
-- **Environment**: master
+- **Environment**: preview (shared with PR previews)
 - **URL**: https://phialo-master.meise.workers.dev
 
 ### PR Preview
