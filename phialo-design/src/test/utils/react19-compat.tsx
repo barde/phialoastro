@@ -22,7 +22,7 @@ export function renderHookCompat<TResult>(
   }
 ) {
   let result: { current: TResult } = { current: undefined as any };
-  let rerender: () => void = () => {};
+  let rerender: () => void;
 
   function TestComponent() {
     result.current = hook();
