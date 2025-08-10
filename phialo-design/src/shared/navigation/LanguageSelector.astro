@@ -34,7 +34,7 @@ const englishUrl = isEnglish ? currentPath : '/en' + currentPath;
   const DEFAULT_LANG = 'de';
 
   function initLanguageSelector() {
-    const langButtons = document.querySelectorAll('.lang-button');
+    const langButtons = document.querySelectorAll('.lang-button') as NodeListOf<HTMLElement>;
     
     // Handle language switching with persistence
     langButtons.forEach(button => {

@@ -200,7 +200,7 @@ test.describe('Contact Form Edge Cases', () => {
   });
 
   test.describe('Browser Compatibility', () => {
-    test.skip('should work without JavaScript (graceful degradation)', async ({ page, browser }) => {
+    test.skip('should work without JavaScript (graceful degradation)', async ({ browser }) => {
       // Skip: React form requires JavaScript
       const context = await browser.newContext({
         javaScriptEnabled: false

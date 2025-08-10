@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('Check portfolio page images and navigation', async ({ page }) => {
   console.log('Navigating to portfolio page...');
@@ -24,7 +24,7 @@ test('Check portfolio page images and navigation', async ({ page }) => {
   
   // Check portfolio grid
   const portfolioGrid = await page.locator('.portfolio-grid').first();
-  const gridExists = await portfolioGrid.count() > 0;
+  const gridExists = (await portfolioGrid.count()) > 0;
   if (gridExists) {
     const children = await portfolioGrid.locator('> *').count();
     console.log('\nPortfolio grid children:', children);

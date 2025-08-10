@@ -1,5 +1,8 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
-import type { TurnstileOptions } from '../types/turnstile';
+import type { TurnstileOptions, TurnstileInstance } from '../types/turnstile';
+
+// Use the TurnstileInstance type from turnstile.d.ts
+type Turnstile = TurnstileInstance;
 
 interface TurnstileToken {
   token: string;
@@ -27,6 +30,10 @@ interface TurnstileProviderProps {
   language?: 'auto' | 'de' | 'en';
   defaultAction?: string;
   securityLevels?: Record<string, 'interactive' | 'managed' | 'non-interactive'>;
+  // Add missing props that tests expect
+  enableAnalytics?: boolean;
+  retryAttempts?: number;
+  retryDelay?: number;
 }
 
 export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
@@ -222,6 +229,10 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
         document.body.appendChild(challengeContainer);
       } else {
         // Use the hidden container for non-interactive challenges
+        if (!containerRef.current) {
+          reject(new Error('Container ref not available'));
+          return;
+        }
         challengeContainer = containerRef.current;
       }
 
@@ -260,6 +271,9 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       };
 
       try {
+        if (!window.turnstile) {
+          throw new Error('Turnstile not loaded');
+        }
         widgetId = window.turnstile.render(challengeContainer, options);
         widgetRefs.current.set(action, widgetId);
       } catch (error) {
