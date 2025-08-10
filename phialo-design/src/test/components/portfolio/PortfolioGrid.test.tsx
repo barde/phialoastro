@@ -146,29 +146,21 @@ describe('PortfolioGrid', () => {
   it('renders portfolio items with hover effects', () => {
     render(<PortfolioGrid items={mockItems} />);
     
-    const portfolioItems = screen.getAllByText('Test Item 1')[0].closest('.portfolio-item-container');
-    expect(portfolioItems).toHaveClass('group');
+    const portfolioItems = screen.getAllByTestId('portfolio-item');
+    expect(portfolioItems[0]).toHaveClass('group');
     
     // Check for overlay that appears on hover
-    const overlay = portfolioItems?.querySelector('.group-hover\\:opacity-100');
+    const overlay = portfolioItems[0].querySelector('.group-hover\\:opacity-100');
     expect(overlay).toBeInTheDocument();
   });
 
-  it('shows portfolio items regardless of language', () => {
-    // Mock window.location for English
-    Object.defineProperty(window, 'location', {
-      value: {
-        pathname: '/en/',
-        href: 'http://localhost/en/'
-      },
-      configurable: true,
-      writable: true
-    });
+  it('shows English text when on English path', () => {
+    // Render with English language prop
+    render(<PortfolioGrid items={mockItems} lang="en" />);
 
-    render(<PortfolioGrid items={mockItems} />);
-
-    // Portfolio items should be present
+    // Check that items have English aria-labels
     const portfolioItems = screen.getAllByTestId('portfolio-item');
-    expect(portfolioItems).toHaveLength(mockItems.length);
+    expect(portfolioItems[0]).toHaveAttribute('aria-label', expect.stringContaining('Portfolio item'));
+    expect(portfolioItems[0]).toHaveAttribute('aria-label', expect.stringContaining('Press Enter or Space'));
   });
 });
