@@ -53,9 +53,9 @@ export class ResendEmailProvider implements EmailProvider {
         subject: email.subject,
         text: email.text,
         html: email.html,
-        // reply_to must be an array of strings in Resend API
+        // reply_to must be an array of email addresses (no names) in Resend API
         reply_to: email.replyTo ? 
-          [email.replyTo.name ? `${email.replyTo.name} <${email.replyTo.email}>` : email.replyTo.email] : 
+          [email.replyTo.email] : 
           undefined,
         cc: email.cc?.map(recipient => 
           recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email
