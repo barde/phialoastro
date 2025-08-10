@@ -93,6 +93,27 @@ Before starting, ensure you have:
    - **IMPORTANT**: Copy token immediately (shown only once!)
    - Save as: `CLOUDFLARE_API_TOKEN`
 
+### 2.3 Configure Custom Domain (Production Only)
+
+For production deployment to use a custom domain (e.g., phialo.de):
+
+1. **Add Domain to Cloudflare**
+   - Go to: https://dash.cloudflare.com
+   - Click `Add a site`
+   - Enter your domain name
+   - Follow DNS configuration instructions
+
+2. **Enable Workers Routes**
+   - Navigate to your domain in Cloudflare dashboard
+   - Go to `Workers Routes` section
+   - The worker will automatically create the route during deployment
+
+3. **Important Notes**
+   - Production deployment requires the domain to be active in Cloudflare
+   - The API token must have Zone permissions for the domain
+   - If domain is not configured, production deployment will fail
+   - For testing without a domain, use the preview environment instead
+
 ## Step 3: Configure Turnstile
 
 ### 3.1 Create Turnstile Site
@@ -261,12 +282,22 @@ Secrets: All 7 secrets required
 - **Cause**: Secrets not added to specific environment
 - **Solution**: Ensure ALL 7 secrets are added to the environment
 
+#### 7. "You need to register a workers.dev subdomain" error
+- **Cause**: Production deployment requires custom domain but it's not configured
+- **Solution**: 
+  - Ensure your domain is added to Cloudflare (see Step 2.3)
+  - Verify the domain is active and DNS is configured
+  - Check that Zone permissions are included in your API token
+  - For testing without a domain, use preview environment instead
+
 ### Verification Checklist
 
 Before deploying, verify:
 - [ ] GitHub environment exists
 - [ ] All 7 secrets are configured in the environment
 - [ ] Cloudflare account has Workers enabled
+- [ ] For production: Domain is active in Cloudflare with DNS configured
+- [ ] For production: API token includes Zone permissions
 - [ ] Turnstile site is configured for your domain
 - [ ] Resend domain is verified
 - [ ] API tokens have correct permissions
