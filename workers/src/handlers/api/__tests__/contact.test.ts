@@ -30,6 +30,7 @@ describe('handleContactForm', () => {
   let mockRequest: any;
   let mockEnv: any;
   let mockEmailService: any;
+  let mockContext: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -64,13 +65,19 @@ describe('handleContactForm', () => {
       },
       json: vi.fn(),
     };
+
+    // Add mock ExecutionContext
+    mockContext = {
+      waitUntil: vi.fn(),
+      passThroughOnException: vi.fn(),
+    };
   });
 
   describe('request validation', () => {
     it('should reject non-POST requests', async () => {
       mockRequest.method = 'GET';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(405);
@@ -80,7 +87,7 @@ describe('handleContactForm', () => {
     it('should reject invalid JSON', async () => {
       mockRequest.json.mockRejectedValue(new Error('Invalid JSON'));
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
@@ -93,7 +100,7 @@ describe('handleContactForm', () => {
         // missing email, subject, message
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
@@ -109,7 +116,7 @@ describe('handleContactForm', () => {
         message: 'Test message',
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);
@@ -129,7 +136,7 @@ describe('handleContactForm', () => {
     it('should send email and return success', async () => {
       mockRequest.json.mockResolvedValue(validFormData);
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(200);
@@ -166,7 +173,7 @@ describe('handleContactForm', () => {
         language: 'de',
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(body.message).toBe('Ihre Nachricht wurde erfolgreich gesendet.');
@@ -192,7 +199,7 @@ describe('handleContactForm', () => {
       mockRequest.json.mockResolvedValue(validFormData);
       mockEnv.REPLY_TO_EMAIL = 'hello@phialo.de';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(200);
@@ -217,7 +224,7 @@ describe('handleContactForm', () => {
       delete mockEnv.REPLY_TO_EMAIL;
       mockEnv.FROM_EMAIL = 'noreply@test.com';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       
       expect(response.status).toBe(200);
       
@@ -243,7 +250,7 @@ describe('handleContactForm', () => {
         error: 'Email send failed',
       });
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(500);
@@ -280,7 +287,7 @@ describe('handleContactForm', () => {
       // Add the request URL for the handler
       mockRequest.url = 'http://localhost:3000/api/contact';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       
       expect(response.status).toBe(200);
       expect(mockInstance.validate).toHaveBeenCalledWith(
@@ -314,7 +321,7 @@ describe('handleContactForm', () => {
       // Add the request URL for the handler
       mockRequest.url = 'http://localhost:3000/api/contact';
       
-      const response = await handleContactForm(mockRequest, mockEnv);
+      const response = await handleContactForm({ request: mockRequest, env: mockEnv, ctx: mockContext });
       const body = await response.json();
       
       expect(response.status).toBe(400);

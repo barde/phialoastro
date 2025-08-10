@@ -1,3 +1,5 @@
+import { sanitizeObject } from './sanitize';
+
 /**
  * Log levels
  */
@@ -86,11 +88,14 @@ class Logger {
       return;
     }
 
+    // Sanitize data to prevent logging sensitive information
+    const sanitizedData = data ? sanitizeObject(data) : undefined;
+
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
-      data,
+      data: sanitizedData,
     };
 
     const formatted = this.formatEntry(entry);
