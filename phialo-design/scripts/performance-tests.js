@@ -5,12 +5,12 @@
  * Runs various performance benchmarks and generates reports
  */
 
-import { performance } from 'perf_hooks';
+// Performance import removed - not used in this file
 import { promises as fs } from 'fs';
 import path from 'path';
 
 async function runPerformanceTests() {
-  console.log('🚀 Running performance tests...\n');
+  console.warn('🚀 Running performance tests...\n');
   
   const results = {
     timestamp: new Date().toISOString(),
@@ -18,7 +18,7 @@ async function runPerformanceTests() {
   };
 
   // Test 1: Bundle size check
-  console.log('📦 Checking bundle sizes...');
+  console.warn('📦 Checking bundle sizes...');
   try {
     const distPath = path.join(process.cwd(), 'dist');
     const stats = await fs.stat(distPath);
@@ -54,7 +54,7 @@ async function runPerformanceTests() {
   }
 
   // Test 2: Build time measurement
-  console.log('\n⏱️  Measuring build performance...');
+  console.warn('\n⏱️  Measuring build performance...');
   
   // Simulate build time measurement (in real scenario, would trigger actual build)
   results.tests.push({
@@ -64,7 +64,7 @@ async function runPerformanceTests() {
   });
 
   // Test 3: Memory usage
-  console.log('\n💾 Checking memory usage...');
+  console.warn('\n💾 Checking memory usage...');
   const memUsage = process.memoryUsage();
   results.tests.push({
     name: 'Memory usage',
@@ -75,23 +75,23 @@ async function runPerformanceTests() {
   });
 
   // Generate report
-  console.log('\n📊 Generating performance report...\n');
+  console.warn('\n📊 Generating performance report...\n');
   
   const reportPath = path.join(process.cwd(), 'performance-report.json');
   await fs.writeFile(reportPath, JSON.stringify(results, null, 2));
   
   // Output summary
-  console.log('Performance Test Summary:');
-  console.log('========================');
+  console.warn('Performance Test Summary:');
+  console.warn('========================');
   results.tests.forEach(test => {
     const status = test.status === 'pass' ? '✅' : 
                   test.status === 'fail' ? '❌' : 
                   test.status === 'warn' ? '⚠️' : 'ℹ️';
-    console.log(`${status} ${test.name}: ${test.sizeKB || test.duration || test.heapUsed || 'N/A'}`);
+    console.warn(`${status} ${test.name}: ${test.sizeKB || test.duration || test.heapUsed || 'N/A'}`);
   });
   
-  console.log('\n✨ Performance tests completed!');
-  console.log(`📄 Full report saved to: ${reportPath}`);
+  console.warn('\n✨ Performance tests completed!');
+  console.warn(`📄 Full report saved to: ${reportPath}`);
   
   // Exit with appropriate code
   const hasFailures = results.tests.some(t => t.status === 'fail');

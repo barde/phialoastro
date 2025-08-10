@@ -65,11 +65,11 @@ async function generateReport() {
     }
     
     // Output the report
-    console.log(report);
+    console.warn(report);
     
   } catch (error) {
     console.error('Error generating report:', error.message);
-    console.log('# Performance Report\n\nNo performance data available. Run `npm run test:performance` first.\n');
+    console.warn('# Performance Report\n\nNo performance data available. Run `npm run test:performance` first.\n');
   }
 }
 
