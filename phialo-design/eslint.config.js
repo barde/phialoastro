@@ -13,7 +13,8 @@ export default [
       '*.config.js',
       '*.config.mjs',
       '*.config.ts',
-      'eslint.config.js'
+      'eslint.config.js',
+      '**/*.astro'  // Ignore Astro files as they require special parser
     ]
   },
   
