@@ -97,6 +97,11 @@ jobs:
           echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-master
           echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-master
           echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-master
+          
+          # Set optional REPLY_TO_EMAIL if it exists
+          if [ -n "${{ secrets.REPLY_TO_EMAIL }}" ]; then
+            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-master
+          fi
       
       - name: Clean up temporary config
         if: always()
