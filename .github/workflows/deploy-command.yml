@@ -142,26 +142,36 @@ jobs:
           PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
         run: pnpm run build
       
+      - name: Install Wrangler
+        working-directory: ./workers
+        run: pnpm install wrangler@4.22.0
+      
       - name: Deploy to Cloudflare Workers
         id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: 'workers'
-          command: |
-            deploy --env ${{ needs.check-command.outputs.environment }} \
-            ${{ needs.check-command.outputs.environment == 'preview' && format('--name phialo-pr-{0}', needs.check-command.outputs.pr_number) || '' }}
-          secrets: |
-            RESEND_API_KEY
-            FROM_EMAIL
-            TO_EMAIL
-            TURNSTILE_SECRET_KEY
+        working-directory: ./workers
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
-          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Deploy the worker
+          if [ "${{ needs.check-command.outputs.environment }}" = "preview" ]; then
+            npx wrangler deploy --env preview --name phialo-pr-${{ needs.check-command.outputs.pr_number }}
+            WORKER_NAME="phialo-pr-${{ needs.check-command.outputs.pr_number }}"
+          else
+            npx wrangler deploy --env production
+            WORKER_NAME="phialo"
+          fi
+          
+          # Set secrets for the deployed worker
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name $WORKER_NAME
+          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name $WORKER_NAME
+          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name $WORKER_NAME
+          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name $WORKER_NAME
+          
+          # Set optional REPLY_TO_EMAIL if it exists
+          if [ -n "${{ secrets.REPLY_TO_EMAIL }}" ]; then
+            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name $WORKER_NAME
+          fi
       
       - name: Get deployment URL
         id: url
