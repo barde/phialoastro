@@ -181,7 +181,7 @@ For commercial licensing inquiries, please contact info@phialo.de.
 
 ## 🙏 Acknowledgments
 
-This project is tested with BrowserStack
+This project is tested with [BrowserStack](https://www.browserstack.com/)
 
 ## 🔗 Links
 
