@@ -57,3 +57,9 @@ node_modules/
 portfolio-check*.png
 ../lefthook.yml
 package-lock.json
+
+# BrowserStack local test files
+test-browserstack-config.js
+TEST-BROWSERSTACK-LOCALLY.md
+tests/e2e/browserstack-quick-test.spec.ts
+.browserstack-metrics.json
