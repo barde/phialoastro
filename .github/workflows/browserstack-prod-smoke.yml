@@ -1,0 +1,170 @@
+name: Production Smoke Test
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'URL to test (defaults to https://phialo.de)'
+        required: false
+        default: 'https://phialo.de'
+        type: string
+
+concurrency:
+  group: browserstack-smoke-${{ github.ref }}
+  cancel-in-progress: false # Don't cancel production tests
+
+jobs:
+  smoke-test:
+    name: Production Smoke Test
+    # Run on successful deployment or manual trigger
+    if: |
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.14.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          cd phialo-design
+          pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd phialo-design
+          pnpm exec playwright install chromium webkit
+
+      - name: Determine target URL
+        id: url
+        run: |
+          if [[ "${{ github.event_name }}" == "deployment_status" ]]; then
+            echo "target_url=${{ github.event.deployment_status.target_url }}" >> $GITHUB_OUTPUT
+          else
+            echo "target_url=${{ inputs.target_url }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wait for deployment to be ready
+        run: |
+          echo "Waiting for deployment to be ready at ${{ steps.url.outputs.target_url }}..."
+          for i in {1..30}; do
+            if curl -s -o /dev/null -w "%{http_code}" "${{ steps.url.outputs.target_url }}" | grep -q "200\|301\|302"; then
+              echo "Deployment is ready!"
+              break
+            fi
+            echo "Attempt $i/30: Waiting for deployment..."
+            sleep 10
+          done
+
+      - name: Run BrowserStack smoke tests
+        run: |
+          cd phialo-design
+          pnpm exec playwright test --config=playwright.browserstack.smoke.config.ts
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BASE_URL: ${{ steps.url.outputs.target_url }}
+          DEPLOYMENT_URL: ${{ steps.url.outputs.target_url }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_REF_NAME: 'production'
+          TEST_SESSION_NAME: 'Production Smoke - ${{ steps.url.outputs.target_url }}'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            phialo-design/smoke-test-results.json
+            phialo-design/test-results/
+          retention-days: 30 # Keep production results longer
+
+      - name: Create deployment status
+        if: github.event_name == 'deployment_status'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            const description = status === 'success' 
+              ? 'Production smoke tests passed' 
+              : 'Production smoke tests failed';
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ github.event.deployment.id }},
+              state: status,
+              description: description,
+              environment: 'production-tests',
+              log_url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            });
+
+      - name: Send Slack notification on failure
+        if: failure() && github.event_name == 'deployment_status'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Production smoke tests failed!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "⚠️ *Production Smoke Tests Failed*\n\nURL: ${{ steps.url.outputs.target_url }}\nRun: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true # Don't fail if Slack is not configured
+
+      - name: Create GitHub issue on failure
+        if: failure() && github.event_name == 'deployment_status'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Production Smoke Tests Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## Production Smoke Test Failure
+            
+            **URL Tested:** ${{ steps.url.outputs.target_url }}
+            **Deployment:** ${{ github.event.deployment.sha }}
+            **Time:** ${new Date().toISOString()}
+            
+            ### Test Results
+            - Chrome@latest-Windows: Check artifacts
+            - iPhone-14-Pro: Check artifacts
+            
+            ### Actions Required
+            1. Review test results in [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Check [BrowserStack Dashboard](https://automate.browserstack.com/) for detailed logs
+            3. Verify production deployment health
+            4. Roll back if necessary
+            
+            cc @${{ github.event.deployment.creator.login }}`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'production', 'urgent', 'browserstack'],
+              assignees: ['${{ github.event.deployment.creator.login }}']
+            });
+        continue-on-error: true # Don't fail if issue creation fails
