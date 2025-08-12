@@ -1,5 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 import baseConfig from './playwright.config';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get directory path for ES modules
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load .env.local file
+dotenv.config({ path: path.resolve(__dirname, '.env.local') });
 
 /**
  * BrowserStack configuration for running tests on real devices
@@ -159,7 +168,7 @@ export default defineConfig({
   ],
 
   // Only run critical tests on BrowserStack
-  grep: /@critical|@browserstack/,
+  grep: /@critical|@browserstack|@smoke/,
   
   // BrowserStack-specific settings
   expect: {
