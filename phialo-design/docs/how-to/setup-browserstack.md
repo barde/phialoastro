@@ -29,17 +29,43 @@ Add the following secrets to your GitHub repository:
 
 ## Step 3: Local Development Setup
 
-For local testing with BrowserStack:
+For local testing with BrowserStack, create a `.env.local` file:
+
+### Method 1: Copy from Example (Recommended)
 
 ```bash
-# Set environment variables (macOS/Linux)
+# Navigate to phialo-design directory
+cd phialo-design
+
+# Copy the example file
+cp .env.local.example .env.local
+
+# Edit .env.local and add your credentials
+# Use your favorite editor (vim, nano, code, etc.)
+```
+
+### Method 2: Create Manually
+
+Create a file at `phialo-design/.env.local` with:
+
+```env
+# BrowserStack credentials
+BROWSERSTACK_USERNAME=your_actual_username
+BROWSERSTACK_ACCESS_KEY=your_actual_access_key
+```
+
+### Method 3: Export Variables (Temporary)
+
+```bash
+# Set environment variables for current session only
 export BROWSERSTACK_USERNAME="your_username"
 export BROWSERSTACK_ACCESS_KEY="your_access_key"
-
-# Or create a .env.local file (never commit this!)
-echo "BROWSERSTACK_USERNAME=your_username" >> .env.local
-echo "BROWSERSTACK_ACCESS_KEY=your_access_key" >> .env.local
 ```
+
+**Important Notes:**
+- ✅ The `.env.local` file is already in `.gitignore`
+- ⚠️ Never commit `.env.local` to version control
+- 📍 Location must be: `phialo-design/.env.local` (not in root directory)
 
 ## Step 4: Running BrowserStack Tests
 
