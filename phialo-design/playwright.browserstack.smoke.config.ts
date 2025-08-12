@@ -1,5 +1,14 @@
 import { defineConfig } from '@playwright/test';
 import bsConfig from './playwright.browserstack.config';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get directory path for ES modules
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load .env.local file
+dotenv.config({ path: path.resolve(__dirname, '.env.local') });
 
 /**
  * BrowserStack configuration for production smoke tests
