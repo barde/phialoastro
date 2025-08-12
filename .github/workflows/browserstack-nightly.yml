@@ -75,6 +75,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
 
       - name: Install dependencies
         run: |
