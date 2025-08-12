@@ -18,17 +18,20 @@ if (!BS_USERNAME || !BS_ACCESS_KEY) {
   );
 }
 
-// BrowserStack capabilities
+// BrowserStack capabilities with enhanced build tracking
 const bsCapabilities = {
   'browserstack.username': BS_USERNAME,
   'browserstack.accessKey': BS_ACCESS_KEY,
   'browserstack.projectName': 'Phialo Design E2E Tests',
-  'browserstack.buildName': `Build ${process.env.GITHUB_RUN_NUMBER || 'local'} - ${new Date().toISOString()}`,
+  'browserstack.buildName': `Build #${process.env.GITHUB_RUN_NUMBER || 'local'} - ${process.env.GITHUB_REF_NAME || 'local'}`,
+  'browserstack.buildTag': process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || 'local',
+  'browserstack.sessionName': process.env.TEST_SESSION_NAME || 'E2E Tests',
   'browserstack.local': process.env.BS_LOCAL === 'true',
   'browserstack.localIdentifier': process.env.BS_LOCAL_IDENTIFIER,
   'browserstack.debug': true,
   'browserstack.console': 'errors',
   'browserstack.networkLogs': true,
+  'browserstack.maskCommands': true, // Hide sensitive data in logs
 };
 
 export default defineConfig({
