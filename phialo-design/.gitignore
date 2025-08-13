@@ -65,9 +65,6 @@ tests/e2e/browserstack-quick-test.spec.ts
 .browserstack-metrics.json
 browserstack-report/
 browserstack-results.json
-browserstack-chrome.yml
-browserstack-safari.yml
-browserstack-iphone.yml
 browserstack.json
 local.log
 log/
