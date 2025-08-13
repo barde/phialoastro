@@ -1,7 +1,7 @@
 name: Production Smoke Test
 
 on:
-  deployment_status:
+  # Only run on production deployments or manual trigger
   workflow_dispatch:
     inputs:
       target_url:
@@ -9,6 +9,10 @@ on:
         required: false
         default: 'https://phialo.de'
         type: string
+  push:
+    branches:
+      - main
+      - master
 
 concurrency:
   group: browserstack-smoke-${{ github.ref }}
@@ -17,9 +21,9 @@ concurrency:
 jobs:
   smoke-test:
     name: Production Smoke Test
-    # Run on successful deployment or manual trigger
+    # Run on push to main/master or manual trigger
     if: |
-      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success') ||
+      github.event_name == 'push' ||
       github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -54,11 +58,8 @@ jobs:
       - name: Determine target URL
         id: url
         run: |
-          if [[ "${{ github.event_name }}" == "deployment_status" ]]; then
-            echo "target_url=${{ github.event.deployment_status.target_url }}" >> $GITHUB_OUTPUT
-          else
-            echo "target_url=${{ inputs.target_url }}" >> $GITHUB_OUTPUT
-          fi
+          # Always use production URL or manual input
+          echo "target_url=${{ inputs.target_url || 'https://phialo.de' }}" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment to be ready
         run: |
@@ -94,28 +95,8 @@ jobs:
             phialo-design/test-results/
           retention-days: 30 # Keep production results longer
 
-      - name: Create deployment status
-        if: github.event_name == 'deployment_status'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const status = '${{ job.status }}' === 'success' ? 'success' : 'failure';
-            const description = status === 'success' 
-              ? 'Production smoke tests passed' 
-              : 'Production smoke tests failed';
-            
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: ${{ github.event.deployment.id }},
-              state: status,
-              description: description,
-              environment: 'production-tests',
-              log_url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-            });
-
       - name: Send Slack notification on failure
-        if: failure() && github.event_name == 'deployment_status'
+        if: failure() && github.event_name == 'push'
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
@@ -136,7 +117,7 @@ jobs:
         continue-on-error: true # Don't fail if Slack is not configured
 
       - name: Create GitHub issue on failure
-        if: failure() && github.event_name == 'deployment_status'
+        if: failure() && github.event_name == 'push'
         uses: actions/github-script@v7
         with:
           script: |
@@ -144,7 +125,7 @@ jobs:
             const body = `## Production Smoke Test Failure
             
             **URL Tested:** ${{ steps.url.outputs.target_url }}
-            **Deployment:** ${{ github.event.deployment.sha }}
+            **Commit:** ${{ github.sha }}
             **Time:** ${new Date().toISOString()}
             
             ### Test Results
@@ -157,7 +138,7 @@ jobs:
             3. Verify production deployment health
             4. Roll back if necessary
             
-            cc @${{ github.event.deployment.creator.login }}`;
+            cc @${{ github.actor }}`;
             
             await github.rest.issues.create({
               owner: context.repo.owner,
@@ -165,6 +146,6 @@ jobs:
               title: title,
               body: body,
               labels: ['bug', 'production', 'urgent', 'browserstack'],
-              assignees: ['${{ github.event.deployment.creator.login }}']
+              assignees: ['${{ github.actor }}']
             });
         continue-on-error: true # Don't fail if issue creation fails
