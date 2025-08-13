@@ -14,16 +14,16 @@ platforms:
   # Primary browsers for smoke/PR tests
   - os: Windows
     osVersion: 11
-    browserName: chrome
+    browserName: playwright-chromium
     browserVersion: latest
   
   - os: OS X
     osVersion: Sonoma
-    browserName: safari
-    browserVersion: 17.0
+    browserName: playwright-webkit
+    browserVersion: latest
   
   - deviceName: iPhone 14 Pro
-    browserName: safari
+    browserName: playwright-webkit
     osVersion: 16
     deviceOrientation: portrait
 
