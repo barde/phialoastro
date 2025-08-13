@@ -8,8 +8,10 @@ buildIdentifier: ${BUILD_ID}
 # =======================================
 # Platforms (Browsers / Devices to test)
 # =======================================
+# IMPORTANT: Limited to 3 platforms for PR tests to stay within 5 session limit
+# Full platform matrix is used only for nightly tests
 platforms:
-  # Desktop Browsers
+  # Primary browsers for smoke/PR tests
   - os: Windows
     osVersion: 11
     browserName: chrome
@@ -20,36 +22,20 @@ platforms:
     browserName: safari
     browserVersion: 17.0
   
-  - os: Windows
-    osVersion: 11
-    browserName: edge
-    browserVersion: latest
-  
-  # Mobile Devices
   - deviceName: iPhone 14 Pro
     browserName: safari
     osVersion: 16
     deviceOrientation: portrait
-  
-  - deviceName: Samsung Galaxy S23
-    browserName: chrome
-    osVersion: 13.0
-    deviceOrientation: portrait
-  
-  - deviceName: iPad Pro 12.9 2022
-    browserName: safari
-    osVersion: 16
-    deviceOrientation: landscape
 
 # =======================
 # Parallels per Platform
 # =======================
-# Using 5 parallel sessions from Open Source plan
-# IMPORTANT: Total parallel sessions cannot exceed 5
+# CRITICAL: BrowserStack Open Source plan has 5 parallel sessions total
+# With 3 platforms, we can run max 1 test per platform simultaneously
 parallelsPerPlatform: 1
 
 # Maximum parallel sessions to prevent queue overflow
-maxParallels: 5
+maxParallels: 3  # Reduced to ensure we never exceed limit
 
 # =================
 # BrowserStack Local
@@ -79,22 +65,8 @@ slowTestThreshold: 45000
 fullyParallel: true
 
 # ==================
-# Smoke Test Settings
+# Test Configuration
 # ==================
-# Specific configuration for smoke tests
-smokeSuite:
-  # Only run on critical browsers for smoke tests
-  platforms:
-    - os: Windows
-      osVersion: 11
-      browserName: chrome
-      browserVersion: latest
-    
-    - deviceName: iPhone 14 Pro
-      browserName: safari
-      osVersion: 16
-      deviceOrientation: portrait
-  
-  # Faster timeouts for smoke tests
-  testTimeout: 30000
-  slowTestThreshold: 15000
+# Framework-specific settings
+fullyParallel: false  # Run tests sequentially within each platform
+workers: 1  # Single worker per platform to avoid session conflicts

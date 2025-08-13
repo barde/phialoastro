@@ -8,15 +8,19 @@ import baseConfig from './playwright.config';
 export default defineConfig({
   ...baseConfig,
   
+  // No parallel execution to stay within limits
+  fullyParallel: false,
+  
   // Longer timeouts for cloud execution
   timeout: 90 * 1000,
   
-  // Retries for flakiness on real devices
-  retries: process.env.CI ? 2 : 1,
+  // Disable retries to reduce session usage
+  retries: 0, // No retries to conserve BrowserStack sessions
   
   // Workers managed by BrowserStack SDK
-  // IMPORTANT: Limited to 5 parallel sessions for Open Source plan
-  workers: process.env.CI ? 5 : 1, // Max 5 for BrowserStack Open Source
+  // CRITICAL: Must stay within BrowserStack Open Source limit
+  // With 3 platforms, use 1 worker per platform to avoid exceeding 5 sessions
+  workers: 1, // Single worker to prevent session conflicts
   
   // Enhanced reporting for cloud tests
   reporter: process.env.CI ? [
@@ -38,8 +42,8 @@ export default defineConfig({
     video: 'on',
   },
 
-  // Only run critical tests on BrowserStack by default
-  grep: /@critical|@browserstack|@smoke/,
+  // Only run smoke tests to reduce test count and session usage
+  grep: /@smoke/,
   
   // BrowserStack-specific settings
   expect: {
