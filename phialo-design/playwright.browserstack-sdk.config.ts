@@ -42,33 +42,9 @@ export default defineConfig({
     video: 'on',
   },
 
-  // Define projects with browserName for BrowserStack SDK
-  // The SDK will map these to the platforms defined in browserstack.yml
-  projects: [
-    {
-      name: 'chromium',
-      use: { 
-        ...devices['Desktop Chrome'],
-        // BrowserStack SDK expects browserName
-        browserName: 'chromium',
-      },
-    },
-    {
-      name: 'webkit',
-      use: { 
-        ...devices['Desktop Safari'],
-        browserName: 'webkit',
-      },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { 
-        ...devices['iPhone 14 Pro'],
-        browserName: 'webkit',
-      },
-    },
-  ],
-
+  // BrowserStack SDK manages browser selection through browserstack.yml
+  // No projects defined here to avoid conflicts with SDK browser management
+  
   // Only run smoke tests to reduce test count and session usage
   grep: /@smoke/,
   
