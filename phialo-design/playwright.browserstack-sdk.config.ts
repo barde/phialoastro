@@ -15,7 +15,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 1,
   
   // Workers managed by BrowserStack SDK
-  workers: undefined, // Let SDK handle parallelization
+  // IMPORTANT: Limited to 5 parallel sessions for Open Source plan
+  workers: process.env.CI ? 5 : 1, // Max 5 for BrowserStack Open Source
   
   // Enhanced reporting for cloud tests
   reporter: process.env.CI ? [
