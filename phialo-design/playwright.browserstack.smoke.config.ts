@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 import bsConfig from './playwright.browserstack.config';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -71,11 +71,6 @@ export default defineConfig({
     // Use production URL or deployment URL
     baseURL: process.env.BASE_URL || process.env.DEPLOYMENT_URL || 'https://phialo.de',
     
-    // Connect to BrowserStack with smoke test capabilities
-    connectOptions: {
-      wsEndpoint: `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(bsSmokeCapabilities))}`,
-    },
-    
     // Faster timeouts for smoke tests
     actionTimeout: 10 * 1000,
     navigationTimeout: 20 * 1000,
@@ -92,27 +87,32 @@ export default defineConfig({
     {
       name: 'Chrome@latest-Windows',
       use: {
-        ...baseProjects.find(p => p.name === 'Chrome@latest-Windows')?.use,
-        ...({ 'browserstack:options': {
-          ...bsSmokeCapabilities,
-          os: 'Windows',
-          osVersion: '11',
-          browserName: 'Chrome',
-          browserVersion: 'latest',
-        }} as any),
+        ...devices['Desktop Chrome'],
+        channel: undefined, // Let BrowserStack handle the browser
+        connectOptions: {
+          wsEndpoint: `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
+            ...bsSmokeCapabilities,
+            'browser': 'chrome',
+            'browser_version': 'latest',
+            'os': 'Windows',
+            'os_version': '11',
+          }))}`,
+        },
       },
     },
     // Mobile - Most critical mobile device
     {
       name: 'iPhone-14-Pro',
       use: {
-        ...baseProjects.find(p => p.name === 'iPhone-14-Pro')?.use,
-        ...({ 'browserstack:options': {
-          ...bsSmokeCapabilities,
-          deviceName: 'iPhone 14 Pro',
-          osVersion: '16',
-          realMobile: 'true',
-        }} as any),
+        ...devices['iPhone 14 Pro'],
+        connectOptions: {
+          wsEndpoint: `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
+            ...bsSmokeCapabilities,
+            'device': 'iPhone 14 Pro',
+            'os_version': '16',
+            'real_mobile': 'true',
+          }))}`,
+        },
       },
     },
   ],
