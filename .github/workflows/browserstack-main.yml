@@ -62,12 +62,13 @@ jobs:
       - name: Run BrowserStack tests
         run: |
           cd phialo-design
-          pnpm exec playwright test --config=playwright.browserstack.config.ts --project="${{ matrix.project }}"
+          pnpm run test:browserstack
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+          BUILD_ID: main-${{ github.run_number }}-${{ github.sha }}
+          BROWSERSTACK_BUILD_NAME: 'Main Branch #${{ github.run_number }}'
+          BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
           TEST_SESSION_NAME: 'Main Branch - ${{ matrix.project }}'
           TEST_TAG: ${{ inputs.test_filter || '@critical|@browserstack' }}
 
