@@ -54,18 +54,21 @@ export default defineConfig({
       name: 'Chrome@Windows',
       use: {
         ...devices['Desktop Chrome'],
+        // Use CDP endpoint with authentication in URL
         connectOptions: {
-          wsEndpoint: `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
-            'browser': 'chrome',
-            'browser_version': 'latest',
-            'os': 'Windows',
-            'os_version': '11',
-            'name': 'Chrome Windows Test',
-            'build': BUILD_NAME,
-            'browserstack.username': BS_USER,
-            'browserstack.accessKey': BS_KEY,
-            'browserstack.console': 'errors',
-            'browserstack.networkLogs': true,
+          wsEndpoint: `wss://${BS_USER}:${BS_KEY}@cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
+            'browserName': 'chrome',
+            'browserVersion': 'latest',
+            'bstack:options': {
+              'os': 'Windows',
+              'osVersion': '11',
+              'projectName': 'Phialo Design',
+              'buildName': BUILD_NAME,
+              'sessionName': 'Chrome Windows Test',
+              'debug': 'true',
+              'consoleLogs': 'errors',
+              'networkLogs': 'true'
+            }
           }))}`,
         },
       },
@@ -75,17 +78,19 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         connectOptions: {
-          wsEndpoint: `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
-            'browser': 'playwright-webkit',
-            'browser_version': 'latest',
-            'os': 'OS X',
-            'os_version': 'Sonoma',
-            'name': 'Safari macOS Test',
-            'build': BUILD_NAME,
-            'browserstack.username': BS_USER,
-            'browserstack.accessKey': BS_KEY,
-            'browserstack.console': 'errors',
-            'browserstack.networkLogs': true,
+          wsEndpoint: `wss://${BS_USER}:${BS_KEY}@cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
+            'browserName': 'safari',
+            'browserVersion': 'latest',
+            'bstack:options': {
+              'os': 'OS X',
+              'osVersion': 'Sonoma',
+              'projectName': 'Phialo Design',
+              'buildName': BUILD_NAME,
+              'sessionName': 'Safari macOS Test',
+              'debug': 'true',
+              'consoleLogs': 'errors',
+              'networkLogs': 'true'
+            }
           }))}`,
         },
       },
@@ -95,17 +100,19 @@ export default defineConfig({
       use: {
         ...devices['iPhone 14 Pro'],
         connectOptions: {
-          wsEndpoint: `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
-            'browser': 'playwright-webkit',
-            'device': 'iPhone 14 Pro',
-            'os_version': '16',
-            'real_mobile': true,
-            'name': 'iPhone 14 Pro Test',
-            'build': BUILD_NAME,
-            'browserstack.username': BS_USER,
-            'browserstack.accessKey': BS_KEY,
-            'browserstack.console': 'errors',
-            'browserstack.networkLogs': true,
+          wsEndpoint: `wss://${BS_USER}:${BS_KEY}@cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify({
+            'browserName': 'safari',
+            'bstack:options': {
+              'deviceName': 'iPhone 14 Pro',
+              'osVersion': '16',
+              'realMobile': 'true',
+              'projectName': 'Phialo Design',
+              'buildName': BUILD_NAME,
+              'sessionName': 'iPhone 14 Pro Test',
+              'debug': 'true',
+              'consoleLogs': 'errors',
+              'networkLogs': 'true'
+            }
           }))}`,
         },
       },
