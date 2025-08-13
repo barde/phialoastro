@@ -6,7 +6,7 @@ buildIdentifier: ${BUILD_ID}
 # Single platform for iPhone tests
 platforms:
   - deviceName: iPhone 14 Pro
-    browserName: safari
+    browserName: playwright-webkit
     osVersion: 16
     deviceOrientation: portrait
 
