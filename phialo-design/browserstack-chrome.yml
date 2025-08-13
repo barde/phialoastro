@@ -7,7 +7,7 @@ buildIdentifier: ${BUILD_ID}
 platforms:
   - os: Windows
     osVersion: 11
-    browserName: playwright-chromium
+    browserName: chromium
     browserVersion: latest
 
 # Parallelization settings

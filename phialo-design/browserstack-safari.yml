@@ -7,7 +7,7 @@ buildIdentifier: ${BUILD_ID}
 platforms:
   - os: OS X
     osVersion: Sonoma
-    browserName: playwright-webkit
+    browserName: webkit
     browserVersion: latest
 
 # Parallelization settings
