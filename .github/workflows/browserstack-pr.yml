@@ -9,18 +9,18 @@ on:
         required: false
         type: string
   
-  # Automatic trigger on PR events
-  pull_request:
-    branches: [master, main]
-    types: [opened, synchronize, reopened]
-    
-  # Trigger after deployment completes
-  deployment_status:
+  # Trigger when 'run-browserstack' label is added
+  pull_request_target:
+    types: [labeled]
     
 permissions:
   contents: read
   pull-requests: write
   deployments: read
+
+concurrency:
+  group: browserstack-pr-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
   
 jobs:
   # Check if this workflow should run
@@ -33,16 +33,12 @@ jobs:
       - name: Check trigger
         id: check
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request_target" ]] && [[ "${{ github.event.label.name }}" == "run-browserstack" ]]; then
             echo "should-run=true" >> $GITHUB_OUTPUT
             echo "pr-number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "should-run=true" >> $GITHUB_OUTPUT
             echo "pr-number=${{ github.event.inputs.pr_number || 'manual' }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "deployment_status" ]] && [[ "${{ github.event.deployment_status.state }}" == "success" ]]; then
-            # Extract PR number from deployment URL if available
-            echo "should-run=true" >> $GITHUB_OUTPUT
-            echo "pr-number=deployment" >> $GITHUB_OUTPUT
           else
             echo "should-run=false" >> $GITHUB_OUTPUT
           fi
@@ -91,7 +87,7 @@ jobs:
           BUILD_ID: pr-${{ needs.check-trigger.outputs.pr-number }}-${{ github.run_number }}
           BROWSERSTACK_BUILD_NAME: 'PR #${{ needs.check-trigger.outputs.pr-number }}'
           BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
-          BASE_URL: ${{ github.event.deployment_status.target_url || 'https://phialo-pr-346.meise.workers.dev' }}
+          BASE_URL: https://phialo-pr-${{ needs.check-trigger.outputs.pr-number }}.meise.workers.dev
           
       - name: Upload test results
         if: always()
