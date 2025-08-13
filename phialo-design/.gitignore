@@ -63,3 +63,6 @@ test-browserstack-config.js
 TEST-BROWSERSTACK-LOCALLY.md
 tests/e2e/browserstack-quick-test.spec.ts
 .browserstack-metrics.json
+browserstack-report/
+browserstack-results.json
+local.log

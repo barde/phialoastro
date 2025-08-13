@@ -1,0 +1,96 @@
+# ======================
+# BrowserStack Configuration
+# ======================
+projectName: Phialo Design
+buildName: Build ${BUILD_ID}
+buildIdentifier: ${BUILD_ID}
+
+# =======================================
+# Platforms (Browsers / Devices to test)
+# =======================================
+platforms:
+  # Desktop Browsers
+  - os: Windows
+    osVersion: 11
+    browserName: chrome
+    browserVersion: latest
+  
+  - os: OS X
+    osVersion: Sonoma
+    browserName: safari
+    browserVersion: 17.0
+  
+  - os: Windows
+    osVersion: 11
+    browserName: edge
+    browserVersion: latest
+  
+  # Mobile Devices
+  - deviceName: iPhone 14 Pro
+    browserName: safari
+    osVersion: 16
+    deviceOrientation: portrait
+  
+  - deviceName: Samsung Galaxy S23
+    browserName: chrome
+    osVersion: 13.0
+    deviceOrientation: portrait
+  
+  - deviceName: iPad Pro 12.9 2022
+    browserName: safari
+    osVersion: 16
+    deviceOrientation: landscape
+
+# =======================
+# Parallels per Platform
+# =======================
+# Using 5 parallel sessions from Open Source plan
+parallelsPerPlatform: 1
+
+# =================
+# BrowserStack Local
+# =================
+# For testing localhost or private URLs
+browserstackLocal: false
+localIdentifier: ${BROWSERSTACK_LOCAL_IDENTIFIER}
+
+# ==================
+# Debugging Options
+# ==================
+debug: true
+networkLogs: true
+consoleLogs: errors
+testObservability: true
+
+# ==================
+# Test Configuration
+# ==================
+# Framework-specific settings
+framework: playwright
+playwrightVersion: 1.54.2
+
+# Test timeouts and retries
+testTimeout: 90000
+slowTestThreshold: 45000
+fullyParallel: true
+
+# ==================
+# Smoke Test Settings
+# ==================
+# Specific configuration for smoke tests
+smokeSuite:
+  # Only run on critical browsers for smoke tests
+  platforms:
+    - os: Windows
+      osVersion: 11
+      browserName: chrome
+      browserVersion: latest
+    
+    - deviceName: iPhone 14 Pro
+      browserName: safari
+      osVersion: 16
+      deviceOrientation: portrait
+  
+  # Faster timeouts for smoke tests
+  testTimeout: 30000
+  slowTestThreshold: 15000

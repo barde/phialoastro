@@ -91,12 +91,13 @@ jobs:
         run: |
           cd phialo-design
           # Run full test suite for nightly (not just @critical)
-          pnpm exec playwright test --config=playwright.browserstack.config.ts --project="${{ matrix.project }}"
+          pnpm run test:browserstack
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-          GITHUB_REF_NAME: 'nightly'
+          BUILD_ID: nightly-${{ github.run_number }}-$(date +%Y%m%d)
+          BROWSERSTACK_BUILD_NAME: 'Nightly Tests - $(date +%Y-%m-%d)'
+          BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
           TEST_SESSION_NAME: 'Nightly - ${{ matrix.project }}'
 
       - name: Upload test results
