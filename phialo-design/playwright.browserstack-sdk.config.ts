@@ -1,26 +1,24 @@
-import { defineConfig, devices } from '@playwright/test';
-import baseConfig from './playwright.config';
+import { defineConfig } from '@playwright/test';
 
 /**
  * BrowserStack SDK configuration for running tests on real devices
  * The SDK handles the connection to BrowserStack automatically
  */
 export default defineConfig({
-  ...baseConfig,
+  // Test directory
+  testDir: './tests/e2e',
   
   // No parallel execution to stay within limits
   fullyParallel: false,
+  
+  // Disable local workers as BrowserStack SDK manages them
+  workers: 1,
   
   // Longer timeouts for cloud execution
   timeout: 90 * 1000,
   
   // Disable retries to reduce session usage
-  retries: 0, // No retries to conserve BrowserStack sessions
-  
-  // Workers managed by BrowserStack SDK
-  // CRITICAL: Must stay within BrowserStack Open Source limit
-  // With 3 platforms, use 1 worker per platform to avoid exceeding 5 sessions
-  workers: 1, // Single worker to prevent session conflicts
+  retries: 0,
   
   // Enhanced reporting for cloud tests
   reporter: process.env.CI ? [
@@ -30,7 +28,8 @@ export default defineConfig({
   ] : 'list',
   
   use: {
-    ...baseConfig.use,
+    // Base URL
+    baseURL: process.env.BASE_URL || 'https://phialo-pr-346.meise.workers.dev',
     
     // Extended timeouts for cloud
     actionTimeout: 20 * 1000,
@@ -42,9 +41,6 @@ export default defineConfig({
     video: 'on',
   },
 
-  // BrowserStack SDK manages browser selection through browserstack.yml
-  // No projects defined here to avoid conflicts with SDK browser management
-  
   // Only run smoke tests to reduce test count and session usage
   grep: /@smoke/,
   
