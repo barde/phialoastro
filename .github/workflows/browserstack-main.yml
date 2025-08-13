@@ -22,14 +22,13 @@ jobs:
     timeout-minutes: 30
     strategy:
       fail-fast: false
+      max-parallel: 1  # Run sequentially to stay within 5 session BrowserStack limit
       matrix:
         project:
+          # Reduced to 3 core browsers for main branch testing
           - 'Chrome@latest-Windows'
           - 'Safari@latest-macOS'
-          - 'Edge@latest-Windows'
           - 'iPhone-14-Pro'
-          - 'Samsung-S23'
-          - 'iPad-Pro-12.9'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

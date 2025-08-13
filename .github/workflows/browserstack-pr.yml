@@ -43,6 +43,8 @@ jobs:
     timeout-minutes: 20
     strategy:
       fail-fast: false
+      # IMPORTANT: max-parallel limits concurrent jobs to stay within BrowserStack limits
+      max-parallel: 1  # Run sequentially to avoid exceeding 5 session limit
       matrix:
         project:
           # Reduced set for PR testing (faster feedback)
@@ -77,9 +79,24 @@ jobs:
           cd phialo-design
           pnpm exec playwright install chromium webkit
 
+      - name: Set BrowserStack config file
+        id: bs-config
+        run: |
+          if [[ "${{ matrix.project }}" == "Chrome@latest-Windows" ]]; then
+            echo "config_file=browserstack-chrome.yml" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.project }}" == "Safari@latest-macOS" ]]; then
+            echo "config_file=browserstack-safari.yml" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.project }}" == "iPhone-14-Pro" ]]; then
+            echo "config_file=browserstack-iphone.yml" >> $GITHUB_OUTPUT
+          else
+            echo "config_file=browserstack.yml" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run BrowserStack tests
         run: |
           cd phialo-design
+          # Use specific config file for this browser
+          cp ${{ steps.bs-config.outputs.config_file }} browserstack.yml
           pnpm run test:browserstack:smoke
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
