@@ -17,6 +17,10 @@ on:
           - group-b
           - all
 
+concurrency:
+  group: browserstack-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   determine-browser-group:
     name: Determine Browser Group
