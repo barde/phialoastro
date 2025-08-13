@@ -22,6 +22,7 @@
     "test:e2e:browserstack": "npx browserstack-node-sdk playwright test --config=playwright.browserstack.config.ts",
     "test:browserstack": "npx browserstack-node-sdk playwright test --config=playwright.browserstack-sdk.config.ts",
     "test:browserstack:smoke": "npx browserstack-node-sdk playwright test --config=playwright.browserstack-sdk.config.ts",
+    "test:browserstack:direct": "playwright test --config=playwright.browserstack-direct.config.ts",
     "test:e2e:ai": "playwright test --config=playwright.ai.config.ts",
     "test:e2e:nightly": "playwright test --workers=8",
     "typecheck": "astro check",
