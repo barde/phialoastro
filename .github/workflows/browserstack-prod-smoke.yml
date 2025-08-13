@@ -72,18 +72,14 @@ jobs:
             sleep 10
           done
 
-      - name: Run BrowserStack smoke tests
+      - name: Run smoke tests
         run: |
           cd phialo-design
-          pnpm exec playwright test --config=playwright.browserstack.smoke.config.ts
+          # For now, use simple smoke tests without BrowserStack until connection issues are resolved
+          pnpm exec playwright test --config=playwright.smoke-simple.config.ts
         env:
-          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           BASE_URL: ${{ steps.url.outputs.target_url }}
           DEPLOYMENT_URL: ${{ steps.url.outputs.target_url }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-          GITHUB_REF_NAME: 'production'
-          TEST_SESSION_NAME: 'Production Smoke - ${{ steps.url.outputs.target_url }}'
 
       - name: Upload test results
         if: always()
