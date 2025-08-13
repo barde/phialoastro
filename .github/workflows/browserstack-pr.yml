@@ -1,200 +1,105 @@
 name: BrowserStack PR
 
 on:
-  pull_request:
-    types: [labeled, synchronize]
+  # Manual trigger with PR number input
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to test'
+        description: 'PR number to test (optional)'
         required: false
         type: string
-
-concurrency:
-  group: browserstack-pr-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
-  cancel-in-progress: true
-
+  
+  # Automatic trigger on PR events
+  pull_request:
+    branches: [master, main]
+    types: [opened, synchronize, reopened]
+    
+  # Trigger after deployment completes
+  deployment_status:
+    
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: read
+  
 jobs:
-  # Check if we should run BrowserStack tests
-  should-run:
-    name: Check Trigger
+  # Check if this workflow should run
+  check-trigger:
     runs-on: ubuntu-latest
     outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
+      should-run: ${{ steps.check.outputs.should-run }}
+      pr-number: ${{ steps.check.outputs.pr-number }}
     steps:
-      - name: Check conditions
+      - name: Check trigger
         id: check
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "pull_request" && "${{ contains(github.event.pull_request.labels.*.name, 'run-browserstack') }}" == "true" ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.action }}" == "synchronize" && "${{ contains(github.event.pull_request.labels.*.name, 'run-browserstack') }}" == "true" ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "pr-number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "pr-number=${{ github.event.inputs.pr_number || 'manual' }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "deployment_status" ]] && [[ "${{ github.event.deployment_status.state }}" == "success" ]]; then
+            # Extract PR number from deployment URL if available
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "pr-number=deployment" >> $GITHUB_OUTPUT
           else
-            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "should-run=false" >> $GITHUB_OUTPUT
           fi
-
-  test:
-    name: ${{ matrix.project }}
-    needs: should-run
-    if: needs.should-run.outputs.should_run == 'true'
+          
+  # Run BrowserStack tests
+  browserstack-test:
+    needs: check-trigger
+    if: needs.check-trigger.outputs.should-run == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      # IMPORTANT: max-parallel limits concurrent jobs to stay within BrowserStack limits
-      max-parallel: 1  # Run sequentially to avoid exceeding 5 session limit
-      matrix:
-        project:
-          # Reduced set for PR testing (faster feedback)
-          - 'Chrome@Windows'
-          - 'Safari@macOS'
-          - 'Mobile Safari'
+    name: BrowserStack Tests
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           lfs: true
-
+          
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9.14.4
-
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: phialo-design/pnpm-lock.yaml
-
+          
       - name: Install dependencies
         run: |
           cd phialo-design
           pnpm install --frozen-lockfile
-
+          
       - name: Install Playwright browsers
         run: |
           cd phialo-design
           pnpm exec playwright install chromium webkit
-
+          
       - name: Run BrowserStack tests
         run: |
           cd phialo-design
-          # Use direct Playwright connection without SDK
-          pnpm run test:browserstack:direct --project="${{ matrix.project }}"
+          pnpm run test:browserstack:smoke
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          BUILD_ID: pr-${{ github.event.pull_request.number || github.event.inputs.pr_number }}-${{ github.run_number }}
-          BROWSERSTACK_BUILD_NAME: 'PR #${{ github.event.pull_request.number || github.event.inputs.pr_number }}'
+          BUILD_ID: pr-${{ needs.check-trigger.outputs.pr-number }}-${{ github.run_number }}
+          BROWSERSTACK_BUILD_NAME: 'PR #${{ needs.check-trigger.outputs.pr-number }}'
           BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
-          TEST_SESSION_NAME: 'PR #${{ github.event.pull_request.number || github.event.inputs.pr_number }} - ${{ matrix.project }}'
-          BASE_URL: ${{ github.event.deployment_status.target_url || '' }}
-
+          BASE_URL: ${{ github.event.deployment_status.target_url || 'https://phialo-pr-346.meise.workers.dev' }}
+          
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browserstack-pr-results-${{ matrix.project }}
+          name: browserstack-pr-results
           path: |
+            phialo-design/test-results/
             phialo-design/browserstack-report/
             phialo-design/browserstack-results.json
-            phialo-design/test-results/
           retention-days: 7
-
-  report:
-    name: PR Test Report
-    needs: [should-run, test]
-    runs-on: ubuntu-latest
-    if: always() && needs.should-run.outputs.should_run == 'true'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: all-results
-
-      - name: Create PR comment
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            
-            // Check test results
-            const browsers = ['Chrome@latest-Windows', 'Safari@latest-macOS', 'iPhone-14-Pro'];
-            let allPassed = true;
-            let resultsTable = '| Browser | Status |\n|---------|--------|\n';
-            
-            for (const browser of browsers) {
-              const resultDir = path.join('all-results', `browserstack-pr-results-${browser}`);
-              if (fs.existsSync(resultDir)) {
-                resultsTable += `| ${browser} | ✅ Passed |\n`;
-              } else {
-                resultsTable += `| ${browser} | ❌ Failed |\n`;
-                allPassed = false;
-              }
-            }
-            
-            const status = allPassed ? '✅ **All BrowserStack tests passed!**' : '❌ **Some BrowserStack tests failed**';
-            
-            const comment = `## BrowserStack Test Results
-            
-            ${status}
-            
-            ${resultsTable}
-            
-            **Test Configuration:**
-            - Test filter: \`@critical\`
-            - Parallel sessions: 3 of 5 available
-            - Run ID: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            [View detailed results in BrowserStack Dashboard](https://automate.browserstack.com/)
-            
-            ---
-            *To re-run tests, add the \`run-browserstack\` label again or trigger manually from Actions.*`;
-            
-            // Find and update existing comment or create new one
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('BrowserStack Test Results')
-            );
-            
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: comment
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: comment
-              });
-            }
-
-      - name: Remove label after completion
-        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-browserstack')
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              name: 'run-browserstack'
-            });

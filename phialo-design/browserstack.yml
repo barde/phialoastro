@@ -1,72 +1,39 @@
-# ======================
 # BrowserStack Configuration
-# ======================
-projectName: Phialo Design
-buildName: Build ${BUILD_ID}
-buildIdentifier: ${BUILD_ID}
+# Official documentation: https://www.browserstack.com/docs/automate/playwright
 
-# =======================================
-# Platforms (Browsers / Devices to test)
-# =======================================
-# IMPORTANT: Limited to 3 platforms for PR tests to stay within 5 session limit
-# Full platform matrix is used only for nightly tests
+# Authentication credentials will be set via environment variables:
+# BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY
+
+# Build configuration
+buildName: 'Phialo Design - Build ${BUILD_ID}'
+projectName: 'Phialo Design'
+
+# Browsers to test on (limited to 3 for PR tests)
 platforms:
-  # Primary browsers for smoke/PR tests
   - os: Windows
     osVersion: 11
     browserName: playwright-chromium
     browserVersion: latest
-  
   - os: OS X
     osVersion: Sonoma
     browserName: playwright-webkit
     browserVersion: latest
-  
   - deviceName: iPhone 14 Pro
-    browserName: playwright-webkit
     osVersion: 16
-    deviceOrientation: portrait
+    browserName: playwright-webkit
+    realMobile: true
 
-# =======================
-# Parallels per Platform
-# =======================
-# CRITICAL: BrowserStack Open Source plan has 5 parallel sessions total
-# With 3 platforms, we can run max 1 test per platform simultaneously
+# Test execution settings
 parallelsPerPlatform: 1
-
-# Maximum parallel sessions to prevent queue overflow
-maxParallels: 3  # Reduced to ensure we never exceed limit
-
-# =================
-# BrowserStack Local
-# =================
-# For testing localhost or private URLs
 browserstackLocal: false
-localIdentifier: ${BROWSERSTACK_LOCAL_IDENTIFIER}
-
-# ==================
-# Debugging Options
-# ==================
 debug: true
 networkLogs: true
 consoleLogs: errors
-testObservability: true
 
-# ==================
-# Test Configuration
-# ==================
-# Framework-specific settings
+# Test observability
+testObservability: true
+buildTag: 'pr-tests'
+
+# Framework specific settings
 framework: playwright
 playwrightVersion: 1.54.2
-
-# Test timeouts and retries
-testTimeout: 90000
-slowTestThreshold: 45000
-fullyParallel: true
-
-# ==================
-# Test Configuration
-# ==================
-# Framework-specific settings
-fullyParallel: false  # Run tests sequentially within each platform
-workers: 1  # Single worker per platform to avoid session conflicts
