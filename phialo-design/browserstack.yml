@@ -45,7 +45,11 @@ platforms:
 # Parallels per Platform
 # =======================
 # Using 5 parallel sessions from Open Source plan
+# IMPORTANT: Total parallel sessions cannot exceed 5
 parallelsPerPlatform: 1
+
+# Maximum parallel sessions to prevent queue overflow
+maxParallels: 5
 
 # =================
 # BrowserStack Local
