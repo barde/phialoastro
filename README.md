@@ -245,3 +245,10 @@ For commercial licensing, contact: info@phialo.de
 - **Website**: [phialo.de](https://phialo.de)
 - **Email**: info@phialo.de
 - **GitHub Issues**: [Report bugs or request features](https://github.com/barde/phialoastro/issues)
+
+---
+
+<p align="center">
+  Made with ❤️ by Phialo Design<br>
+  © 2025 Phialo Design. All rights reserved.
+</p>

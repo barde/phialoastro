@@ -1,0 +1,110 @@
+name: BrowserStack PR
+
+on:
+  # Manual trigger with PR number input
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (optional)'
+        required: false
+        type: string
+  
+  # Trigger when 'run-browserstack' label is added
+  pull_request_target:
+    types: [labeled]
+    
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: read
+
+concurrency:
+  group: browserstack-pr-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+  
+jobs:
+  # Check if this workflow should run
+  check-trigger:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+      pr-number: ${{ steps.check.outputs.pr-number }}
+    steps:
+      - name: Check trigger
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request_target" ]] && [[ "${{ github.event.label.name }}" == "run-browserstack" ]]; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "pr-number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "pr-number=${{ github.event.inputs.pr_number || 'manual' }}" >> $GITHUB_OUTPUT
+          else
+            echo "should-run=false" >> $GITHUB_OUTPUT
+          fi
+          
+  # Run BrowserStack tests
+  browserstack-test:
+    needs: check-trigger
+    if: needs.check-trigger.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    name: BrowserStack Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
+          
+      - name: Install dependencies
+        run: |
+          cd phialo-design
+          pnpm install --frozen-lockfile
+          
+      - name: Install Playwright browsers
+        run: |
+          cd phialo-design
+          pnpm exec playwright install chromium webkit
+          
+      # TODO: [Issue #347] Re-enable when Playwright/BrowserStack SDK compatibility is resolved
+      # The browserstack-node-sdk v1.40.8 has compatibility issues with Playwright v1.54.2
+      # causing gRPC serialization errors and "Unknown scheme for Initializer: Selectors" errors
+      # - name: Run BrowserStack tests
+      #   run: |
+      #     cd phialo-design
+      #     pnpm run test:browserstack:smoke
+      #   env:
+      #     BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      #     BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      #     BUILD_ID: pr-${{ needs.check-trigger.outputs.pr-number }}-${{ github.run_number }}
+      #     BROWSERSTACK_BUILD_NAME: 'PR #${{ needs.check-trigger.outputs.pr-number }}'
+      #     BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
+      #     BASE_URL: https://phialo-pr-${{ needs.check-trigger.outputs.pr-number }}.meise.workers.dev
+      
+      - name: Skip BrowserStack tests temporarily
+        run: |
+          echo "⚠️ BrowserStack tests temporarily disabled"
+          echo "See Issue #347 for SDK compatibility fix"
+          echo "Infrastructure is ready but tests are skipped due to third-party SDK issues"
+          
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browserstack-pr-results
+          path: |
+            phialo-design/test-results/
+            phialo-design/browserstack-report/
+            phialo-design/browserstack-results.json
+          retention-days: 7

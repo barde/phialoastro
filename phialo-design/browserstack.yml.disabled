@@ -1,0 +1,39 @@
+# BrowserStack Configuration
+# Official documentation: https://www.browserstack.com/docs/automate/playwright
+
+# Authentication credentials will be set via environment variables:
+# BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY
+
+# Build configuration
+buildName: 'Phialo Design - Build ${BUILD_ID}'
+projectName: 'Phialo Design'
+
+# Browsers to test on (limited to 3 for PR tests)
+platforms:
+  - os: Windows
+    osVersion: 11
+    browserName: playwright-chromium
+    browserVersion: latest
+  - os: OS X
+    osVersion: Sonoma
+    browserName: playwright-webkit
+    browserVersion: latest
+  - deviceName: iPhone 14 Pro
+    osVersion: 16
+    browserName: playwright-webkit
+    realMobile: true
+
+# Test execution settings
+parallelsPerPlatform: 1
+browserstackLocal: false
+debug: true
+networkLogs: true
+consoleLogs: errors
+
+# Test observability
+testObservability: true
+buildTag: 'pr-tests'
+
+# Framework specific settings
+framework: playwright
+playwrightVersion: 1.54.2

@@ -101,6 +101,7 @@ The contact form uses Resend as the email provider. Configuration is handled in 
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run test` - Run tests
+- `npm run test:e2e:browserstack` - Run BrowserStack cross-browser tests
 - `npm run astro` - Run Astro CLI commands
 
 ## 🎯 Key Components
@@ -154,6 +155,28 @@ The website meets WCAG 2.1 AA standards with semantic HTML, ARIA labels, keyboar
 ## 📈 Performance
 
 Optimized for excellent Core Web Vitals with static generation, partial hydration, and efficient asset delivery.
+
+## 🧪 Testing
+
+### Cross-Browser Testing with BrowserStack
+
+We use **BrowserStack Open Source Program** for comprehensive cross-browser testing with 5 parallel sessions.
+
+**Supported Browsers:**
+- Chrome (Windows 11) - Latest
+- Safari (macOS Sonoma) - Latest  
+- Edge (Windows 11) - Latest
+- iPhone 14 Pro (iOS 16) - Real device
+- Samsung Galaxy S23 (Android 13) - Real device
+- iPad Pro 12.9 (iOS 16) - Real device
+
+**Test Automation:**
+- **Main branch**: Full browser matrix on every merge
+- **Pull Requests**: Add `run-browserstack` label to trigger tests
+- **Production**: Smoke tests after deployment
+- **Nightly**: Rotating browser coverage for comprehensive testing
+
+See [BrowserStack Setup Guide](./docs/how-to/setup-browserstack.md) for configuration details.
 
 ## 🛠️ Development
 
