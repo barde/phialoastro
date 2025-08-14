@@ -73,24 +73,18 @@ jobs:
             sleep 10
           done
 
-      # TODO: [Issue #347] Re-enable when Playwright/BrowserStack SDK compatibility is resolved
-      # - name: Run BrowserStack smoke tests
-      #   run: |
-      #     cd phialo-design
-      #     pnpm run test:browserstack:smoke
-      #   env:
-      #     BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-      #     BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      #     BASE_URL: ${{ steps.url.outputs.target_url }}
-      #     DEPLOYMENT_URL: ${{ steps.url.outputs.target_url }}
-      #     BUILD_ID: ${{ github.run_number }}-${{ github.sha }}
-      #     BROWSERSTACK_BUILD_NAME: 'Production Smoke #${{ github.run_number }}'
-      
-      - name: Skip BrowserStack tests temporarily
+      - name: Run BrowserStack smoke tests
         run: |
-          echo "⚠️ BrowserStack tests temporarily disabled"
-          echo "See Issue #347 for SDK compatibility fix"
-          exit 0
+          cd phialo-design
+          pnpm run test:browserstack:smoke
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BASE_URL: ${{ steps.url.outputs.target_url }}
+          DEPLOYMENT_URL: ${{ steps.url.outputs.target_url }}
+          BUILD_ID: ${{ github.run_number }}-${{ github.sha }}
+          BROWSERSTACK_BUILD_NAME: 'Production Smoke #${{ github.run_number }}'
+          BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
 
       - name: Upload test results
         if: always()
