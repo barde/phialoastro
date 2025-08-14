@@ -1,0 +1,144 @@
+name: BrowserStack Main
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Test filter (e.g., @critical, @smoke)'
+        required: false
+        default: '@critical|@browserstack'
+        type: string
+
+concurrency:
+  group: browserstack-main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 1  # Run sequentially to stay within 5 session BrowserStack limit
+      matrix:
+        project:
+          # Reduced to 3 core browsers for main branch testing
+          - 'Chrome@latest-Windows'
+          - 'Safari@latest-macOS'
+          - 'iPhone-14-Pro'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.14.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          cd phialo-design
+          pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd phialo-design
+          pnpm exec playwright install chromium webkit
+        # BrowserStack provides real browsers, but we need these for local device emulation
+
+      # TODO: [Issue #347] Re-enable when Playwright/BrowserStack SDK compatibility is resolved
+      # The browserstack-node-sdk v1.40.8 has compatibility issues with Playwright v1.54.2
+      # - name: Run BrowserStack tests
+      #   run: |
+      #     cd phialo-design
+      #     pnpm run test:browserstack
+      #   env:
+      #     BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      #     BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      #     BUILD_ID: main-${{ github.run_number }}-${{ github.sha }}
+      #     BROWSERSTACK_BUILD_NAME: 'Main Branch #${{ github.run_number }}'
+      #     BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
+      #     TEST_SESSION_NAME: 'Main Branch - ${{ matrix.project }}'
+      #     TEST_TAG: ${{ inputs.test_filter || '@critical|@browserstack' }}
+      
+      - name: Skip BrowserStack tests temporarily
+        run: |
+          echo "⚠️ BrowserStack tests temporarily disabled"
+          echo "See Issue #347 for SDK compatibility fix"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browserstack-results-${{ matrix.project }}
+          path: |
+            phialo-design/browserstack-report/
+            phialo-design/browserstack-results.json
+            phialo-design/test-results/
+          retention-days: 7
+
+      - name: Upload trace on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browserstack-trace-${{ matrix.project }}
+          path: phialo-design/test-results/
+          retention-days: 7
+
+  report:
+    name: Test Report
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results
+
+      - name: Merge test results
+        run: |
+          mkdir -p merged-results
+          find all-results -name "*.json" -type f -exec cp {} merged-results/ \;
+          echo "## BrowserStack Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Browser | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          for project in "Chrome@latest-Windows" "Safari@latest-macOS" "Edge@latest-Windows" "iPhone-14-Pro" "Samsung-S23" "iPad-Pro-12.9"; do
+            if [ -d "all-results/browserstack-results-$project" ]; then
+              echo "| $project | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| $project | ❌ Failed/Skipped |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View in BrowserStack Dashboard](https://automate.browserstack.com/)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on commit
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = `❌ BrowserStack tests failed on main branch\n\n[View test results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n[View in BrowserStack Dashboard](https://automate.browserstack.com/)`;
+            
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: message
+            });

@@ -1,0 +1,268 @@
+name: BrowserStack Nightly
+
+on:
+  schedule:
+    # Run at 3 AM UTC every day
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      browser_group:
+        description: 'Browser group to test (A, B, or all)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - group-a
+          - group-b
+          - all
+
+concurrency:
+  group: browserstack-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  determine-browser-group:
+    name: Determine Browser Group
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.set-matrix.outputs.projects }}
+      group_name: ${{ steps.set-matrix.outputs.group_name }}
+    steps:
+      - name: Calculate browser group
+        id: set-matrix
+        run: |
+          # Determine which browser group to run based on day or input
+          if [[ "${{ inputs.browser_group }}" == "all" ]]; then
+            echo 'projects=["Chrome@latest-Windows","Safari@latest-macOS","Edge@latest-Windows","iPhone-14-Pro","Samsung-S23","iPad-Pro-12.9"]' >> $GITHUB_OUTPUT
+            echo "group_name=All Browsers" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.browser_group }}" == "group-a" ]]; then
+            echo 'projects=["Chrome@latest-Windows","Safari@latest-macOS","iPhone-14-Pro"]' >> $GITHUB_OUTPUT
+            echo "group_name=Group A (Chrome, Safari, iPhone)" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.browser_group }}" == "group-b" ]]; then
+            echo 'projects=["Edge@latest-Windows","Samsung-S23","iPad-Pro-12.9"]' >> $GITHUB_OUTPUT
+            echo "group_name=Group B (Edge, Samsung, iPad)" >> $GITHUB_OUTPUT
+          else
+            # Auto mode: alternate based on day of year
+            DAY_OF_YEAR=$(date +%j)
+            if [ $((DAY_OF_YEAR % 2)) -eq 0 ]; then
+              echo 'projects=["Chrome@latest-Windows","Safari@latest-macOS","iPhone-14-Pro"]' >> $GITHUB_OUTPUT
+              echo "group_name=Group A (Chrome, Safari, iPhone)" >> $GITHUB_OUTPUT
+            else
+              echo 'projects=["Edge@latest-Windows","Samsung-S23","iPad-Pro-12.9"]' >> $GITHUB_OUTPUT
+              echo "group_name=Group B (Edge, Samsung, iPad)" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  test:
+    name: ${{ matrix.project }}
+    needs: determine-browser-group
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.determine-browser-group.outputs.projects) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.14.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          cd phialo-design
+          pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: |
+          cd phialo-design
+          pnpm exec playwright install chromium webkit
+
+      - name: Run BrowserStack tests
+        run: |
+          cd phialo-design
+          # Run full test suite for nightly (not just @critical)
+          pnpm run test:browserstack
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BUILD_ID: nightly-${{ github.run_number }}-$(date +%Y%m%d)
+          BROWSERSTACK_BUILD_NAME: 'Nightly Tests - $(date +%Y-%m-%d)'
+          BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
+          TEST_SESSION_NAME: 'Nightly - ${{ matrix.project }}'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-results-${{ matrix.project }}
+          path: |
+            phialo-design/browserstack-report/
+            phialo-design/browserstack-results.json
+            phialo-design/test-results/
+          retention-days: 14
+
+  report:
+    name: Nightly Test Report
+    needs: [determine-browser-group, test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results
+
+      - name: Generate test summary
+        run: |
+          echo "# BrowserStack Nightly Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u +"%Y-%m-%d %H:%M UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "**Browser Group:** ${{ needs.determine-browser-group.outputs.group_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Browser | Status | Report |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse results from artifacts
+          for project in $(echo '${{ needs.determine-browser-group.outputs.projects }}' | jq -r '.[]'); do
+            if [ -d "all-results/nightly-results-$project" ]; then
+              echo "| $project | ✅ Completed | [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| $project | ❌ Failed | [View](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Coverage Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total browsers tested today:** $(echo '${{ needs.determine-browser-group.outputs.projects }}' | jq '. | length')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test suite:** Full E2E test suite (not limited to @critical)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Parallel sessions used:** 3 of 5 available" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View in BrowserStack Dashboard](https://automate.browserstack.com/)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create or update tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().split('T')[0];
+            const title = `BrowserStack Nightly Report - Week of ${today}`;
+            
+            // Search for existing weekly issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'browserstack-nightly',
+              sort: 'created',
+              direction: 'desc',
+              per_page: 1
+            });
+            
+            const testStatus = '${{ needs.test.result }}' === 'success' ? '✅' : '❌';
+            const runLink = `[${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            const groupName = '${{ needs.determine-browser-group.outputs.group_name }}';
+            
+            const newEntry = `| ${today} | ${testStatus} | ${groupName} | ${runLink} |`;
+            
+            if (issues.length > 0 && issues[0].title.includes('Week of')) {
+              // Update existing issue
+              const issue = issues[0];
+              let body = issue.body || '';
+              
+              // Add today's results if not already present
+              if (!body.includes(today)) {
+                body = body.replace('| Date | Status | Browser Group | Run |', 
+                                   `| Date | Status | Browser Group | Run |\n${newEntry}`);
+                
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: body
+                });
+              }
+            } else {
+              // Create new weekly issue
+              const body = `## BrowserStack Nightly Test Tracking
+              
+              This issue tracks the nightly BrowserStack test runs for this week.
+              
+              ### Test Configuration
+              - **Schedule:** Daily at 3:00 AM UTC
+              - **Strategy:** Alternating browser groups (3 browsers per night)
+              - **Coverage:** Full E2E test suite
+              
+              ### Results
+              
+              | Date | Status | Browser Group | Run |
+              |------|--------|---------------|-----|
+              ${newEntry}
+              
+              ### Browser Groups
+              - **Group A:** Chrome (Windows), Safari (macOS), iPhone 14 Pro
+              - **Group B:** Edge (Windows), Samsung S23, iPad Pro
+              
+              ### Actions
+              - [ ] Review failed tests
+              - [ ] Update flaky test list
+              - [ ] Report browser-specific issues
+              
+              ---
+              *This issue will be automatically closed and a new one created each week.*`;
+              
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['browserstack-nightly', 'automated']
+              });
+            }
+
+      - name: Send failure notification
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Create a high-priority issue for nightly test failures
+            const title = `⚠️ Nightly BrowserStack Tests Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## Nightly Test Failure
+            
+            **Browser Group:** ${{ needs.determine-browser-group.outputs.group_name }}
+            **Failed Tests:** Check [run details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ### Immediate Actions Required
+            1. Review test failures in BrowserStack Dashboard
+            2. Identify if failures are test-related or actual bugs
+            3. Create bug tickets for actual issues
+            4. Update test stability tracking
+            
+            ### Affected Browsers
+            ${JSON.parse('${{ needs.determine-browser-group.outputs.projects }}').map(b => `- ${b}`).join('\n')}`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'browserstack-nightly', 'needs-triage']
+            });
