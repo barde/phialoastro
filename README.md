@@ -63,6 +63,16 @@ A luxury jewelry portfolio website built with cutting-edge web technologies, fea
    git lfs install
    ```
 
+3. **Lefthook** (Optional - for Git hooks)
+   ```bash
+   # Install globally to avoid "Can't find lefthook in PATH" warnings
+   npm install -g lefthook
+   
+   # Or install locally and use via npx (already in package.json)
+   cd phialo-design && pnpm install
+   npx lefthook install
+   ```
+
 ### Installation
 
 ```bash
@@ -77,6 +87,9 @@ pnpm install
 # Install dependencies for Cloudflare Workers
 cd ../workers
 pnpm install
+
+# Setup Git hooks (optional but recommended)
+cd .. && npx lefthook install
 ```
 
 ### Development
@@ -204,6 +217,19 @@ pnpm run test:e2e:debug
 # Coverage report
 pnpm run test:unit:coverage
 ```
+
+## 🛠️ Development Tools
+
+### Git Hooks with Lefthook
+
+This project uses [Lefthook](https://github.com/evilmartians/lefthook) for Git hooks management:
+
+- **Pre-commit**: Runs actionlint on GitHub Actions workflow files
+- **Pre-push**: Checks repository size and lints all workflows
+
+To avoid "Can't find lefthook in PATH" warnings, either:
+- Install globally: `npm install -g lefthook`
+- Use via npx: `npx lefthook install` (after running `pnpm install`)
 
 ## 🤝 Contributing
 
