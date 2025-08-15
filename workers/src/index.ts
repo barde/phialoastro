@@ -4,6 +4,8 @@ import { handleError } from './utils/errors';
 import { applySecurityHeaders } from './handlers/security';
 import { logger, LogLevel } from './utils/logger';
 import { getEnvironmentConfig } from './config/index';
+import { compressionMiddleware } from './handlers/compression';
+import { cachingMiddleware } from './handlers/caching';
 
 // Initialize router
 const router = createRouter();
@@ -33,15 +35,25 @@ export default {
         headers
       });
       
-      // Handle request through router
-      console.log('About to call router.fetch');
-      // itty-router v5 requires passing env and ctx as separate arguments  
-      const response = await router.fetch(request, env, ctx);
-      console.log('Router returned response:', response);
+      // Create middleware chain
+      const middlewareChain = async (): Promise<Response> => {
+        console.log('About to call router.fetch');
+        // itty-router v5 requires passing env and ctx as separate arguments  
+        const response = await router.fetch(request, env, ctx);
+        console.log('Router returned response:', response);
+        
+        if (!response) {
+          throw new Error('No response from router');
+        }
+        
+        return response;
+      };
       
-      if (!response) {
-        throw new Error('No response from router');
-      }
+      // Apply compression middleware
+      let response = await compressionMiddleware(request, context, middlewareChain);
+      
+      // Apply caching middleware
+      response = await cachingMiddleware(request, context, async () => response);
       
       // Apply security headers
       return applySecurityHeaders(response, request);
