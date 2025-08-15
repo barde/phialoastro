@@ -1,4 +1,20 @@
-name: PR Docker Builds
+# WORKFLOW DISABLED - August 2025
+# 
+# This workflow was disabled because the PR-specific Docker images it builds
+# are not actually used by any test workflows. Analysis showed:
+# 
+# 1. No test workflows reference these PR-specific images (pr-{number}-*)
+# 2. The workflow only runs basic smoke tests (version checks)
+# 3. Building 3 Docker images per PR wastes ~5-10 minutes of CI time
+# 4. Consumes GitHub Actions minutes and registry storage unnecessarily
+#
+# To re-enable this workflow with value:
+# - Update E2E test workflows to use PR-specific images for isolated testing
+# - OR convert to manual trigger only for debugging specific PRs
+#
+# Original workflow below for reference:
+
+name: PR Docker Builds [DISABLED]
 
 on:
   pull_request:
