@@ -137,10 +137,11 @@ jobs:
         run: pnpm install --frozen-lockfile
       
       - name: Build Astro site
-        working-directory: ./phialo-design
-        env:
+        uses: ./.github/actions/build-astro
+        with:
+          working-directory: ./phialo-design
           PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-        run: pnpm run build
+          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
       
       - name: Install Wrangler
         working-directory: ./workers

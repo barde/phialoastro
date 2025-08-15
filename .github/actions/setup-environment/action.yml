@@ -1,0 +1,69 @@
+name: 'Setup Build Environment'
+description: 'Setup Node.js, pnpm, and install dependencies'
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '20'
+  pnpm-version:
+    description: 'pnpm version to use'
+    required: false
+    default: '9'
+  install-design-deps:
+    description: 'Install phialo-design dependencies'
+    required: false
+    default: 'true'
+  install-worker-deps:
+    description: 'Install workers dependencies'
+    required: false
+    default: 'true'
+  use-cache:
+    description: 'Use pnpm cache'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+    
+    - name: Get pnpm store directory
+      if: inputs.use-cache == 'true'
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+    
+    - name: Setup pnpm cache
+      if: inputs.use-cache == 'true'
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+    
+    - name: Install phialo-design dependencies
+      if: inputs.install-design-deps == 'true'
+      working-directory: ./phialo-design
+      shell: bash
+      run: pnpm install --frozen-lockfile
+    
+    - name: Install workers dependencies
+      if: inputs.install-worker-deps == 'true'
+      working-directory: ./workers
+      shell: bash
+      run: pnpm install --frozen-lockfile
+    
+    - name: Install Wrangler
+      if: inputs.install-worker-deps == 'true'
+      working-directory: ./workers
+      shell: bash
+      run: pnpm install wrangler@4.22.0
