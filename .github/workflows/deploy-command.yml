@@ -164,14 +164,14 @@ jobs:
           fi
           
           # Set secrets for the deployed worker
-          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name $WORKER_NAME
-          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name $WORKER_NAME
-          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name $WORKER_NAME
-          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name $WORKER_NAME
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name $WORKER_NAME --env=""
+          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name $WORKER_NAME --env=""
+          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name $WORKER_NAME --env=""
+          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name $WORKER_NAME --env=""
           
           # Set optional REPLY_TO_EMAIL if it exists
           if [ -n "${{ secrets.REPLY_TO_EMAIL }}" ]; then
-            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name $WORKER_NAME
+            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name $WORKER_NAME --env=""
           fi
       
       - name: Get deployment URL

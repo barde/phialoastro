@@ -69,12 +69,12 @@ runs:
         CLOUDFLARE_ACCOUNT_ID: ${{ inputs.CLOUDFLARE_ACCOUNT_ID }}
       run: |
         # Set all required secrets for the deployed worker
-        echo "${{ inputs.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name ${{ inputs.worker-name }}
-        echo "${{ inputs.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name ${{ inputs.worker-name }}
-        echo "${{ inputs.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name ${{ inputs.worker-name }}
-        echo "${{ inputs.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name ${{ inputs.worker-name }}
+        echo "${{ inputs.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name ${{ inputs.worker-name }} --env=""
+        echo "${{ inputs.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name ${{ inputs.worker-name }} --env=""
+        echo "${{ inputs.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name ${{ inputs.worker-name }} --env=""
+        echo "${{ inputs.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name ${{ inputs.worker-name }} --env=""
         
         # Set optional REPLY_TO_EMAIL if provided
         if [ -n "${{ inputs.REPLY_TO_EMAIL }}" ]; then
-          echo "${{ inputs.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name ${{ inputs.worker-name }}
+          echo "${{ inputs.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name ${{ inputs.worker-name }} --env=""
         fi
