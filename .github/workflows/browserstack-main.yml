@@ -58,25 +58,18 @@ jobs:
           pnpm exec playwright install chromium webkit
         # BrowserStack provides real browsers, but we need these for local device emulation
 
-      # TODO: [Issue #347] Re-enable when Playwright/BrowserStack SDK compatibility is resolved
-      # The browserstack-node-sdk v1.40.8 has compatibility issues with Playwright v1.54.2
-      # - name: Run BrowserStack tests
-      #   run: |
-      #     cd phialo-design
-      #     pnpm run test:browserstack
-      #   env:
-      #     BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-      #     BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      #     BUILD_ID: main-${{ github.run_number }}-${{ github.sha }}
-      #     BROWSERSTACK_BUILD_NAME: 'Main Branch #${{ github.run_number }}'
-      #     BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
-      #     TEST_SESSION_NAME: 'Main Branch - ${{ matrix.project }}'
-      #     TEST_TAG: ${{ inputs.test_filter || '@critical|@browserstack' }}
-      
-      - name: Skip BrowserStack tests temporarily
+      - name: Run BrowserStack tests
         run: |
-          echo "⚠️ BrowserStack tests temporarily disabled"
-          echo "See Issue #347 for SDK compatibility fix"
+          cd phialo-design
+          pnpm run test:browserstack
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BUILD_ID: main-${{ github.run_number }}-${{ github.sha }}
+          BROWSERSTACK_BUILD_NAME: 'Main Branch #${{ github.run_number }}'
+          BROWSERSTACK_PROJECT_NAME: 'Phialo Design'
+          TEST_SESSION_NAME: 'Main Branch - ${{ matrix.project }}'
+          TEST_TAG: ${{ inputs.test_filter || '@critical|@browserstack' }}
 
       - name: Upload test results
         if: always()
