@@ -20,6 +20,9 @@ const {
   lang = "de"
 } = Astro.props;
 
+// Get Cloudflare Analytics token from environment variable
+const analyticsToken = import.meta.env.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN;
+
 // Default descriptions based on language - now lang is available
 const defaultDescriptions = {
   de: "Phialo Design - Wo Schmuck auf Innovation trifft. 3D Design, individuelle Kreationen und Expertise in der Schmuckherstellung.",
@@ -105,8 +108,14 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <SmoothScroll client:load />
     <slot />
     
-    <!-- Cloudflare Web Analytics -->
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "YOUR_ANALYTICS_TOKEN"}'></script>
+    <!-- Cloudflare Web Analytics - Only load when token is present -->
+    {analyticsToken && (
+      <script 
+        defer 
+        src='https://static.cloudflareinsights.com/beacon.min.js' 
+        data-cf-beacon={JSON.stringify({ token: analyticsToken })}>
+      </script>
+    )}
     
     <!-- Performance hints -->
     <script>

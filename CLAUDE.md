@@ -393,6 +393,29 @@ pnpm list --depth=0 | grep -E "^├|^└" | sort -k2 -hr
 - [ ] Enable Astro's compression
 - [ ] Use CSS modules for component styles
 
+## Analytics Configuration
+
+### Cloudflare Web Analytics
+
+The site uses Cloudflare Web Analytics for privacy-compliant visitor tracking:
+
+- **Environment Variable**: `PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN`
+- **Token Location**: Cloudflare Dashboard → Analytics & Logs → Web Analytics
+- **Implementation**: Automatically disabled in development when token is not set
+- **Privacy**: No cookies, no personal data collection, GDPR compliant
+
+**Setup Instructions**:
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Navigate to Analytics & Logs → Web Analytics
+3. Add your site (phialo.de) if not already added
+4. Copy the Site Token from the provided snippet
+5. Add to `.env` file: `PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN=your_token`
+
+**Environment-Specific Behavior**:
+- Development: Analytics disabled when token is not set
+- Production: Analytics enabled with production token
+- Preview/PR: Can use separate tokens for testing
+
 ## Security Features
 
 ### Cloudflare Turnstile Pre-clearance
