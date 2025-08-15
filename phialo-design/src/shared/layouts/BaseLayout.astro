@@ -105,7 +105,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <ClientRouter />
   </head>
   <body class="min-h-screen antialiased">
-    <SmoothScroll client:load />
+    <SmoothScroll client:idle />
     <slot />
     
     <!-- Cloudflare Web Analytics - Only load when token is present -->
