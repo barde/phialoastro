@@ -10,59 +10,74 @@ export default function SmoothScroll({
   easing = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
 }: SmoothScrollOptions = {}) {
   useEffect(() => {
-    // Enable smooth scrolling for the entire document
-    document.documentElement.style.scrollBehavior = 'smooth';
+    let cleanup: (() => void) | undefined;
 
-    // Enhanced smooth scroll for anchor links
-    const handleAnchorClick = (e: Event) => {
-      const target = e.target as HTMLAnchorElement;
-      if (!target.href) return;
-      
-      const url = new URL(target.href);
-      const hash = url.hash;
-      
-      if (hash && url.pathname === window.location.pathname) {
-        e.preventDefault();
-        const element = document.querySelector(hash);
+    const initSmoothScroll = () => {
+      // Enable smooth scrolling for the entire document
+      document.documentElement.style.scrollBehavior = 'smooth';
+
+      // Enhanced smooth scroll for anchor links
+      const handleAnchorClick = (e: Event) => {
+        const target = e.target as HTMLAnchorElement;
+        if (!target.href) return;
         
-        if (element) {
-          const headerHeight = 80; // Account for fixed header
-          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+        const url = new URL(target.href);
+        const hash = url.hash;
+        
+        if (hash && url.pathname === window.location.pathname) {
+          e.preventDefault();
+          const element = document.querySelector(hash);
           
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
-          });
+          if (element) {
+            const headerHeight = 80; // Account for fixed header
+            const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+            
+            window.scrollTo({
+              top: targetPosition,
+              behavior: 'smooth'
+            });
+          }
         }
-      }
-    };
+      };
 
-    // Add event listeners to all anchor links
-    const links = document.querySelectorAll('a[href^="#"]');
-    links.forEach(link => {
-      link.addEventListener('click', handleAnchorClick);
-    });
-
-    // Parallax effect for hero elements
-    const handleScroll = () => {
-      const scrolled = window.pageYOffset;
-      const parallaxElements = document.querySelectorAll('[data-parallax]');
-      
-      parallaxElements.forEach(element => {
-        const speed = parseFloat(element.getAttribute('data-parallax') || '0.5');
-        const transform = `translateY(${scrolled * speed}px)`;
-        (element as HTMLElement).style.transform = transform;
+      // Add event listeners to all anchor links
+      const links = document.querySelectorAll('a[href^="#"]');
+      links.forEach(link => {
+        link.addEventListener('click', handleAnchorClick);
       });
+
+      // Parallax effect for hero elements
+      const handleScroll = () => {
+        const scrolled = window.pageYOffset;
+        const parallaxElements = document.querySelectorAll('[data-parallax]');
+        
+        parallaxElements.forEach(element => {
+          const speed = parseFloat(element.getAttribute('data-parallax') || '0.5');
+          const transform = `translateY(${scrolled * speed}px)`;
+          (element as HTMLElement).style.transform = transform;
+        });
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+
+      // Return cleanup function
+      cleanup = () => {
+        links.forEach(link => {
+          link.removeEventListener('click', handleAnchorClick);
+        });
+        window.removeEventListener('scroll', handleScroll);
+      };
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Use requestAnimationFrame to defer execution until after layout
+    if (document.readyState === 'complete') {
+      requestAnimationFrame(initSmoothScroll);
+    } else {
+      window.addEventListener('load', initSmoothScroll);
+    }
 
     return () => {
-      // Cleanup
-      links.forEach(link => {
-        link.removeEventListener('click', handleAnchorClick);
-      });
-      window.removeEventListener('scroll', handleScroll);
+      if (cleanup) cleanup();
     };
   }, [duration, easing]);
 
