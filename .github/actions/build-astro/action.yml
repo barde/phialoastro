@@ -1,0 +1,33 @@
+name: 'Build Astro Site'
+description: 'Build Astro site with all required environment variables'
+inputs:
+  working-directory:
+    description: 'Working directory for the build'
+    required: false
+    default: './phialo-design'
+  PUBLIC_TURNSTILE_SITE_KEY:
+    description: 'Turnstile site key for CAPTCHA'
+    required: false
+  PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN:
+    description: 'Cloudflare Analytics token'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Build Astro site with all environment variables
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      env:
+        # Pass all PUBLIC_ inputs as environment variables
+        PUBLIC_TURNSTILE_SITE_KEY: ${{ inputs.PUBLIC_TURNSTILE_SITE_KEY }}
+        PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ inputs.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
+      run: |
+        # Log which environment variables are set (without showing values)
+        echo "Environment variables configured:"
+        [ ! -z "$PUBLIC_TURNSTILE_SITE_KEY" ] && echo "✓ PUBLIC_TURNSTILE_SITE_KEY is set" || echo "✗ PUBLIC_TURNSTILE_SITE_KEY is not set"
+        [ ! -z "$PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN" ] && echo "✓ PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN is set" || echo "✗ PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN is not set"
+        echo ""
+        
+        # Build the site
+        pnpm run build

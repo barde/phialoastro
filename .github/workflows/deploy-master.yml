@@ -27,38 +27,17 @@ jobs:
         with:
           lfs: true
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
         with:
-          node-version: '20'
-      
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-      
-      - name: Install dependencies
-        working-directory: ./phialo-design
-        run: pnpm install --frozen-lockfile
+          use-cache: true
       
       - name: Build Astro site
-        working-directory: ./phialo-design
-        env:
+        uses: ./.github/actions/build-astro
+        with:
+          working-directory: ./phialo-design
           PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-        run: pnpm run build
+          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
         
       - name: Create temporary wrangler config
         working-directory: ./workers
@@ -78,30 +57,18 @@ jobs:
           ENVIRONMENT = "master"
           EOF
       
-      - name: Install Wrangler
-        working-directory: ./workers
-        run: npm install wrangler@4.22.0
-      
       - name: Deploy to Cloudflare Workers
-        id: deploy
-        working-directory: ./workers
-        env:
+        uses: ./.github/actions/deploy-worker
+        with:
+          environment: master
+          worker-name: phialo-master
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          # Deploy the worker
-          npx wrangler deploy --config wrangler-master.toml
-          
-          # Set secrets for the deployed worker
-          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-master
-          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-master
-          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-master
-          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-master
-          
-          # Set optional REPLY_TO_EMAIL if it exists
-          if [ -n "${{ secrets.REPLY_TO_EMAIL }}" ]; then
-            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-master
-          fi
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
       
       - name: Clean up temporary config
         if: always()
