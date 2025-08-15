@@ -161,6 +161,9 @@ REPLY_TO_EMAIL             # Optional reply-to address
 # Security (Turnstile)
 PUBLIC_TURNSTILE_SITE_KEY  # Public site key
 TURNSTILE_SECRET_KEY       # Secret key for validation
+
+# Analytics (Cloudflare Web Analytics)
+PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN  # Web Analytics token for visitor metrics
 ```
 
 ### Deployment Commands
