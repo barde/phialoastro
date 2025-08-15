@@ -158,11 +158,11 @@ jobs:
           npx wrangler deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
           
           # Set secrets for the deployed worker
-          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }}
-          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
-          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
-          echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }}
-          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-pr-${{ github.event.pull_request.number }}
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
       
       - name: Extract deployment URL
         id: extract-url
