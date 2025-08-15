@@ -1,0 +1,523 @@
+/**
+ * Mobile Performance Optimizations
+ * Enhances touch targets, reduces motion, and optimizes for mobile devices
+ */
+
+/* ========================================
+   Touch Target Optimizations
+   ======================================== */
+
+/* Ensure all interactive elements meet minimum touch target size (44x44px) */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[role="link"],
+[tabindex]:not([tabindex="-1"]) {
+  min-height: 44px;
+  min-width: 44px;
+  position: relative;
+}
+
+/* Add invisible touch area expansion for small buttons/links */
+button::before,
+a::before,
+[role="button"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  pointer-events: none;
+}
+
+/* Ensure adequate spacing between touch targets */
+.touch-target-group > * + * {
+  margin-top: 8px;
+}
+
+/* Form elements specific optimizations */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+textarea,
+select {
+  padding: 12px;
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* Checkbox and radio button touch areas */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 24px;
+  height: 24px;
+  margin: 10px; /* Creates 44x44px touch target with margin */
+}
+
+/* ========================================
+   Hover State Optimizations for Touch
+   ======================================== */
+
+/* Disable hover effects on touch devices to prevent sticky hover */
+@media (hover: none) and (pointer: coarse) {
+  button:hover,
+  a:hover,
+  [role="button"]:hover {
+    /* Reset to non-hover state */
+    background-color: inherit;
+    color: inherit;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Use :active for touch feedback instead */
+  button:active,
+  a:active,
+  [role="button"]:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  }
+}
+
+/* Ensure :focus-visible works properly on mobile */
+@media (pointer: coarse) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid var(--color-primary, #007AFF);
+    outline-offset: 2px;
+  }
+}
+
+/* ========================================
+   Scrolling Performance
+   ======================================== */
+
+/* Optimize scrolling performance */
+.scrollable,
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch; /* Momentum scrolling on iOS */
+  overflow-scrolling: touch;
+  will-change: transform; /* Hint for GPU acceleration */
+}
+
+/* Prevent horizontal scrolling issues */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Stable scrollbar to prevent layout shifts */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+/* Smooth scrolling with respect to reduced motion */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ========================================
+   Reduced Motion Support
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all animations and transitions */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Remove parallax effects */
+  .parallax {
+    transform: none !important;
+    position: static !important;
+  }
+  
+  /* Disable auto-playing videos */
+  video[autoplay] {
+    display: none;
+  }
+  
+  /* Show static image alternative if available */
+  video[autoplay] + img {
+    display: block;
+  }
+  
+  /* Simplify complex transforms */
+  .animate-in,
+  .fade-in,
+  .slide-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ========================================
+   Performance Optimizations
+   ======================================== */
+
+/* Use CSS containment for better performance */
+.card,
+.portfolio-item,
+.blog-post,
+[data-component] {
+  contain: layout style paint;
+}
+
+/* Optimize font loading */
+@supports (font-display: swap) {
+  @font-face {
+    font-display: swap;
+  }
+}
+
+/* Disable user selection for UI elements */
+button,
+nav,
+.toolbar,
+.menu,
+[role="navigation"],
+[role="toolbar"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* Disable callout on iOS */
+}
+
+/* Allow text selection in content areas */
+article,
+main,
+.content,
+p,
+h1, h2, h3, h4, h5, h6 {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ========================================
+   Mobile-First Responsive Design
+   ======================================== */
+
+/* Base mobile styles (mobile-first approach) */
+.container {
+  padding: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.hero {
+  height: 60vh; /* Smaller height on mobile */
+  background-size: cover;
+  background-position: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Progressive enhancement for tablets */
+@media (min-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  .hero {
+    height: 70vh;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Progressive enhancement for desktop */
+@media (min-width: 1024px) {
+  .container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .hero {
+    height: 80vh;
+    background-attachment: fixed; /* Enable parallax only on desktop */
+  }
+  
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Large desktop enhancement */
+@media (min-width: 1440px) {
+  .container {
+    padding: 3rem;
+    max-width: 1400px;
+  }
+  
+  .hero {
+    height: 100vh;
+  }
+}
+
+/* ========================================
+   Input and Form Optimizations
+   ======================================== */
+
+/* Prevent zoom on input focus in iOS */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important; /* Forces iOS not to zoom */
+  }
+}
+
+/* Optimize form layout on mobile */
+@media (max-width: 768px) {
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  
+  input[type="submit"],
+  button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+/* ========================================
+   Mobile Navigation Optimizations
+   ======================================== */
+
+/* Ensure mobile menu is easily accessible */
+.mobile-menu-button {
+  position: fixed;
+  z-index: 9999;
+  padding: 12px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+/* Full-screen mobile menu overlay */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Large touch targets in mobile menu */
+.mobile-menu a,
+.mobile-menu button {
+  display: block;
+  padding: 16px 24px;
+  min-height: 56px;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   Image and Media Optimizations
+   ======================================== */
+
+/* Responsive images with aspect ratio preservation */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Lazy loading placeholder styles */
+img[loading="lazy"] {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #f8f8f8 50%,
+    #f0f0f0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Disable shimmer for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  img[loading="lazy"] {
+    animation: none;
+    background: #f0f0f0;
+  }
+}
+
+/* ========================================
+   Network-Aware Styles
+   ======================================== */
+
+/* Styles for slow connections (applied via JavaScript) */
+[data-network-speed="slow"] {
+  /* Disable background images on slow connections */
+  .hero,
+  .banner,
+  .decorative-bg {
+    background-image: none !important;
+    background-color: var(--fallback-bg-color, #f0f0f0);
+  }
+  
+  /* Hide non-essential decorative elements */
+  .decorative,
+  .ornament,
+  [aria-hidden="true"]:not(.icon) {
+    display: none;
+  }
+  
+  /* Simplify shadows and effects */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+}
+
+/* Styles for data saver mode */
+[data-save-data="true"] {
+  /* Remove decorative fonts */
+  * {
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  
+  /* Disable video autoplay */
+  video {
+    display: none;
+  }
+  
+  /* Show placeholder for videos */
+  video + .video-placeholder {
+    display: block;
+  }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+/* Touch-friendly padding */
+.touch-padding {
+  padding: 12px;
+}
+
+/* Touch-friendly margins */
+.touch-margin {
+  margin: 8px;
+}
+
+/* Hide on mobile */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Show only on mobile */
+.show-mobile {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .show-mobile {
+    display: block !important;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Force hardware acceleration */
+.accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize for print (mobile users might print) */
+@media print {
+  /* Hide non-essential elements */
+  nav,
+  footer,
+  .no-print,
+  video,
+  audio {
+    display: none !important;
+  }
+  
+  /* Ensure text is readable */
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  
+  /* Avoid page breaks inside elements */
+  h1, h2, h3, h4, h5, h6,
+  img,
+  figure {
+    page-break-inside: avoid;
+  }
+}
