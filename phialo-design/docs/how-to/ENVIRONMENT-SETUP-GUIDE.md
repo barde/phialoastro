@@ -7,10 +7,11 @@ This is the **single source of truth** for setting up deployment environments fo
 2. [Prerequisites](#prerequisites)
 3. [Step 1: Create GitHub Environment](#step-1-create-github-environment)
 4. [Step 2: Get Cloudflare Credentials](#step-2-get-cloudflare-credentials)
-5. [Step 3: Configure Turnstile](#step-3-configure-turnstile)
-6. [Step 4: Setup Email Service (Resend)](#step-4-setup-email-service-resend)
-7. [Step 5: Add All Secrets to Environment](#step-5-add-all-secrets-to-environment)
-8. [Step 6: Deploy](#step-6-deploy)
+5. [Step 3: Configure Web Analytics](#step-3-configure-web-analytics)
+6. [Step 4: Configure Turnstile](#step-4-configure-turnstile)
+7. [Step 5: Setup Email Service (Resend)](#step-5-setup-email-service-resend)
+8. [Step 6: Add All Secrets to Environment](#step-6-add-all-secrets-to-environment)
+9. [Step 7: Deploy](#step-7-deploy)
 9. [Environment Reference](#environment-reference)
 10. [Troubleshooting](#troubleshooting)
 
@@ -114,9 +115,32 @@ For production deployment to use a custom domain (e.g., phialo.de):
    - If domain is not configured, production deployment will fail
    - For testing without a domain, use the preview environment instead
 
-## Step 3: Configure Turnstile
+## Step 3: Configure Web Analytics
 
-### 3.1 Create Turnstile Site
+### 3.1 Create Web Analytics Site
+
+1. **Navigate to Web Analytics**
+   - Go to: https://dash.cloudflare.com
+   - Select `Analytics & Logs` → `Web Analytics` from the sidebar
+
+2. **Add New Site**
+   - Click `Add a site` button
+   - Site name: `phialo-design-[environment]`
+   - Hostname: 
+     - Production: `phialo.de`
+     - Preview: `phialo-design-preview.meise.workers.dev`
+     - Master: `phialo-master.meise.workers.dev`
+   - Click `Done`
+
+3. **Get Analytics Token**
+   - After creating the site, you'll see a JavaScript snippet
+   - Find the `token` value in the snippet (looks like: `{"token":"abc123..."}`)
+   - Copy the token value (without quotes)
+   - Save as: `PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN`
+
+## Step 4: Configure Turnstile
+
+### 4.1 Create Turnstile Site
 
 1. **Navigate to Turnstile**
    - Go to: https://dash.cloudflare.com
@@ -139,9 +163,9 @@ For production deployment to use a custom domain (e.g., phialo.de):
    - Copy Site Key → Save as: `PUBLIC_TURNSTILE_SITE_KEY`
    - Copy Secret Key → Save as: `TURNSTILE_SECRET_KEY`
 
-## Step 4: Setup Email Service (Resend)
+## Step 5: Setup Email Service (Resend)
 
-### 4.1 Create Resend Account
+### 5.1 Create Resend Account
 
 1. **Sign up for Resend**
    - Go to: https://resend.com/signup
@@ -154,7 +178,7 @@ For production deployment to use a custom domain (e.g., phialo.de):
    - Add DNS records as instructed
    - Wait for verification (usually < 5 minutes)
 
-### 4.2 Create API Key
+### 5.2 Create API Key
 
 1. **Navigate to API Keys**
    - Go to: https://resend.com/api-keys
@@ -169,14 +193,14 @@ For production deployment to use a custom domain (e.g., phialo.de):
    - Copy the key (shown only once!)
    - Save as: `RESEND_API_KEY`
 
-### 4.3 Configure Email Addresses
+### 5.3 Configure Email Addresses
 
 - `FROM_EMAIL`: Use an email from your verified domain (e.g., `contact@phialo.de`)
 - `TO_EMAIL`: Your business email where contact forms should be sent
 
-## Step 5: Add All Secrets to Environment
+## Step 6: Add All Secrets to Environment
 
-Now add ALL 7 secrets to your GitHub environment:
+Now add ALL 8 secrets to your GitHub environment:
 
 1. **Go Back to GitHub Environment Settings**
    - Repository → Settings → Environments → [Your Environment]
@@ -187,17 +211,18 @@ Now add ALL 7 secrets to your GitHub environment:
    |------------|-------|-------------|
    | `CLOUDFLARE_ACCOUNT_ID` | From Step 2.1 | Your Cloudflare account ID |
    | `CLOUDFLARE_API_TOKEN` | From Step 2.2 | API token with Workers permissions |
-   | `PUBLIC_TURNSTILE_SITE_KEY` | From Step 3 | Public Turnstile key (starts with 0x4...) |
-   | `TURNSTILE_SECRET_KEY` | From Step 3 | Secret Turnstile key |
-   | `RESEND_API_KEY` | From Step 4.2 | Resend API key |
-   | `FROM_EMAIL` | From Step 4.3 | Sender email (e.g., contact@phialo.de) |
-   | `TO_EMAIL` | From Step 4.3 | Recipient email for forms |
+   | `PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` | From Step 3 | Web Analytics token for visitor metrics |
+   | `PUBLIC_TURNSTILE_SITE_KEY` | From Step 4 | Public Turnstile key (starts with 0x4...) |
+   | `TURNSTILE_SECRET_KEY` | From Step 4 | Secret Turnstile key |
+   | `RESEND_API_KEY` | From Step 5.2 | Resend API key |
+   | `FROM_EMAIL` | From Step 5.3 | Sender email (e.g., contact@phialo.de) |
+   | `TO_EMAIL` | From Step 5.3 | Recipient email for forms |
 
 3. **Verify All Secrets Added**
-   - You should see exactly 7 secrets in the environment
+   - You should see exactly 8 secrets in the environment
    - Each secret should show "Updated" timestamp
 
-## Step 6: Deploy
+## Step 7: Deploy
 
 ### Manual Deployment (Recommended)
 
@@ -230,7 +255,7 @@ Name: production
 URL: https://phialo.de
 Branch: master
 Protection: Required reviewers
-Secrets: All 7 secrets required
+Secrets: All 8 secrets required
 ```
 
 ### Preview Environment
@@ -239,7 +264,7 @@ Name: preview
 URL: https://phialo-design-preview.meise.workers.dev
 Branch: any (typically PR branches)
 Protection: None
-Secrets: All 7 secrets required
+Secrets: All 8 secrets required
 ```
 
 ### Master Environment
@@ -248,7 +273,7 @@ Name: master
 URL: https://phialo-master.meise.workers.dev
 Branch: master
 Protection: None
-Secrets: All 7 secrets required
+Secrets: All 8 secrets required
 ```
 
 ## Troubleshooting
@@ -280,7 +305,14 @@ Secrets: All 7 secrets required
 
 #### 6. Missing secrets in workflow
 - **Cause**: Secrets not added to specific environment
-- **Solution**: Ensure ALL 7 secrets are added to the environment
+- **Solution**: Ensure ALL 8 secrets are added to the environment
+
+#### 8. "No analytics data showing"
+- **Cause**: Missing or invalid PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN
+- **Solution**: 
+  - Verify the analytics token is correctly set in the environment
+  - Check that the hostname matches the Web Analytics site configuration
+  - Wait 5-10 minutes for data to appear after first visit
 
 #### 7. "You need to register a workers.dev subdomain" error
 - **Cause**: Production deployment requires custom domain but it's not configured
@@ -294,7 +326,7 @@ Secrets: All 7 secrets required
 
 Before deploying, verify:
 - [ ] GitHub environment exists
-- [ ] All 7 secrets are configured in the environment
+- [ ] All 8 secrets are configured in the environment
 - [ ] Cloudflare account has Workers enabled
 - [ ] For production: Domain is active in Cloudflare with DNS configured
 - [ ] For production: API token includes Zone permissions
