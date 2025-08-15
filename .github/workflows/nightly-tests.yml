@@ -426,7 +426,7 @@ jobs:
 
   # Generate comprehensive report
   generate-report:
-    needs: [unit-integration-tests, e2e-tests, performance-tests, security-tests]
+    needs: [prepare-matrix, unit-integration-tests, e2e-tests, performance-tests, security-tests]
     if: always()
     runs-on: ubuntu-latest
     container:
