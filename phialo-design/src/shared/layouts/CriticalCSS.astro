@@ -1,0 +1,66 @@
+---
+// Critical CSS for above-the-fold content
+---
+
+<style is:inline>
+  /* Reset and base styles */
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; line-height: 1.5; }
+  
+  /* Typography */
+  .font-display { font-family: 'Playfair Display', serif; }
+  h1, h2, h3 { margin: 0; font-weight: 500; }
+  
+  /* Layout */
+  .min-h-screen { min-height: 100vh; }
+  .relative { position: relative; }
+  .absolute { position: absolute; }
+  .fixed { position: fixed; }
+  .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+  
+  /* Flexbox */
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .justify-between { justify-content: space-between; }
+  
+  /* Grid */
+  .grid { display: grid; }
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  /* Colors */
+  .bg-midnight { background-color: #0A192F; }
+  .text-white { color: white; }
+  .text-gold { color: #D4AF37; }
+  
+  /* Spacing */
+  .p-4 { padding: 1rem; }
+  .p-6 { padding: 1.5rem; }
+  .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-12 { margin-bottom: 3rem; }
+  
+  /* Images */
+  img { max-width: 100%; height: auto; display: block; }
+  .object-cover { object-fit: cover; }
+  
+  /* Aspect ratios */
+  .aspect-\\[4\\/5\\] { aspect-ratio: 4 / 5; }
+  
+  /* Transitions */
+  .transition-all { transition: all 0.3s ease; }
+  .opacity-0 { opacity: 0; }
+  .opacity-100 { opacity: 1; }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .portfolio-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+  }
+</style>

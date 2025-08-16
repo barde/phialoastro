@@ -27,52 +27,60 @@ export default function OptimizedPicture({
   onLoad,
   onError,
 }: OptimizedPictureProps) {
-  // Extract filename without extension and path
+  // Extract filename without extension
   const filename = src.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
   const basePath = src.substring(0, src.lastIndexOf('/'));
-  
-  // Generate srcset for different sizes
-  const generateSrcSet = (ext: string) => {
-    return `
-      ${basePath}/${filename}-400w.${ext} 400w,
-      ${basePath}/${filename}-800w.${ext} 800w,
-      ${basePath}/${filename}-1200w.${ext} 1200w,
-      ${basePath}/${filename}.${ext} 1600w
-    `.trim().replace(/\s+/g, ' ');
-  };
   
   // Sizes for responsive images - more accurate for portfolio grid
   const sizes = '(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 320px';
   
-  // Use Cloudflare's image resizing API with adaptive quality
-  // Higher quality for critical images, lower for below-fold
-  const quality = loading === 'eager' && fetchPriority === 'high' ? 90 : 85;
-  const cfOptimizedSrc = `${src}?format=auto&quality=${quality}&width=${width}`;
+  // Generate srcset for different formats
+  const generateSrcSet = (ext: string, includeLarge: boolean = true) => {
+    const sizes = includeLarge 
+      ? [320, 400, 640, 800, 1024, 1200, 1600, 2000]
+      : [320, 400, 640, 800];
+    
+    return sizes
+      .map(size => `${basePath}/${filename}-${size}w.${ext} ${size}w`)
+      .join(', ');
+  };
   
-  // Create more granular srcset for better mobile performance
-  const cfSrcSet = `
-    ${src}?format=auto&quality=75&width=320 320w,
-    ${src}?format=auto&quality=80&width=400 400w,
-    ${src}?format=auto&quality=80&width=640 640w,
-    ${src}?format=auto&quality=85&width=800 800w,
-    ${src}?format=auto&quality=85&width=1024 1024w,
-    ${src}?format=auto&quality=85&width=1200 1200w,
-    ${src}?format=auto&quality=90&width=1600 1600w,
-    ${src}?format=auto&quality=90&width=2000 2000w
-  `.trim().replace(/\s+/g, ' ');
+  // Check if we have modern formats available
+  const hasModernFormats = !src.includes('http') || src.includes('phialo');
   
   return (
     <picture>
-      {/* Modern format with Cloudflare auto-format */}
+      {/* AVIF for browsers that support it (best compression) */}
+      {hasModernFormats && (
+        <source
+          srcSet={generateSrcSet('avif', false)}
+          sizes={sizes}
+          type="image/avif"
+        />
+      )}
+      
+      {/* WebP for broader support */}
+      {hasModernFormats && (
+        <source
+          srcSet={generateSrcSet('webp')}
+          sizes={sizes}
+          type="image/webp"
+        />
+      )}
+      
+      {/* Fallback to JPEG */}
       <source
-        srcSet={cfSrcSet}
+        srcSet={`
+          ${src} 1600w,
+          ${basePath}/${filename}.jpg 1600w
+        `.trim()}
         sizes={sizes}
-        type="image/webp"
+        type="image/jpeg"
       />
       
-      {/* Fallback to original */}
+      {/* Fallback img element */}
       <img
-        src={cfOptimizedSrc}
+        src={src}
         alt={alt}
         className={className}
         loading={loading}
