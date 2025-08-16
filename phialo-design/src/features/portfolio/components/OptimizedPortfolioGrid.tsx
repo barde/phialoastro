@@ -256,7 +256,7 @@ export default function OptimizedPortfolioGrid({
                   aspectRatio: '1 / 1',
                   background: 'linear-gradient(90deg, #f0f0f0 0%, #f8f8f8 50%, #f0f0f0 100%)',
                   backgroundSize: '200% 100%',
-                  animation: animationSettings.animate ? 'shimmer 1.5s infinite' : 'none',
+                  animation: animationSettings.animate ? 'shimmer 1.5s ease-out forwards' : 'none',
                   borderRadius: '8px',
                 }}
               />

@@ -132,7 +132,8 @@ export default {
         'scale-in': 'scaleIn 0.3s ease-out',
         'float': 'float 6s ease-in-out infinite',
         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
-        'shimmer': 'shimmer 2s ease-in-out infinite',
+        'shimmer': 'shimmer 2s linear forwards',
+        'shimmer-loop': 'shimmer 2s linear infinite',
       },
 
       keyframes: {

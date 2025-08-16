@@ -385,7 +385,7 @@ img[loading="lazy"] {
     #f0f0f0 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.5s ease-out forwards;
 }
 
 @keyframes shimmer {
