@@ -24,33 +24,50 @@ async function generateModernFormats() {
       const inputPath = path.join(IMAGES_DIR, file);
       const baseName = path.basename(file, path.extname(file));
       
-      console.info(`Processing: ${file}`);
-      
-      for (const width of SIZES) {
-        // Generate WebP
-        const webpPath = path.join(IMAGES_DIR, `${baseName}-${width}w.webp`);
-        await sharp(inputPath)
-          .resize(width, null, { withoutEnlargement: true })
-          .webp({ quality: width <= 640 ? 75 : 85 })
-          .toFile(webpPath);
-        
-        // Generate AVIF for larger sizes
-        if (width >= 800) {
-          const avifPath = path.join(IMAGES_DIR, `${baseName}-${width}w.avif`);
-          await sharp(inputPath)
-            .resize(width, null, { withoutEnlargement: true })
-            .avif({ quality: 80 })
-            .toFile(avifPath);
+      // Check if file exists and has content (not LFS pointer)
+      try {
+        const stats = await fs.stat(inputPath);
+        if (stats.size < 200) {
+          console.warn(`⚠️ Skipping ${file} - appears to be LFS pointer`);
+          continue;
         }
+      } catch (error) {
+        console.warn(`⚠️ Skipping ${file} - file not accessible`);
+        continue;
       }
       
-      console.info(`✓ Generated modern formats for ${file}`);
+      console.info(`Processing: ${file}`);
+      
+      try {
+        for (const width of SIZES) {
+          // Generate WebP
+          const webpPath = path.join(IMAGES_DIR, `${baseName}-${width}w.webp`);
+          await sharp(inputPath)
+            .resize(width, null, { withoutEnlargement: true })
+            .webp({ quality: width <= 640 ? 75 : 85 })
+            .toFile(webpPath);
+          
+          // Generate AVIF for larger sizes
+          if (width >= 800) {
+            const avifPath = path.join(IMAGES_DIR, `${baseName}-${width}w.avif`);
+            await sharp(inputPath)
+              .resize(width, null, { withoutEnlargement: true })
+              .avif({ quality: 80 })
+              .toFile(avifPath);
+          }
+        }
+        
+        console.info(`✓ Generated modern formats for ${file}`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to process ${file}: ${error.message}`);
+      }
     }
     
-    console.info('✅ All images processed successfully!');
+    console.info('✅ Image processing complete!');
   } catch (error) {
     console.error('Error generating modern formats:', error);
-    process.exit(1);
+    // Don't fail the build if LFS files are missing
+    console.warn('⚠️ Continuing build without image optimization');
   }
 }
 
