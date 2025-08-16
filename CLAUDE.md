@@ -88,42 +88,24 @@ pnpm run pre-push          # Run all pre-push checks
 ./scripts/clean-project.sh # Remove .DS_Store and other junk files
 ```
 
-## Git LFS Requirements
+## Image Management
 
-This repository uses Git Large File Storage (LFS) for managing binary files (images, etc.). **Git LFS is REQUIRED** for development and CI/CD.
+This repository stores images directly in Git (no LFS required). Images are optimized for web delivery:
 
-### Setup Instructions
-```bash
-# Install Git LFS (if not already installed)
-brew install git-lfs  # macOS
-# or
-sudo apt-get install git-lfs  # Ubuntu/Debian
+### Image Storage
+- **Portfolio images**: ~21MB total in `public/images/portfolio/`
+- **Other assets**: Various UI and content images
+- **No LFS needed**: All images are small enough for regular Git storage
 
-# Initialize Git LFS in your local repository
-git lfs install
-
-# Pull all LFS files
-git lfs pull
-```
-
-### LFS Configuration
-The repository tracks these file types with LFS (defined in `.gitattributes`):
-- `*.jpg` - JPEG images
-- `*.png` - PNG images  
-- `*.webp` - WebP images
+### Image Optimization
+- **Build-time generation**: WebP and AVIF formats are generated during build
+- **Not stored in Git**: Only source JPG/PNG files are version controlled
+- **Automatic optimization**: `pnpm run build` runs the image generation script
 
 ### Important Notes
-- **CI/CD requires LFS**: GitHub Actions workflows use `lfs: true` in checkout steps
-- **Check LFS status**: Run `git lfs status` before pushing to ensure files are properly tracked
-- **Storage quotas**: Be aware of GitHub LFS bandwidth and storage limits
-- **Team coordination**: All team members must have Git LFS installed
-
-### Troubleshooting
-If you encounter LFS-related errors:
-1. Ensure Git LFS is installed: `git lfs version`
-2. Pull LFS files: `git lfs pull`
-3. Check tracked files: `git lfs ls-files`
-4. Verify file status: `git lfs status`
+- **Direct storage**: Images are stored directly in Git (no LFS)
+- **Size limits**: Keep individual images under 10MB for best performance
+- **Generated formats**: WebP/AVIF files are created at build time, not committed
 
 ## PR and Development Guidelines
 
