@@ -1,14 +1,16 @@
 import React from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
+import OptimizedPicture from '../../../shared/components/OptimizedPicture';
 import type { PortfolioItemData } from './PortfolioSection';
 
 interface PortfolioItemProps {
   item: PortfolioItemData;
   onItemClick?: (item: PortfolioItemData) => void;
   lang?: 'en' | 'de';
+  priority?: boolean;
 }
 
-export default function PortfolioItem({ item, onItemClick, lang = 'de' }: PortfolioItemProps) {
+export default function PortfolioItem({ item, onItemClick, lang = 'de', priority = false }: PortfolioItemProps) {
   // Use the language prop directly - no client-side detection needed
   const isEnglish = lang === 'en';
 
@@ -42,12 +44,15 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de' }: Portfo
         <div 
           className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
         >
-          {/* Image with proper scaling */}
-          <img
+          {/* Optimized image with modern formats */}
+          <OptimizedPicture
             src={item.image}
             alt={`${item.title} - ${item.category}`}
             className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            width={800}
+            height={1000}
           />
 
           {/* Overlay - Fixed opacity transition */}

@@ -33,7 +33,7 @@ A luxury jewelry portfolio website built with cutting-edge web technologies, fea
 ### Infrastructure
 - **[Cloudflare Workers](https://workers.cloudflare.com/)** - Edge computing platform for global deployment
 - **[pnpm 9.14.4](https://pnpm.io/)** - Fast, disk-efficient package manager
-- **[Git LFS](https://git-lfs.github.com/)** - Efficient binary file management for images
+- **Image Optimization** - Automatic WebP/AVIF generation at build time
 
 ### Development Tools
 - **[Vitest 3.2.4](https://vitest.dev/)** - Lightning-fast unit testing
@@ -51,16 +51,10 @@ A luxury jewelry portfolio website built with cutting-edge web technologies, fea
    npm install -g pnpm@9.14.4
    ```
 
-2. **Git LFS** (Required for image assets)
+2. **Sharp** (Automatically installed)
    ```bash
-   # macOS
-   brew install git-lfs
-   
-   # Ubuntu/Debian
-   sudo apt-get install git-lfs
-   
-   # Initialize Git LFS
-   git lfs install
+   # Image processing library for WebP/AVIF generation
+   # Installed automatically with pnpm install
    ```
 
 3. **Lefthook** (Optional - for Git hooks)
@@ -76,7 +70,7 @@ A luxury jewelry portfolio website built with cutting-edge web technologies, fea
 ### Installation
 
 ```bash
-# Clone the repository (Git LFS files download automatically)
+# Clone the repository
 git clone https://github.com/barde/phialoastro.git
 cd phialoastro
 

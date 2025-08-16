@@ -29,21 +29,30 @@ export function mapRequestToAsset(request: Request): Request {
 export function getCacheHeaders(pathname: string): HeadersInit {
   const headers: HeadersInit = {};
   
-  // Immutable assets (hashed filenames)
-  if (pathname.match(/\.(js|css|woff2?|ttf|otf|eot)$/)) {
+  // Immutable assets with hash in filename (Astro generates these)
+  if (pathname.match(/\/_astro\/.*\.[a-zA-Z0-9]{8,}\.(js|css)$/)) {
+    // These are immutable - cache forever
     headers['Cache-Control'] = 'public, max-age=31536000, immutable';
   }
-  // Images
-  else if (pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|avif|ico)$/)) {
+  // Regular JS/CSS without hash (might change)
+  else if (pathname.match(/\.(js|css)$/)) {
     headers['Cache-Control'] = 'public, max-age=86400, stale-while-revalidate=604800';
   }
-  // HTML files
+  // Font files - cache for a long time
+  else if (pathname.match(/\.(woff2?|ttf|otf|eot)$/)) {
+    headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+  }
+  // Images - cache with revalidation
+  else if (pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|avif|ico)$/)) {
+    headers['Cache-Control'] = 'public, max-age=2592000, stale-while-revalidate=604800'; // 30 days + 7 days stale
+  }
+  // HTML files - always revalidate
   else if (pathname.match(/\.html$/) || pathname === '/') {
     headers['Cache-Control'] = 'public, max-age=0, must-revalidate';
   }
-  // Default
+  // Default for other assets
   else {
-    headers['Cache-Control'] = 'public, max-age=3600';
+    headers['Cache-Control'] = 'public, max-age=3600, stale-while-revalidate=86400';
   }
   
   return headers;

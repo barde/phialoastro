@@ -1,0 +1,287 @@
+/* Mobile Performance Optimizations */
+
+/* ============================= */
+/* Touch Target Optimization */
+/* ============================= */
+button, 
+a, 
+input, 
+select, 
+textarea,
+[role="button"] {
+  /* Ensure minimum touch target size for mobile */
+  min-height: 44px;
+  min-width: 44px;
+  /* Add padding for better touch experience */
+  @apply py-3 px-4;
+}
+
+/* Small buttons and links need special handling */
+.btn-sm,
+.link-inline {
+  min-height: 36px;
+  min-width: 36px;
+  @apply py-2 px-3;
+}
+
+/* ============================= */
+/* Hover State Optimization */
+/* ============================= */
+/* Disable hover effects on touch devices to prevent sticky hover */
+@media (hover: none) and (pointer: coarse) {
+  button:hover,
+  a:hover,
+  .group:hover .group-hover\:scale-105,
+  .group:hover .group-hover\:opacity-100 {
+    /* Reset hover states on touch devices */
+    transform: none !important;
+    opacity: inherit !important;
+    background: inherit !important;
+    color: inherit !important;
+  }
+  
+  /* Use active states for touch feedback instead */
+  button:active,
+  a:active,
+  [role="button"]:active {
+    @apply scale-95 opacity-90;
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  }
+}
+
+/* ============================= */
+/* Scrolling Performance */
+/* ============================= */
+.scrollable,
+.portfolio-grid,
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto {
+  /* Enable momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+  
+  /* Optimize scrolling performance */
+  will-change: scroll-position;
+  
+  /* Prevent overscroll bounce on non-scrollable axis */
+  overscroll-behavior: contain;
+}
+
+/* Smooth scrolling with performance consideration */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================= */
+/* Layout Stability */
+/* ============================= */
+html {
+  /* Always show scrollbar to prevent layout shift */
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+/* Prevent horizontal scrolling on mobile */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ============================= */
+/* User Selection */
+/* ============================= */
+button, 
+nav,
+.btn,
+.navigation,
+[role="button"],
+[role="navigation"] {
+  /* Disable text selection for UI elements */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Disable callout on long-press */
+  -webkit-touch-callout: none;
+}
+
+/* ============================= */
+/* CSS Containment */
+/* ============================= */
+.portfolio-item,
+.card,
+.modal,
+.dropdown {
+  /* Contain layout, style, and paint for better performance */
+  contain: content;
+}
+
+/* Heavy containment for items that never affect outside layout */
+.portfolio-item-container,
+.image-container {
+  contain: strict;
+}
+
+/* ============================= */
+/* Animation Performance */
+/* ============================= */
+/* Reduce animation complexity on mobile */
+@media (max-width: 768px) {
+  /* Shorter animation durations */
+  .transition-all {
+    transition-duration: 200ms !important;
+  }
+  
+  .duration-300 {
+    animation-duration: 200ms !important;
+    transition-duration: 200ms !important;
+  }
+  
+  .duration-500 {
+    animation-duration: 300ms !important;
+    transition-duration: 300ms !important;
+  }
+  
+  /* Disable complex animations on low-end devices */
+  @media (max-width: 768px) and (max-resolution: 2dppx) {
+    .animate-pulse {
+      animation: none !important;
+      @apply bg-gray-200;
+    }
+  }
+}
+
+/* ============================= */
+/* Reduced Motion Support */
+/* ============================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Remove parallax effects */
+  .parallax {
+    transform: none !important;
+  }
+  
+  /* Remove auto-playing videos */
+  video[autoplay] {
+    display: none;
+  }
+}
+
+/* ============================= */
+/* Font Optimization */
+/* ============================= */
+/* Prevent font size adjustment on orientation change (iOS) */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Ensure minimum readable font size on mobile */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Prevents zoom on input focus in iOS */
+    line-height: 1.6;
+  }
+  
+  /* Prevent inputs from zooming on focus */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ============================= */
+/* Image Optimization */
+/* ============================= */
+img {
+  /* Prevent images from exceeding container */
+  max-width: 100%;
+  height: auto;
+  
+  /* Reserve space to prevent layout shift */
+  aspect-ratio: attr(width) / attr(height);
+  
+  /* Optimize rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Loading placeholders */
+img[loading="lazy"] {
+  /* Subtle background while loading */
+  background: linear-gradient(
+    135deg,
+    #f5f5f5 0%,
+    #eeeeee 50%,
+    #f5f5f5 100%
+  );
+}
+
+/* ============================= */
+/* Z-Index Management */
+/* ============================= */
+/* Establish stacking contexts to prevent z-index issues */
+.modal-container {
+  isolation: isolate;
+}
+
+/* ============================= */
+/* Performance Hints */
+/* ============================= */
+/* Elements that will be animated */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* Remove hints after animation */
+.animation-complete {
+  will-change: auto;
+}
+
+/* ============================= */
+/* Mobile-First Utilities */
+/* ============================= */
+/* Hide on mobile, show on desktop */
+@media (max-width: 768px) {
+  .mobile\:hidden {
+    display: none !important;
+  }
+}
+
+/* Show on mobile, hide on desktop */
+@media (min-width: 769px) {
+  .desktop\:hidden {
+    display: none !important;
+  }
+}
+
+/* ============================= */
+/* Network-Aware Loading */
+/* ============================= */
+/* Reduce quality for slow connections */
+@media (prefers-reduced-data: reduce) {
+  img {
+    /* Use lower quality images */
+    content-visibility: auto;
+  }
+  
+  video {
+    /* Don't autoplay videos */
+    display: none;
+  }
+  
+  /* Hide decorative images */
+  .decorative-image {
+    display: none;
+  }
+}

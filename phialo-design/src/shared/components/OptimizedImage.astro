@@ -1,0 +1,37 @@
+---
+import { Image } from 'astro:assets';
+
+export interface Props {
+  src: string;
+  alt: string;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  widths?: number[];
+  sizes?: string;
+}
+
+const {
+  src,
+  alt,
+  class: className = '',
+  loading = 'lazy',
+  widths = [400, 800, 1200, 1600],
+  sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
+} = Astro.props;
+
+// Import the image dynamically
+const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/portfolio/*.{jpeg,jpg,png,webp}');
+const imagePath = `/src/assets/images/portfolio/${src.split('/').pop()}`;
+const resolvedImage = images[imagePath] ? (await images[imagePath]()).default : src;
+---
+
+<Image
+  src={resolvedImage}
+  alt={alt}
+  class={className}
+  loading={loading}
+  widths={widths}
+  sizes={sizes}
+  quality={85}
+  decoding={loading === 'eager' ? 'sync' : 'async'}
+/>
