@@ -27,6 +27,9 @@ pnpm-debug.log*
 public/images/portfolio/*-*w.webp
 public/images/portfolio/*-*w.avif
 
+# Image generation cache
+.image-cache.json
+
 # Windows-specific files
 Thumbs.db
 
