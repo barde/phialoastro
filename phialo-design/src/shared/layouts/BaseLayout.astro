@@ -2,6 +2,7 @@
 import { SEO } from "astro-seo";
 import { ClientRouter } from "astro:transitions";
 import SmoothScroll from '../components/effects/SmoothScroll';
+import CriticalCSS from './CriticalCSS.astro';
 import '../../styles/global.css';
 
 export interface Props {
@@ -59,13 +60,10 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Preload critical portfolio images for better LCP on homepage and portfolio -->
     {(Astro.url.pathname === '/' || Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') && (
       <>
-        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1.jpg?format=auto&quality=85&width=800" fetchpriority="high" />
-        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl.jpg?format=auto&quality=85&width=800" fetchpriority="high" />
-        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl.jpg?format=auto&quality=85&width=800" fetchpriority="high" />
-        
-        <!-- Preload critical JavaScript modules to reduce chain depth -->
-        <link rel="modulepreload" href="/_astro/index.*.js" />
-        <link rel="modulepreload" href="/_astro/PortfolioSection.*.js" />
+        <!-- Preload WebP versions of critical images -->
+        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-800w.webp" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-800w.webp" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-800w.webp" type="image/webp" fetchpriority="high" />
       </>
     )}
     
@@ -76,6 +74,9 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    
+    <!-- Inline critical CSS for faster initial render -->
+    <CriticalCSS />
     
     <SEO
       title={title}
