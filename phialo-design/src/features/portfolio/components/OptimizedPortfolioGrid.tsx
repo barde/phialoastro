@@ -250,24 +250,14 @@ export default function OptimizedPortfolioGrid({
             ) : (
               // Placeholder while loading
               <div 
-                className="portfolio-item-placeholder relative overflow-hidden"
+                className="portfolio-item-placeholder"
                 style={{
                   width: '100%',
-                  aspectRatio: '1 / 1',
-                  background: '#f0f0f0',
+                  aspectRatio: '4 / 5',
+                  background: 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)',
                   borderRadius: '8px',
                 }}
-              >
-                {animationSettings.animate && (
-                  <div 
-                    className="absolute inset-0"
-                    style={{
-                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-                      animation: 'shimmer-once 1.5s ease-out forwards',
-                    }}
-                  />
-                )}
-              </div>
+              />
             )}
           </motion.div>
         ))}

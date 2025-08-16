@@ -60,27 +60,16 @@ export default function LazyImage({
       className={`relative overflow-hidden ${className}`}
       style={{ aspectRatio }}
     >
-      {/* Placeholder background */}
-      <div 
-        className={`absolute inset-0 bg-gradient-to-br from-platinum to-gray-100 transition-opacity duration-700 ${
-          isLoaded ? 'opacity-0' : 'opacity-100'
-        }`}
-      />
-      
-      {/* Shimmer effect while loading */}
-      {!isLoaded && (
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-once" />
-        </div>
-      )}
+      {/* Placeholder background - always visible */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
 
-      {/* Actual image */}
+      {/* Actual image with slide-in effect */}
       {isInView && (
         <img
           src={src}
           alt={alt}
           onLoad={handleLoad}
-          className={`absolute inset-0 w-full h-full transition-all duration-700 ${
+          className={`absolute inset-0 w-full h-full transition-all duration-700 ease-out ${
             objectFit === 'cover' ? 'object-cover' :
             objectFit === 'contain' ? 'object-contain' :
             objectFit === 'fill' ? 'object-fill' :
@@ -88,8 +77,8 @@ export default function LazyImage({
             'object-scale-down'
           } ${
             isLoaded 
-              ? 'opacity-100 scale-100 filter-none' 
-              : 'opacity-0 scale-105 filter-blur-sm'
+              ? 'translate-x-0 opacity-100' 
+              : 'translate-x-full opacity-0'
           }`}
           loading="lazy"
         />

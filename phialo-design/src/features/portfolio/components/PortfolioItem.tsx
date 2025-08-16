@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
 import type { PortfolioItemData } from './PortfolioSection';
 
@@ -9,6 +9,8 @@ interface PortfolioItemProps {
 }
 
 export default function PortfolioItem({ item, onItemClick, lang = 'de' }: PortfolioItemProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
   // Use the language prop directly - no client-side detection needed
   const isEnglish = lang === 'en';
 
@@ -18,6 +20,10 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de' }: Portfo
       event.preventDefault();
       onItemClick?.(item);
     }
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
 
   // Translations for accessibility
@@ -40,14 +46,22 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de' }: Portfo
       <MagneticCursor>
         {/* Inner container is for visuals only, no 'group' or event handlers here */}
         <div 
-          className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
+          className="portfolio-item-container relative overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
         >
-          {/* Image with proper scaling */}
+          {/* Placeholder background - always visible */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
+          
+          {/* Image with slide-in effect */}
           <img
             src={item.image}
             alt={`${item.title} - ${item.category}`}
-            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-focus:scale-105 ${
+              imageLoaded 
+                ? 'translate-x-0 opacity-100' 
+                : 'translate-x-full opacity-0'
+            }`}
             loading="lazy"
+            onLoad={handleImageLoad}
           />
 
           {/* Overlay - Fixed opacity transition */}
