@@ -191,7 +191,7 @@ done
 if [ -n "$large_files" ]; then
     echo "${RED}❌ Commit blocked: Found files larger than 5MB:${NC}"
     echo -e "$large_files"
-    echo "${YELLOW}Consider using Git LFS for large files or exclude them from the repository.${NC}"
+    echo "${YELLOW}Consider optimizing large files or exclude them from the repository.${NC}"
     exit 1
 fi
 
@@ -367,7 +367,7 @@ jobs:
             echo "❌ Found files larger than 5MB:"
             echo -e "$large_files"
             echo ""
-            echo "Consider using Git LFS or excluding these files."
+            echo "Consider optimizing or excluding these files."
             exit 1
           fi
           
@@ -491,22 +491,22 @@ git gc --prune=now
 echo "✅ Repository cleaned!"
 ```
 
-## 8. Using Git LFS for Large Files
+## 8. Handling Large Files
 
-If you need to store large files:
+For optimal repository performance:
 
 ```bash
-# Install Git LFS
-git lfs install
+# For images, use optimization tools
+pnpm run build  # Generates WebP/AVIF at build time
 
-# Track large file types
-git lfs track "*.psd"
-git lfs track "*.ai"
-git lfs track "*.sketch"
+# For design files, consider external storage
+# - Use cloud storage (Google Drive, Dropbox)
+# - Reference in documentation
+# - Keep only optimized exports in Git
 
-# Add .gitattributes
-git add .gitattributes
-git commit -m "Configure Git LFS"
+# Keep repository lean
+# Images < 10MB can go directly in Git
+# Larger files should be stored externally
 ```
 
 ## Implementation Priority
@@ -522,7 +522,7 @@ git commit -m "Configure Git LFS"
    - Document team processes
 
 3. **Long-term** (This month):
-   - Set up Git LFS if needed
+   - Optimize images before committing
    - Establish regular maintenance schedule
    - Train team on best practices
 
@@ -553,5 +553,5 @@ java -jar bfg.jar --delete-files "*.{zip,log}" repo.git
 - [Git Hooks Documentation](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 - [Pre-commit Framework](https://pre-commit.com/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Git LFS](https://git-lfs.github.com/)
+- [Image Optimization](https://sharp.pixelplumbing.com/)
 - [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/)
