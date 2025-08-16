@@ -70,6 +70,33 @@ export default defineConfig({
         '@styles': new URL('./src/styles', import.meta.url).pathname,
         '@test': new URL('./src/test', import.meta.url).pathname
       }
-    }
+    },
+    // Optimize dependency pre-bundling
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'framer-motion'],
+    },
+    build: {
+      // Optimize module preloading
+      modulePreload: {
+        polyfill: true,
+      },
+      // Optimize chunking to reduce dependency chains
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            // Bundle vendor libraries separately
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'react-vendor';
+              }
+              if (id.includes('framer-motion')) {
+                return 'motion-vendor';
+              }
+              return 'vendor';
+            }
+          },
+        },
+      },
+    },
   }
 });
