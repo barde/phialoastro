@@ -7,9 +7,10 @@ interface PortfolioItemProps {
   item: PortfolioItemData;
   onItemClick?: (item: PortfolioItemData) => void;
   lang?: 'en' | 'de';
+  priority?: boolean;
 }
 
-export default function PortfolioItem({ item, onItemClick, lang = 'de' }: PortfolioItemProps) {
+export default function PortfolioItem({ item, onItemClick, lang = 'de', priority = false }: PortfolioItemProps) {
   // Use the language prop directly - no client-side detection needed
   const isEnglish = lang === 'en';
 
@@ -48,7 +49,8 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de' }: Portfo
             src={item.image}
             alt={`${item.title} - ${item.category}`}
             className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             width={800}
             height={1000}
           />

@@ -145,7 +145,7 @@ function OptimizedPortfolioItem({
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               loading={isPriority ? 'eager' : 'lazy'}
-              fetchPriority={isPriority ? 'high' : undefined}
+              fetchPriority={isPriority ? 'high' : 'auto'}
               onLoad={handleImageLoad}
               onError={handleImageError}
               width={800}
