@@ -22,6 +22,7 @@ export default function LazyImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Use the language prop directly
   const isEnglish = lang === 'en';
@@ -50,6 +51,15 @@ export default function LazyImage({
     return () => observer.disconnect();
   }, []);
 
+  // Check if image is already loaded (from cache)
+  useEffect(() => {
+    if (isInView && imgRef.current) {
+      if (imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+        setIsLoaded(true);
+      }
+    }
+  }, [isInView, src]);
+
   const handleLoad = () => {
     setIsLoaded(true);
   };
@@ -66,6 +76,7 @@ export default function LazyImage({
       {/* Actual image with slide-in effect */}
       {isInView && (
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           onLoad={handleLoad}
@@ -77,8 +88,8 @@ export default function LazyImage({
             'object-scale-down'
           } ${
             isLoaded 
-              ? 'translate-x-0 opacity-100' 
-              : 'translate-x-full opacity-0'
+              ? 'translate-x-0 scale-100 opacity-100' 
+              : 'translate-x-4 scale-95 opacity-0'
           }`}
           loading="lazy"
         />

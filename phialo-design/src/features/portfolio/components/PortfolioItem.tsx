@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
 import type { PortfolioItemData } from './PortfolioSection';
 
@@ -10,9 +10,18 @@ interface PortfolioItemProps {
 
 export default function PortfolioItem({ item, onItemClick, lang = 'de' }: PortfolioItemProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
   
   // Use the language prop directly - no client-side detection needed
   const isEnglish = lang === 'en';
+
+  // Check if image is already loaded (from cache)
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setImageLoaded(true);
+    }
+  }, [item.image]);
 
   // Keyboard handler for accessibility
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -53,12 +62,13 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de' }: Portfo
           
           {/* Image with slide-in effect */}
           <img
+            ref={imgRef}
             src={item.image}
             alt={`${item.title} - ${item.category}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-focus:scale-105 ${
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 group-focus:scale-105 ${
               imageLoaded 
-                ? 'translate-x-0 opacity-100' 
-                : 'translate-x-full opacity-0'
+                ? 'translate-x-0 scale-100 opacity-100' 
+                : 'translate-x-4 scale-95 opacity-0'
             }`}
             loading="lazy"
             onLoad={handleImageLoad}
