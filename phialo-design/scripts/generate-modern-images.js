@@ -15,7 +15,7 @@ async function generateModernFormats() {
   try {
     const files = await fs.readdir(IMAGES_DIR);
     const imageFiles = files.filter(file => 
-      /\.(jpg|jpeg|png)$/i.test(file) && !file.includes('-')
+      /\.(jpg|jpeg|png)$/i.test(file) && !file.includes('-w.')
     );
 
     console.info(`Found ${imageFiles.length} images to process`);
