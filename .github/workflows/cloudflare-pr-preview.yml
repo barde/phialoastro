@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: false  # Temporarily disabled due to LFS budget exceeded
       
       - name: Check for relevant file changes
         id: changes
