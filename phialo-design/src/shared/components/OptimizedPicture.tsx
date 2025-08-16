@@ -40,7 +40,10 @@ export default function OptimizedPicture({
       ? [320, 400, 640, 800, 1024, 1200, 1600, 2000]
       : [320, 400, 640, 800];
     
-    return sizes
+    // AVIF is only generated for sizes >= 800px to save build time
+    const filteredSizes = ext === 'avif' ? sizes.filter(s => s >= 800) : sizes;
+    
+    return filteredSizes
       .map(size => `${basePath}/${filename}-${size}w.${ext} ${size}w`)
       .join(', ');
   };
