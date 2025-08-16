@@ -11,9 +11,23 @@ import os from 'os';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const IMAGES_DIR = path.join(__dirname, '../public/images/portfolio');
+// Configuration for different image directories
+const IMAGE_CONFIGS = [
+  {
+    name: 'portfolio',
+    dir: path.join(__dirname, '../public/images/portfolio'),
+    sizes: [320, 400, 640, 800, 1024, 1200, 1600, 2000],
+    generateAvif: true
+  },
+  {
+    name: 'homepage',
+    dir: path.join(__dirname, '../public/images/homepage'),
+    sizes: [576, 800, 1200],
+    generateAvif: false // Homepage images don't need AVIF
+  }
+];
+
 const CACHE_FILE = path.join(__dirname, '../.image-cache.json');
-const SIZES = [320, 400, 640, 800, 1024, 1200, 1600, 2000];
 
 // Get number of CPU cores for parallel processing
 const MAX_WORKERS = Math.max(1, os.cpus().length - 1);
@@ -42,15 +56,15 @@ async function saveCache(cache) {
 }
 
 // Check if all output files exist for a given image
-async function outputFilesExist(baseName) {
+async function outputFilesExist(dir, baseName, sizes, generateAvif) {
   const checks = [];
   
-  for (const width of SIZES) {
-    const webpPath = path.join(IMAGES_DIR, `${baseName}-${width}w.webp`);
+  for (const width of sizes) {
+    const webpPath = path.join(dir, `${baseName}-${width}w.webp`);
     checks.push(fs.access(webpPath).then(() => true).catch(() => false));
     
-    if (width >= 800) {
-      const avifPath = path.join(IMAGES_DIR, `${baseName}-${width}w.avif`);
+    if (generateAvif && width >= 800) {
+      const avifPath = path.join(dir, `${baseName}-${width}w.avif`);
       checks.push(fs.access(avifPath).then(() => true).catch(() => false));
     }
   }
@@ -59,13 +73,13 @@ async function outputFilesExist(baseName) {
   return results.every(exists => exists);
 }
 
-// Process a single image (can be run in worker thread)
-async function processImage(inputPath, baseName, skipExisting = true) {
+// Process a single image
+async function processImage(inputPath, dir, baseName, sizes, generateAvif, skipExisting = true) {
   const results = [];
   
-  for (const width of SIZES) {
+  for (const width of sizes) {
     // Generate WebP
-    const webpPath = path.join(IMAGES_DIR, `${baseName}-${width}w.webp`);
+    const webpPath = path.join(dir, `${baseName}-${width}w.webp`);
     
     if (skipExisting) {
       try {
@@ -87,9 +101,9 @@ async function processImage(inputPath, baseName, skipExisting = true) {
       results.push(`WebP ${width}w`);
     }
     
-    // Generate AVIF for larger sizes
-    if (width >= 800) {
-      const avifPath = path.join(IMAGES_DIR, `${baseName}-${width}w.avif`);
+    // Generate AVIF for larger sizes if enabled
+    if (generateAvif && width >= 800) {
+      const avifPath = path.join(dir, `${baseName}-${width}w.avif`);
       
       if (skipExisting) {
         try {
@@ -116,7 +130,7 @@ async function processImage(inputPath, baseName, skipExisting = true) {
   return results;
 }
 
-// Process images in parallel using worker threads
+// Process images in parallel
 async function processImagesInParallel(imagesToProcess) {
   const chunks = [];
   const chunkSize = Math.ceil(imagesToProcess.length / MAX_WORKERS);
@@ -127,9 +141,9 @@ async function processImagesInParallel(imagesToProcess) {
   }
   
   const promises = chunks.map(async (chunk) => {
-    for (const { file, inputPath, baseName, forceRegenerate } of chunk) {
+    for (const { file, inputPath, dir, baseName, sizes, generateAvif, forceRegenerate } of chunk) {
       try {
-        const generated = await processImage(inputPath, baseName, !forceRegenerate);
+        const generated = await processImage(inputPath, dir, baseName, sizes, generateAvif, !forceRegenerate);
         if (generated.length > 0) {
           console.info(`✓ Generated ${generated.length} files for ${file}`);
         } else {
@@ -144,47 +158,47 @@ async function processImagesInParallel(imagesToProcess) {
   await Promise.all(promises);
 }
 
-async function generateModernFormats() {
-  const startTime = Date.now();
+// Process a single directory
+async function processDirectory(config, cache) {
+  const { name, dir, sizes, generateAvif } = config;
   
   try {
-    const files = await fs.readdir(IMAGES_DIR);
+    const files = await fs.readdir(dir);
     const imageFiles = files.filter(file => 
       /\.(jpg|jpeg|png)$/i.test(file) && !file.includes('-w.')
     );
 
-    console.info(`Found ${imageFiles.length} images to check`);
-    console.info(`Using ${MAX_WORKERS} parallel workers`);
+    console.info(`\n📁 Processing ${name} images:`);
+    console.info(`   Found ${imageFiles.length} images in ${dir}`);
     
-    // Load cache to track changes
-    const cache = await loadCache();
     const imagesToProcess = [];
     let skippedCount = 0;
     let changedCount = 0;
     
     for (const file of imageFiles) {
-      const inputPath = path.join(IMAGES_DIR, file);
+      const inputPath = path.join(dir, file);
       const baseName = path.basename(file, path.extname(file));
+      const cacheKey = `${name}/${file}`;
       
       // Check if file exists and has content (not LFS pointer)
       try {
         const stats = await fs.stat(inputPath);
         if (stats.size < 200) {
-          console.warn(`⚠️ Skipping ${file} - appears to be LFS pointer`);
+          console.warn(`   ⚠️ Skipping ${file} - appears to be LFS pointer`);
           continue;
         }
       } catch (error) {
-        console.warn(`⚠️ Skipping ${file} - file not accessible`);
+        console.warn(`   ⚠️ Skipping ${file} - file not accessible`);
         continue;
       }
       
-      // Option 3: Check if image has changed
+      // Check if image has changed
       const currentHash = await getFileHash(inputPath);
-      const cachedHash = cache[file]?.hash;
+      const cachedHash = cache[cacheKey]?.hash;
       const hasChanged = currentHash !== cachedHash;
       
-      // Option 1: Check if all output files exist
-      const allFilesExist = await outputFilesExist(baseName);
+      // Check if all output files exist
+      const allFilesExist = await outputFilesExist(dir, baseName, sizes, generateAvif);
       
       if (!hasChanged && allFilesExist) {
         skippedCount++;
@@ -193,34 +207,63 @@ async function generateModernFormats() {
       
       if (hasChanged) {
         changedCount++;
-        console.info(`🔄 ${file} has changed - will regenerate`);
+        console.info(`   🔄 ${file} has changed - will regenerate`);
       } else if (!allFilesExist) {
-        console.info(`🆕 ${file} missing some output files - will generate`);
+        console.info(`   🆕 ${file} missing some output files - will generate`);
       }
       
       imagesToProcess.push({
         file,
         inputPath,
+        dir,
         baseName,
+        sizes,
+        generateAvif,
         hash: currentHash,
+        cacheKey,
         forceRegenerate: hasChanged
       });
     }
     
-    console.info(`📊 Status: ${skippedCount} unchanged, ${changedCount} changed, ${imagesToProcess.length} to process`);
+    console.info(`   📊 Status: ${skippedCount} unchanged, ${changedCount} changed, ${imagesToProcess.length} to process`);
     
-    if (imagesToProcess.length === 0) {
-      console.info('✅ All images are up to date!');
+    return imagesToProcess;
+  } catch (error) {
+    console.warn(`⚠️ Could not process ${name} directory: ${error.message}`);
+    return [];
+  }
+}
+
+async function generateModernFormats() {
+  const startTime = Date.now();
+  
+  try {
+    console.info(`🖼️ Modern Image Format Generator`);
+    console.info(`Using ${MAX_WORKERS} parallel workers`);
+    
+    // Load cache
+    const cache = await loadCache();
+    
+    // Process all configured directories
+    const allImagesToProcess = [];
+    
+    for (const config of IMAGE_CONFIGS) {
+      const images = await processDirectory(config, cache);
+      allImagesToProcess.push(...images);
+    }
+    
+    if (allImagesToProcess.length === 0) {
+      console.info('\n✅ All images are up to date!');
       return;
     }
     
-    // Option 2: Process images in parallel
-    console.info(`Processing ${imagesToProcess.length} images in parallel...`);
-    await processImagesInParallel(imagesToProcess);
+    // Process all images in parallel
+    console.info(`\n🚀 Processing ${allImagesToProcess.length} images in parallel...`);
+    await processImagesInParallel(allImagesToProcess);
     
     // Update cache with processed images
-    for (const { file, hash } of imagesToProcess) {
-      cache[file] = { 
+    for (const { cacheKey, hash } of allImagesToProcess) {
+      cache[cacheKey] = { 
         hash, 
         processedAt: new Date().toISOString() 
       };
@@ -228,7 +271,7 @@ async function generateModernFormats() {
     await saveCache(cache);
     
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.info(`✅ Image processing complete in ${duration}s!`);
+    console.info(`\n✅ Image processing complete in ${duration}s!`);
     
   } catch (error) {
     console.error('Error generating modern formats:', error);
