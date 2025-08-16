@@ -134,6 +134,7 @@ export default {
         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear forwards',
         'shimmer-loop': 'shimmer 2s linear infinite',
+        'shimmer-once': 'shimmer-once 1.5s ease-out forwards',
       },
 
       keyframes: {
@@ -171,6 +172,10 @@ export default {
         shimmer: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
+        },
+        'shimmer-once': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
         },
       },
 

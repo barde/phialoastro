@@ -69,7 +69,9 @@ export default function LazyImage({
       
       {/* Shimmer effect while loading */}
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-loop" />
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-once" />
+        </div>
       )}
 
       {/* Actual image */}
