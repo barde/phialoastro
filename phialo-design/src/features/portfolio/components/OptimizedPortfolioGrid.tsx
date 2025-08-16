@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from '../../../lib/framer-motion';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
+import OptimizedPicture from '../../../shared/components/OptimizedPicture';
+import { useAdaptiveLoading } from '../../../utils/adaptive-loading';
 import type { PortfolioItemData } from './PortfolioSection';
 
 interface OptimizedPortfolioGridProps {
@@ -9,8 +11,8 @@ interface OptimizedPortfolioGridProps {
   lang?: 'en' | 'de';
 }
 
-// Grid container variants for staggered animation
-const gridVariants = {
+// Grid container variants for staggered animation (unused but kept for reference)
+const _gridVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -53,9 +55,12 @@ function OptimizedPortfolioItem({
   const isEnglish = lang === 'en';
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  
+  // Use adaptive loading to determine preload count
+  const { preloadCount } = useAdaptiveLoading();
 
-  // Determine if this is a priority image
-  const isPriority = index < 3;
+  // Determine if this is a priority image based on adaptive loading
+  const isPriority = index < preloadCount;
 
   // Keyboard handler for accessibility
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
@@ -132,20 +137,19 @@ function OptimizedPortfolioItem({
               </div>
             )}
             
-            {/* Optimized image */}
-            <img
+            {/* Optimized image with modern formats */}
+            <OptimizedPicture
               src={item.image}
               alt={`${item.title} - ${item.category}`}
               className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               loading={isPriority ? 'eager' : 'lazy'}
-              decoding={isPriority ? 'sync' : 'async'}
               fetchPriority={isPriority ? 'high' : undefined}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              width="800"
-              height="1000"
+              width={800}
+              height={1000}
             />
 
             {/* Overlay */}
@@ -169,6 +173,11 @@ export default function OptimizedPortfolioGrid({
   onItemClick, 
   lang = 'de' 
 }: OptimizedPortfolioGridProps) {
+  // Use adaptive loading for performance optimization
+  const { 
+    animationSettings
+  } = useAdaptiveLoading();
+  
   // Check for reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -184,14 +193,39 @@ export default function OptimizedPortfolioGrid({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Use simpler animations if reduced motion is preferred
-  const effectiveVariants = prefersReducedMotion
+  // Use adaptive animations based on device capability
+  const effectiveVariants = !animationSettings.animate || prefersReducedMotion
     ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
-    : gridVariants;
+    : {
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: animationSettings.stagger,
+            delayChildren: animationSettings.duration * 0.2,
+          },
+        },
+      };
 
-  const _effectiveItemVariants = prefersReducedMotion
+  const effectiveItemVariants = !animationSettings.animate || prefersReducedMotion
     ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
-    : itemVariants;
+    : {
+        hidden: { 
+          opacity: 0, 
+          y: animationSettings.complexity === 'simple' ? 10 : 20,
+        },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            type: "spring" as const,
+            damping: 30,
+            stiffness: 150,
+            mass: animationSettings.complexity === 'simple' ? 0.3 : 0.5,
+            duration: animationSettings.duration,
+          },
+        },
+      };
 
   return (
     <motion.div
