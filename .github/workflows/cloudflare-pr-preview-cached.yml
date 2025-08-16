@@ -57,7 +57,7 @@ jobs:
       - name: Create temporary wrangler config
         working-directory: ./workers
         run: |
-          cat > wrangler-pr.toml << EOF
+          cat > wrangler-pr${{ github.event.pull_request.number }}.toml << EOF
           name = "${{ steps.deployment.outputs.worker_name }}"
           main = "src/index.ts"
           compatibility_date = "2024-09-25"
@@ -90,7 +90,7 @@ jobs:
         if: always()
         working-directory: ./workers
         run: |
-          rm -f wrangler-pr.toml
+          rm -f wrangler-pr${{ github.event.pull_request.number }}.toml
       
       - name: Post deployment comment
         uses: actions/github-script@v7

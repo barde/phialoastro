@@ -15,9 +15,14 @@ const isEnglish = lang === 'en';
 // Determine if this is likely the LCP image (first 3 items on mobile, first 6 on desktop)
 const isPriority = index < 3;
 
-// For images in public folder, we'll use a placeholder approach for now
-// In production, these should be moved to src/assets for full optimization
-const imageUrl = item.image;
+// Extract base name from image path for modern format generation
+const imagePath = item.image;
+const baseName = imagePath.replace('/images/portfolio/', '').replace(/\.(jpg|jpeg|png)$/i, '');
+
+// Generate srcset for different sizes
+const sizes = [320, 400, 640, 800, 1024, 1200, 1600, 2000];
+const webpSrcset = sizes.map(w => `/images/portfolio/${baseName}-${w}w.webp ${w}w`).join(', ');
+const avifSrcset = sizes.filter(w => w >= 800).map(w => `/images/portfolio/${baseName}-${w}w.avif ${w}w`).join(', ');
 
 // Translations for accessibility
 const cardLabel = isEnglish 
@@ -32,17 +37,36 @@ const cardLabel = isEnglish
   data-item-index={index}
 >
   <div class="portfolio-item-container relative overflow-hidden rounded-lg bg-gray-100 aspect-[4/5]">
-    <!-- Optimized image with responsive loading -->
-    <img
-      src={imageUrl}
-      alt={`${item.title} - ${item.category}`}
-      class="portfolio-item-image w-full h-full object-cover"
-      loading={isPriority ? 'eager' : 'lazy'}
-      decoding={isPriority ? 'sync' : 'async'}
-      fetchpriority={isPriority ? 'high' : 'auto'}
-      width="800"
-      height="1000"
-    />
+    <!-- Use picture element for modern formats with fallback -->
+    <picture>
+      <!-- AVIF for browsers that support it (best compression) -->
+      {avifSrcset && (
+        <source
+          type="image/avif"
+          srcset={avifSrcset}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      )}
+      
+      <!-- WebP for modern browsers -->
+      <source
+        type="image/webp"
+        srcset={webpSrcset}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      />
+      
+      <!-- Fallback to original format -->
+      <img
+        src={imagePath}
+        alt={`${item.title} - ${item.category}`}
+        class="portfolio-item-image w-full h-full object-cover"
+        loading={isPriority ? 'eager' : 'lazy'}
+        decoding={isPriority ? 'sync' : 'async'}
+        fetchpriority={isPriority ? 'high' : 'auto'}
+        width="800"
+        height="1000"
+      />
+    </picture>
     
     <!-- Overlay for hover effect -->
     <div class="portfolio-item-overlay absolute inset-0 bg-gradient-to-t from-midnight/80 via-midnight/20 to-transparent opacity-0 transition-opacity duration-300 pointer-events-none">
