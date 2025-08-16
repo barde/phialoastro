@@ -31,7 +31,7 @@ export default defineConfig({
     inlineStylesheets: 'auto',
   },
   
-  // Image optimization
+  // Image optimization with automatic format conversion
   image: {
     remotePatterns: [{ protocol: 'https' }],
   },
