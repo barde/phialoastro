@@ -27,7 +27,7 @@ runs:
           ${{ inputs.working-directory }}/public/images/portfolio/*-*w.webp
           ${{ inputs.working-directory }}/public/images/portfolio/*-*w.avif
           ${{ inputs.working-directory }}/.image-cache.json
-        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/public/images/portfolio/*.{jpg,jpeg,png}', inputs.working-directory)) }}
+        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles('**/public/images/portfolio/*.jpg', '**/public/images/portfolio/*.jpeg', '**/public/images/portfolio/*.png') }}
         restore-keys: |
           ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-
     
@@ -38,7 +38,7 @@ runs:
         path: |
           ${{ inputs.working-directory }}/.astro
           ${{ inputs.working-directory }}/node_modules/.astro
-        key: ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/src/**/*.{astro,tsx,ts,jsx,js}', inputs.working-directory)) }}
+        key: ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-${{ hashFiles('**/src/**/*.astro', '**/src/**/*.tsx', '**/src/**/*.ts', '**/src/**/*.jsx', '**/src/**/*.js') }}
         restore-keys: |
           ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-
     
