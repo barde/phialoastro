@@ -56,7 +56,20 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style" />
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" as="style" />
     
-    <!-- Google Fonts -->
+    <!-- Preload critical portfolio images for better LCP on homepage and portfolio -->
+    {(Astro.url.pathname === '/' || Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') && (
+      <>
+        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1.jpg?format=auto&quality=85&width=800" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl.jpg?format=auto&quality=85&width=800" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl.jpg?format=auto&quality=85&width=800" fetchpriority="high" />
+        
+        <!-- Preload critical JavaScript modules to reduce chain depth -->
+        <link rel="modulepreload" href="/_astro/index.*.js" />
+        <link rel="modulepreload" href="/_astro/PortfolioSection.*.js" />
+      </>
+    )}
+    
+    <!-- Google Fonts with font-display:swap for better text rendering -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" />
     
