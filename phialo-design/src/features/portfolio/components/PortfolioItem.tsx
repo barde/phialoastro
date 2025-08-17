@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
-import OptimizedPicture from '../../../shared/components/OptimizedPicture';
 import type { PortfolioItemData } from './PortfolioSection';
+
+// Lazy load the OptimizedPicture component to break the critical request chain
+const OptimizedPicture = React.lazy(() => import('../../../shared/components/OptimizedPicture'));
 
 interface PortfolioItemProps {
   item: PortfolioItemData;
@@ -44,16 +46,22 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de', priority
         <div 
           className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
         >
-          {/* Optimized image with modern formats */}
-          <OptimizedPicture
-            src={item.image}
-            alt={`${item.title} - ${item.category}`}
-            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
-            loading={priority ? 'eager' : 'lazy'}
-            fetchPriority={priority ? 'high' : 'auto'}
-            width={800}
-            height={1000}
-          />
+          {/* Optimized image with modern formats - lazy loaded to break critical chain */}
+          <Suspense 
+            fallback={
+              <div className="w-full h-full bg-gray-100 animate-pulse" aria-hidden="true" />
+            }
+          >
+            <OptimizedPicture
+              src={item.image}
+              alt={`${item.title} - ${item.category}`}
+              className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105"
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'auto'}
+              width={800}
+              height={1000}
+            />
+          </Suspense>
 
           {/* Overlay - Fixed opacity transition */}
           <div className="absolute inset-0 bg-gradient-to-t from-midnight/80 via-midnight/20 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-[.no-hover-until-leave]:opacity-0 transition-opacity duration-300 pointer-events-none">
