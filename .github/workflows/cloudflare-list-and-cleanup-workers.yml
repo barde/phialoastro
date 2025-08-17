@@ -84,19 +84,21 @@ jobs:
           TOTAL_COUNT=$(echo "$ALL_WORKERS" | wc -l | tr -d ' ')
           
           # Filter PR workers
-          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
-          if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
-            PR_COUNT=0
-          else
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
+          if [ -n "$PR_WORKERS" ]; then
             PR_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          else
+            PR_COUNT=0
+            PR_WORKERS=""
           fi
           
           # Filter other workers
-          OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || true)
-          if [ -z "$OTHER_WORKERS" ] || [ "$OTHER_WORKERS" = "" ]; then
-            OTHER_COUNT=0
-          else
+          OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || echo "")
+          if [ -n "$OTHER_WORKERS" ]; then
             OTHER_COUNT=$(echo "$OTHER_WORKERS" | wc -l | tr -d ' ')
+          else
+            OTHER_COUNT=0
+            OTHER_WORKERS=""
           fi
           
           echo "📊 Summary:"
@@ -111,7 +113,7 @@ jobs:
                "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&per_page=100" \
                | jq -r '.[].number' 2>/dev/null || echo "")
           
-          if [ ! -z "$PR_WORKERS" ] && [ "$PR_WORKERS" != "" ]; then
+          if [ -n "$PR_WORKERS" ]; then
             echo "========================================="
             echo "🔧 PR Preview Workers ($PR_COUNT)"
             echo "========================================="
@@ -135,7 +137,7 @@ jobs:
             done
           fi
           
-          if [ "$INCLUDE_ALL" == "true" ] && [ ! -z "$OTHER_WORKERS" ] && [ "$OTHER_WORKERS" != "" ]; then
+          if [ "$INCLUDE_ALL" == "true" ] && [ -n "$OTHER_WORKERS" ]; then
             echo "========================================="
             echo "📦 Other Workers ($OTHER_COUNT)"
             echo "========================================="
@@ -216,9 +218,9 @@ jobs:
                -H "Content-Type: application/json")
           
           ALL_WORKERS=$(echo "$RESPONSE" | jq -r '.result[].id' 2>/dev/null || echo "")
-          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           
-          if [ -z "$PR_WORKERS" ]; then
+          if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
             echo "✅ No PR workers found"
             exit 0
           fi
