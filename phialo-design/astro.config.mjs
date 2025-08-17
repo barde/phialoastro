@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
+import partytown from '@astrojs/partytown';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://astro.build/config
@@ -10,6 +11,12 @@ export default defineConfig({
     react(),
     tailwind({
       applyBaseStyles: false, // We apply our own base styles
+    }),
+    partytown({
+      // Forward necessary functions to the web worker
+      config: {
+        forward: ['dataLayer.push'],
+      },
     })
   ],
   // SEO and performance optimizations
@@ -86,14 +93,44 @@ export default defineConfig({
           manualChunks: (id) => {
             // Bundle vendor libraries separately
             if (id.includes('node_modules')) {
+              // Core React libraries
               if (id.includes('react') || id.includes('react-dom')) {
                 return 'react-vendor';
               }
+              // Animation libraries
               if (id.includes('framer-motion')) {
                 return 'motion-vendor';
               }
+              // Icon libraries
+              if (id.includes('lucide-react')) {
+                return 'icons-vendor';
+              }
+              // Form/Contact related libraries
+              if (id.includes('@cloudflare/turnstile')) {
+                return 'turnstile-vendor';
+              }
+              // All other vendor code
               return 'vendor';
             }
+            
+            // Split feature-based chunks
+            if (id.includes('src/features/portfolio')) {
+              return 'portfolio-feature';
+            }
+            if (id.includes('src/features/contact')) {
+              return 'contact-feature';
+            }
+            if (id.includes('src/features/about')) {
+              return 'about-feature';
+            }
+            if (id.includes('src/shared/navigation')) {
+              return 'navigation';
+            }
+          },
+          // Optimize chunk size
+          chunkFileNames: (chunkInfo) => {
+            const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+            return `_astro/[name].[hash].js`;
           },
         },
       },

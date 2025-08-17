@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-08-17T11:18:16.240Z",
+  "tests": [
+    {
+      "name": "Build time",
+      "duration": "N/A (run npm run build separately)",
+      "status": "info"
+    },
+    {
+      "name": "Memory usage",
+      "heapUsed": "5.01 MB",
+      "heapTotal": "5.59 MB",
+      "rss": "43.70 MB",
+      "status": "pass"
+    }
+  ]
+}

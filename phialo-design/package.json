@@ -52,6 +52,7 @@
     "dev:full": "concurrently \"npm run dev\" \"npm run worker:dev\""
   },
   "dependencies": {
+    "@astrojs/partytown": "^2.1.4",
     "@astrojs/react": "^4.3.0",
     "@astrojs/sitemap": "^3.4.2",
     "@astrojs/tailwind": "^6.0.2",
@@ -68,6 +69,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@fontsource/inter": "^5.2.6",
+    "@fontsource/playfair-display": "^5.2.6",
     "@playwright/test": "1.40.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",

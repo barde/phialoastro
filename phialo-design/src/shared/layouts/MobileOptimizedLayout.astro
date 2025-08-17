@@ -2,6 +2,7 @@
 import { SEO } from "astro-seo";
 import { ClientRouter } from "astro:transitions";
 import SmoothScroll from '../components/effects/SmoothScroll';
+import '../../styles/fonts.css';
 import '../../styles/global.css';
 import '../../styles/mobile-optimizations.css';
 
@@ -65,9 +66,9 @@ const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
     
-    <!-- Critical Resource Hints -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload self-hosted fonts -->
+    <link rel="preload" href="/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/playfair-400-latin.woff2" as="font" type="font/woff2" crossorigin />
     {Astro.site && <link rel="preconnect" href={Astro.site.origin} />}
     
     <!-- DNS Prefetch for external resources -->
@@ -95,9 +96,6 @@ const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
       />
     ))}
     
-    <!-- Font Preloading with display=swap for better performance -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style" />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" as="style" />
     
     <!-- Critical CSS inline for faster FCP -->
     <style>
@@ -135,15 +133,6 @@ const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
       }
     </style>
     
-    <!-- Google Fonts with swap and optional -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
-    
-    <!-- Fallback for browsers without onload support -->
-    <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" />
-    </noscript>
     
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -233,10 +222,10 @@ const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
     <SmoothScroll client:load />
     <slot />
     
-    <!-- Cloudflare Web Analytics (loaded asynchronously) -->
+    <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
     {analyticsToken && (
       <script
-        defer
+        type="text/partytown"
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon={`{"token": "${analyticsToken}"}`}
       ></script>
