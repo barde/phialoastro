@@ -3,6 +3,7 @@ import { SEO } from "astro-seo";
 import { ClientRouter } from "astro:transitions";
 import SmoothScroll from '../components/effects/SmoothScroll';
 import CriticalCSS from './CriticalCSS.astro';
+import WebVitalsMonitor from '../components/performance/WebVitalsMonitor.astro';
 import '../../styles/fonts.css';
 import '../../styles/global.css';
 
@@ -116,6 +117,9 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
   <body class="min-h-screen antialiased">
     <SmoothScroll client:idle />
     <slot />
+    
+    <!-- Core Web Vitals Monitoring with Attribution -->
+    <WebVitalsMonitor />
     
     <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
     {analyticsToken && (
