@@ -58,7 +58,7 @@ jobs:
         working-directory: phialo-design
         run: |
           npx @lhci/cli@0.14.x autorun \
-            --config=.lighthouserc.js \
+            --config=.lighthouserc.cjs \
             --upload.target=temporary-public-storage \
             --collect.numberOfRuns=3
         env:
