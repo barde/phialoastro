@@ -1,0 +1,87 @@
+---
+// Optimized picture component that provides modern image formats
+// Uses picture element with WebP/AVIF sources for better compression
+
+export interface Props {
+  src: string;
+  alt: string;
+  className?: string;
+  loading?: 'lazy' | 'eager';
+  fetchPriority?: 'high' | 'low' | 'auto';
+  width?: number;
+  height?: number;
+  sizes?: string;
+}
+
+const { 
+  src, 
+  alt, 
+  className = '', 
+  loading = 'lazy',
+  fetchPriority,
+  width = 800,
+  height = 1000,
+  sizes = '(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 320px'
+} = Astro.props;
+
+// Extract filename without extension
+const filename = src.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
+const basePath = src.substring(0, src.lastIndexOf('/'));
+
+// Generate srcset for different formats
+function generateSrcSet(ext: string, includeLarge: boolean = true): string {
+  const sizesArray = includeLarge 
+    ? [320, 400, 640, 800, 1024, 1200, 1600, 2000]
+    : [320, 400, 640, 800];
+  
+  // AVIF is only generated for sizes >= 800px to save build time
+  const filteredSizes = ext === 'avif' ? sizesArray.filter(s => s >= 800) : sizesArray;
+  
+  return filteredSizes
+    .map(size => `${basePath}/${filename}-${size}w.${ext} ${size}w`)
+    .join(', ');
+}
+
+// Check if we have modern formats available
+const hasModernFormats = !src.includes('http') || src.includes('phialo');
+---
+
+<picture>
+  {/* AVIF for browsers that support it (best compression) */}
+  {hasModernFormats && (
+    <source
+      srcset={generateSrcSet('avif', false)}
+      sizes={sizes}
+      type="image/avif"
+    />
+  )}
+  
+  {/* WebP for broader support */}
+  {hasModernFormats && (
+    <source
+      srcset={generateSrcSet('webp')}
+      sizes={sizes}
+      type="image/webp"
+    />
+  )}
+  
+  {/* Fallback to JPEG */}
+  <source
+    srcset={`${src} 1600w, ${basePath}/${filename}.jpg 1600w`}
+    sizes={sizes}
+    type="image/jpeg"
+  />
+  
+  {/* Fallback img element */}
+  <img
+    src={src}
+    alt={alt}
+    class={className}
+    loading={loading}
+    fetchpriority={fetchPriority}
+    width={width}
+    height={height}
+    decoding={loading === 'eager' ? 'sync' : 'async'}
+    sizes={sizes}
+  />
+</picture>

@@ -2,6 +2,7 @@
 import { SEO } from "astro-seo";
 import { ClientRouter } from "astro:transitions";
 import SmoothScroll from '../components/effects/SmoothScroll';
+import CriticalCSS from './CriticalCSS.astro';
 import '../../styles/global.css';
 
 export interface Props {
@@ -53,16 +54,32 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Font Preloading for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style" />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" as="style" />
     
-    <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" />
+    <!-- Preload critical images for portfolio page -->
+    {(Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') && (
+      <>
+        <!-- Preload first visible portfolio images in WebP format -->
+        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-800w.webp" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-800w.webp" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-800w.webp" type="image/webp" fetchpriority="high" />
+      </>
+    )}
+    
+    <!-- Google Fonts with font-display:swap for better text rendering -->
+    <!-- Using media="print" trick to load fonts asynchronously -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" />
+    </noscript>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    
+    <!-- Inline critical CSS for faster initial render -->
+    <CriticalCSS />
     
     <SEO
       title={title}
