@@ -1,0 +1,173 @@
+name: Cloudflare Orphaned Workers Cleanup
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run - only list workers without deleting'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  cleanup-orphaned-workers:
+    runs-on: ubuntu-latest
+    name: Clean up orphaned PR preview workers
+    permissions:
+      contents: read
+      pull-requests: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Find and clean orphaned workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        working-directory: ./workers
+        run: |
+          # Install wrangler
+          npm install wrangler@4.27.0
+          
+          echo "🔍 Fetching list of workers from Cloudflare..."
+          
+          # Get all workers from Cloudflare API
+          WORKERS=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+               -H "Content-Type: application/json" | jq -r '.result[].id' 2>/dev/null || echo "")
+          
+          if [ -z "$WORKERS" ]; then
+            echo "❌ No workers found or unable to fetch workers list"
+            exit 1
+          fi
+          
+          # Filter for PR workers
+          PR_WORKERS=$(echo "$WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          
+          if [ -z "$PR_WORKERS" ]; then
+            echo "✅ No PR workers found"
+            exit 0
+          fi
+          
+          echo "📋 Found PR workers:"
+          echo "$PR_WORKERS" | sed 's/^/  - /'
+          echo ""
+          
+          # Get list of open PRs
+          echo "🔍 Fetching open PRs from GitHub..."
+          OPEN_PRS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/pulls?state=open" \
+               | jq -r '.[].number' 2>/dev/null || echo "")
+          
+          echo "📋 Open PRs: ${OPEN_PRS:-none}"
+          echo ""
+          
+          # Find orphaned workers
+          ORPHANED_WORKERS=""
+          for worker in $PR_WORKERS; do
+            # Extract PR number from worker name
+            PR_NUMBER=$(echo "$worker" | sed 's/phialo-pr-//')
+            
+            # Check if this PR is still open
+            if echo "$OPEN_PRS" | grep -q "^$PR_NUMBER$"; then
+              echo "✓ Worker $worker corresponds to open PR #$PR_NUMBER - keeping"
+            else
+              echo "✗ Worker $worker has no corresponding open PR - marking for deletion"
+              ORPHANED_WORKERS="$ORPHANED_WORKERS$worker\n"
+            fi
+          done
+          
+          if [ -z "$ORPHANED_WORKERS" ]; then
+            echo ""
+            echo "✅ No orphaned workers found!"
+            exit 0
+          fi
+          
+          echo ""
+          echo "🗑️  Orphaned workers to clean up:"
+          echo -e "$ORPHANED_WORKERS" | sed 's/^/  - /'
+          
+          if [ "$DRY_RUN" == "true" ]; then
+            echo ""
+            echo "🔍 DRY RUN MODE - No workers will be deleted"
+            exit 0
+          fi
+          
+          echo ""
+          echo "🧹 Starting cleanup..."
+          DELETED_COUNT=0
+          FAILED_COUNT=0
+          
+          # Delete each orphaned worker
+          for worker in $(echo -e "$ORPHANED_WORKERS" | tr -d ' '); do
+            if [ -z "$worker" ]; then
+              continue
+            fi
+            
+            echo -n "Deleting $worker... "
+            if npx wrangler delete --name "$worker" --force 2>/dev/null; then
+              echo "✅ Deleted"
+              ((DELETED_COUNT++))
+            else
+              echo "❌ Failed"
+              ((FAILED_COUNT++))
+            fi
+          done
+          
+          echo ""
+          echo "======================================="
+          echo "Cleanup Summary:"
+          echo "  ✅ Successfully deleted: $DELETED_COUNT"
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "  ❌ Failed to delete: $FAILED_COUNT"
+          fi
+      
+      - name: Create issue if cleanup failed
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const today = new Date().toISOString().split('T')[0];
+            const title = `Cloudflare orphaned workers cleanup failed - ${today}`;
+            
+            // Check if an issue already exists for today
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'infrastructure,cloudflare',
+              per_page: 100
+            });
+            
+            const existingIssue = issues.find(issue => issue.title === title);
+            
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `## Cloudflare Orphaned Workers Cleanup Failed\n\n` +
+                      `The automated cleanup of orphaned Cloudflare PR preview workers failed.\n\n` +
+                      `**Run:** [${context.runId}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\n` +
+                      `### Action Required\n` +
+                      `- Check the workflow logs for details\n` +
+                      `- Manually run the cleanup script if needed\n` +
+                      `- Verify Cloudflare API credentials are valid\n\n` +
+                      `/cc @${context.repo.owner}`,
+                labels: ['infrastructure', 'cloudflare', 'automated']
+              });
+            }

@@ -270,6 +270,42 @@ jobs:
               });
             }
       
+      - name: Add 'preview-deployed' label
+        if: success() && steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]' && steps.extract-url.outputs.preview_url != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // First, ensure the label exists in the repository
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'preview-deployed'
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                // Label doesn't exist, create it
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'preview-deployed',
+                  description: 'PR has an active Cloudflare preview deployment',
+                  color: '0052cc' // Blue color
+                });
+                console.log("Created 'preview-deployed' label");
+              }
+            }
+            
+            // Add the label to the PR
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['preview-deployed']
+            });
+            console.log("Added 'preview-deployed' label to PR #" + context.issue.number);
+      
       - name: Clean up temporary config
         if: always() && steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
         working-directory: ./workers
