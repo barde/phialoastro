@@ -85,11 +85,19 @@ jobs:
           
           # Filter PR workers
           PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
-          PR_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
+          if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
+            PR_COUNT=0
+          else
+            PR_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          fi
           
           # Filter other workers
           OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || true)
-          OTHER_COUNT=$(echo "$OTHER_WORKERS" | grep -c . || echo "0")
+          if [ -z "$OTHER_WORKERS" ] || [ "$OTHER_WORKERS" = "" ]; then
+            OTHER_COUNT=0
+          else
+            OTHER_COUNT=$(echo "$OTHER_WORKERS" | wc -l | tr -d ' ')
+          fi
           
           echo "📊 Summary:"
           echo "  Total workers: $TOTAL_COUNT"
@@ -157,6 +165,7 @@ jobs:
           fi
           
           # Provide recommendations
+          ORPHANED_COUNT=0
           if [ "$PR_COUNT" -gt 0 ]; then
             ORPHANED_COUNT=$(for worker in $PR_WORKERS; do
               PR_NUM=${worker#phialo-pr-}
