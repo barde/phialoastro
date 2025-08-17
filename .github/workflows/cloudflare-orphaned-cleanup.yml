@@ -14,12 +14,21 @@ on:
         options:
           - 'true'
           - 'false'
+      environment:
+        description: 'GitHub environment to use for secrets'
+        required: false
+        default: 'preview'
+        type: choice
+        options:
+          - 'preview'
+          - 'production'
+          - 'master'
 
 jobs:
   cleanup-orphaned-workers:
     runs-on: ubuntu-latest
     name: Clean up orphaned PR preview workers
-    environment: production  # Use production environment for secrets
+    environment: ${{ github.event.inputs.environment || 'preview' }}  # Use selected environment, default to preview for manual runs and scheduled runs
     permissions:
       contents: read
       pull-requests: read

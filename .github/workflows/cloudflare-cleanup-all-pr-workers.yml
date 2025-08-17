@@ -15,12 +15,21 @@ on:
         options:
           - 'true'
           - 'false'
+      environment:
+        description: 'GitHub environment to use for secrets'
+        required: false
+        default: 'preview'
+        type: choice
+        options:
+          - 'preview'
+          - 'production'
+          - 'master'
 
 jobs:
   delete-all-pr-workers:
     runs-on: ubuntu-latest
     name: Delete all PR preview workers
-    environment: production  # Use production environment for secrets
+    environment: ${{ github.event.inputs.environment || 'preview' }}  # Use selected environment, default to preview
     permissions:
       contents: read
       issues: write
