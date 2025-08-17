@@ -79,3 +79,5 @@ browserstack-results.json
 browserstack.json
 local.log
 log/
+# Playwright test artifacts
+.playwright-mcp/
