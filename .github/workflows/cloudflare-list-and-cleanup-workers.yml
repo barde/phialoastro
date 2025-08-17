@@ -12,6 +12,7 @@ on:
           - 'list'
           - 'delete-pr-workers'
           - 'delete-specific-worker'
+          - 'list-and-delete-pr-workers'
       worker_name:
         description: 'Worker name (only for delete-specific-worker action)'
         required: false
@@ -24,11 +25,21 @@ on:
         options:
           - 'true'
           - 'false'
+      environment:
+        description: 'GitHub environment to use for secrets'
+        required: false
+        default: 'preview'
+        type: choice
+        options:
+          - 'preview'
+          - 'production'
+          - 'master'
 
 jobs:
   manage-workers:
     runs-on: ubuntu-latest
     name: Manage Cloudflare Workers
+    environment: ${{ github.event.inputs.environment || 'preview' }}  # Use selected environment, default to preview
     permissions:
       contents: read
       pull-requests: read
@@ -58,6 +69,21 @@ jobs:
           echo "========================================="
           echo ""
           
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "❌ Error: CLOUDFLARE_ACCOUNT_ID is not set"
+            echo "This workflow requires the CLOUDFLARE_ACCOUNT_ID secret to be configured."
+            echo "Please ensure it's added to the repository secrets."
+            exit 1
+          fi
+          
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: CLOUDFLARE_API_TOKEN is not set"
+            echo "This workflow requires the CLOUDFLARE_API_TOKEN secret to be configured."
+            echo "Please ensure it's added to the repository secrets."
+            exit 1
+          fi
+          
           # Get all workers from Cloudflare API
           echo "📡 Fetching workers from Cloudflare..."
           RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
@@ -73,20 +99,27 @@ jobs:
           
           # Extract worker details
           WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
-          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id')
           
-          if [ -z "$ALL_WORKERS" ]; then
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
             echo "✅ No workers found in the account"
             exit 0
           fi
           
-          # Count total workers
-          TOTAL_COUNT=$(echo "$ALL_WORKERS" | wc -l | tr -d ' ')
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id')
+          
+          if [ -z "$ALL_WORKERS" ] || [ "$ALL_WORKERS" = "" ]; then
+            echo "✅ No workers found in the account"
+            exit 0
+          fi
+          
+          # Count total workers (only if not empty)
+          TOTAL_COUNT=$(echo "$ALL_WORKERS" | grep -c . || echo "0")
           
           # Filter PR workers
           PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           if [ -n "$PR_WORKERS" ]; then
-            PR_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+            PR_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
           else
             PR_COUNT=0
             PR_WORKERS=""
@@ -95,7 +128,7 @@ jobs:
           # Filter other workers
           OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || echo "")
           if [ -n "$OTHER_WORKERS" ]; then
-            OTHER_COUNT=$(echo "$OTHER_WORKERS" | wc -l | tr -d ' ')
+            OTHER_COUNT=$(echo "$OTHER_WORKERS" | grep -c . || echo "0")
           else
             OTHER_COUNT=0
             OTHER_WORKERS=""
@@ -168,13 +201,20 @@ jobs:
           
           # Provide recommendations
           ORPHANED_COUNT=0
-          if [ "$PR_COUNT" -gt 0 ]; then
-            ORPHANED_COUNT=$(for worker in $PR_WORKERS; do
+          if [ "$PR_COUNT" -gt 0 ] && [ -n "$PR_WORKERS" ]; then
+            # Count orphaned workers properly
+            ORPHANED_LIST=$(for worker in $PR_WORKERS; do
               PR_NUM=${worker#phialo-pr-}
-              if ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
+              if [ -z "$OPEN_PRS" ] || ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
                 echo "1"
               fi
-            done | wc -l | tr -d ' ')
+            done)
+            
+            if [ -n "$ORPHANED_LIST" ]; then
+              ORPHANED_COUNT=$(echo "$ORPHANED_LIST" | grep -c . || echo "0")
+            else
+              ORPHANED_COUNT=0
+            fi
             
             if [ "$ORPHANED_COUNT" -gt 0 ]; then
               echo "========================================="
@@ -212,12 +252,39 @@ jobs:
           echo "========================================="
           echo ""
           
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: Cloudflare credentials are not configured"
+            echo "Please ensure CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are set in repository secrets."
+            exit 1
+          fi
+          
           # Get all workers
           RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                -H "Content-Type: application/json")
           
-          ALL_WORKERS=$(echo "$RESPONSE" | jq -r '.result[].id' 2>/dev/null || echo "")
+          # Check if the API call was successful
+          if ! echo "$RESPONSE" | jq -e '.success' > /dev/null 2>&1; then
+            echo "❌ Failed to fetch workers from Cloudflare API"
+            exit 1
+          fi
+          
+          WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
+          
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
+            echo "✅ No workers found in the account"
+            exit 0
+          fi
+          
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id' 2>/dev/null || echo "")
+          
+          if [ -z "$ALL_WORKERS" ]; then
+            echo "✅ No workers found"
+            exit 0
+          fi
+          
           PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           
           if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
@@ -225,7 +292,7 @@ jobs:
             exit 0
           fi
           
-          WORKER_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          WORKER_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
           echo "Found $WORKER_COUNT PR worker(s) to delete:"
           echo "$PR_WORKERS" | sed 's/^/  - /'
           echo ""
@@ -274,6 +341,13 @@ jobs:
             exit 1
           fi
           
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: Cloudflare credentials are not configured"
+            echo "Please ensure CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are set in repository secrets."
+            exit 1
+          fi
+          
           echo "========================================="
           echo "🗑️  Deleting Specific Worker"
           echo "========================================="
@@ -312,3 +386,143 @@ jobs:
             
             exit 1
           fi
+      
+      - name: List and delete all PR workers
+        if: github.event.inputs.action == 'list-and-delete-pr-workers'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: ./workers
+        run: |
+          echo "========================================="
+          echo "📋 List and Delete All PR Workers"
+          echo "========================================="
+          echo ""
+          
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: Cloudflare credentials are not configured"
+            echo "Please ensure CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are set in repository secrets."
+            exit 1
+          fi
+          
+          # Get all workers
+          echo "📡 Fetching workers from Cloudflare..."
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+               -H "Content-Type: application/json")
+          
+          # Check if the API call was successful
+          if ! echo "$RESPONSE" | jq -e '.success' > /dev/null 2>&1; then
+            echo "❌ Failed to fetch workers from Cloudflare API"
+            exit 1
+          fi
+          
+          WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
+          
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
+            echo "✅ No workers found in the account"
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## ✅ No Workers Found" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id' 2>/dev/null || echo "")
+          
+          if [ -z "$ALL_WORKERS" ]; then
+            echo "✅ No workers found"
+            exit 0
+          fi
+          
+          # Filter PR workers
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
+          
+          if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
+            echo "✅ No PR workers found to delete"
+            echo ""
+            echo "Other workers in account:"
+            OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || echo "")
+            if [ -n "$OTHER_WORKERS" ]; then
+              echo "$OTHER_WORKERS" | sed 's/^/  - /'
+            fi
+            
+            echo "## ✅ No PR Workers Found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No PR workers to delete." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          # Count and list PR workers
+          WORKER_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
+          echo "Found $WORKER_COUNT PR worker(s) to delete:"
+          echo "$PR_WORKERS" | sed 's/^/  - /'
+          echo ""
+          
+          # Get list of open PRs for context
+          echo "📄 Checking for open PRs..."
+          OPEN_PRS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&per_page=100" \
+               | jq -r '.[].number' 2>/dev/null || echo "")
+          
+          # Identify orphaned workers
+          echo "Analyzing worker status..."
+          ORPHANED_COUNT=0
+          for worker in $PR_WORKERS; do
+            PR_NUM=${worker#phialo-pr-}
+            if [ -z "$OPEN_PRS" ] || ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
+              echo "  ⚠️  $worker - PR #$PR_NUM is CLOSED/MERGED (orphaned)"
+              ((ORPHANED_COUNT++))
+            else
+              echo "  ✅ $worker - PR #$PR_NUM is OPEN"
+            fi
+          done
+          echo ""
+          
+          # Start deletion
+          echo "========================================="
+          echo "🗑️  Starting deletion..."
+          echo ""
+          
+          DELETED_COUNT=0
+          FAILED_COUNT=0
+          FAILED_WORKERS=""
+          
+          for worker in $PR_WORKERS; do
+            echo -n "Deleting $worker... "
+            if npx wrangler delete --name "$worker" --force 2>/dev/null; then
+              echo "✅ Deleted"
+              ((DELETED_COUNT++))
+            else
+              echo "❌ Failed"
+              ((FAILED_COUNT++))
+              FAILED_WORKERS="$FAILED_WORKERS$worker\n"
+            fi
+          done
+          
+          echo ""
+          echo "========================================="
+          echo "Summary:"
+          echo "  ✅ Deleted: $DELETED_COUNT"
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "  ❌ Failed: $FAILED_COUNT"
+            if [ -n "$FAILED_WORKERS" ]; then
+              echo ""
+              echo "Failed workers:"
+              echo -e "$FAILED_WORKERS" | sed 's/^/    - /'
+            fi
+          fi
+          
+          # Add to summary
+          echo "## 📋 List and Delete PR Workers Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workers Found:** $WORKER_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Orphaned Workers:** $ORPHANED_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Successfully Deleted:** $DELETED_COUNT" >> $GITHUB_STEP_SUMMARY
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "- **Failed:** $FAILED_COUNT" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Environment Used" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ github.event.inputs.environment || 'preview' }}" >> $GITHUB_STEP_SUMMARY
