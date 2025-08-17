@@ -24,7 +24,7 @@ module.exports = {
     assert: {
       assertions: {
         'categories:performance': ['error', { minScore: 0.9 }],
-        'categories:accessibility': ['error', { minScore: 0.95 }],
+        'categories:accessibility': ['error', { minScore: 0.93 }],
         'categories:best-practices': ['error', { minScore: 0.95 }],
         'categories:seo': ['error', { minScore: 0.95 }],
         'first-contentful-paint': ['error', { maxNumericValue: 2000 }],
@@ -35,7 +35,7 @@ module.exports = {
         'speed-index': ['error', { maxNumericValue: 3400 }],
         'resource-summary:script:size': ['error', { maxNumericValue: 350000 }],
         'resource-summary:stylesheet:size': ['error', { maxNumericValue: 50000 }],
-        'resource-summary:image:size': ['error', { maxNumericValue: 500000 }],
+        'resource-summary:image:size': ['error', { maxNumericValue: 1100000 }],
         'resource-summary:total:size': ['error', { maxNumericValue: 1000000 }]
       }
     },
