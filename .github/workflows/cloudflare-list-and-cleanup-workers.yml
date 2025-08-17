@@ -304,10 +304,10 @@ jobs:
             echo -n "Deleting $worker... "
             if npx wrangler delete --name "$worker" --force 2>/dev/null; then
               echo "✅ Deleted"
-              ((DELETED_COUNT++))
+              DELETED_COUNT=$((DELETED_COUNT + 1))
             else
               echo "❌ Failed"
-              ((FAILED_COUNT++))
+              FAILED_COUNT=$((FAILED_COUNT + 1))
             fi
           done
           
@@ -472,7 +472,7 @@ jobs:
             PR_NUM=${worker#phialo-pr-}
             if [ -z "$OPEN_PRS" ] || ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
               echo "  ⚠️  $worker - PR #$PR_NUM is CLOSED/MERGED (orphaned)"
-              ((ORPHANED_COUNT++))
+              ORPHANED_COUNT=$((ORPHANED_COUNT + 1))
             else
               echo "  ✅ $worker - PR #$PR_NUM is OPEN"
             fi
@@ -492,10 +492,10 @@ jobs:
             echo -n "Deleting $worker... "
             if npx wrangler delete --name "$worker" --force 2>/dev/null; then
               echo "✅ Deleted"
-              ((DELETED_COUNT++))
+              DELETED_COUNT=$((DELETED_COUNT + 1))
             else
               echo "❌ Failed"
-              ((FAILED_COUNT++))
+              FAILED_COUNT=$((FAILED_COUNT + 1))
               FAILED_WORKERS="$FAILED_WORKERS$worker\n"
             fi
           done
