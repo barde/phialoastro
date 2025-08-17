@@ -58,6 +58,21 @@ jobs:
           echo "========================================="
           echo ""
           
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "❌ Error: CLOUDFLARE_ACCOUNT_ID is not set"
+            echo "This workflow requires the CLOUDFLARE_ACCOUNT_ID secret to be configured."
+            echo "Please ensure it's added to the repository secrets."
+            exit 1
+          fi
+          
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: CLOUDFLARE_API_TOKEN is not set"
+            echo "This workflow requires the CLOUDFLARE_API_TOKEN secret to be configured."
+            echo "Please ensure it's added to the repository secrets."
+            exit 1
+          fi
+          
           # Get all workers from Cloudflare API
           echo "📡 Fetching workers from Cloudflare..."
           RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
@@ -226,6 +241,13 @@ jobs:
           echo "========================================="
           echo ""
           
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: Cloudflare credentials are not configured"
+            echo "Please ensure CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are set in repository secrets."
+            exit 1
+          fi
+          
           # Get all workers
           RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
@@ -305,6 +327,13 @@ jobs:
         run: |
           if [ -z "$WORKER_NAME" ]; then
             echo "❌ Error: Worker name is required for delete-specific-worker action"
+            exit 1
+          fi
+          
+          # Check if credentials are set
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ Error: Cloudflare credentials are not configured"
+            echo "Please ensure CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are set in repository secrets."
             exit 1
           fi
           
