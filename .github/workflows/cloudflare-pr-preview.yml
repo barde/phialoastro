@@ -160,7 +160,10 @@ jobs:
           echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
           echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
           echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
-          echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          # REPLY_TO_EMAIL is optional - only set if provided
+          if [ ! -z "${{ secrets.REPLY_TO_EMAIL }}" ]; then
+            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          fi
           echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
       
       - name: Extract deployment URL
