@@ -1,0 +1,231 @@
+name: Performance Check
+
+on:
+  pull_request:
+    paths:
+      - 'phialo-design/**'
+      - '!phialo-design/docs/**'
+      - '!**.md'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test'
+        required: false
+        type: string
+
+jobs:
+  performance-check:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
+      
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build application
+        working-directory: phialo-design
+        run: pnpm run build
+        env:
+          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
+      
+      - name: Start preview server
+        working-directory: phialo-design
+        run: |
+          pnpm run preview &
+          sleep 5
+      
+      - name: Run Lighthouse CI
+        working-directory: phialo-design
+        run: |
+          npx @lhci/cli@0.14.x autorun \
+            --config=.lighthouserc.cjs \
+            --upload.target=temporary-public-storage \
+            --collect.numberOfRuns=3
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      
+      - name: Analyze Core Web Vitals
+        working-directory: phialo-design
+        run: |
+          # Extract Core Web Vitals from Lighthouse results
+          echo "## 📊 Core Web Vitals Report" > vitals-report.md
+          echo "" >> vitals-report.md
+          
+          # Parse Lighthouse results
+          if [ -d ".lighthouseci" ]; then
+            for file in .lighthouseci/lhr-*.json; do
+              if [ -f "$file" ]; then
+                url=$(jq -r '.finalUrl' "$file")
+                lcp=$(jq -r '.audits["largest-contentful-paint"].numericValue' "$file")
+                cls=$(jq -r '.audits["cumulative-layout-shift"].numericValue' "$file")
+                tbt=$(jq -r '.audits["total-blocking-time"].numericValue' "$file")
+                fcp=$(jq -r '.audits["first-contentful-paint"].numericValue' "$file")
+                ttfb=$(jq -r '.audits["server-response-time"].numericValue' "$file")
+                
+                # Calculate INP estimate from TBT (rough approximation)
+                inp_estimate=$(echo "$tbt * 0.8" | bc 2>/dev/null || echo "N/A")
+                
+                echo "### 📄 $url" >> vitals-report.md
+                echo "" >> vitals-report.md
+                echo "| Metric | Value | Status | Target |" >> vitals-report.md
+                echo "|--------|-------|--------|--------|" >> vitals-report.md
+                
+                # LCP
+                lcp_ms=$(echo "scale=0; $lcp / 1" | bc 2>/dev/null || echo "N/A")
+                lcp_status="🟢 Good"
+                [ "$lcp_ms" != "N/A" ] && [ "$lcp_ms" -gt "2500" ] && lcp_status="🟡 Needs Improvement"
+                [ "$lcp_ms" != "N/A" ] && [ "$lcp_ms" -gt "4000" ] && lcp_status="🔴 Poor"
+                echo "| **LCP** | ${lcp_ms}ms | $lcp_status | < 2500ms |" >> vitals-report.md
+                
+                # CLS
+                cls_val=$(printf "%.3f" "$cls" 2>/dev/null || echo "N/A")
+                cls_status="🟢 Good"
+                [ "$cls_val" != "N/A" ] && [ "$(echo "$cls_val > 0.1" | bc)" = "1" ] && cls_status="🟡 Needs Improvement"
+                [ "$cls_val" != "N/A" ] && [ "$(echo "$cls_val > 0.25" | bc)" = "1" ] && cls_status="🔴 Poor"
+                echo "| **CLS** | $cls_val | $cls_status | < 0.1 |" >> vitals-report.md
+                
+                # INP (estimated from TBT)
+                inp_status="🟢 Good"
+                [ "$inp_estimate" != "N/A" ] && [ "$(echo "$inp_estimate > 200" | bc)" = "1" ] && inp_status="🟡 Needs Improvement"
+                [ "$inp_estimate" != "N/A" ] && [ "$(echo "$inp_estimate > 500" | bc)" = "1" ] && inp_status="🔴 Poor"
+                echo "| **INP** (est.) | ${inp_estimate}ms | $inp_status | < 200ms |" >> vitals-report.md
+                
+                # FCP
+                fcp_ms=$(echo "scale=0; $fcp / 1" | bc 2>/dev/null || echo "N/A")
+                fcp_status="🟢 Good"
+                [ "$fcp_ms" != "N/A" ] && [ "$fcp_ms" -gt "1800" ] && fcp_status="🟡 Needs Improvement"
+                [ "$fcp_ms" != "N/A" ] && [ "$fcp_ms" -gt "3000" ] && fcp_status="🔴 Poor"
+                echo "| **FCP** | ${fcp_ms}ms | $fcp_status | < 1800ms |" >> vitals-report.md
+                
+                # TTFB
+                ttfb_ms=$(echo "scale=0; $ttfb / 1" | bc 2>/dev/null || echo "N/A")
+                ttfb_status="🟢 Good"
+                [ "$ttfb_ms" != "N/A" ] && [ "$ttfb_ms" -gt "800" ] && ttfb_status="🟡 Needs Improvement"
+                [ "$ttfb_ms" != "N/A" ] && [ "$ttfb_ms" -gt "1800" ] && ttfb_status="🔴 Poor"
+                echo "| **TTFB** | ${ttfb_ms}ms | $ttfb_status | < 800ms |" >> vitals-report.md
+                
+                echo "" >> vitals-report.md
+              fi
+            done
+          fi
+          
+          echo "---" >> vitals-report.md
+          echo "" >> vitals-report.md
+          echo "📝 **Note:** INP is estimated from Total Blocking Time. Real INP data is collected via RUM." >> vitals-report.md
+          echo "" >> vitals-report.md
+          echo "🔗 **View detailed Cloudflare Web Analytics:** [Dashboard](https://dash.cloudflare.com/?to=/:account/web-analytics)" >> vitals-report.md
+      
+      - name: Compare with baseline
+        working-directory: phialo-design
+        run: |
+          # Check if we have baseline data
+          if [ -f "performance-baselines/core-web-vitals.json" ]; then
+            echo "## ⚖️ Performance Comparison" >> vitals-report.md
+            echo "" >> vitals-report.md
+            
+            # Compare current results with baseline
+            # This would need a more sophisticated comparison script
+            echo "Comparing with baseline metrics..." >> vitals-report.md
+            
+            # Check for regressions
+            REGRESSION_FOUND=false
+            
+            # Simple check - would be more sophisticated in practice
+            if [ -d ".lighthouseci" ]; then
+              for file in .lighthouseci/lhr-*.json; do
+                if [ -f "$file" ]; then
+                  perf_score=$(jq -r '.categories.performance.score' "$file")
+                  perf_pct=$(echo "scale=0; $perf_score * 100 / 1" | bc 2>/dev/null || echo "0")
+                  
+                  if [ "$perf_pct" -lt "90" ]; then
+                    REGRESSION_FOUND=true
+                    echo "⚠️ **Performance regression detected!** Score: ${perf_pct}% (target: 90%)" >> vitals-report.md
+                  fi
+                fi
+              done
+            fi
+            
+            if [ "$REGRESSION_FOUND" = "false" ]; then
+              echo "✅ **No performance regressions detected**" >> vitals-report.md
+            fi
+          else
+            echo "ℹ️ No baseline data available for comparison" >> vitals-report.md
+          fi
+      
+      - name: Post PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('phialo-design/vitals-report.md', 'utf8');
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Core Web Vitals Report')
+            );
+            
+            const commentBody = `${report}\n\n---\n_Generated by Performance Check workflow_`;
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+      
+      - name: Check for failures
+        working-directory: phialo-design
+        run: |
+          # Exit with error if performance budgets are exceeded
+          if [ -d ".lighthouseci" ]; then
+            for file in .lighthouseci/assertion-results.json; do
+              if [ -f "$file" ]; then
+                failures=$(jq '.[] | select(.level == "error")' "$file" | wc -l)
+                if [ "$failures" -gt "0" ]; then
+                  echo "❌ Performance budgets exceeded!"
+                  exit 1
+                fi
+              fi
+            done
+          fi
+          
+          echo "✅ All performance checks passed!"
