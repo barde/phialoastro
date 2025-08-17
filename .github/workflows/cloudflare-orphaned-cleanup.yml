@@ -45,13 +45,29 @@ jobs:
           echo "🔍 Fetching list of workers from Cloudflare..."
           
           # Get all workers from Cloudflare API
-          WORKERS=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-               -H "Content-Type: application/json" | jq -r '.result[].id' 2>/dev/null || echo "")
+               -H "Content-Type: application/json")
+          
+          # Check if the API call was successful
+          if ! echo "$RESPONSE" | jq -e '.success' > /dev/null 2>&1; then
+            echo "❌ Failed to fetch workers from Cloudflare API"
+            exit 1
+          fi
+          
+          WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
+          
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
+            echo "✅ No workers found in the account"
+            exit 0
+          fi
+          
+          WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id' 2>/dev/null || echo "")
           
           if [ -z "$WORKERS" ]; then
-            echo "❌ No workers found or unable to fetch workers list"
-            exit 1
+            echo "✅ No workers found"
+            exit 0
           fi
           
           # Filter for PR workers

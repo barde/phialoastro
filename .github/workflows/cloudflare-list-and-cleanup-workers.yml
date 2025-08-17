@@ -73,20 +73,27 @@ jobs:
           
           # Extract worker details
           WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
-          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id')
           
-          if [ -z "$ALL_WORKERS" ]; then
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
             echo "✅ No workers found in the account"
             exit 0
           fi
           
-          # Count total workers
-          TOTAL_COUNT=$(echo "$ALL_WORKERS" | wc -l | tr -d ' ')
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id')
+          
+          if [ -z "$ALL_WORKERS" ] || [ "$ALL_WORKERS" = "" ]; then
+            echo "✅ No workers found in the account"
+            exit 0
+          fi
+          
+          # Count total workers (only if not empty)
+          TOTAL_COUNT=$(echo "$ALL_WORKERS" | grep -c . || echo "0")
           
           # Filter PR workers
           PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           if [ -n "$PR_WORKERS" ]; then
-            PR_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+            PR_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
           else
             PR_COUNT=0
             PR_WORKERS=""
@@ -95,7 +102,7 @@ jobs:
           # Filter other workers
           OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || echo "")
           if [ -n "$OTHER_WORKERS" ]; then
-            OTHER_COUNT=$(echo "$OTHER_WORKERS" | wc -l | tr -d ' ')
+            OTHER_COUNT=$(echo "$OTHER_WORKERS" | grep -c . || echo "0")
           else
             OTHER_COUNT=0
             OTHER_WORKERS=""
@@ -168,13 +175,20 @@ jobs:
           
           # Provide recommendations
           ORPHANED_COUNT=0
-          if [ "$PR_COUNT" -gt 0 ]; then
-            ORPHANED_COUNT=$(for worker in $PR_WORKERS; do
+          if [ "$PR_COUNT" -gt 0 ] && [ -n "$PR_WORKERS" ]; then
+            # Count orphaned workers properly
+            ORPHANED_LIST=$(for worker in $PR_WORKERS; do
               PR_NUM=${worker#phialo-pr-}
-              if ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
+              if [ -z "$OPEN_PRS" ] || ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
                 echo "1"
               fi
-            done | wc -l | tr -d ' ')
+            done)
+            
+            if [ -n "$ORPHANED_LIST" ]; then
+              ORPHANED_COUNT=$(echo "$ORPHANED_LIST" | grep -c . || echo "0")
+            else
+              ORPHANED_COUNT=0
+            fi
             
             if [ "$ORPHANED_COUNT" -gt 0 ]; then
               echo "========================================="
@@ -217,7 +231,27 @@ jobs:
                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                -H "Content-Type: application/json")
           
-          ALL_WORKERS=$(echo "$RESPONSE" | jq -r '.result[].id' 2>/dev/null || echo "")
+          # Check if the API call was successful
+          if ! echo "$RESPONSE" | jq -e '.success' > /dev/null 2>&1; then
+            echo "❌ Failed to fetch workers from Cloudflare API"
+            exit 1
+          fi
+          
+          WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
+          
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
+            echo "✅ No workers found in the account"
+            exit 0
+          fi
+          
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id' 2>/dev/null || echo "")
+          
+          if [ -z "$ALL_WORKERS" ]; then
+            echo "✅ No workers found"
+            exit 0
+          fi
+          
           PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           
           if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
@@ -225,7 +259,7 @@ jobs:
             exit 0
           fi
           
-          WORKER_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          WORKER_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
           echo "Found $WORKER_COUNT PR worker(s) to delete:"
           echo "$PR_WORKERS" | sed 's/^/  - /'
           echo ""
