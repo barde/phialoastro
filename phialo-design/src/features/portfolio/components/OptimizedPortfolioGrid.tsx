@@ -124,7 +124,7 @@ function OptimizedPortfolioItem({
         onKeyDown={handleKeyDown}
       >
         <MagneticCursor>
-          <div className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg">
+          <div className="portfolio-item-container overflow-hidden rounded-lg aspect-[4/5] transition-all duration-300 group-hover:shadow-lg">
             {/* Show placeholder while image loads */}
             {!imageLoaded && !imageError && (
               <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 animate-pulse" />
@@ -132,7 +132,7 @@ function OptimizedPortfolioItem({
             
             {/* Error state */}
             {imageError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-gray-400">Failed to load image</span>
               </div>
             )}

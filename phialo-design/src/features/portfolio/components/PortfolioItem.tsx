@@ -44,12 +44,12 @@ export default function PortfolioItem({ item, onItemClick, lang = 'de', priority
       <MagneticCursor>
         {/* Inner container is for visuals only, no 'group' or event handlers here */}
         <div 
-          className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
+          className="portfolio-item-container overflow-hidden rounded-lg aspect-[4/5] transition-all duration-300 group-hover:shadow-lg"
         >
           {/* Optimized image with modern formats - lazy loaded to break critical chain */}
           <Suspense 
             fallback={
-              <div className="w-full h-full bg-gray-100 animate-pulse" aria-hidden="true" />
+              <div className="w-full h-full animate-pulse" aria-hidden="true" />
             }
           >
             <OptimizedPicture
