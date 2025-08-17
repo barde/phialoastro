@@ -55,20 +55,10 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Preload critical JavaScript modules to reduce dependency chain depth -->
-    {(Astro.url.pathname === '/' || Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') && (
+    <!-- Preload critical images for portfolio page -->
+    {(Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') && (
       <>
-        <!-- Break the critical chain by preloading all modules in parallel -->
-        <link rel="modulepreload" href="/_astro/page.BNYwb576.js" />
-        <link rel="modulepreload" href="/_astro/index.Bel2lkwi.js" />
-        <link rel="modulepreload" href="/_astro/PortfolioSection.R6LBBD5Z.js" />
-        <link rel="modulepreload" href="/_astro/OptimizedPicture.DmDkzUXm.js" />
-        <link rel="modulepreload" href="/_astro/proxy.BMr2H2Wb.js" />
-        <link rel="modulepreload" href="/_astro/jsx-runtime.D_zvdyIk.js" />
-        <link rel="modulepreload" href="/_astro/Navigation.CX3Ce_Z9.js" />
-        <link rel="modulepreload" href="/_astro/x.Dcmj73Nf.js" />
-        
-        <!-- Preload WebP versions of critical images -->
+        <!-- Preload first visible portfolio images in WebP format -->
         <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-800w.webp" type="image/webp" fetchpriority="high" />
         <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-800w.webp" type="image/webp" fetchpriority="high" />
         <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-800w.webp" type="image/webp" fetchpriority="high" />
@@ -76,8 +66,9 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     )}
     
     <!-- Google Fonts with font-display:swap for better text rendering -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <!-- Using media="print" trick to load fonts asynchronously -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" />
