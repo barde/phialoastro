@@ -20,6 +20,7 @@ jobs:
   delete-all-pr-workers:
     runs-on: ubuntu-latest
     name: Delete all PR preview workers
+    environment: production  # Use production environment for secrets
     permissions:
       contents: read
       issues: write

@@ -29,6 +29,7 @@ jobs:
   manage-workers:
     runs-on: ubuntu-latest
     name: Manage Cloudflare Workers
+    environment: production  # Use production environment for secrets
     permissions:
       contents: read
       pull-requests: read
