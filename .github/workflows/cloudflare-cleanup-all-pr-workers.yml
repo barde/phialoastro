@@ -1,0 +1,246 @@
+name: Cloudflare - Delete All PR Workers
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deletion:
+        description: 'Type "DELETE ALL" to confirm deletion of ALL PR workers'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run - only list workers without deleting'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  delete-all-pr-workers:
+    runs-on: ubuntu-latest
+    name: Delete all PR preview workers
+    permissions:
+      contents: read
+      issues: write
+    
+    steps:
+      - name: Validate confirmation
+        if: github.event.inputs.dry_run == 'false' && github.event.inputs.confirm_deletion != 'DELETE ALL'
+        run: |
+          echo "❌ Deletion not confirmed. You must type 'DELETE ALL' to proceed with deletion."
+          echo "You typed: '${{ github.event.inputs.confirm_deletion }}'"
+          exit 1
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Find and delete all PR workers
+        id: cleanup
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        working-directory: ./workers
+        run: |
+          # Install wrangler
+          npm install wrangler@4.27.0
+          
+          echo "========================================="
+          echo "🔍 Cloudflare PR Workers Cleanup"
+          echo "========================================="
+          echo ""
+          
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "🔍 DRY RUN MODE - No workers will be deleted"
+          else
+            echo "⚠️  DELETION MODE - Workers will be permanently deleted"
+          fi
+          echo ""
+          
+          # Get all workers from Cloudflare API
+          echo "📡 Fetching list of workers from Cloudflare..."
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+               -H "Content-Type: application/json")
+          
+          # Check if the API call was successful
+          if ! echo "$RESPONSE" | jq -e '.success' > /dev/null 2>&1; then
+            echo "❌ Failed to fetch workers from Cloudflare API"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+          
+          # Extract worker names
+          ALL_WORKERS=$(echo "$RESPONSE" | jq -r '.result[].id' 2>/dev/null || echo "")
+          
+          if [ -z "$ALL_WORKERS" ]; then
+            echo "✅ No workers found in the account"
+            echo "workers_found=0" >> $GITHUB_OUTPUT
+            echo "workers_deleted=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Filter for PR workers (phialo-pr-*)
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          
+          if [ -z "$PR_WORKERS" ]; then
+            echo "✅ No PR workers found"
+            echo "workers_found=0" >> $GITHUB_OUTPUT
+            echo "workers_deleted=0" >> $GITHUB_OUTPUT
+            
+            echo ""
+            echo "📋 All workers in account:"
+            echo "$ALL_WORKERS" | sed 's/^/  - /'
+            exit 0
+          fi
+          
+          # Count PR workers
+          WORKER_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          echo "workers_found=$WORKER_COUNT" >> $GITHUB_OUTPUT
+          
+          echo "📋 Found $WORKER_COUNT PR worker(s):"
+          echo "$PR_WORKERS" | while read -r worker; do
+            PR_NUM=${worker#phialo-pr-}
+            echo "  - $worker (PR #$PR_NUM)"
+          done
+          echo ""
+          
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "========================================="
+            echo "✅ DRY RUN COMPLETE"
+            echo "Found $WORKER_COUNT PR worker(s) that would be deleted"
+            echo "workers_deleted=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "========================================="
+          echo "🗑️  Starting deletion..."
+          echo ""
+          
+          DELETED_COUNT=0
+          FAILED_COUNT=0
+          FAILED_WORKERS=""
+          
+          # Delete each PR worker
+          for worker in $PR_WORKERS; do
+            if [ -z "$worker" ]; then
+              continue
+            fi
+            
+            echo -n "Deleting $worker... "
+            
+            # Try to delete the worker
+            if npx wrangler delete --name "$worker" --force 2>/dev/null; then
+              echo "✅ Deleted"
+              ((DELETED_COUNT++))
+            else
+              echo "❌ Failed"
+              ((FAILED_COUNT++))
+              FAILED_WORKERS="$FAILED_WORKERS$worker\n"
+            fi
+          done
+          
+          echo ""
+          echo "========================================="
+          echo "📊 Cleanup Summary:"
+          echo "  Total PR workers found: $WORKER_COUNT"
+          echo "  ✅ Successfully deleted: $DELETED_COUNT"
+          
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "  ❌ Failed to delete: $FAILED_COUNT"
+            echo ""
+            echo "Failed workers:"
+            echo -e "$FAILED_WORKERS" | sed 's/^/  - /'
+          fi
+          
+          echo "workers_deleted=$DELETED_COUNT" >> $GITHUB_OUTPUT
+          
+          # Set exit code based on failures
+          if [ $FAILED_COUNT -gt 0 ] && [ $DELETED_COUNT -eq 0 ]; then
+            echo ""
+            echo "❌ All deletion attempts failed"
+            exit 1
+          elif [ $FAILED_COUNT -gt 0 ]; then
+            echo ""
+            echo "⚠️  Partial success - some workers could not be deleted"
+            exit 0
+          else
+            echo ""
+            echo "🎉 All PR workers deleted successfully!"
+            exit 0
+          fi
+      
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 🧹 Cloudflare PR Workers Cleanup Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "### 🔍 DRY RUN MODE" >> $GITHUB_STEP_SUMMARY
+            echo "No workers were actually deleted." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ DELETION MODE" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workers Found:** ${{ steps.cleanup.outputs.workers_found || '0' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workers Deleted:** ${{ steps.cleanup.outputs.workers_deleted || '0' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.cleanup.outcome }}" == "success" ]; then
+            if [ "${{ steps.cleanup.outputs.workers_found }}" == "0" ]; then
+              echo "✅ **Result:** No PR workers found in the account." >> $GITHUB_STEP_SUMMARY
+            elif [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+              echo "✅ **Result:** Dry run completed successfully." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **Result:** Cleanup completed successfully." >> $GITHUB_STEP_SUMMARY
+            fi
+          elif [ "${{ steps.cleanup.outcome }}" == "failure" ]; then
+            echo "❌ **Result:** Cleanup failed. Check the logs for details." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Result:** Cleanup was skipped or cancelled." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create issue on failure
+        if: failure() && github.event.inputs.dry_run == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const timestamp = new Date().toISOString();
+            const title = `Manual Cloudflare PR workers cleanup failed - ${timestamp}`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: `## Manual Cloudflare PR Workers Cleanup Failed\n\n` +
+                    `The manual cleanup of Cloudflare PR preview workers encountered errors.\n\n` +
+                    `### Details\n` +
+                    `- **Triggered by:** @${context.actor}\n` +
+                    `- **Run:** [${context.runId}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n` +
+                    `- **Workers Found:** ${{ steps.cleanup.outputs.workers_found || 'unknown' }}\n` +
+                    `- **Workers Deleted:** ${{ steps.cleanup.outputs.workers_deleted || '0' }}\n\n` +
+                    `### Action Required\n` +
+                    `1. Check the workflow logs for specific error details\n` +
+                    `2. Verify Cloudflare API credentials are valid\n` +
+                    `3. Try running individual deletions using wrangler CLI\n` +
+                    `4. Contact Cloudflare support if the issue persists\n\n` +
+                    `/cc @${context.actor}`,
+              labels: ['infrastructure', 'cloudflare', 'bug'],
+              assignees: [context.actor]
+            });
