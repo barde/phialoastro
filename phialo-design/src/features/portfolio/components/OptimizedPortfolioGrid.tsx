@@ -124,7 +124,7 @@ function OptimizedPortfolioItem({
         onKeyDown={handleKeyDown}
       >
         <MagneticCursor>
-          <div className="portfolio-item-container relative overflow-hidden rounded-lg bg-gray-100 aspect-square transition-all duration-300 group-hover:shadow-lg">
+          <div className="portfolio-item-container overflow-hidden rounded-lg bg-gray-100 aspect-[4/5] transition-all duration-300 group-hover:shadow-lg">
             {/* Show placeholder while image loads */}
             {!imageLoaded && !imageError && (
               <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 animate-pulse" />
@@ -138,21 +138,19 @@ function OptimizedPortfolioItem({
             )}
             
             {/* Optimized image with modern formats */}
-            <div className="absolute inset-0">
-              <OptimizedPicture
-                src={item.image}
-                alt={`${item.title} - ${item.category}`}
-                className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                loading={isPriority ? 'eager' : 'lazy'}
-                fetchPriority={isPriority ? 'high' : 'auto'}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                width={600}
-                height={600}
-              />
-            </div>
+            <OptimizedPicture
+              src={item.image}
+              alt={`${item.title} - ${item.category}`}
+              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              loading={isPriority ? 'eager' : 'lazy'}
+              fetchPriority={isPriority ? 'high' : 'auto'}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              width={800}
+              height={1000}
+            />
 
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-midnight/80 via-midnight/20 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 pointer-events-none">
