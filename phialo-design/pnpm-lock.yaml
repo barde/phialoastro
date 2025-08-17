@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@astrojs/partytown':
+        specifier: ^2.1.4
+        version: 2.1.4
       '@astrojs/react':
         specifier: ^4.3.0
         version: 4.3.0(@types/node@24.2.1)(@types/react-dom@19.1.7(@types/react@19.1.10))(@types/react@19.1.10)(jiti@1.21.7)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(yaml@2.8.1)
@@ -51,6 +54,12 @@ importers:
       '@eslint/js':
         specifier: ^9.32.0
         version: 9.33.0
+      '@fontsource/inter':
+        specifier: ^5.2.6
+        version: 5.2.6
+      '@fontsource/playfair-display':
+        specifier: ^5.2.6
+        version: 5.2.6
       '@playwright/test':
         specifier: 1.40.1
         version: 1.40.1
@@ -160,6 +169,9 @@ packages:
 
   '@astrojs/markdown-remark@6.3.5':
     resolution: {integrity: sha512-MiR92CkE2BcyWf3b86cBBw/1dKiOH0qhLgXH2OXA6cScrrmmks1Rr4Tl0p/lFpvmgQQrP54Pd1uidJfmxGrpWQ==}
+
+  '@astrojs/partytown@2.1.4':
+    resolution: {integrity: sha512-loUrAu0cGYFDC6dHVRiomdsBJ41VjDYXPA+B3Br51V5hENFgDSOLju86OIj1TvBACcsB22UQV7BlppODDG5gig==}
 
   '@astrojs/prism@3.3.0':
     resolution: {integrity: sha512-q8VwfU/fDZNoDOf+r7jUnMC2//H2l0TuQ6FkGJL8vD8nw/q5KiL3DS1KKBI3QhI9UQhpJ5dc7AtqfbXWuOgLCQ==}
@@ -532,6 +544,12 @@ packages:
   '@eslint/plugin-kit@0.3.5':
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@fontsource/inter@5.2.6':
+    resolution: {integrity: sha512-CZs9S1CrjD0jPwsNy9W6j0BhsmRSQrgwlTNkgQXTsAeDRM42LBRLo3eo9gCzfH4GvV7zpyf78Ozfl773826csw==}
+
+  '@fontsource/playfair-display@5.2.6':
+    resolution: {integrity: sha512-hWfFm2j+Dlg+UwabNJu5vi45otmLSG64hUzNFJ8pIDBgqWBviEPpVaDIZWHm2RYyIxhg9YXTPsZWdpvsu7fkqQ==}
 
   '@google-cloud/compute@4.12.0':
     resolution: {integrity: sha512-N3isWbxIMd02qzdlFFxHxEM+2B/vNgn9N7WMpteY2sfwN1yT9PJHcilKDLyw+uIwuQAoErNxBM+JOLq3r/Tv+Q==}
@@ -929,6 +947,11 @@ packages:
 
   '@protobufjs/utf8@1.1.0':
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
+
+  '@qwik.dev/partytown@0.11.2':
+    resolution: {integrity: sha512-795y49CqBiKiwKAD+QBZlzlqEK275hVcazZ7wBPSfgC23L+vWuA7PJmMpgxojOucZHzYi5rAAQ+IP1I3BKVZxw==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
 
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -4951,6 +4974,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@astrojs/partytown@2.1.4':
+    dependencies:
+      '@qwik.dev/partytown': 0.11.2
+      mrmime: 2.0.1
+
   '@astrojs/prism@3.3.0':
     dependencies:
       prismjs: 1.30.0
@@ -5310,6 +5338,10 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
+  '@fontsource/inter@5.2.6': {}
+
+  '@fontsource/playfair-display@5.2.6': {}
+
   '@google-cloud/compute@4.12.0':
     dependencies:
       google-gax: 4.6.1
@@ -5656,6 +5688,10 @@ snapshots:
   '@protobufjs/pool@1.1.0': {}
 
   '@protobufjs/utf8@1.1.0': {}
+
+  '@qwik.dev/partytown@0.11.2':
+    dependencies:
+      dotenv: 16.6.1
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
