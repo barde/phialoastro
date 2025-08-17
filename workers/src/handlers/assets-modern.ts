@@ -24,6 +24,13 @@ export function mapRequestToAsset(request: Request): Request {
 }
 
 /**
+ * Checks if the file should be served with compression
+ */
+function isCompressible(pathname: string): boolean {
+  return /\.(js|css|html|svg|json|xml|txt|wasm)$/i.test(pathname);
+}
+
+/**
  * Get cache control headers based on file type
  */
 export function getCacheHeaders(pathname: string): HeadersInit {
@@ -72,8 +79,58 @@ export async function fetchAsset(
     options.mapRequestToAsset(request) : 
     mapRequestToAsset(request);
   
+  const url = new URL(mappedRequest.url);
+  const pathname = url.pathname;
+  const acceptEncoding = request.headers.get('Accept-Encoding') || '';
+  
+  // Try to serve pre-compressed assets if available and supported
+  if (isCompressible(pathname)) {
+    // Prefer Brotli over Gzip
+    const compressionVariants = [];
+    
+    if (acceptEncoding.includes('br')) {
+      compressionVariants.push({ ext: '.br', encoding: 'br' });
+    }
+    if (acceptEncoding.includes('gzip')) {
+      compressionVariants.push({ ext: '.gz', encoding: 'gzip' });
+    }
+    
+    // Try each compression variant
+    for (const variant of compressionVariants) {
+      const compressedUrl = new URL(mappedRequest.url);
+      compressedUrl.pathname = pathname + variant.ext;
+      const compressedRequest = new Request(compressedUrl.toString(), mappedRequest);
+      
+      try {
+        const response = await env.ASSETS.fetch(compressedRequest);
+        
+        if (response.ok) {
+          // Found compressed version, add appropriate headers
+          const headers = new Headers(response.headers);
+          headers.set('Content-Encoding', variant.encoding);
+          headers.set('Vary', 'Accept-Encoding');
+          
+          // Remove the .gz or .br extension from Content-Type detection
+          const originalContentType = getMimeType(pathname);
+          if (originalContentType) {
+            headers.set('Content-Type', originalContentType);
+          }
+          
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+          });
+        }
+      } catch (err) {
+        // Compressed version not found, continue to next variant or original
+        logger.debug(`Compressed variant ${variant.ext} not found for ${pathname}`);
+      }
+    }
+  }
+  
+  // Fall back to original uncompressed asset
   try {
-    // Use the modern ASSETS binding to fetch the asset
     const response = await env.ASSETS.fetch(mappedRequest);
     
     if (!response.ok && response.status === 404) {
@@ -81,8 +138,20 @@ export async function fetchAsset(
         ErrorType.NOT_FOUND,
         404,
         'Asset not found',
-        { path: new URL(mappedRequest.url).pathname }
+        { path: pathname }
       );
+    }
+    
+    // Add Vary header for compressible content even if serving uncompressed
+    if (isCompressible(pathname)) {
+      const headers = new Headers(response.headers);
+      headers.set('Vary', 'Accept-Encoding');
+      
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     }
     
     return response;
@@ -95,7 +164,7 @@ export async function fetchAsset(
     logger.error('Failed to fetch asset', {
       error: error.message,
       stack: error.stack,
-      path: new URL(request.url).pathname,
+      path: pathname,
     });
     
     throw new WorkerError(
