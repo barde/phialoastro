@@ -26,6 +26,10 @@ pnpm-debug.log*
 # Generated image formats (created at build time)
 public/images/portfolio/*-*w.webp
 public/images/portfolio/*-*w.avif
+public/images/homepage/*-*w.webp
+public/images/homepage/*-*w.avif
+public/images/**/*-*w.webp
+public/images/**/*-*w.avif
 
 # Image generation cache
 .image-cache.json
