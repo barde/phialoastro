@@ -145,12 +145,14 @@ async function processImagesInParallel(imagesToProcess) {
       try {
         const generated = await processImage(inputPath, dir, baseName, sizes, generateAvif, !forceRegenerate);
         if (generated.length > 0) {
-          console.info(`✓ Generated ${generated.length} files for ${file}`);
+          console.info(`   ✓ Processed ${file} - generated ${generated.length} files`);
+        } else if (forceRegenerate) {
+          console.info(`   ✓ Processed ${file} - regenerated all formats`);
         } else {
-          console.info(`✓ Skipped ${file} - all formats already exist`);
+          console.info(`   ✓ Processed ${file} - filled missing formats`);
         }
       } catch (error) {
-        console.warn(`⚠️ Failed to process ${file}: ${error.message}`);
+        console.warn(`   ⚠️ Failed to process ${file}: ${error.message}`);
       }
     }
   });
@@ -180,13 +182,10 @@ async function processDirectory(config, cache) {
       const baseName = path.basename(file, path.extname(file));
       const cacheKey = `${name}/${file}`;
       
-      // Check if file exists and has content (not LFS pointer)
+      // Check if file exists and is accessible
       try {
         const stats = await fs.stat(inputPath);
-        if (stats.size < 200) {
-          console.warn(`   ⚠️ Skipping ${file} - appears to be LFS pointer`);
-          continue;
-        }
+        // Remove LFS check - we don't use LFS anymore
       } catch (error) {
         console.warn(`   ⚠️ Skipping ${file} - file not accessible`);
         continue;
@@ -200,16 +199,21 @@ async function processDirectory(config, cache) {
       // Check if all output files exist
       const allFilesExist = await outputFilesExist(dir, baseName, sizes, generateAvif);
       
+      // Always report status for each file
       if (!hasChanged && allFilesExist) {
+        console.info(`   ✅ ${file} - CACHE HIT (unchanged and all outputs exist)`);
         skippedCount++;
         continue; // Skip this image completely
       }
       
-      if (hasChanged) {
+      if (hasChanged && allFilesExist) {
         changedCount++;
-        console.info(`   🔄 ${file} has changed - will regenerate`);
-      } else if (!allFilesExist) {
-        console.info(`   🆕 ${file} missing some output files - will generate`);
+        console.info(`   🔄 ${file} - CACHE MISS (file changed) - will regenerate`);
+      } else if (hasChanged && !allFilesExist) {
+        changedCount++;
+        console.info(`   🔄 ${file} - CACHE MISS (file changed + missing outputs) - will regenerate`);
+      } else if (!hasChanged && !allFilesExist) {
+        console.info(`   🆕 ${file} - CACHE PARTIAL (unchanged but missing outputs) - will generate missing`);
       }
       
       imagesToProcess.push({
@@ -225,7 +229,7 @@ async function processDirectory(config, cache) {
       });
     }
     
-    console.info(`   📊 Status: ${skippedCount} unchanged, ${changedCount} changed, ${imagesToProcess.length} to process`);
+    console.info(`   📊 Cache Summary: ${skippedCount} cache hits, ${changedCount} cache misses, ${imagesToProcess.length} total to process`);
     
     return imagesToProcess;
   } catch (error) {
