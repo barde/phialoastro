@@ -4,6 +4,8 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import partytown from '@astrojs/partytown';
 import { visualizer } from 'rollup-plugin-visualizer';
+import viteCompression from 'vite-plugin-compression';
+import { constants } from 'zlib';
 
 // https://astro.build/config
 export default defineConfig({
@@ -63,7 +65,28 @@ export default defineConfig({
         filename: 'stats.html',
         gzipSize: true,
         brotliSize: true,
-      })
+      }),
+      // Generate .gz files
+      viteCompression({
+        algorithm: 'gzip',
+        ext: '.gz',
+        threshold: 1024, // Only compress files larger than 1KB
+        deleteOriginFile: false,
+        filter: /\.(js|css|html|svg|json|xml|txt|wasm)$/i,
+      }),
+      // Generate .br files
+      viteCompression({
+        algorithm: 'brotliCompress',
+        ext: '.br',
+        threshold: 1024, // Only compress files larger than 1KB
+        deleteOriginFile: false,
+        filter: /\.(js|css|html|svg|json|xml|txt|wasm)$/i,
+        compressionOptions: {
+          params: {
+            [constants.BROTLI_PARAM_QUALITY]: 11, // Maximum compression
+          },
+        },
+      }),
     ],
     resolve: {
       alias: {
