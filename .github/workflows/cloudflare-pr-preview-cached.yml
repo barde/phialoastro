@@ -25,6 +25,9 @@ jobs:
   deploy-preview:
     runs-on: ubuntu-latest
     name: Deploy PR Preview with Caching
+    environment:
+      name: preview
+      url: https://phialo-pr-${{ github.event.pull_request.number }}.meise.workers.dev
     
     steps:
       - name: Checkout code
