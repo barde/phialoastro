@@ -6,36 +6,91 @@
   Referrer-Policy: strict-origin-when-cross-origin  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Content-Security-Policy: default-src 'self' *.pages.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com *.pages.dev data:; script-src-elem 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com *.pages.dev data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com *.pages.dev; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com *.pages.dev; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cloudflareinsights.com *.pages.dev; frame-src 'self' https://www.youtube.com https://youtube.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'
 
-# Cache static assets for 1 year
-/images/*
-  Cache-Control: public, max-age=31536000, immutable
-  
+# Immutable assets with content hash (cache forever)
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+  Vary: Accept-Encoding
 
-/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
-
-# Cache JavaScript and CSS with content hash
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
+# Images - cache with stale-while-revalidate
+/images/*.jpg
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
   
-/*.css
-  Cache-Control: public, max-age=31536000, immutable
+/images/*.jpeg
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  
+/images/*.png
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  
+/images/*.webp
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  
+/images/*.avif
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  
+/images/*.svg
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
 
-# Cache fonts
-/*.woff
+# Fonts - immutable
+/fonts/*.woff2
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  Vary: Accept-Encoding
+  
+/fonts/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  Vary: Accept-Encoding
   
 /*.woff2
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  Vary: Accept-Encoding
   
-/*.ttf
+/*.woff
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+  Vary: Accept-Encoding
 
-# Don't cache HTML pages
+# JavaScript and CSS with intelligent caching
+/*.js
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Vary: Accept-Encoding
+  
+/*.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Vary: Accept-Encoding
+
+# JSON/XML data files
+/*.json
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  
+/*.xml
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+# HTML pages - must revalidate but allow edge caching
 /*.html
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
+  Surrogate-Control: max-age=3600
+  CDN-Cache-Control: max-age=60
+  Vary: Accept-Encoding
   
 /
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
+  Surrogate-Control: max-age=3600
+  CDN-Cache-Control: max-age=60
+  Vary: Accept-Encoding
+
+# Special handling for service worker
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  
+/manifest.json
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
