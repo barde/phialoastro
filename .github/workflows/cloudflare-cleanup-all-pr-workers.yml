@@ -158,10 +158,10 @@ jobs:
             # Try to delete the worker
             if npx wrangler delete --name "$worker" --force 2>/dev/null; then
               echo "✅ Deleted"
-              ((DELETED_COUNT++))
+              DELETED_COUNT=$((DELETED_COUNT + 1))
             else
               echo "❌ Failed"
-              ((FAILED_COUNT++))
+              FAILED_COUNT=$((FAILED_COUNT + 1))
               FAILED_WORKERS="$FAILED_WORKERS$worker\n"
             fi
           done
