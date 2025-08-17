@@ -1,0 +1,303 @@
+name: Cloudflare - List and Cleanup Workers
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'list'
+        type: choice
+        options:
+          - 'list'
+          - 'delete-pr-workers'
+          - 'delete-specific-worker'
+      worker_name:
+        description: 'Worker name (only for delete-specific-worker action)'
+        required: false
+        type: string
+      include_all_workers:
+        description: 'List all workers, not just PR workers (only for list action)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  manage-workers:
+    runs-on: ubuntu-latest
+    name: Manage Cloudflare Workers
+    permissions:
+      contents: read
+      pull-requests: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        working-directory: ./workers
+        run: npm install wrangler@4.27.0
+      
+      - name: List workers
+        if: github.event.inputs.action == 'list'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          INCLUDE_ALL: ${{ github.event.inputs.include_all_workers }}
+        run: |
+          echo "========================================="
+          echo "📋 Cloudflare Workers List"
+          echo "========================================="
+          echo ""
+          
+          # Get all workers from Cloudflare API
+          echo "📡 Fetching workers from Cloudflare..."
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+               -H "Content-Type: application/json")
+          
+          # Check if the API call was successful
+          if ! echo "$RESPONSE" | jq -e '.success' > /dev/null 2>&1; then
+            echo "❌ Failed to fetch workers from Cloudflare API"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+          
+          # Extract worker details
+          WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id')
+          
+          if [ -z "$ALL_WORKERS" ]; then
+            echo "✅ No workers found in the account"
+            exit 0
+          fi
+          
+          # Count total workers
+          TOTAL_COUNT=$(echo "$ALL_WORKERS" | wc -l | tr -d ' ')
+          
+          # Filter PR workers
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          PR_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
+          
+          # Filter other workers
+          OTHER_WORKERS=$(echo "$ALL_WORKERS" | grep -v '^phialo-pr-[0-9]\+$' || true)
+          OTHER_COUNT=$(echo "$OTHER_WORKERS" | grep -c . || echo "0")
+          
+          echo "📊 Summary:"
+          echo "  Total workers: $TOTAL_COUNT"
+          echo "  PR workers: $PR_COUNT"
+          echo "  Other workers: $OTHER_COUNT"
+          echo ""
+          
+          # Get list of open PRs for reference
+          echo "📄 Fetching open PRs..."
+          OPEN_PRS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&per_page=100" \
+               | jq -r '.[].number' 2>/dev/null || echo "")
+          
+          if [ ! -z "$PR_WORKERS" ] && [ "$PR_WORKERS" != "" ]; then
+            echo "========================================="
+            echo "🔧 PR Preview Workers ($PR_COUNT)"
+            echo "========================================="
+            
+            for worker in $PR_WORKERS; do
+              PR_NUM=${worker#phialo-pr-}
+              CREATED_DATE=$(echo "$WORKERS_JSON" | jq -r ".[] | select(.id==\"$worker\") | .created_on" | cut -d'T' -f1)
+              
+              # Check if PR is still open
+              if echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
+                STATUS="✅ PR #$PR_NUM is OPEN"
+              else
+                STATUS="⚠️  PR #$PR_NUM is CLOSED/MERGED (orphaned)"
+              fi
+              
+              echo "  • $worker"
+              echo "    Created: $CREATED_DATE"
+              echo "    Status: $STATUS"
+              echo "    URL: https://${worker}.meise.workers.dev"
+              echo ""
+            done
+          fi
+          
+          if [ "$INCLUDE_ALL" == "true" ] && [ ! -z "$OTHER_WORKERS" ] && [ "$OTHER_WORKERS" != "" ]; then
+            echo "========================================="
+            echo "📦 Other Workers ($OTHER_COUNT)"
+            echo "========================================="
+            
+            for worker in $OTHER_WORKERS; do
+              CREATED_DATE=$(echo "$WORKERS_JSON" | jq -r ".[] | select(.id==\"$worker\") | .created_on" | cut -d'T' -f1)
+              
+              echo "  • $worker"
+              echo "    Created: $CREATED_DATE"
+              
+              # Determine worker type/URL
+              if [[ "$worker" == "phialo-design-preview" ]]; then
+                echo "    Type: Preview environment"
+                echo "    URL: https://phialo-design-preview.meise.workers.dev"
+              elif [[ "$worker" == "phialo-design" ]]; then
+                echo "    Type: Production"
+                echo "    URL: https://phialo.de"
+              elif [[ "$worker" == "phialo-master" ]]; then
+                echo "    Type: Master branch deployment"
+                echo "    URL: https://phialo-master.meise.workers.dev"
+              else
+                echo "    Type: Custom/Unknown"
+                echo "    URL: https://${worker}.meise.workers.dev"
+              fi
+              echo ""
+            done
+          fi
+          
+          # Provide recommendations
+          if [ "$PR_COUNT" -gt 0 ]; then
+            ORPHANED_COUNT=$(for worker in $PR_WORKERS; do
+              PR_NUM=${worker#phialo-pr-}
+              if ! echo "$OPEN_PRS" | grep -q "^$PR_NUM$"; then
+                echo "1"
+              fi
+            done | wc -l | tr -d ' ')
+            
+            if [ "$ORPHANED_COUNT" -gt 0 ]; then
+              echo "========================================="
+              echo "⚠️  Recommendations"
+              echo "========================================="
+              echo "Found $ORPHANED_COUNT orphaned PR worker(s) that can be safely deleted."
+              echo ""
+              echo "To clean them up, run this workflow again with:"
+              echo "  • Action: 'delete-pr-workers'"
+              echo ""
+            fi
+          fi
+          
+          # Add to summary
+          echo "## 📋 Cloudflare Workers Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Workers:** $TOTAL_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR Workers:** $PR_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Other Workers:** $OTHER_COUNT" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$ORPHANED_COUNT" -gt 0 ]; then
+            echo "- **⚠️ Orphaned PR Workers:** $ORPHANED_COUNT" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Delete all PR workers
+        if: github.event.inputs.action == 'delete-pr-workers'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: ./workers
+        run: |
+          echo "========================================="
+          echo "🗑️  Deleting All PR Workers"
+          echo "========================================="
+          echo ""
+          
+          # Get all workers
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+               -H "Content-Type: application/json")
+          
+          ALL_WORKERS=$(echo "$RESPONSE" | jq -r '.result[].id' 2>/dev/null || echo "")
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          
+          if [ -z "$PR_WORKERS" ]; then
+            echo "✅ No PR workers found"
+            exit 0
+          fi
+          
+          WORKER_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          echo "Found $WORKER_COUNT PR worker(s) to delete:"
+          echo "$PR_WORKERS" | sed 's/^/  - /'
+          echo ""
+          
+          DELETED_COUNT=0
+          FAILED_COUNT=0
+          
+          for worker in $PR_WORKERS; do
+            echo -n "Deleting $worker... "
+            if npx wrangler delete --name "$worker" --force 2>/dev/null; then
+              echo "✅ Deleted"
+              ((DELETED_COUNT++))
+            else
+              echo "❌ Failed"
+              ((FAILED_COUNT++))
+            fi
+          done
+          
+          echo ""
+          echo "========================================="
+          echo "Summary:"
+          echo "  ✅ Deleted: $DELETED_COUNT"
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "  ❌ Failed: $FAILED_COUNT"
+          fi
+          
+          # Add to summary
+          echo "## 🗑️ PR Workers Deletion Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workers Found:** $WORKER_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Successfully Deleted:** $DELETED_COUNT" >> $GITHUB_STEP_SUMMARY
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "- **Failed:** $FAILED_COUNT" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Delete specific worker
+        if: github.event.inputs.action == 'delete-specific-worker'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER_NAME: ${{ github.event.inputs.worker_name }}
+        working-directory: ./workers
+        run: |
+          if [ -z "$WORKER_NAME" ]; then
+            echo "❌ Error: Worker name is required for delete-specific-worker action"
+            exit 1
+          fi
+          
+          echo "========================================="
+          echo "🗑️  Deleting Specific Worker"
+          echo "========================================="
+          echo ""
+          echo "Worker to delete: $WORKER_NAME"
+          echo ""
+          
+          # Check if worker exists
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME" \
+               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+               -H "Content-Type: application/json")
+          
+          if echo "$RESPONSE" | grep -q '"success":true'; then
+            echo "✅ Worker found, proceeding with deletion..."
+            
+            if npx wrangler delete --name "$WORKER_NAME" --force; then
+              echo ""
+              echo "✅ Successfully deleted worker: $WORKER_NAME"
+              
+              echo "## ✅ Worker Deleted" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "Successfully deleted worker: **$WORKER_NAME**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo ""
+              echo "❌ Failed to delete worker: $WORKER_NAME"
+              exit 1
+            fi
+          else
+            echo "❌ Worker not found: $WORKER_NAME"
+            echo ""
+            echo "Please check the worker name and try again."
+            
+            echo "## ❌ Worker Not Found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Worker **$WORKER_NAME** does not exist in the account." >> $GITHUB_STEP_SUMMARY
+            
+            exit 1
+          fi
