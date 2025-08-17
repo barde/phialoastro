@@ -8,8 +8,6 @@ module.exports = {
         'http://localhost:4321/en/portfolio',
         'http://localhost:4321/services',
         'http://localhost:4321/en/services',
-        'http://localhost:4321/tutorials',
-        'http://localhost:4321/en/tutorials',
         'http://localhost:4321/about',
         'http://localhost:4321/en/about',
         'http://localhost:4321/contact',
