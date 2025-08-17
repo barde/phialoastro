@@ -55,9 +55,9 @@ jobs:
           fi
           
           # Filter for PR workers
-          PR_WORKERS=$(echo "$WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          PR_WORKERS=$(echo "$WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           
-          if [ -z "$PR_WORKERS" ]; then
+          if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
             echo "✅ No PR workers found"
             exit 0
           fi

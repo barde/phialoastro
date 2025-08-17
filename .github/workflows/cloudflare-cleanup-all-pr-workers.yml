@@ -87,9 +87,9 @@ jobs:
           fi
           
           # Filter for PR workers (phialo-pr-*)
-          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || true)
+          PR_WORKERS=$(echo "$ALL_WORKERS" | grep '^phialo-pr-[0-9]\+$' || echo "")
           
-          if [ -z "$PR_WORKERS" ]; then
+          if [ -z "$PR_WORKERS" ] || [ "$PR_WORKERS" = "" ]; then
             echo "✅ No PR workers found"
             echo "workers_found=0" >> $GITHUB_OUTPUT
             echo "workers_deleted=0" >> $GITHUB_OUTPUT
