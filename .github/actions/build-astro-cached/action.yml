@@ -26,8 +26,10 @@ runs:
         path: |
           ${{ inputs.working-directory }}/public/images/portfolio/*-*w.webp
           ${{ inputs.working-directory }}/public/images/portfolio/*-*w.avif
+          ${{ inputs.working-directory }}/public/images/homepage/*-*w.webp
+          ${{ inputs.working-directory }}/public/images/homepage/*-*w.avif
           ${{ inputs.working-directory }}/.image-cache.json
-        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles('**/public/images/portfolio/*.jpg', '**/public/images/portfolio/*.jpeg', '**/public/images/portfolio/*.png') }}
+        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles('**/public/images/portfolio/*.jpg', '**/public/images/portfolio/*.jpeg', '**/public/images/portfolio/*.png', '**/public/images/homepage/*.jpg', '**/public/images/homepage/*.jpeg', '**/public/images/homepage/*.png') }}
         restore-keys: |
           ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-
     
@@ -50,12 +52,14 @@ runs:
         echo "🔍 Checking cache status..."
         
         # Count existing generated images
-        WEBP_COUNT=$(find public/images/portfolio -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
-        AVIF_COUNT=$(find public/images/portfolio -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        PORTFOLIO_WEBP=$(find public/images/portfolio -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        PORTFOLIO_AVIF=$(find public/images/portfolio -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_WEBP=$(find public/images/homepage -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_AVIF=$(find public/images/homepage -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
         
         echo "📊 Found in cache:"
-        echo "  - WebP images: $WEBP_COUNT"
-        echo "  - AVIF images: $AVIF_COUNT"
+        echo "  - Portfolio WebP: $PORTFOLIO_WEBP, AVIF: $PORTFOLIO_AVIF"
+        echo "  - Homepage WebP: $HOMEPAGE_WEBP, AVIF: $HOMEPAGE_AVIF"
         
         if [ -f .image-cache.json ]; then
           CACHED_IMAGES=$(cat .image-cache.json | grep -c '"hash"' || echo "0")
@@ -104,11 +108,13 @@ runs:
         echo "📈 Build complete - final statistics:"
         
         # Count final generated images
-        WEBP_FINAL=$(find public/images/portfolio -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
-        AVIF_FINAL=$(find public/images/portfolio -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        PORTFOLIO_WEBP_FINAL=$(find public/images/portfolio -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        PORTFOLIO_AVIF_FINAL=$(find public/images/portfolio -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_WEBP_FINAL=$(find public/images/homepage -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_AVIF_FINAL=$(find public/images/homepage -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
         
-        echo "  - WebP images: $WEBP_FINAL"
-        echo "  - AVIF images: $AVIF_FINAL"
+        echo "  - Portfolio images: WebP=$PORTFOLIO_WEBP_FINAL, AVIF=$PORTFOLIO_AVIF_FINAL"
+        echo "  - Homepage images: WebP=$HOMEPAGE_WEBP_FINAL, AVIF=$HOMEPAGE_AVIF_FINAL"
         
         # Check dist size
         if [ -d dist ]; then
