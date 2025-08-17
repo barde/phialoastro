@@ -29,14 +29,22 @@ const description = 'Fantasy becomes 3D becomes reality. Jewelry and sculptures,
         <!-- Portfolio Card -->
         <a href="/en/portfolio" class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
           <div class="aspect-square bg-gradient-to-br from-gold/20 to-champagne/30 relative overflow-hidden">
-            <Image 
-              src="/images/homepage/portfolio-feature.jpg"
-              alt="Phialo Design Portfolio"
-              width={576}
-              height={576}
-              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-              loading="lazy"
-            />
+            <picture>
+              <source 
+                type="image/webp" 
+                srcset="/images/homepage/portfolio-feature-576w.webp 576w, /images/homepage/portfolio-feature-800w.webp 800w, /images/homepage/portfolio-feature-1200w.webp 1200w"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+              <Image 
+                src="/images/homepage/portfolio-feature.jpg"
+                alt="Phialo Design Portfolio"
+                width={576}
+                height={576}
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </picture>
           </div>
           <div class="p-6">
             <h3 class="text-xl font-medium text-midnight mb-2">Portfolio</h3>

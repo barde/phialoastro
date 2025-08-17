@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
       
       - name: Check for relevant file changes
         id: changes
@@ -66,11 +64,12 @@ jobs:
       
       - name: Build Astro site
         if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
-        uses: ./.github/actions/build-astro
+        uses: ./.github/actions/build-astro-cached
         with:
           working-directory: ./phialo-design
           PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
           PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
+          cache-version: 'v1'
         
       - name: Create temporary wrangler config
         if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
@@ -155,14 +154,51 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Deploy the worker
+          echo "Deploying worker..."
           npx wrangler deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
           
-          # Set secrets for the deployed worker
+          # Wait for deployment to be fully active
+          # Cloudflare needs time to propagate the deployment globally
+          echo "Waiting for deployment to become fully active..."
+          
+          # Simple retry mechanism with exponential backoff
+          MAX_ATTEMPTS=10
+          ATTEMPT=1
+          WAIT_TIME=5
+          
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Setting secrets..."
+            
+            # Try to set a test secret to check if deployment is ready
+            if echo "test" | npx wrangler secret put TEST_SECRET --name phialo-pr-${{ github.event.pull_request.number }} --env="" 2>/dev/null; then
+              echo "Deployment is ready, proceeding with actual secrets..."
+              break
+            else
+              if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                echo "Failed to verify deployment readiness after $MAX_ATTEMPTS attempts"
+                exit 1
+              fi
+              echo "Deployment not ready yet, waiting ${WAIT_TIME} seconds..."
+              sleep $WAIT_TIME
+              WAIT_TIME=$((WAIT_TIME * 2))  # Exponential backoff
+              ATTEMPT=$((ATTEMPT + 1))
+            fi
+          done
+          
+          # Now set the actual secrets
+          echo "Setting production secrets..."
           echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
           echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
           echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
-          echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          
+          # REPLY_TO_EMAIL is optional - only set if provided
+          if [ ! -z "${{ secrets.REPLY_TO_EMAIL }}" ]; then
+            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          fi
+          
           echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          
+          echo "All secrets set successfully!"
       
       - name: Extract deployment URL
         id: extract-url
