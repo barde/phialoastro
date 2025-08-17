@@ -76,8 +76,18 @@ jobs:
             exit 1
           fi
           
-          # Extract worker names
-          ALL_WORKERS=$(echo "$RESPONSE" | jq -r '.result[].id' 2>/dev/null || echo "")
+          # Extract worker details
+          WORKERS_JSON=$(echo "$RESPONSE" | jq -r '.result')
+          
+          # Check if result is null or empty array
+          if [ "$WORKERS_JSON" = "null" ] || [ "$WORKERS_JSON" = "[]" ]; then
+            echo "✅ No workers found in the account"
+            echo "workers_found=0" >> $GITHUB_OUTPUT
+            echo "workers_deleted=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          ALL_WORKERS=$(echo "$WORKERS_JSON" | jq -r '.[].id' 2>/dev/null || echo "")
           
           if [ -z "$ALL_WORKERS" ]; then
             echo "✅ No workers found in the account"
@@ -101,7 +111,7 @@ jobs:
           fi
           
           # Count PR workers
-          WORKER_COUNT=$(echo "$PR_WORKERS" | wc -l | tr -d ' ')
+          WORKER_COUNT=$(echo "$PR_WORKERS" | grep -c . || echo "0")
           echo "workers_found=$WORKER_COUNT" >> $GITHUB_OUTPUT
           
           echo "📋 Found $WORKER_COUNT PR worker(s):"
