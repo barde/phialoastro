@@ -1,7 +1,6 @@
 /**
  * Cloudflare Worker function to handle Core Web Vitals metrics
- * Receives metrics from the WebVitalsMonitor component
- * Stores data in KV or forwards to analytics service
+ * Sends metrics to Cloudflare Analytics Engine for analysis
  */
 
 export async function onRequestPost({ request, env, ctx }) {
@@ -20,50 +19,118 @@ export async function onRequestPost({ request, env, ctx }) {
 
     const { metrics, context } = data;
 
-    // Log metrics in development (Cloudflare Workers logs)
-    if (env.ENVIRONMENT === 'development') {
-      console.log('Received Web Vitals:', JSON.stringify({ metrics, context }, null, 2));
+    // Check if Analytics Engine is configured
+    if (!env.VITALS_ANALYTICS) {
+      console.error('Analytics Engine binding not configured');
+      return new Response('Analytics Engine not configured', { 
+        status: 503,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
     }
 
-    // Process each metric
+    // Process each metric and send to Analytics Engine
     for (const metric of metrics) {
-      // Calculate percentile bucket for aggregation
-      const percentileBucket = getPercentileBucket(metric);
-      
-      // Prepare metric record
-      const record = {
-        ...metric,
-        ...context,
-        percentileBucket,
-        timestamp: new Date().toISOString(),
-        source: 'web-vitals-monitor'
+      // Prepare data point for Analytics Engine
+      const dataPoint = {
+        // Indexes - used for filtering and grouping (limited to 20)
+        indexes: [
+          metric.name,                    // Metric name (LCP, INP, CLS, etc.)
+          metric.rating,                   // Rating (good, needs-improvement, poor)
+          context.pageType || 'unknown',  // Page type (home, portfolio, etc.)
+          context.lang || 'unknown',      // Language (de, en)
+        ],
+        
+        // Blobs - string data for additional context (limited to 20)
+        blobs: [
+          context.path || '',              // Full URL path
+          context.sessionId || '',         // Session ID for correlation
+          context.connection?.effectiveType || 'unknown', // Network type
+          getUserAgent(request),           // User agent
+          getDeviceType(context),          // Device type (mobile, desktop, tablet)
+        ],
+        
+        // Doubles - numeric values for aggregation (limited to 20)
+        doubles: [
+          metric.value,                    // Metric value
+          metric.delta || 0,               // Delta from previous value
+          context.viewport?.width || 0,   // Viewport width
+          context.viewport?.height || 0,  // Viewport height
+          getTimestamp(),                  // Unix timestamp
+        ]
       };
 
-      // Store in KV for analysis (if KV namespace is configured)
-      if (env.VITALS_STORE) {
-        const key = `vitals:${context.sessionId}:${metric.name}:${Date.now()}`;
-        await env.VITALS_STORE.put(key, JSON.stringify(record), {
-          expirationTtl: 86400 * 30 // Keep for 30 days
-        });
+      // Add attribution data based on metric type
+      if (metric.attribution) {
+        switch (metric.name) {
+          case 'LCP':
+            // Add LCP-specific attribution
+            dataPoint.doubles.push(
+              metric.attribution.timeToFirstByte || 0,
+              metric.attribution.resourceLoadDelay || 0,
+              metric.attribution.resourceLoadDuration || 0,
+              metric.attribution.elementRenderDelay || 0
+            );
+            dataPoint.blobs.push(
+              truncateString(metric.attribution.element || '', 100),
+              truncateString(metric.attribution.url || '', 100)
+            );
+            break;
+            
+          case 'CLS':
+            // Add CLS-specific attribution
+            dataPoint.doubles.push(
+              metric.attribution.largestShiftValue || 0,
+              metric.attribution.largestShiftTime || 0
+            );
+            dataPoint.blobs.push(
+              truncateString(metric.attribution.largestShiftTarget || '', 100)
+            );
+            break;
+            
+          case 'INP':
+            // Add INP-specific attribution
+            dataPoint.doubles.push(
+              metric.attribution.inputDelay || 0,
+              metric.attribution.processingDuration || 0,
+              metric.attribution.presentationDelay || 0,
+              metric.attribution.eventTime || 0
+            );
+            dataPoint.blobs.push(
+              metric.attribution.eventType || '',
+              truncateString(metric.attribution.eventTarget || '', 100),
+              metric.attribution.loadState || ''
+            );
+            break;
+            
+          case 'FCP':
+            // Add FCP-specific attribution
+            dataPoint.doubles.push(
+              metric.attribution.timeToFirstByte || 0,
+              metric.attribution.firstByteToFCP || 0
+            );
+            dataPoint.blobs.push(
+              metric.attribution.loadState || ''
+            );
+            break;
+            
+          case 'TTFB':
+            // Add TTFB-specific attribution
+            dataPoint.doubles.push(
+              metric.attribution.waitingDuration || 0,
+              metric.attribution.dnsDuration || 0,
+              metric.attribution.connectionDuration || 0,
+              metric.attribution.requestDuration || 0
+            );
+            break;
+        }
       }
 
-      // Forward to analytics service if configured
-      if (env.ANALYTICS_ENDPOINT) {
-        ctx.waitUntil(
-          fetch(env.ANALYTICS_ENDPOINT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${env.ANALYTICS_API_KEY}`
-            },
-            body: JSON.stringify(record)
-          })
-        );
-      }
+      // Write data point to Analytics Engine
+      env.VITALS_ANALYTICS.writeDataPoint(dataPoint);
 
-      // Track performance issues
-      if (metric.rating === 'poor') {
-        await trackPerformanceIssue(metric, context, env);
+      // Log in development
+      if (env.ENVIRONMENT === 'development') {
+        console.log(`[Analytics] ${metric.name}: ${metric.value} (${metric.rating})`);
       }
     }
 
@@ -105,47 +172,31 @@ export async function onRequestOptions() {
 }
 
 /**
- * Calculate percentile bucket for metric value
+ * Helper functions
  */
-function getPercentileBucket(metric) {
-  const thresholds = {
-    LCP: [2500, 4000], // Good, Needs Improvement, Poor
-    INP: [200, 500],
-    CLS: [0.1, 0.25],
-    FCP: [1800, 3000],
-    TTFB: [800, 1800]
-  };
 
-  const threshold = thresholds[metric.name];
-  if (!threshold) return 'unknown';
-
-  if (metric.value <= threshold[0]) return 'p75_good';
-  if (metric.value <= threshold[1]) return 'p75_needs_improvement';
-  return 'p75_poor';
+function getUserAgent(request) {
+  const ua = request.headers.get('user-agent') || '';
+  // Simplify user agent to key info
+  if (ua.includes('Chrome')) return 'Chrome';
+  if (ua.includes('Firefox')) return 'Firefox';
+  if (ua.includes('Safari')) return 'Safari';
+  if (ua.includes('Edge')) return 'Edge';
+  return 'Other';
 }
 
-/**
- * Track performance issues for alerting
- */
-async function trackPerformanceIssue(metric, context, env) {
-  const issue = {
-    metric: metric.name,
-    value: metric.value,
-    rating: metric.rating,
-    path: context.path,
-    pageType: context.pageType,
-    timestamp: new Date().toISOString(),
-    attribution: metric.attribution
-  };
+function getDeviceType(context) {
+  const width = context.viewport?.width || 0;
+  if (width < 768) return 'mobile';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
+}
 
-  // Store in KV for analysis
-  if (env.ISSUES_STORE) {
-    const key = `issue:${metric.name}:${context.pageType}:${Date.now()}`;
-    await env.ISSUES_STORE.put(key, JSON.stringify(issue), {
-      expirationTtl: 86400 * 7 // Keep for 7 days
-    });
-  }
+function getTimestamp() {
+  return Math.floor(Date.now() / 1000);
+}
 
-  // Could trigger alerts here if threshold exceeded
-  // For example, send to Slack, email, etc.
+function truncateString(str, maxLength) {
+  if (!str) return '';
+  return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
 }

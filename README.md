@@ -187,6 +187,25 @@ pnpm run deploy:preview
 # Use workflow dispatch or PR comment: /deploy
 ```
 
+## 📊 Performance Monitoring
+
+The site includes Real User Monitoring (RUM) for Core Web Vitals using Cloudflare Analytics Engine:
+
+- **Metrics Tracked**: LCP, INP, CLS, FCP, TTFB with attribution data
+- **Storage**: Cloudflare Analytics Engine (time-series optimized)
+- **Dashboard**: Query via SQL API or GraphQL
+- **Setup Guide**: [Analytics Engine Setup](./phialo-design/docs/how-to/setup-analytics-engine.md)
+
+To view metrics after deployment:
+```bash
+# Configure API credentials (one-time setup)
+npx wrangler secret put CF_API_TOKEN
+npx wrangler secret put CF_ACCOUNT_ID
+
+# Query metrics via API
+curl https://phialo.de/api/vitals-query?hours=24
+```
+
 ## 🧪 Testing Strategy
 
 Our comprehensive testing ensures quality across all aspects:
@@ -195,7 +214,7 @@ Our comprehensive testing ensures quality across all aspects:
 - **Integration Tests**: Feature workflows
 - **E2E Tests**: User journeys (Playwright)
 - **Visual Tests**: UI consistency
-- **Performance Tests**: Core Web Vitals monitoring
+- **Performance Tests**: Core Web Vitals monitoring with Analytics Engine
 - **Accessibility Tests**: WCAG compliance
 
 ```bash
