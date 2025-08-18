@@ -52,14 +52,9 @@ npx wrangler tail phialo-design --env production
 
 ## Step 4: Query Analytics Data
 
-Analytics Engine data can be queried via:
-1. GraphQL API
-2. SQL API
-3. Cloudflare Dashboard (coming soon)
+Analytics Engine data can be queried directly via Cloudflare's APIs - no custom endpoint needed!
 
-### Using GraphQL API
-
-Create a file `query-vitals.js`:
+### Method 1: Using SQL API (Recommended)
 
 ```javascript
 const ACCOUNT_ID = 'YOUR_ACCOUNT_ID';
@@ -155,145 +150,28 @@ async function queryWithSQL() {
 }
 ```
 
-## Step 5: Create a Dashboard
+## Step 5: Viewing Your Data
 
-### Option A: Simple HTML Dashboard
+### Option A: Command Line (Quick Check)
 
-Create `phialo-design/functions/api/vitals-dashboard.js`:
+```bash
+# Using wrangler (if you have access to the Worker)
+npx wrangler analytics-engine sql "SELECT * FROM VITALS_ANALYTICS WHERE timestamp > NOW() - INTERVAL '24' HOUR"
 
-```javascript
-export async function onRequestGet({ env }) {
-  const ACCOUNT_ID = env.CF_ACCOUNT_ID;
-  const API_TOKEN = env.CF_API_TOKEN;
-  
-  if (!API_TOKEN) {
-    return new Response('API token not configured', { status: 500 });
-  }
-
-  const query = `
-    SELECT 
-      index1 as metric,
-      index2 as rating,
-      COUNT(*) as count,
-      AVG(double1) as avg_value,
-      APPROX_QUANTILE(double1, 0.75) as p75
-    FROM VITALS_ANALYTICS
-    WHERE timestamp >= NOW() - INTERVAL '24' HOUR
-    GROUP BY index1, index2
-  `;
-
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/analytics_engine/sql`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query })
-    }
-  );
-
-  const result = await response.json();
-  
-  // Transform data for easier consumption
-  const metrics = {};
-  result.data.forEach(row => {
-    if (!metrics[row.metric]) {
-      metrics[row.metric] = {
-        name: row.metric,
-        p75: 0,
-        ratings: { good: 0, 'needs-improvement': 0, poor: 0 },
-        total: 0
-      };
-    }
-    
-    metrics[row.metric].ratings[row.rating] = row.count;
-    metrics[row.metric].total += row.count;
-    if (row.rating === 'good' || row.rating === 'needs-improvement') {
-      metrics[row.metric].p75 = Math.max(metrics[row.metric].p75, row.p75);
-    }
-  });
-
-  return new Response(JSON.stringify(metrics, null, 2), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-```
-
-Then create a simple viewer at `phialo-design/public/vitals-viewer.html`:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Web Vitals Dashboard</title>
-  <style>
-    body { font-family: system-ui; padding: 20px; }
-    .metric { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
-    .good { background: #d4f4dd; }
-    .needs-improvement { background: #fff3cd; }
-    .poor { background: #f8d7da; }
-    .value { font-size: 2em; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <h1>Core Web Vitals - Last 24 Hours</h1>
-  <div id="metrics">Loading...</div>
-  
-  <script>
-    const thresholds = {
-      LCP: { good: 2500, poor: 4000 },
-      INP: { good: 200, poor: 500 },
-      CLS: { good: 0.1, poor: 0.25 },
-      FCP: { good: 1800, poor: 3000 },
-      TTFB: { good: 800, poor: 1800 }
-    };
-
-    async function loadMetrics() {
-      const response = await fetch('/api/vitals-dashboard');
-      const metrics = await response.json();
-      
-      const container = document.getElementById('metrics');
-      container.innerHTML = '';
-      
-      Object.values(metrics).forEach(metric => {
-        const goodRate = (metric.ratings.good / metric.total * 100).toFixed(1);
-        const threshold = thresholds[metric.name];
-        let rating = 'good';
-        
-        if (metric.p75 > threshold.poor) rating = 'poor';
-        else if (metric.p75 > threshold.good) rating = 'needs-improvement';
-        
-        container.innerHTML += `
-          <div class="metric ${rating}">
-            <h2>${metric.name}</h2>
-            <div class="value">${metric.p75.toFixed(0)}ms</div>
-            <div>P75 (${metric.total} samples)</div>
-            <div>
-              Good: ${goodRate}% | 
-              Needs Work: ${(metric.ratings['needs-improvement'] / metric.total * 100).toFixed(1)}% | 
-              Poor: ${(metric.ratings.poor / metric.total * 100).toFixed(1)}%
-            </div>
-          </div>
-        `;
-      });
-    }
-    
-    loadMetrics();
-    setInterval(loadMetrics, 60000); // Refresh every minute
-  </script>
-</body>
-</html>
+# Using curl directly
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/analytics_engine/sql" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT index1, AVG(double1) FROM VITALS_ANALYTICS GROUP BY index1"}'
 ```
 
 ### Option B: Grafana Integration
 
-You can also send Analytics Engine data to Grafana Cloud:
+See [GitHub Issue #388](https://github.com/barde/phialoastro/issues/388) for Grafana dashboard implementation details.
 
-1. Set up a Grafana Cloud account
-2. Create a Cloudflare Worker that queries Analytics Engine and forwards to Grafana
-3. Use Grafana's powerful visualization tools
+### Option C: Build Your Own Dashboard
+
+Create a simple script to query and visualize data using your preferred tools (Python, Node.js, etc.).
 
 ## Data Structure Reference
 

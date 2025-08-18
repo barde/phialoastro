@@ -196,14 +196,16 @@ The site includes Real User Monitoring (RUM) for Core Web Vitals using Cloudflar
 - **Dashboard**: Query via SQL API or GraphQL
 - **Setup Guide**: [Analytics Engine Setup](./phialo-design/docs/how-to/setup-analytics-engine.md)
 
-To view metrics after deployment:
+To query metrics after deployment:
 ```bash
-# Configure API credentials (one-time setup)
-npx wrangler secret put CF_API_TOKEN
-npx wrangler secret put CF_ACCOUNT_ID
+# Get API token from Cloudflare Dashboard (one-time)
+# Needs: Account > Account Analytics > Read permission
 
-# Query metrics via API
-curl https://phialo.de/api/vitals-query?hours=24
+# Query via Cloudflare SQL API
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/analytics_engine/sql" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT index1 as metric, APPROX_QUANTILE(double1, 0.75) as p75 FROM VITALS_ANALYTICS WHERE timestamp >= NOW() - INTERVAL \"24\" HOUR GROUP BY index1"}'
 ```
 
 ## 🧪 Testing Strategy

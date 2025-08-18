@@ -23,10 +23,10 @@
 binding = "VITALS_ANALYTICS"
 ```
 
-### 4. Query API (`functions/api/vitals-query.js`)
-- Endpoint to query Analytics Engine via SQL
-- Returns structured metrics with percentiles
-- Requires API credentials (set as secrets)
+### 4. Direct Querying via Cloudflare API
+- No custom endpoint needed
+- Query directly using Cloudflare's SQL API
+- Requires API token with "Account Analytics Read" permission
 
 ## Quick Setup Steps
 
@@ -36,11 +36,12 @@ cd workers
 npx wrangler deploy --env production
 ```
 
-### 2. Set API Credentials (for querying)
+### 2. Get API Credentials (for querying)
 ```bash
-# Get these from Cloudflare Dashboard
-npx wrangler secret put CF_API_TOKEN --env production
-npx wrangler secret put CF_ACCOUNT_ID --env production
+# From Cloudflare Dashboard:
+# 1. Go to My Profile > API Tokens
+# 2. Create token with "Account Analytics Read" permission
+# 3. Note your Account ID from dashboard
 ```
 
 ### 3. Verify Data Collection
@@ -56,16 +57,19 @@ npx wrangler tail phialo-design --env production
 ### 4. Query Your Metrics
 ```bash
 # After a few hours of data collection
-curl https://phialo.de/api/vitals-query?hours=24
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/analytics_engine/sql" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT index1, AVG(double1) as avg FROM VITALS_ANALYTICS GROUP BY index1"}'
 ```
 
 ## What You'll See
 
 Analytics Engine automatically stores your metrics. You can:
 
-1. **Query via API**: Use the `/api/vitals-query` endpoint
-2. **Use SQL directly**: Query Analytics Engine with SQL
-3. **Build dashboards**: Create custom visualizations
+1. **Query via Cloudflare API**: Direct SQL queries to Analytics Engine
+2. **Use wrangler CLI**: `npx wrangler analytics-engine sql "YOUR_QUERY"`
+3. **Build dashboards**: Integrate with Grafana or custom tools
 4. **Set up alerts**: Monitor for performance regressions
 
 ## Example SQL Queries
@@ -116,9 +120,9 @@ Analytics Engine pricing is very affordable:
 3. Check worker logs: `npx wrangler tail phialo-design`
 
 ### Can't query data?
-1. Ensure API credentials are set: `npx wrangler secret list`
-2. Verify token has Analytics:Read permission
-3. Check account ID matches your Cloudflare account
+1. Verify API token has "Account Analytics Read" permission
+2. Check account ID matches your Cloudflare account
+3. Test with wrangler: `npx wrangler analytics-engine sql "SELECT COUNT(*) FROM VITALS_ANALYTICS"`
 
 ### Too expensive?
 1. Implement sampling (only track 10% of users)
