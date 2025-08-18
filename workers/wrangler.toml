@@ -21,6 +21,10 @@ compatibility_flags = ["nodejs_compat", "brotli_content_encoding"]
 [env.preview.vars]
 ENVIRONMENT = "preview"
 
+# Analytics Engine binding for Web Vitals
+[[env.preview.analytics_engine_datasets]]
+binding = "VITALS_ANALYTICS"
+
 # Production environment
 [env.production]
 name = "phialo"
@@ -31,6 +35,10 @@ compatibility_flags = ["nodejs_compat", "brotli_content_encoding"]
 
 [env.production.vars]
 ENVIRONMENT = "production"
+
+# Analytics Engine binding for Web Vitals
+[[env.production.analytics_engine_datasets]]
+binding = "VITALS_ANALYTICS"
 
 [vars]
 ENVIRONMENT = "development"
