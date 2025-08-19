@@ -16,6 +16,7 @@ export default function TeamMemberImage({
   const [isHovered, setIsHovered] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [imagesPreloaded, setImagesPreloaded] = useState(false);
+  const [preloadAttempted, setPreloadAttempted] = useState(false);
   
   // Handle hydration
   useEffect(() => {
@@ -24,24 +25,34 @@ export default function TeamMemberImage({
 
   // Preload hover image for smooth transition
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!isHydrated || preloadAttempted) return;
     
+    setPreloadAttempted(true);
     const preloadImage = new Image();
     preloadImage.src = hoverImage;
+    
+    const timeoutId = setTimeout(() => {
+      // If image hasn't loaded in 2 seconds, enable hover anyway
+      setImagesPreloaded(true);
+    }, 2000);
+    
     preloadImage.onload = () => {
+      clearTimeout(timeoutId);
       setImagesPreloaded(true);
     };
     
     // Fallback if image fails to load
     preloadImage.onerror = () => {
+      clearTimeout(timeoutId);
       setImagesPreloaded(true);
     };
     
     return () => {
+      clearTimeout(timeoutId);
       preloadImage.onload = null;
       preloadImage.onerror = null;
     };
-  }, [hoverImage, isHydrated]);
+  }, [hoverImage, isHydrated, preloadAttempted]);
   
   // Keyboard accessibility
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -54,7 +65,7 @@ export default function TeamMemberImage({
   return (
     <div 
       className="group relative focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 rounded-lg"
-      onMouseEnter={() => imagesPreloaded && setIsHovered(true)}
+      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onKeyDown={handleKeyDown}
       tabIndex={0}
