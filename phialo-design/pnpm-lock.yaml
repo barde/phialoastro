@@ -64,8 +64,8 @@ importers:
         specifier: ^5.2.6
         version: 5.2.6
       '@playwright/test':
-        specifier: 1.40.1
-        version: 1.40.1
+        specifier: 1.54.2
+        version: 1.54.2
       '@testing-library/jest-dom':
         specifier: ^6.6.4
         version: 6.7.0
@@ -89,10 +89,10 @@ importers:
         version: 3.2.4(vitest@3.2.4)
       '@zerostep/playwright':
         specifier: ^0.1.5
-        version: 0.1.5(@playwright/test@1.40.1)
+        version: 0.1.5(@playwright/test@1.54.2)
       axe-playwright:
         specifier: ^2.1.0
-        version: 2.1.0(playwright@1.40.1)
+        version: 2.1.0(playwright@1.54.2)
       browserstack-node-sdk:
         specifier: ^1.40.8
         version: 1.40.8
@@ -903,10 +903,9 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@playwright/test@1.40.1':
-    resolution: {integrity: sha512-EaaawMTOeEItCRvfmkI9v6rBkF1svM8wjl/YPRrg2N2Wmp+4qJYkWtJsbew1szfKKDm6fPLy4YAanBhIlf9dWw==}
-    engines: {node: '>=16'}
-    deprecated: Please update to the latest version of Playwright to test up-to-date browsers.
+  '@playwright/test@1.54.2':
+    resolution: {integrity: sha512-A+znathYxPf+72riFd1r1ovOLqsIIB0jKIoPjyK2kqEIe30/6jF6BC7QNluHuwUmsD2tv1XZVugN8GqfTMOxsA==}
+    engines: {node: '>=18'}
     hasBin: true
 
   '@pnpm/config.env-replace@1.1.0':
@@ -3520,14 +3519,14 @@ packages:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
 
-  playwright-core@1.40.1:
-    resolution: {integrity: sha512-+hkOycxPiV534c4HhpfX6yrlawqVUzITRKwHAmYfmsVreltEl6fAZJ3DPfLMOODw0H3s1Itd6MDCWmP1fl/QvQ==}
-    engines: {node: '>=16'}
+  playwright-core@1.54.2:
+    resolution: {integrity: sha512-n5r4HFbMmWsB4twG7tJLDN9gmBUeSPcsBZiWSE4DnYz9mJMAFqr2ID7+eGC9kpEnxExJ1epttwR59LEWCk8mtA==}
+    engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.40.1:
-    resolution: {integrity: sha512-2eHI7IioIpQ0bS1Ovg/HszsN/XKNwEG1kbzSDDmADpclKc7CyqkHw7Mg2JCz/bbCxg25QUPcjksoMW7JcIFQmw==}
-    engines: {node: '>=16'}
+  playwright@1.54.2:
+    resolution: {integrity: sha512-Hu/BMoA1NAdRUuulyvQC0pEqZ4vQbGfn8f7wPXcnqQmM+zct9UliKxsIkLNmz/ku7LElUNqmaiv1TG/aL5ACsw==}
+    engines: {node: '>=18'}
     hasBin: true
 
   possible-typed-array-names@1.1.0:
@@ -5673,9 +5672,9 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@playwright/test@1.40.1':
+  '@playwright/test@1.54.2':
     dependencies:
-      playwright: 1.40.1
+      playwright: 1.54.2
 
   '@pnpm/config.env-replace@1.1.0': {}
 
@@ -6231,9 +6230,9 @@ snapshots:
 
   '@vscode/l10n@0.0.18': {}
 
-  '@zerostep/playwright@0.1.5(@playwright/test@1.40.1)':
+  '@zerostep/playwright@0.1.5(@playwright/test@1.54.2)':
     dependencies:
-      '@playwright/test': 1.40.1
+      '@playwright/test': 1.54.2
       uuidv7: 0.6.3
       ws: 8.18.3
     transitivePeerDependencies:
@@ -6507,14 +6506,14 @@ snapshots:
       axe-core: 4.10.3
       mustache: 4.2.0
 
-  axe-playwright@2.1.0(playwright@1.40.1):
+  axe-playwright@2.1.0(playwright@1.54.2):
     dependencies:
       '@types/junit-report-builder': 3.0.2
       axe-core: 4.10.3
       axe-html-reporter: 2.2.11(axe-core@4.10.3)
       junit-report-builder: 5.1.1
       picocolors: 1.1.1
-      playwright: 1.40.1
+      playwright: 1.54.2
 
   axobject-query@4.1.0: {}
 
@@ -8837,11 +8836,11 @@ snapshots:
 
   pirates@4.0.7: {}
 
-  playwright-core@1.40.1: {}
+  playwright-core@1.54.2: {}
 
-  playwright@1.40.1:
+  playwright@1.54.2:
     dependencies:
-      playwright-core: 1.40.1
+      playwright-core: 1.54.2
     optionalDependencies:
       fsevents: 2.3.2
 
