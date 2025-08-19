@@ -113,7 +113,7 @@ jobs:
     environment: ${{ needs.check-command.outputs.environment }}
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.check-command.outputs.pr_sha }}
       
