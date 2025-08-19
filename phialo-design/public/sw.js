@@ -91,13 +91,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Skip external requests
-  if (!url.origin.includes('phialo') && !url.origin.includes('localhost')) {
+  // Skip external requests - only handle same-origin and allowed domains
+  const isOurDomain = 
+    url.origin === self.location.origin ||
+    url.hostname === 'phialo.de' ||
+    url.hostname === 'www.phialo.de' ||
+    url.hostname.match(/^phialo-(pr-\d+|master|preview)\.meise\.workers\.dev$/) ||
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1';
+    
+  if (!isOurDomain) {
     return;
   }
   
-  // Skip Cloudflare Analytics
-  if (url.href.includes('cloudflareinsights.com')) {
+  // Skip Cloudflare Analytics - check hostname to prevent URL injection
+  if (url.hostname === 'static.cloudflareinsights.com' || url.hostname.endsWith('.cloudflareinsights.com')) {
     return;
   }
   
@@ -330,8 +338,36 @@ async function handleNetworkFirst(request) {
   }
 }
 
-// Message handling for updates
+// Message handling for updates with origin validation
 self.addEventListener('message', (event) => {
+  // Validate origin to prevent malicious messages
+  const isAllowedOrigin = (origin) => {
+    if (!origin) return false;
+    
+    // Allow localhost for development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      return true;
+    }
+    
+    // Allow production domain
+    if (origin === 'https://phialo.de' || origin === 'https://www.phialo.de') {
+      return true;
+    }
+    
+    // Allow Cloudflare Workers preview deployments
+    if (origin.match(/^https:\/\/phialo-(pr-\d+|master|preview)\.meise\.workers\.dev$/)) {
+      return true;
+    }
+    
+    return false;
+  };
+  
+  // Check if the origin is allowed
+  if (!isAllowedOrigin(event.origin)) {
+    console.warn('[SW] Message from unauthorized origin:', event.origin);
+    return;
+  }
+  
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('[SW] Skip waiting requested');
     self.skipWaiting();
