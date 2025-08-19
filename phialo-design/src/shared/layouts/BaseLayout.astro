@@ -4,6 +4,7 @@ import { ClientRouter } from "astro:transitions";
 import SmoothScroll from '../components/effects/SmoothScroll';
 import CriticalCSS from './CriticalCSS.astro';
 import WebVitalsMonitor from '../components/performance/WebVitalsMonitor.astro';
+import ServiceWorkerRegistration from '../components/ServiceWorkerRegistration.astro';
 import '../../styles/fonts.css';
 import '../../styles/global.css';
 
@@ -70,6 +71,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="manifest" href="/manifest.json" />
     
     <!-- Inline critical CSS for faster initial render -->
     <CriticalCSS />
@@ -120,6 +122,9 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     
     <!-- Core Web Vitals Monitoring with Attribution -->
     <WebVitalsMonitor />
+    
+    <!-- Service Worker Registration -->
+    <ServiceWorkerRegistration />
     
     <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
     {analyticsToken && (
