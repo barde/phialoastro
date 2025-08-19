@@ -6,6 +6,7 @@ import partytown from '@astrojs/partytown';
 import { visualizer } from 'rollup-plugin-visualizer';
 import viteCompression from 'vite-plugin-compression';
 import { constants } from 'zlib';
+// Script optimization will be handled differently
 
 // https://astro.build/config
 export default defineConfig({
@@ -37,7 +38,10 @@ export default defineConfig({
   
   // Build configuration
   build: {
+    // Inline critical CSS automatically
     inlineStylesheets: 'auto',
+    // Split CSS for better caching
+    assets: 'chunks',
   },
   
   // Image optimization with automatic format conversion
@@ -124,9 +128,13 @@ export default defineConfig({
               if (id.includes('framer-motion')) {
                 return 'motion-vendor';
               }
-              // Icon libraries
+              // Icon libraries - defer loading
               if (id.includes('lucide-react')) {
                 return 'icons-vendor';
+              }
+              // UI component libraries
+              if (id.includes('ui') || id.includes('components')) {
+                return 'ui-vendor';
               }
               // Form/Contact related libraries
               if (id.includes('@cloudflare/turnstile')) {
