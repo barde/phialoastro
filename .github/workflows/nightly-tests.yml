@@ -78,7 +78,7 @@ jobs:
       options: --user root --init
     name: Unit/Integration Tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Cache test results
         uses: actions/cache@v4
@@ -155,7 +155,7 @@ jobs:
       options: --user root --init
     name: E2E ${{ matrix.browser }} (shard ${{ matrix.shard }}/6)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Cache build artifacts
         uses: actions/cache@v4
@@ -240,7 +240,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
       options: --user root --init
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build production bundle
         run: |
@@ -322,7 +322,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
       options: --user root --init
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run dependency audit
         run: |
@@ -435,7 +435,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download all artifacts
         uses: actions/download-artifact@v5

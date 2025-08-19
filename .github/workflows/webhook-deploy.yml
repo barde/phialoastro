@@ -54,7 +54,7 @@ jobs:
     environment: ${{ needs.validate-webhook.outputs.environment }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.validate-webhook.outputs.branch }}
       
