@@ -187,6 +187,27 @@ pnpm run deploy:preview
 # Use workflow dispatch or PR comment: /deploy
 ```
 
+## 📊 Performance Monitoring
+
+The site includes Real User Monitoring (RUM) for Core Web Vitals using Cloudflare Analytics Engine:
+
+- **Metrics Tracked**: LCP, INP, CLS, FCP, TTFB with attribution data
+- **Storage**: Cloudflare Analytics Engine (time-series optimized)
+- **Dashboard**: Query via SQL API or GraphQL
+- **Setup Guide**: [Analytics Engine Setup](./phialo-design/docs/how-to/setup-analytics-engine.md)
+
+To query metrics after deployment:
+```bash
+# Get API token from Cloudflare Dashboard (one-time)
+# Needs: Account > Account Analytics > Read permission
+
+# Query via Cloudflare SQL API
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/analytics_engine/sql" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT index1 as metric, APPROX_QUANTILE(double1, 0.75) as p75 FROM VITALS_ANALYTICS WHERE timestamp >= NOW() - INTERVAL \"24\" HOUR GROUP BY index1"}'
+```
+
 ## 🧪 Testing Strategy
 
 Our comprehensive testing ensures quality across all aspects:
@@ -195,7 +216,7 @@ Our comprehensive testing ensures quality across all aspects:
 - **Integration Tests**: Feature workflows
 - **E2E Tests**: User journeys (Playwright)
 - **Visual Tests**: UI consistency
-- **Performance Tests**: Core Web Vitals monitoring
+- **Performance Tests**: Core Web Vitals monitoring with Analytics Engine
 - **Accessibility Tests**: WCAG compliance
 
 ```bash
