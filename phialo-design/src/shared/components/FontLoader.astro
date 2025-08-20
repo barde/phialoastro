@@ -1,51 +1,33 @@
 ---
-// Font Loader Component - Progressive font loading with Font Loading API
+// Font Loader Component - Lazy load additional fonts
 ---
 
 <script>
-  // Optimized Font Loading - Non-blocking and progressive
-  requestAnimationFrame(() => {
-    // Add fonts-loaded class immediately to avoid blocking
-    document.documentElement.classList.add('fonts-loaded');
-    
-    // Use Font Loading API for progressive enhancement if available
-    if ('fonts' in document && document.fonts && document.fonts.ready) {
-      // Check when fonts are ready without blocking
-      document.fonts.ready.then(() => {
-        document.documentElement.classList.add('fonts-ready');
-        
-        // Preload additional font weights in the background
-        // These are non-critical so we don't wait for them
-        requestIdleCallback(() => {
-          const additionalFonts = [
-            '500 1em Inter',
-            '600 1em Inter', 
-            '700 1em Inter',
-            '400 1em "Playfair Display"',
-            '500 1em "Playfair Display"',
-            '600 1em "Playfair Display"'
-          ];
-          
-          additionalFonts.forEach(font => {
-            document.fonts.load(font).catch(() => {
-              // Silently ignore failures for non-critical fonts
-            });
-          });
-        }, { timeout: 2000 });
-      });
-    }
-    
-    // Optimize font rendering performance
-    if (CSS && CSS.supports && CSS.supports('font-synthesis', 'none')) {
-      document.documentElement.style.fontSynthesis = 'none';
-    }
-  });
+  // Add fonts-loaded class immediately for critical fonts
+  document.documentElement.classList.add('fonts-loaded');
   
-  // Fallback for requestIdleCallback
-  if (!window.requestIdleCallback) {
-    window.requestIdleCallback = function(callback, options) {
-      const timeout = options?.timeout || 1000;
-      return setTimeout(callback, timeout);
-    };
+  // Lazy load additional font weights after page load
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      // Create link element for additional fonts
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/_astro/fonts-additional.css';
+      link.media = 'print'; // Start with print to avoid blocking
+      link.onload = function() {
+        this.media = 'all'; // Switch to all media once loaded
+      };
+      document.head.appendChild(link);
+    }, { timeout: 3000 });
+  } else {
+    // Fallback for browsers without requestIdleCallback
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/_astro/fonts-additional.css';
+        document.head.appendChild(link);
+      }, 1000);
+    });
   }
 </script>
