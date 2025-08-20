@@ -1,7 +1,7 @@
 ---
 import { SEO } from "astro-seo";
 import { ClientRouter } from "astro:transitions";
-import SmoothScroll from '../components/effects/SmoothScroll';
+import SmoothScrollStatic from '../components/effects/SmoothScrollStatic.astro';
 import CriticalCSS from './CriticalCSS.astro';
 import WebVitalsMonitor from '../components/performance/WebVitalsMonitor.astro';
 import ServiceWorkerRegistration from '../components/ServiceWorkerRegistration.astro';
@@ -177,8 +177,8 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <ClientRouter />
   </head>
   <body class="min-h-screen antialiased">
-    <!-- Load interactive components with lower priority -->
-    <SmoothScroll client:idle />
+    <!-- Static smooth scroll - no React needed -->
+    <SmoothScrollStatic />
     <slot />
     
     <!-- Font Loading Optimization -->

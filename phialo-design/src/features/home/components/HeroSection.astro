@@ -1,5 +1,5 @@
 ---
-import AnimatedText from '../../../shared/components/ui/AnimatedText';
+import AnimatedTextStatic from '../../../shared/components/AnimatedTextStatic.astro';
 import Button from '../../../shared/components/ui/Button.astro';
 import QualityBadge from '../../../shared/components/ui/QualityBadge.astro';
 
@@ -45,13 +45,13 @@ const t = isEnglish ? content.en : content.de;
   </div>
   
   <!-- Content -->
-  <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">    <AnimatedText client:idle>
+  <div class="hero-content relative z-20 text-center max-w-4xl mx-auto px-6">    <AnimatedTextStatic>
       <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium text-theme-text-primary mb-8 leading-tight">
         {t.title.line1}
         <span class="text-theme-accent block md:inline"> {t.title.line2}</span>
         {t.title.line3}
       </h1>
-    </AnimatedText>
+    </AnimatedTextStatic>
     
     <div class="hero-subtext animate-fade-in-delay-1">
       <p class="text-lg md:text-xl text-theme-text-secondary mb-6 max-w-2xl mx-auto leading-relaxed">

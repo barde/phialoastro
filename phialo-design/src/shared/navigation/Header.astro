@@ -1,5 +1,5 @@
 ---
-import Navigation from './Navigation';
+import NavigationStatic from './NavigationStatic.astro';
 import LanguageSelector from './LanguageSelector.astro';
 
 export interface Props {
@@ -36,7 +36,7 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       
       <!-- Desktop Navigation -->
       <div class="flex items-center space-x-4">
-        <Navigation client:idle />
+        <NavigationStatic />
         <LanguageSelector />
       </div>
       
