@@ -16,7 +16,6 @@ export default function TeamMemberImage({
   const [isHovered, setIsHovered] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [imagesPreloaded, setImagesPreloaded] = useState(false);
-  const [preloadAttempted, setPreloadAttempted] = useState(false);
   
   // Handle hydration
   useEffect(() => {
@@ -25,34 +24,30 @@ export default function TeamMemberImage({
 
   // Preload hover image for smooth transition
   useEffect(() => {
-    if (!isHydrated || preloadAttempted) return;
+    if (!isHydrated) return;
     
-    setPreloadAttempted(true);
     const preloadImage = new Image();
     preloadImage.src = hoverImage;
     
-    const timeoutId = setTimeout(() => {
-      // If image hasn't loaded in 2 seconds, enable hover anyway
-      setImagesPreloaded(true);
-    }, 2000);
+    // Set as loaded immediately for better UX
+    // The image will still load in background
+    setImagesPreloaded(true);
     
     preloadImage.onload = () => {
-      clearTimeout(timeoutId);
+      // Image is cached now for smooth transition
       setImagesPreloaded(true);
     };
     
-    // Fallback if image fails to load
+    // Even on error, allow hover functionality
     preloadImage.onerror = () => {
-      clearTimeout(timeoutId);
       setImagesPreloaded(true);
     };
     
     return () => {
-      clearTimeout(timeoutId);
       preloadImage.onload = null;
       preloadImage.onerror = null;
     };
-  }, [hoverImage, isHydrated, preloadAttempted]);
+  }, [hoverImage, isHydrated]);
   
   // Keyboard accessibility
   const handleKeyDown = (event: React.KeyboardEvent) => {
