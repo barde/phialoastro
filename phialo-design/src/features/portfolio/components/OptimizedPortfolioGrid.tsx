@@ -11,6 +11,9 @@ interface OptimizedPortfolioGridProps {
   lang?: 'en' | 'de';
 }
 
+// Alias for backward compatibility
+export interface PortfolioGridProps extends OptimizedPortfolioGridProps {}
+
 // Grid container variants for staggered animation (unused but kept for reference)
 const _gridVariants = {
   hidden: { opacity: 0 },

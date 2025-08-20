@@ -61,6 +61,28 @@ export default defineConfig({
   
   // Vite configuration for bundle analysis
   vite: {
+    resolve: {
+      alias: [
+        // Preact aliasing disabled for now due to SSR compatibility issues
+        // TODO: Fix Preact compatibility with LazyMotion components
+        // ...(process.env.NODE_ENV === 'production' ? [
+        //   { find: 'react', replacement: 'preact/compat' },
+        //   { find: 'react-dom/test-utils', replacement: 'preact/test-utils' },
+        //   { find: 'react-dom', replacement: 'preact/compat' },
+        //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' }
+        // ] : []),
+        // Existing aliases
+        { find: '@features', replacement: new URL('./src/features', import.meta.url).pathname },
+        { find: '@shared', replacement: new URL('./src/shared', import.meta.url).pathname },
+        { find: '@lib', replacement: new URL('./src/lib', import.meta.url).pathname },
+        { find: '@components', replacement: new URL('./src/shared/components', import.meta.url).pathname },
+        { find: '@layouts', replacement: new URL('./src/shared/layouts', import.meta.url).pathname },
+        { find: '@pages', replacement: new URL('./src/pages', import.meta.url).pathname },
+        { find: '@content', replacement: new URL('./src/content', import.meta.url).pathname },
+        { find: '@styles', replacement: new URL('./src/styles', import.meta.url).pathname },
+        { find: '@test', replacement: new URL('./src/test', import.meta.url).pathname }
+      ]
+    },
     plugins: [
       visualizer({
         emitFile: true,
@@ -90,19 +112,6 @@ export default defineConfig({
         },
       }),
     ],
-    resolve: {
-      alias: {
-        '@features': new URL('./src/features', import.meta.url).pathname,
-        '@shared': new URL('./src/shared', import.meta.url).pathname,
-        '@lib': new URL('./src/lib', import.meta.url).pathname,
-        '@components': new URL('./src/shared/components', import.meta.url).pathname,
-        '@layouts': new URL('./src/shared/layouts', import.meta.url).pathname,
-        '@pages': new URL('./src/pages', import.meta.url).pathname,
-        '@content': new URL('./src/content', import.meta.url).pathname,
-        '@styles': new URL('./src/styles', import.meta.url).pathname,
-        '@test': new URL('./src/test', import.meta.url).pathname
-      }
-    },
     // Optimize dependency pre-bundling
     optimizeDeps: {
       include: ['react', 'react-dom', 'framer-motion'],

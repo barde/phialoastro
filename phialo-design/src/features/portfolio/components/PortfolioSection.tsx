@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { m, LazyMotion, domAnimation, type Variants } from '../../../lib/framer-motion';
-import PortfolioGrid from './PortfolioGrid';
+import PortfolioGrid from './OptimizedPortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
 import PortfolioModal from './PortfolioModal';
 import { portfolioItemsDE, portfolioItemsEN, categoryMap, categories } from '../data';
