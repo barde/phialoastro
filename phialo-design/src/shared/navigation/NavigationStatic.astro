@@ -1,0 +1,134 @@
+---
+// Static navigation component - no React needed
+const currentPath = Astro.url.pathname;
+const isEnglish = currentPath.startsWith('/en/');
+
+const navItems = [
+  { href: '/portfolio', label: 'Portfolio' },
+  { href: '/services', label: '3D für Sie', labelEn: '3D for You' },
+  { href: '/classes', label: 'Classes' },
+  { href: '/about', label: 'Über Phialo', labelEn: 'About Phialo' },
+  { href: '/contact', label: 'Kontakt', labelEn: 'Contact' }
+];
+
+const isActiveLink = (href: string) => {
+  if (href === '/') return currentPath === '/' || currentPath === '/en/';
+  const basePath = currentPath.replace(/^\/en/, '');
+  return basePath.startsWith(href);
+};
+---
+
+<!-- Desktop Navigation -->
+<nav class="hidden lg:flex items-center space-x-8" id="desktop-nav">
+  {navItems.map(({ href, label, labelEn }) => {
+    const displayLabel = isEnglish && labelEn ? labelEn : label;
+    const localizedHref = isEnglish ? `/en${href}` : href;
+    const isActive = isActiveLink(href);
+    
+    return (
+      <a 
+        href={localizedHref}
+        class={`text-sm font-medium transition-colors hover:text-theme-accent ${
+          isActive 
+            ? 'text-theme-accent border-b-2 border-theme-accent pb-1' 
+            : 'text-theme-text-secondary'
+        }`}
+      >
+        {displayLabel}
+      </a>
+    );
+  })}
+</nav>
+
+<!-- Mobile Menu Button -->
+<button 
+  id="mobile-menu-btn"
+  class="lg:hidden p-2 text-theme-text-primary hover:text-theme-accent transition-colors"
+  aria-label="Toggle menu"
+>
+  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+  </svg>
+</button>
+
+<!-- Mobile Menu -->
+<div 
+  id="mobile-menu"
+  class="fixed inset-0 z-50 bg-theme-background lg:hidden transform translate-x-full transition-transform duration-300"
+>
+  <div class="flex flex-col h-full">
+    <div class="flex items-center justify-between p-6 border-b border-theme-border">
+      <a href={isEnglish ? '/en/' : '/'} class="font-display text-2xl font-medium text-theme-text-primary">
+        PHIALO
+      </a>
+      <button 
+        id="mobile-menu-close"
+        class="p-2 text-theme-text-primary hover:text-theme-accent transition-colors"
+        aria-label="Close menu"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <nav class="flex-1 px-6 py-8">
+      <div class="space-y-4">
+        {navItems.map(({ href, label, labelEn }) => {
+          const displayLabel = isEnglish && labelEn ? labelEn : label;
+          const localizedHref = isEnglish ? `/en${href}` : href;
+          const isActive = isActiveLink(href);
+          
+          return (
+            <a 
+              href={localizedHref}
+              class={`block text-lg font-medium py-2 transition-colors hover:text-theme-accent ${
+                isActive ? 'text-theme-accent' : 'text-theme-text-primary'
+              }`}
+            >
+              {displayLabel}
+            </a>
+          );
+        })}
+      </div>
+    </nav>
+  </div>
+</div>
+
+<script>
+  // Simple vanilla JS for mobile menu - no React needed
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenuClose = document.getElementById('mobile-menu-close');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  function openMenu() {
+    mobileMenu?.classList.remove('translate-x-full');
+    document.body.style.overflow = 'hidden';
+  }
+  
+  function closeMenu() {
+    mobileMenu?.classList.add('translate-x-full');
+    document.body.style.overflow = '';
+  }
+  
+  mobileMenuBtn?.addEventListener('click', openMenu);
+  mobileMenuClose?.addEventListener('click', closeMenu);
+  
+  // Close menu when clicking a link
+  mobileMenu?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+  
+  // Close menu on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !mobileMenu?.classList.contains('translate-x-full')) {
+      closeMenu();
+    }
+  });
+</script>
+
+<style>
+  #mobile-menu {
+    will-change: transform;
+  }
+</style>

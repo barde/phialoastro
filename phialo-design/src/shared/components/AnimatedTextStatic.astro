@@ -1,0 +1,40 @@
+---
+// Static animated text component - CSS animations only
+export interface Props {
+  class?: string;
+  delay?: number;
+}
+
+const { class: className = '', delay = 0 } = Astro.props;
+---
+
+<div 
+  class={`animated-text ${className}`}
+  style={`animation-delay: ${delay}ms`}
+>
+  <slot />
+</div>
+
+<style>
+  .animated-text {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s ease forwards;
+  }
+  
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Add support for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animated-text {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
