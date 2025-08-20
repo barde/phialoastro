@@ -3,46 +3,49 @@
 ---
 
 <script>
-  // Font Loading API for progressive enhancement
-  if ('fonts' in document) {
-    // Load critical fonts first
-    const criticalFonts = [
-      document.fonts.load('400 1em Inter'),
-      document.fonts.load('700 1em "Playfair Display"')
-    ];
+  // Optimized Font Loading - Non-blocking and progressive
+  requestAnimationFrame(() => {
+    // Add fonts-loaded class immediately to avoid blocking
+    document.documentElement.classList.add('fonts-loaded');
     
-    Promise.all(criticalFonts).then(() => {
-      // Mark critical fonts as loaded
-      document.documentElement.classList.add('fonts-loaded');
-      
-      // Then load additional font weights asynchronously
-      const additionalFonts = [
-        document.fonts.load('500 1em Inter'),
-        document.fonts.load('600 1em Inter'),
-        document.fonts.load('700 1em Inter'),
-        document.fonts.load('400 1em "Playfair Display"'),
-        document.fonts.load('500 1em "Playfair Display"'),
-        document.fonts.load('600 1em "Playfair Display"')
-      ];
-      
-      // Load additional fonts without blocking
-      Promise.all(additionalFonts).catch(err => {
-        console.warn('Some font weights failed to load:', err);
+    // Use Font Loading API for progressive enhancement if available
+    if ('fonts' in document && document.fonts && document.fonts.ready) {
+      // Check when fonts are ready without blocking
+      document.fonts.ready.then(() => {
+        document.documentElement.classList.add('fonts-ready');
+        
+        // Preload additional font weights in the background
+        // These are non-critical so we don't wait for them
+        requestIdleCallback(() => {
+          const additionalFonts = [
+            '500 1em Inter',
+            '600 1em Inter', 
+            '700 1em Inter',
+            '400 1em "Playfair Display"',
+            '500 1em "Playfair Display"',
+            '600 1em "Playfair Display"'
+          ];
+          
+          additionalFonts.forEach(font => {
+            document.fonts.load(font).catch(() => {
+              // Silently ignore failures for non-critical fonts
+            });
+          });
+        }, { timeout: 2000 });
       });
-    }).catch(err => {
-      console.error('Critical fonts failed to load:', err);
-      // Fallback to system fonts if loading fails
-      document.documentElement.classList.add('fonts-fallback');
-    });
-  } else {
-    // For browsers without Font Loading API, add class after timeout
-    setTimeout(() => {
-      document.documentElement.classList.add('fonts-loaded');
-    }, 1000);
-  }
+    }
+    
+    // Optimize font rendering performance
+    if (CSS && CSS.supports && CSS.supports('font-synthesis', 'none')) {
+      document.documentElement.style.fontSynthesis = 'none';
+    }
+  });
   
-  // Optimize font rendering performance
-  if (CSS && CSS.supports && CSS.supports('font-synthesis', 'none')) {
-    document.documentElement.style.fontSynthesis = 'none';
+  // Fallback for requestIdleCallback
+  if (!window.requestIdleCallback) {
+    window.requestIdleCallback = function(callback, options) {
+      const timeout = options?.timeout || 1000;
+      return setTimeout(callback, timeout);
+    };
   }
 </script>
