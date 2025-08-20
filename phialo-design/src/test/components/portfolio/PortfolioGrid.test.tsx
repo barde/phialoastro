@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import PortfolioGrid from '../../../features/portfolio/components/PortfolioGrid';
+import PortfolioGrid from '../../../features/portfolio/components/OptimizedPortfolioGrid';
 import type { PortfolioItemData } from '../../../features/portfolio/components/PortfolioSection';
 
 // Mock framer-motion

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, type Variants } from '../../../lib/framer-motion';
-import PortfolioGrid from './PortfolioGrid';
+import { m, LazyMotion, domAnimation, type Variants } from '../../../lib/framer-motion';
+import PortfolioGrid from './OptimizedPortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
 import PortfolioModal from './PortfolioModal';
 import { portfolioItemsDE, portfolioItemsEN, categoryMap, categories } from '../data';
@@ -84,10 +84,11 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   };
 
   return (
-    <section id="portfolio" className="portfolio-section py-24 bg-white" aria-label="Portfolio">
+    <LazyMotion features={domAnimation} strict>
+      <section id="portfolio" className="portfolio-section py-24 bg-white" aria-label="Portfolio">
       <div className="container mx-auto px-6">
         {/* Instagram Link */}
-        <motion.div
+        <m.div
           variants={itemVariants}
           initial="visible"
           animate="visible"
@@ -105,10 +106,10 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
               </svg>            </a>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Filter */}
-        <motion.div
+        <m.div
           variants={itemVariants}
           initial="visible"
           animate="visible"
@@ -120,16 +121,16 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
             onFilterChange={setActiveFilter}
             isEnglish={isEnglish}
           />
-        </motion.div>
+        </m.div>
 
         {/* Portfolio Grid */}
-        <motion.div
+        <m.div
           variants={containerVariants}
           initial="visible"
           animate="visible"
         >
           <PortfolioGrid items={filteredItems} onItemClick={handleItemClick} lang={lang} />
-        </motion.div>
+        </m.div>
 
         {/* Portfolio Modal */}
         {selectedItem && (
@@ -157,6 +158,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           />
         )}
       </div>
-    </section>
+      </section>
+    </LazyMotion>
   );
 }
