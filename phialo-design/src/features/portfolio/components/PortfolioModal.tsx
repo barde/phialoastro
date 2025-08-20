@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from '../../../lib/framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from '../../../lib/framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { YouTubeEmbed } from './YouTubeEmbed';
 
@@ -222,9 +222,10 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
   const videoAspectRatio = portfolioItem.youtubeAspectRatio || '16:9';
 
   return (
-    <AnimatePresence>
+    <LazyMotion features={domAnimation} strict>
+      <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -236,7 +237,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
           role="dialog"
         >
           {/* Overlay background */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -247,7 +248,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
           />
 
           {/* Modal container */}
-          <motion.div
+          <m.div
             ref={modalRef}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -280,7 +281,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                 )}
                 
                 {/* Main image */}
-                <motion.img
+                <m.img
                   key={currentImageIndex}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: imageLoading ? 0 : 1 }}
@@ -337,7 +338,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
 
               {/* Details section */}
               <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.1 }}
@@ -585,12 +586,13 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                       )}
                     </div>
                   )}
-                </motion.div>
+                </m.div>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+    </LazyMotion>
   );
 }

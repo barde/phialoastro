@@ -1,4 +1,4 @@
-import { motion } from '../../../lib/framer-motion';
+import { m, LazyMotion, domAnimation } from '../../../lib/framer-motion';
 import PortfolioItem from './PortfolioItem';
 import type { PortfolioItemData } from './PortfolioSection';
 
@@ -20,10 +20,13 @@ export default function PortfolioGrid({ items, onItemClick, lang = 'de' }: Portf
         stiffness: 100
       }
     }
-  };  return (
-    <div className="portfolio-grid" data-testid="portfolio-grid">
-      {items.map((item, index) => (
-        <motion.div
+  };
+  
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <div className="portfolio-grid" data-testid="portfolio-grid">
+        {items.map((item, index) => (
+          <m.div
           key={item.id}
           variants={itemVariants}
           layout
@@ -35,8 +38,9 @@ export default function PortfolioGrid({ items, onItemClick, lang = 'de' }: Portf
             lang={lang} 
             priority={index < 3} 
           />
-        </motion.div>
+        </m.div>
       ))}
-    </div>
+      </div>
+    </LazyMotion>
   );
 }

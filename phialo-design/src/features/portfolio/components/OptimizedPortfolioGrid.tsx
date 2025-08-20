@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from '../../../lib/framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from '../../../lib/framer-motion';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
 import OptimizedPicture from '../../../shared/components/OptimizedPicture';
 import { useAdaptiveLoading } from '../../../utils/adaptive-loading';
@@ -23,7 +23,7 @@ const _gridVariants = {
   },
 };
 
-// Item variants with reduced motion complexity
+// Item variants with reduced m complexity
 const itemVariants = {
   hidden: { 
     opacity: 0, 
@@ -104,7 +104,7 @@ function OptimizedPortfolioItem({
     : `Portfolio-Element: ${item.title}. Kategorie: ${item.category}. Drücken Sie Enter oder Leertaste, um Details anzuzeigen.`;
 
   return (
-    <motion.div
+    <m.div
       variants={itemVariants}
       layout
       className="portfolio-item"
@@ -164,7 +164,7 @@ function OptimizedPortfolioItem({
           </div>
         </MagneticCursor>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -178,7 +178,7 @@ export default function OptimizedPortfolioGrid({
     animationSettings
   } = useAdaptiveLoading();
   
-  // Check for reduced motion preference
+  // Check for reduced m preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -228,9 +228,10 @@ export default function OptimizedPortfolioGrid({
       };
 
   return (
-    <motion.div
-      className="portfolio-grid"
-      data-testid="portfolio-grid"
+    <LazyMotion features={domAnimation} strict>
+      <m.div
+        className="portfolio-grid"
+        data-testid="portfolio-grid"
       variants={effectiveVariants}
       initial="hidden"
       animate="visible"
@@ -250,6 +251,7 @@ export default function OptimizedPortfolioGrid({
           />
         ))}
       </AnimatePresence>
-    </motion.div>
+      </m.div>
+    </LazyMotion>
   );
 }
