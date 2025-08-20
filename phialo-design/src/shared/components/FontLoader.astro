@@ -1,0 +1,33 @@
+---
+// Font Loader Component - Lazy load additional fonts
+---
+
+<script>
+  // Add fonts-loaded class immediately for critical fonts
+  document.documentElement.classList.add('fonts-loaded');
+  
+  // Lazy load additional font weights after page load
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      // Create link element for additional fonts
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/_astro/fonts-additional.css';
+      link.media = 'print'; // Start with print to avoid blocking
+      link.onload = function() {
+        this.media = 'all'; // Switch to all media once loaded
+      };
+      document.head.appendChild(link);
+    }, { timeout: 3000 });
+  } else {
+    // Fallback for browsers without requestIdleCallback
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/_astro/fonts-additional.css';
+        document.head.appendChild(link);
+      }, 1000);
+    });
+  }
+</script>

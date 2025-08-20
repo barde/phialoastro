@@ -153,15 +153,14 @@ const classes = isEnglish ? classesData.en : classesData.de;
       </p>
     </div>
 
-    <!-- Horizontal Scroll Container -->
+    <!-- Classes Grid Container -->
     <div class="relative">
       <div 
-        class="flex gap-8 overflow-x-auto scrollbar-hide pb-6 snap-x snap-mandatory"
-        style="scroll-padding-left: 1.5rem;"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-6"
       >
         {classes.map((classItem) => (
           <article 
-            class="flex-none w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start class-card"
+            class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 class-card"
             data-class-id={classItem.id}
           >
             <!-- Image -->
@@ -242,30 +241,11 @@ const classes = isEnglish ? classesData.en : classesData.de;
         ))}
       </div>
 
-      <!-- Scroll Indicators -->
-      <div class="flex justify-center mt-8 gap-2">
-        {classes.map((_, index) => (
-          <button
-            class="w-2 h-2 rounded-full bg-neutral-300 transition-all duration-300 scroll-indicator"
-            data-index={index}
-            aria-label={`Go to class ${index + 1}`}
-          ></button>
-        ))}
-      </div>
     </div>
   </div>
 </section>
 
 <style>
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -280,54 +260,3 @@ const classes = isEnglish ? classesData.en : classesData.de;
     overflow: hidden;
   }
 </style>
-
-<script>
-  // Scroll indicator functionality
-  function initClassScrollIndicators() {
-    const scrollContainer = document.querySelector('.flex.gap-8.overflow-x-auto');
-    const indicators = document.querySelectorAll('.scroll-indicator');
-    
-    if (!scrollContainer || !indicators.length) return;
-
-    function updateIndicators() {
-      if (!scrollContainer) return;
-      const scrollLeft = scrollContainer.scrollLeft;
-      const cardWidth = 320 + 32; // card width + gap
-      const activeIndex = Math.round(scrollLeft / cardWidth);
-      
-      indicators.forEach((indicator, index) => {
-        if (index === activeIndex) {
-          indicator.classList.add('bg-primary-600');
-          indicator.classList.remove('bg-neutral-300');
-        } else {
-          indicator.classList.remove('bg-primary-600');
-          indicator.classList.add('bg-neutral-300');
-        }
-      });
-    }
-
-    function scrollToCard(index: number) {
-      if (!scrollContainer) return;
-      const cardWidth = 320 + 32; // card width + gap
-      const scrollLeft = index * cardWidth;
-      scrollContainer.scrollTo({
-        left: scrollLeft,
-        behavior: 'smooth'
-      });
-    }
-
-    // Add click handlers to indicators
-    indicators.forEach((indicator, index) => {
-      indicator.addEventListener('click', () => scrollToCard(index));
-    });
-
-    // Update indicators on scroll
-    scrollContainer.addEventListener('scroll', updateIndicators);
-    
-    // Initialize
-    updateIndicators();
-  }
-
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', initClassScrollIndicators);
-</script>
