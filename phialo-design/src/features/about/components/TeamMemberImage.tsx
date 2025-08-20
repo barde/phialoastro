@@ -28,11 +28,17 @@ export default function TeamMemberImage({
     
     const preloadImage = new Image();
     preloadImage.src = hoverImage;
+    
+    // Set as loaded immediately for better UX
+    // The image will still load in background
+    setImagesPreloaded(true);
+    
     preloadImage.onload = () => {
+      // Image is cached now for smooth transition
       setImagesPreloaded(true);
     };
     
-    // Fallback if image fails to load
+    // Even on error, allow hover functionality
     preloadImage.onerror = () => {
       setImagesPreloaded(true);
     };
@@ -54,7 +60,7 @@ export default function TeamMemberImage({
   return (
     <div 
       className="group relative focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 rounded-lg"
-      onMouseEnter={() => imagesPreloaded && setIsHovered(true)}
+      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onKeyDown={handleKeyDown}
       tabIndex={0}

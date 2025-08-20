@@ -269,7 +269,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             </button>
 
             {/* Content container */}
-            <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
+            <div className="flex flex-col lg:flex-row max-h-[90vh]">
               {/* Image section */}
               <div className="relative flex-1 bg-gray-100 flex items-center justify-center p-8 lg:p-12">
                 {/* Loading spinner */}
@@ -287,7 +287,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                   transition={{ duration: 0.3 }}
                   src={allImages[currentImageIndex]}
                   alt={portfolioItem.title}
-                  className="max-w-full max-h-full object-contain rounded-lg"
+                  className="w-auto h-auto max-w-full max-h-[50vh] lg:max-h-[60vh] object-contain rounded-lg"
                   onLoad={() => setImageLoading(false)}
                   onError={(e) => {
                     const target = e.currentTarget;

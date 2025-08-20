@@ -1,30 +1,59 @@
 ---
 // Critical CSS for above-the-fold content
+// This file contains minimal CSS needed for initial render
+// Additional CSS is loaded asynchronously to improve FCP/LCP
 ---
 
+<!-- Inline critical CSS for immediate render -->
 <style is:inline>
   /* Reset and base styles */
   *, *::before, *::after { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; line-height: 1.5; }
+  * { margin: 0; }
+  html, body { height: 100%; }
+  body { 
+    font-family: 'Inter', system-ui, sans-serif; 
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, picture, video, canvas, svg { 
+    display: block; 
+    max-width: 100%;
+  }
+  input, button, textarea, select { font: inherit; }
+  p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
   
-  /* Typography */
+  /* Critical typography */
   .font-display { font-family: 'Playfair Display', serif; }
-  h1, h2, h3 { margin: 0; font-weight: 500; }
+  h1 { font-size: 2.5rem; font-weight: 600; }
+  h2 { font-size: 2rem; font-weight: 500; }
+  h3 { font-size: 1.5rem; font-weight: 500; }
   
-  /* Layout */
+  /* Critical layout utilities */
   .min-h-screen { min-height: 100vh; }
+  .container { 
+    width: 100%; 
+    max-width: 1280px; 
+    margin: 0 auto; 
+    padding: 0 1rem;
+  }
   .relative { position: relative; }
   .absolute { position: absolute; }
   .fixed { position: fixed; }
   .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+  .z-10 { z-index: 10; }
+  .z-20 { z-index: 20; }
+  .z-50 { z-index: 50; }
   
-  /* Flexbox */
+  /* Critical flexbox */
   .flex { display: flex; }
+  .flex-col { flex-direction: column; }
   .items-center { align-items: center; }
   .justify-center { justify-content: center; }
   .justify-between { justify-content: space-between; }
+  .gap-4 { gap: 1rem; }
+  .gap-8 { gap: 2rem; }
   
-  /* Grid */
+  /* Critical grid */
   .grid { display: grid; }
   .portfolio-grid {
     display: grid;
@@ -32,35 +61,83 @@
     gap: 1.5rem;
   }
   
-  /* Colors */
+  /* Critical colors - Phialo brand */
   .bg-midnight { background-color: #0A192F; }
+  .bg-white { background-color: white; }
   .text-white { color: white; }
   .text-gold { color: #D4AF37; }
+  .text-slate-200 { color: #e2e8f0; }
+  .text-slate-700 { color: #334155; }
   
-  /* Spacing */
+  /* Critical spacing */
   .p-4 { padding: 1rem; }
   .p-6 { padding: 1.5rem; }
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+  .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+  .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
   .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+  .mt-4 { margin-top: 1rem; }
   .mb-2 { margin-bottom: 0.5rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-8 { margin-bottom: 2rem; }
   .mb-12 { margin-bottom: 3rem; }
   
-  /* Images */
-  img { max-width: 100%; height: auto; display: block; }
-  .object-cover { object-fit: cover; }
+  /* Critical for header/navigation */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 25, 47, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 50;
+  }
   
-  /* Aspect ratios */
-  .aspect-\\[4\\/5\\] { aspect-ratio: 4 / 5; }
+  /* Hide elements until JS loads */
+  .js-only { display: none; }
+  .no-js .js-only { display: none !important; }
+  .js .js-only { display: block; }
+  
+  /* Prevent layout shift */
+  .aspect-\[4\/5\] { aspect-ratio: 4 / 5; }
+  .aspect-\[16\/9\] { aspect-ratio: 16 / 9; }
+  .object-cover { object-fit: cover; }
   
   /* Transitions */
   .transition-all { transition: all 0.3s ease; }
   .opacity-0 { opacity: 0; }
   .opacity-100 { opacity: 1; }
   
-  /* Responsive */
+  /* Critical mobile styles */
   @media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    .container { padding: 0 0.75rem; }
     .portfolio-grid {
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1rem;
     }
   }
+  
+  /* Loading skeleton animation */
+  @keyframes skeleton-loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1) 25%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.1) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+  }
 </style>
+
+<!-- Add JS class to html element -->
+<script is:inline>
+  document.documentElement.classList.add('js');
+</script>
