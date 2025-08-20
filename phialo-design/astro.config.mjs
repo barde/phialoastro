@@ -61,6 +61,28 @@ export default defineConfig({
   
   // Vite configuration for bundle analysis
   vite: {
+    resolve: {
+      alias: [
+        // Preact aliasing disabled for now due to SSR compatibility issues
+        // TODO: Fix Preact compatibility with LazyMotion components
+        // ...(process.env.NODE_ENV === 'production' ? [
+        //   { find: 'react', replacement: 'preact/compat' },
+        //   { find: 'react-dom/test-utils', replacement: 'preact/test-utils' },
+        //   { find: 'react-dom', replacement: 'preact/compat' },
+        //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' }
+        // ] : []),
+        // Existing aliases
+        { find: '@features', replacement: new URL('./src/features', import.meta.url).pathname },
+        { find: '@shared', replacement: new URL('./src/shared', import.meta.url).pathname },
+        { find: '@lib', replacement: new URL('./src/lib', import.meta.url).pathname },
+        { find: '@components', replacement: new URL('./src/shared/components', import.meta.url).pathname },
+        { find: '@layouts', replacement: new URL('./src/shared/layouts', import.meta.url).pathname },
+        { find: '@pages', replacement: new URL('./src/pages', import.meta.url).pathname },
+        { find: '@content', replacement: new URL('./src/content', import.meta.url).pathname },
+        { find: '@styles', replacement: new URL('./src/styles', import.meta.url).pathname },
+        { find: '@test', replacement: new URL('./src/test', import.meta.url).pathname }
+      ]
+    },
     plugins: [
       visualizer({
         emitFile: true,
@@ -90,19 +112,6 @@ export default defineConfig({
         },
       }),
     ],
-    resolve: {
-      alias: {
-        '@features': new URL('./src/features', import.meta.url).pathname,
-        '@shared': new URL('./src/shared', import.meta.url).pathname,
-        '@lib': new URL('./src/lib', import.meta.url).pathname,
-        '@components': new URL('./src/shared/components', import.meta.url).pathname,
-        '@layouts': new URL('./src/shared/layouts', import.meta.url).pathname,
-        '@pages': new URL('./src/pages', import.meta.url).pathname,
-        '@content': new URL('./src/content', import.meta.url).pathname,
-        '@styles': new URL('./src/styles', import.meta.url).pathname,
-        '@test': new URL('./src/test', import.meta.url).pathname
-      }
-    },
     // Optimize dependency pre-bundling
     optimizeDeps: {
       include: ['react', 'react-dom', 'framer-motion'],
@@ -118,38 +127,63 @@ export default defineConfig({
           manualChunks: (id) => {
             // Bundle vendor libraries separately
             if (id.includes('node_modules')) {
-              // Core React libraries
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'react-vendor';
+              // Core React libraries - essential for hydration
+              if (id.includes('react-dom')) {
+                return 'react-dom';
               }
-              // Animation libraries
+              if (id.includes('react')) {
+                return 'react-core';
+              }
+              
+              // Framer Motion - split into smaller chunks
               if (id.includes('framer-motion')) {
-                return 'motion-vendor';
+                // Check for specific framer-motion modules
+                if (id.includes('dom-animation') || id.includes('dom-max')) {
+                  return 'motion-features';
+                }
+                return 'motion-core';
               }
-              // Icon libraries - defer loading
+              
+              // Icon libraries - lazy load when possible
               if (id.includes('lucide-react')) {
-                return 'icons-vendor';
+                return 'icons';
               }
-              // Form/Contact related libraries
+              
+              // Form/Contact related - load on demand
               if (id.includes('@cloudflare/turnstile')) {
-                return 'turnstile-vendor';
+                return 'turnstile';
               }
-              // All other vendor code
-              return 'vendor';
+              
+              // Utility libraries
+              if (id.includes('clsx') || id.includes('tailwind-merge')) {
+                return 'utils';
+              }
+              
+              // All other smaller vendor code
+              return 'vendor-misc';
             }
             
-            // Split feature-based chunks
+            // Split feature-based chunks for better code splitting
             if (id.includes('src/features/portfolio')) {
-              return 'portfolio-feature';
+              return 'portfolio';
             }
             if (id.includes('src/features/contact')) {
-              return 'contact-feature';
+              return 'contact';
             }
             if (id.includes('src/features/about')) {
-              return 'about-feature';
+              return 'about';
+            }
+            if (id.includes('src/features/services')) {
+              return 'services';
+            }
+            if (id.includes('src/features/home')) {
+              return 'home';
             }
             if (id.includes('src/shared/navigation')) {
               return 'navigation';
+            }
+            if (id.includes('src/shared/components')) {
+              return 'shared-components';
             }
           },
           // Optimize chunk size

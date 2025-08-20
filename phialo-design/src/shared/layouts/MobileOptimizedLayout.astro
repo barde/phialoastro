@@ -1,5 +1,5 @@
 ---
-import { SEO } from "astro-seo";
+// SEO component removed to reduce bundle size - using native meta tags
 import { ClientRouter } from "astro:transitions";
 import SmoothScroll from '../components/effects/SmoothScroll';
 import '../../styles/fonts.css';
@@ -141,41 +141,35 @@ const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     
-    <SEO
-      title={title}
-      description={description}
-      canonical={canonicalURL}
-      noindex={noindex}
-      openGraph={{
-        basic: {
-          title: title,
-          type: "website",
-          image: socialImageURL,
-        },
-        optional: {
-          description: description,
-          siteName: "Phialo Design",
-        },
-      }}
-      twitter={{
-        creator: "@phialodesign",
-        site: "@phialodesign",
-        card: "summary_large_image",
-      }}
-      extend={{
-        link: [
-          { rel: "alternate", hreflang: "de", href: germanUrl },
-          { rel: "alternate", hreflang: "en", href: englishUrl },
-          { rel: "alternate", hreflang: "x-default", href: germanUrl }
-        ],
-        meta: [
-          { name: "twitter:image", content: socialImageURL },
-          { name: "twitter:title", content: title },
-          { name: "twitter:description", content: description },
-          { name: "theme-color", content: "#0A192F" },
-        ],
-      }}
-    />
+    <!-- SEO Meta Tags -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content={title} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={socialImageURL} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="Phialo Design" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@phialodesign" />
+    <meta name="twitter:creator" content="@phialodesign" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageURL} />
+    
+    <!-- Language Alternates -->
+    <link rel="alternate" hreflang="de" href={germanUrl} />
+    <link rel="alternate" hreflang="en" href={englishUrl} />
+    <link rel="alternate" hreflang="x-default" href={germanUrl} />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0A192F" />
     
     <!-- Structured Data for Rich Results -->
     <script type="application/ld+json">
