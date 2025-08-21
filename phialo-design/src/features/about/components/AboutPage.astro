@@ -71,8 +71,8 @@ const currentContent = content[lang];
         </h2>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <!-- Text content on the left -->
-          <div class="space-y-6 px-5 md:px-0">
+          <!-- Text content - appears second on mobile, first on desktop -->
+          <div class="space-y-6 px-5 md:px-0 order-2 lg:order-1">
             {currentContent.gesaContent.map((paragraph) => (
               <p class="text-lg leading-relaxed text-gray-700">
                 {paragraph}
@@ -80,8 +80,8 @@ const currentContent = content[lang];
             ))}
           </div>
 
-          <!-- Image and Social Links on the right -->
-          <div class="flex flex-col items-center px-5 md:px-0">
+          <!-- Image and Social Links - appears first on mobile, second on desktop -->
+          <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
             <TeamMemberImage
               primaryImage="/gesa-portrait.jpg"
               hoverImage="/gesa-portrait-alt.jpg"
@@ -141,8 +141,8 @@ const currentContent = content[lang];
         </h2>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <!-- Text content on the left -->
-          <div class="space-y-6 px-5 md:px-0">
+          <!-- Text content - appears second on mobile, first on desktop -->
+          <div class="space-y-6 px-5 md:px-0 order-2 lg:order-1">
             {currentContent.bartholomausContent.map((paragraph) => (
               <p class="text-lg leading-relaxed text-gray-700">
                 {paragraph}
@@ -150,8 +150,8 @@ const currentContent = content[lang];
             ))}
           </div>
 
-          <!-- Image and Social Links on the right -->
-          <div class="flex flex-col items-center px-5 md:px-0">
+          <!-- Image and Social Links - appears first on mobile, second on desktop -->
+          <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
             <TeamMemberImage
               primaryImage="/bartholomaeus-portrait.jpg"
               hoverImage="/bartholomaeus-portrait-alt.jpg"
