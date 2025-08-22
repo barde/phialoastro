@@ -19,7 +19,10 @@ async function generateFavicons() {
     // Ensure source file exists
     await fs.access(sourceSvg);
     
-    // Read the SVG content
+    // Ensure output directory exists
+    await fs.mkdir(outputDir, { recursive: true });
+    
+    // Read the SVG content once to avoid race conditions
     const svgBuffer = await fs.readFile(sourceSvg);
     
     // 1. Copy original SVG as favicon.svg
@@ -76,9 +79,9 @@ async function generateFavicons() {
     console.log('✅ Created: favicon.ico (16x16, 32x32, 48x48)');
 
     // 6. Create safari-pinned-tab.svg (monochrome version)
-    // We'll need to modify the SVG to be monochrome
-    const svgContent = await fs.readFile(sourceSvg, 'utf-8');
-    const monochromeContent = svgContent
+    // Read the SVG content once at the beginning to avoid race conditions
+    const svgContentForMonochrome = svgBuffer.toString('utf-8');
+    const monochromeContent = svgContentForMonochrome
       .replace(/#d4af37/gi, '#000000') // Replace gold with black
       .replace(/#fff/gi, '#000000')     // Replace white with black
       .replace(/fill:\s*#[a-fA-F0-9]{3,6}/g, 'fill: #000000'); // Replace any fill colors with black
