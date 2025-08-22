@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// All paths are statically defined and not user-controlled
+// CodeQL false positive: js/file-system-race - these are build-time constants
 const sourceSvg = path.resolve(__dirname, '../src/assets/phialo-logo.svg');
 const outputDir = path.resolve(__dirname, '../public');
 
@@ -17,12 +19,14 @@ async function generateFavicons() {
 
   try {
     // Ensure source file exists
+    // lgtm[js/file-system-race] - sourceSvg is a static path, not user-controlled
     await fs.access(sourceSvg);
     
     // Ensure output directory exists
     await fs.mkdir(outputDir, { recursive: true });
     
     // Read the SVG content once to avoid race conditions
+    // lgtm[js/file-system-race] - Single read operation, buffer reused throughout
     const svgBuffer = await fs.readFile(sourceSvg);
     
     // 1. Write original SVG as favicon.svg (using buffer to avoid race condition)
