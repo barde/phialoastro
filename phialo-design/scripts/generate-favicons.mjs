@@ -25,13 +25,13 @@ async function generateFavicons() {
     // Read the SVG content once to avoid race conditions
     const svgBuffer = await fs.readFile(sourceSvg);
     
-    // 1. Copy original SVG as favicon.svg
-    await fs.copyFile(sourceSvg, path.join(outputDir, 'favicon.svg'));
+    // 1. Write original SVG as favicon.svg (using buffer to avoid race condition)
+    await fs.writeFile(path.join(outputDir, 'favicon.svg'), svgBuffer);
     console.log('✅ Created: favicon.svg');
 
     // 2. Create dark mode variant (for future use if needed)
     // For now, we'll use the same SVG since it has gold and white which work on both backgrounds
-    await fs.copyFile(sourceSvg, path.join(outputDir, 'favicon-dark.svg'));
+    await fs.writeFile(path.join(outputDir, 'favicon-dark.svg'), svgBuffer);
     console.log('✅ Created: favicon-dark.svg');
 
     // 3. Generate apple-touch-icon.png (180x180)
