@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Favicon generation script for Phialo Design
 import sharp from 'sharp';
 import toIco from 'to-ico';
 import path from 'path';
