@@ -6,7 +6,7 @@
   "packageManager": "pnpm@9.14.4",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/generate-modern-images.js",
+    "prebuild": "node scripts/generate-modern-images.js && node scripts/generate-favicons.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -98,6 +98,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "rollup-plugin-visualizer": "^6.0.3",
     "sharp": "^0.34.3",
+    "to-ico": "^1.1.5",
     "vite-plugin-compression": "^0.5.1",
     "vitest": "^3.2.4"
   }
