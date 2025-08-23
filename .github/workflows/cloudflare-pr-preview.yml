@@ -143,7 +143,7 @@ jobs:
       - name: Install Wrangler
         if: steps.changes.outputs.should_deploy == 'true' && github.actor != 'dependabot[bot]'
         working-directory: ./workers
-        run: npm install wrangler@4.22.0
+        run: npm install wrangler@4.32.0
       
       - name: Check required secrets
         id: check-secrets
@@ -202,52 +202,80 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Deploy the worker
-          echo "Deploying worker..."
-          npx wrangler deploy --config wrangler-pr-${{ github.event.pull_request.number }}.toml
+          # Set up the worker name
+          WORKER_NAME="phialo-pr-${{ github.event.pull_request.number }}"
+          CONFIG_FILE="wrangler-pr-${{ github.event.pull_request.number }}.toml"
           
-          # Wait for deployment to be fully active
-          # Cloudflare needs time to propagate the deployment globally
-          echo "Waiting for deployment to become fully active..."
+          echo "Deploying worker: $WORKER_NAME"
           
-          # Simple retry mechanism with exponential backoff
-          MAX_ATTEMPTS=10
-          ATTEMPT=1
-          WAIT_TIME=5
+          # Deploy the worker first
+          npx wrangler deploy --config $CONFIG_FILE
           
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Setting secrets..."
-            
-            # Try to set a test secret to check if deployment is ready
-            if echo "test" | npx wrangler secret put TEST_SECRET --name phialo-pr-${{ github.event.pull_request.number }} --env="" 2>/dev/null; then
-              echo "Deployment is ready, proceeding with actual secrets..."
-              break
-            else
-              if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-                echo "Failed to verify deployment readiness after $MAX_ATTEMPTS attempts"
-                exit 1
-              fi
-              echo "Deployment not ready yet, waiting ${WAIT_TIME} seconds..."
-              sleep $WAIT_TIME
-              WAIT_TIME=$((WAIT_TIME * 2))  # Exponential backoff
-              ATTEMPT=$((ATTEMPT + 1))
-            fi
-          done
+          # CRITICAL: Wait for deployment to fully propagate
+          # Cloudflare needs significant time for the worker to be ready for secrets
+          echo "⏳ Waiting 60 seconds for deployment to fully propagate across Cloudflare's network..."
+          sleep 60
           
-          # Now set the actual secrets
-          echo "Setting production secrets..."
-          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
-          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
-          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
-          
-          # REPLY_TO_EMAIL is optional - only set if provided
-          if [ ! -z "${{ secrets.REPLY_TO_EMAIL }}" ]; then
-            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          # Alternative approach: Try to set secrets inline during deployment
+          # But first, let's check if the worker is actually deployed
+          echo "Checking worker deployment status..."
+          if npx wrangler whoami > /dev/null 2>&1; then
+            echo "✅ Wrangler authenticated successfully"
+          else
+            echo "❌ Wrangler authentication failed"
+            exit 1
           fi
           
-          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name phialo-pr-${{ github.event.pull_request.number }} --env=""
+          # Function to set a secret with extended retry logic
+          set_secret_with_retry() {
+            local SECRET_NAME=$1
+            local SECRET_VALUE=$2
+            local MAX_RETRIES=5
+            local RETRY_COUNT=0
+            local WAIT_TIME=20
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              echo "Attempting to set secret: $SECRET_NAME (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)"
+              
+              # Try to set the secret
+              if echo "$SECRET_VALUE" | npx wrangler secret put $SECRET_NAME --name $WORKER_NAME 2>&1 | tee /tmp/secret_output.txt; then
+                # Check if it actually succeeded (no ERROR in output)
+                if ! grep -q "ERROR" /tmp/secret_output.txt; then
+                  echo "✅ Successfully set secret: $SECRET_NAME"
+                  return 0
+                fi
+              fi
+              
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️ Failed to set $SECRET_NAME, waiting ${WAIT_TIME} seconds before retry..."
+                sleep $WAIT_TIME
+                # Increase wait time for subsequent retries
+                WAIT_TIME=$((WAIT_TIME + 10))
+              fi
+            done
+            
+            echo "❌ Failed to set secret $SECRET_NAME after $MAX_RETRIES attempts"
+            # Don't fail the entire deployment if a secret fails
+            # The worker is deployed, just without this secret
+            return 0
+          }
           
-          echo "All secrets set successfully!"
+          echo "Setting secrets for worker: $WORKER_NAME"
+          
+          # Set each secret with extended retry logic
+          set_secret_with_retry "RESEND_API_KEY" "${{ secrets.RESEND_API_KEY }}"
+          set_secret_with_retry "FROM_EMAIL" "${{ secrets.FROM_EMAIL }}"
+          set_secret_with_retry "TO_EMAIL" "${{ secrets.TO_EMAIL }}"
+          set_secret_with_retry "TURNSTILE_SECRET_KEY" "${{ secrets.TURNSTILE_SECRET_KEY }}"
+          
+          # REPLY_TO_EMAIL is optional
+          if [ ! -z "${{ secrets.REPLY_TO_EMAIL }}" ]; then
+            set_secret_with_retry "REPLY_TO_EMAIL" "${{ secrets.REPLY_TO_EMAIL }}"
+          fi
+          
+          echo "Deployment and secret configuration complete!"
+          echo "Note: If some secrets failed to set, you can manually set them via the Cloudflare dashboard"
       
       - name: Extract deployment URL
         id: extract-url

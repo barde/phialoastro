@@ -126,10 +126,15 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
       </>
     ) : null}
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Favicons - Modern approach with dynamic light/dark mode support -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#d4af37">
+    <meta name="theme-color" content="#d4af37">
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="manifest" href="/manifest.json" />
     
     <!-- Inline critical CSS for faster initial render -->
     <CriticalCSS />
@@ -158,9 +163,6 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageURL} />
     
-    <!-- Icons -->
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     
     <!-- Language Alternates -->
     <link rel="alternate" hreflang="de" href={germanUrl} />

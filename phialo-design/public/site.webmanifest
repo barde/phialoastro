@@ -1,0 +1,29 @@
+{
+  "name": "Phialo Design - Luxury Jewelry",
+  "short_name": "Phialo",
+  "description": "Phialo Design - Where jewelry meets innovation. 3D design, individual creations and expertise in jewelry manufacturing.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#d4af37",
+  "background_color": "#ffffff",
+  "categories": [
+    "lifestyle",
+    "shopping"
+  ]
+}
