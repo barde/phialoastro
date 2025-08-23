@@ -20,18 +20,21 @@ async function generateFavicons() {
   console.log('🎨 Generating favicons from Phialo logo...');
 
   try {
-    // Ensure source file exists
-    // sourceSvg is a static path defined at module level, not user-controlled
-    // codeql-disable-next-line js/file-system-race
-    await fs.access(sourceSvg);
-    
     // Ensure output directory exists
     await fs.mkdir(outputDir, { recursive: true });
     
-    // Read the SVG content once to avoid race conditions
-    // Single read operation, buffer is reused throughout to prevent TOCTOU issues
-    // codeql-disable-next-line js/file-system-race
-    const svgBuffer = await fs.readFile(sourceSvg);
+    // Read the SVG content directly without checking first
+    // This eliminates the TOCTOU race condition entirely
+    let svgBuffer;
+    try {
+      svgBuffer = await fs.readFile(sourceSvg);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        console.error(`❌ Source file not found: ${sourceSvg}`);
+        process.exit(1);
+      }
+      throw error;
+    }
     
     // 1. Write original SVG as favicon.svg (using buffer to avoid race condition)
     await fs.writeFile(path.join(outputDir, 'favicon.svg'), svgBuffer);
