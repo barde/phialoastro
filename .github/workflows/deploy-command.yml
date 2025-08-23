@@ -144,7 +144,7 @@ jobs:
       
       - name: Install Wrangler
         working-directory: ./workers
-        run: pnpm install wrangler@4.22.0
+        run: pnpm install wrangler@4.32.0
       
       - name: Deploy to Cloudflare Workers
         id: deploy
