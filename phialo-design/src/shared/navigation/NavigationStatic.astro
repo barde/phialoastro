@@ -96,35 +96,51 @@ const isActiveLink = (href: string) => {
 </div>
 
 <script>
-  // Simple vanilla JS for mobile menu - no React needed
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-  const mobileMenuClose = document.getElementById('mobile-menu-close');
-  const mobileMenu = document.getElementById('mobile-menu');
-  
-  function openMenu() {
-    mobileMenu?.classList.remove('translate-x-full');
-    document.body.style.overflow = 'hidden';
-  }
-  
-  function closeMenu() {
-    mobileMenu?.classList.add('translate-x-full');
-    document.body.style.overflow = '';
-  }
-  
-  mobileMenuBtn?.addEventListener('click', openMenu);
-  mobileMenuClose?.addEventListener('click', closeMenu);
-  
-  // Close menu when clicking a link
-  mobileMenu?.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', closeMenu);
-  });
-  
-  // Close menu on escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !mobileMenu?.classList.contains('translate-x-full')) {
-      closeMenu();
+  // Setup mobile menu with proper event handling for Astro View Transitions
+  function setupMobileMenu() {
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    function openMenu() {
+      mobileMenu?.classList.remove('translate-x-full');
+      document.body.style.overflow = 'hidden';
     }
-  });
+    
+    function closeMenu() {
+      mobileMenu?.classList.add('translate-x-full');
+      document.body.style.overflow = '';
+    }
+    
+    // Attach event listeners
+    mobileMenuBtn?.addEventListener('click', openMenu);
+    mobileMenuClose?.addEventListener('click', closeMenu);
+    
+    // Close menu when clicking a link
+    mobileMenu?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', closeMenu);
+    });
+  }
+  
+  // Global escape key handler (only needs to be set up once)
+  if (!window.__mobileMenuEscapeListenerAttached) {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu && !mobileMenu.classList.contains('translate-x-full')) {
+          mobileMenu.classList.add('translate-x-full');
+          document.body.style.overflow = '';
+        }
+      }
+    });
+    window.__mobileMenuEscapeListenerAttached = true;
+  }
+  
+  // Set up menu on initial load
+  setupMobileMenu();
+  
+  // Re-setup menu after View Transitions navigation
+  document.addEventListener('astro:page-load', setupMobileMenu);
 </script>
 
 <style>
