@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Menu Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .failure {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mobile Menu Test - Issue #402</h1>
+    <p>This test verifies that the hamburger menu continues to work after multiple clicks and navigation.</p>
+    
+    <div>
+        <button onclick="runTest()">Run Test</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        let testWindow;
+        
+        async function runTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            // Open the test page in a new window with mobile viewport
+            testWindow = window.open('http://localhost:4322', 'test', 'width=375,height=667');
+            
+            // Wait for page to load
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            try {
+                // Test 1: Initial click
+                addResult('Test 1: Initial hamburger button click', 'running');
+                let hamburgerBtn = testWindow.document.getElementById('mobile-menu-btn');
+                let mobileMenu = testWindow.document.getElementById('mobile-menu');
+                
+                if (!hamburgerBtn || !mobileMenu) {
+                    addResult('Test 1 Failed: Elements not found', 'failure');
+                    return;
+                }
+                
+                hamburgerBtn.click();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (!mobileMenu.classList.contains('translate-x-full')) {
+                    addResult('Test 1 Passed: Menu opened', 'success');
+                } else {
+                    addResult('Test 1 Failed: Menu did not open', 'failure');
+                    return;
+                }
+                
+                // Test 2: Close button click
+                addResult('Test 2: Close button click', 'running');
+                let closeBtn = testWindow.document.getElementById('mobile-menu-close');
+                closeBtn.click();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (mobileMenu.classList.contains('translate-x-full')) {
+                    addResult('Test 2 Passed: Menu closed', 'success');
+                } else {
+                    addResult('Test 2 Failed: Menu did not close', 'failure');
+                    return;
+                }
+                
+                // Test 3: Second hamburger click (this is where the bug occurs)
+                addResult('Test 3: Second hamburger button click', 'running');
+                hamburgerBtn.click();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (!mobileMenu.classList.contains('translate-x-full')) {
+                    addResult('Test 3 Passed: Menu opened again', 'success');
+                } else {
+                    addResult('Test 3 Failed: Menu did not open on second click (BUG REPRODUCED)', 'failure');
+                }
+                
+                // Test 4: Navigation test
+                addResult('Test 4: Navigation test', 'running');
+                testWindow.location.href = 'http://localhost:4322/portfolio';
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                hamburgerBtn = testWindow.document.getElementById('mobile-menu-btn');
+                mobileMenu = testWindow.document.getElementById('mobile-menu');
+                
+                if (hamburgerBtn && mobileMenu) {
+                    hamburgerBtn.click();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    if (!mobileMenu.classList.contains('translate-x-full')) {
+                        addResult('Test 4 Passed: Menu works after navigation', 'success');
+                    } else {
+                        addResult('Test 4 Failed: Menu broken after navigation', 'failure');
+                    }
+                } else {
+                    addResult('Test 4 Failed: Elements not found after navigation', 'failure');
+                }
+                
+                // Test complete
+                addResult('All tests completed', 'success');
+                
+            } catch (error) {
+                addResult('Test Error: ' + error.message, 'failure');
+            } finally {
+                if (testWindow) {
+                    setTimeout(() => testWindow.close(), 3000);
+                }
+            }
+        }
+        
+        function addResult(message, status) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-result ' + (status === 'success' ? 'success' : status === 'failure' ? 'failure' : '');
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            if (testWindow) {
+                testWindow.close();
+            }
+        }
+    </script>
+</body>
+</html>
