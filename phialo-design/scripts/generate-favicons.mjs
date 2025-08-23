@@ -10,8 +10,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // All paths are statically defined and not user-controlled
-// CodeQL false positive: js/file-system-race - these are build-time constants
+// These paths are build-time constants, not user-controlled inputs
+// codeql-disable-next-line js/path-injection
 const sourceSvg = path.resolve(__dirname, '../src/assets/phialo-logo.svg');
+// codeql-disable-next-line js/path-injection
 const outputDir = path.resolve(__dirname, '../public');
 
 async function generateFavicons() {
@@ -19,14 +21,16 @@ async function generateFavicons() {
 
   try {
     // Ensure source file exists
-    // lgtm[js/file-system-race] - sourceSvg is a static path, not user-controlled
+    // sourceSvg is a static path defined at module level, not user-controlled
+    // codeql-disable-next-line js/file-system-race
     await fs.access(sourceSvg);
     
     // Ensure output directory exists
     await fs.mkdir(outputDir, { recursive: true });
     
     // Read the SVG content once to avoid race conditions
-    // lgtm[js/file-system-race] - Single read operation, buffer reused throughout
+    // Single read operation, buffer is reused throughout to prevent TOCTOU issues
+    // codeql-disable-next-line js/file-system-race
     const svgBuffer = await fs.readFile(sourceSvg);
     
     // 1. Write original SVG as favicon.svg (using buffer to avoid race condition)
