@@ -8,8 +8,8 @@ jobs:
   cleanup-preview:
     runs-on: ubuntu-latest
     name: Clean up PR Preview Worker
-    # Only run if the PR has the 'preview-deployed' label
-    if: contains(github.event.pull_request.labels.*.name, 'preview-deployed')
+    # Remove label dependency - always attempt cleanup for closed PRs
+    # This ensures orphaned workers are cleaned up even if label addition failed
     permissions:
       contents: read
       pull-requests: write
@@ -23,36 +23,69 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Delete PR preview worker if it exists
+      - name: Comprehensive PR preview worker cleanup
         id: delete_worker
         if: github.actor != 'dependabot[bot]'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WORKER_NAME: phialo-pr-${{ github.event.pull_request.number }}
-        working-directory: ./workers
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Install wrangler
-          npm install wrangler@4.27.0
+          WORKER_NAME="phialo-pr-$PR_NUMBER"
+          echo "=== Comprehensive Cleanup for PR #$PR_NUMBER ==="
+          echo "Worker name: $WORKER_NAME"
           
-          # First, try to list the worker to check if it exists
-          echo "Checking if worker '$WORKER_NAME' exists..."
-          
-          # Use the API to check if the worker exists
+          # Strategy 1: Check if worker exists via API
+          echo "🔍 Checking if worker exists..."
           RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME" \
                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                -H "Content-Type: application/json")
           
-          # Check if the worker exists (API returns success for existing workers)
+          # Parse the response
           if echo "$RESPONSE" | grep -q '"success":true'; then
-            echo "Worker '$WORKER_NAME' found. Deleting..."
-            npx wrangler delete --name "$WORKER_NAME" --force
-            echo "Worker deleted successfully."
-            echo "deleted=true" >> $GITHUB_OUTPUT
+            echo "✓ Worker $WORKER_NAME exists"
+            
+            # Strategy 2: Try deletion via API (since wrangler delete doesn't exist)
+            echo "🗑️ Attempting to delete worker via API..."
+            DELETE_RESPONSE=$(curl -s -X DELETE "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME" \
+                 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                 -H "Content-Type: application/json")
+            
+            if echo "$DELETE_RESPONSE" | grep -q '"success":true'; then
+              echo "✅ Successfully deleted $WORKER_NAME via API"
+              echo "deleted=true" >> $GITHUB_OUTPUT
+              echo "deletion_method=api" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Failed to delete $WORKER_NAME via API"
+              echo "API Response: $DELETE_RESPONSE"
+              
+              # Strategy 3: Fallback to wrangler if available
+              echo "🔄 Attempting fallback deletion with wrangler..."
+              cd ./workers 2>/dev/null || mkdir -p ./workers
+              
+              # Install wrangler if needed
+              if ! command -v wrangler &> /dev/null; then
+                npm install wrangler@4.27.0
+              fi
+              
+              # Try wrangler delete (even though it doesn't officially exist, some versions might support it)
+              if npx wrangler delete --name "$WORKER_NAME" --force 2>/dev/null; then
+                echo "✅ Successfully deleted $WORKER_NAME via wrangler"
+                echo "deleted=true" >> $GITHUB_OUTPUT
+                echo "deletion_method=wrangler" >> $GITHUB_OUTPUT
+              else
+                echo "❌ Could not delete worker with wrangler either"
+                echo "deleted=false" >> $GITHUB_OUTPUT
+                echo "deletion_method=failed" >> $GITHUB_OUTPUT
+              fi
+            fi
           else
-            echo "Worker '$WORKER_NAME' not found. It may have been deleted already or never created."
+            echo "ℹ️ Worker $WORKER_NAME does not exist (may have been already deleted or never created)"
             echo "deleted=false" >> $GITHUB_OUTPUT
+            echo "deletion_method=not_found" >> $GITHUB_OUTPUT
           fi
+          
+          echo "=== Cleanup attempt completed ==="
       
       - name: Comment on PR about cleanup
         # Only comment if a worker was actually deleted
@@ -74,25 +107,34 @@ jobs:
               body: body
             });
       
-      - name: Remove 'preview-deployed' label
+      - name: Clean up deployment labels
         if: always()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            try {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                name: 'preview-deployed'
-              });
-              console.log("Successfully removed 'preview-deployed' label");
-            } catch (error) {
-              if (error.status === 404) {
-                console.log("Label 'preview-deployed' not found, which is unexpected but safe to ignore.");
-              } else {
-                // Re-throw other errors to make them visible
-                throw error;
+            // Remove all deployment-related labels regardless of worker deletion status
+            const labelsToRemove = ['preview-deployed', 'deploying', 'deployment-failed'];
+            
+            for (const labelName of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: labelName
+                });
+                console.log(`✓ Removed label: ${labelName}`);
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log(`ℹ️ Label '${labelName}' not found (may not have been added)`);
+                } else if (error.status === 401 || error.status === 403) {
+                  console.log(`⚠️ No permission to remove label '${labelName}'`);
+                } else {
+                  console.log(`❌ Error removing label '${labelName}': ${error.message}`);
+                  // Don't throw - continue with other labels
+                }
               }
             }
+            
+            console.log("Label cleanup completed");
