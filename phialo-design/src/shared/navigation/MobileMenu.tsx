@@ -67,7 +67,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, currentPath, isE
       
       {/* Menu Panel */}
       <div 
-        className="fixed inset-y-0 right-0 w-full max-w-sm shadow-2xl z-[101] isolate" 
+        className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl z-[101] isolate" 
         data-testid="mobile-menu-panel"
         style={{ 
           backgroundColor: '#ffffff',
