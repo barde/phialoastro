@@ -54,11 +54,11 @@ const isActiveLink = (href: string) => {
 <!-- Mobile Menu -->
 <div 
   id="mobile-menu"
-  class="fixed inset-0 z-50 bg-white lg:hidden transform translate-x-full transition-transform duration-300"
-  style="background-color: #ffffff; opacity: 1;"
+  class="fixed inset-0 z-[9999] lg:hidden transform translate-x-full transition-transform duration-300"
+  style="background-color: #ffffff !important; opacity: 1 !important;"
 >
-  <div class="flex flex-col h-full">
-    <div class="flex items-center justify-between p-6 border-b border-theme-border">
+  <div class="flex flex-col h-full" style="background-color: #ffffff !important;">
+    <div class="flex items-center justify-between p-6 border-b border-theme-border" style="background-color: #ffffff !important;">
       <a href={isEnglish ? '/en/' : '/'} class="font-display text-2xl font-medium text-theme-text-primary">
         PHIALO
       </a>
@@ -73,7 +73,7 @@ const isActiveLink = (href: string) => {
       </button>
     </div>
     
-    <nav class="flex-1 px-6 py-8">
+    <nav class="flex-1 px-6 py-8" style="background-color: #ffffff !important;">
       <div class="space-y-4">
         {navItems.map(({ href, label, labelEn }) => {
           const displayLabel = isEnglish && labelEn ? labelEn : label;
@@ -147,5 +147,22 @@ const isActiveLink = (href: string) => {
 <style>
   #mobile-menu {
     will-change: transform;
+    background-color: white !important;
+    background: white !important;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    isolation: isolate !important;
+  }
+  
+  #mobile-menu::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white !important;
+    z-index: -1;
   }
 </style>
