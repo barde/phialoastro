@@ -1,0 +1,267 @@
+# Reusable Deployment Workflow for Phialo Design
+# Version: 1.0.0
+# 
+# This workflow centralizes all deployment logic for the Phialo Design project.
+# It supports multiple environments (PR preview, master, production) with
+# unified caching, performance reporting, and error handling.
+#
+# Benefits:
+# - Single source of truth for deployment logic
+# - Consistent caching strategy across environments  
+# - Performance metrics reporting
+# - Centralized secret management
+# - Reduced maintenance overhead
+
+name: 🚀 Reusable Deploy Workflow
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (preview, master, production)'
+      worker-name:
+        required: true
+        type: string
+        description: 'Cloudflare worker name'
+      deployment-url:
+        required: true
+        type: string
+        description: 'Deployment URL'
+      pr-number:
+        required: false
+        type: string
+        description: 'PR number for preview deployments'
+      analytics-enabled:
+        required: false
+        type: boolean
+        default: false
+        description: 'Enable Cloudflare Analytics'
+      cache-version:
+        required: false
+        type: string
+        default: 'v1'
+        description: 'Cache version key'
+      node-version:
+        required: false
+        type: string
+        default: '20.x'
+        description: 'Node.js version to use'
+      pnpm-version:
+        required: false
+        type: string
+        default: '9.14.4'
+        description: 'pnpm version to use'
+      working-directory:
+        required: false
+        type: string
+        default: './phialo-design'
+        description: 'Working directory for the build'
+      enable-performance-comment:
+        required: false
+        type: boolean
+        default: false
+        description: 'Post performance metrics as PR comment'
+      enable-concurrency:
+        required: false
+        type: boolean
+        default: true
+        description: 'Enable concurrency control'
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+      PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN:
+        required: false
+      PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY:
+        required: false
+      RESEND_API_KEY:
+        required: false
+      FROM_EMAIL:
+        required: false
+      TO_EMAIL:
+        required: false
+      TURNSTILE_SECRET_KEY:
+        required: false
+
+concurrency:
+  group: deploy-${{ inputs.environment }}-${{ inputs.pr-number || github.ref }}
+  cancel-in-progress: ${{ inputs.enable-concurrency }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    outputs:
+      deployment-url: ${{ inputs.deployment-url }}
+      cache-hit-modules: ${{ steps.setup.outputs.cache-hit-modules }}
+      cache-hit-images: ${{ steps.build.outputs.cache-hit-images }}
+      cache-hit-build: ${{ steps.build.outputs.cache-hit-build }}
+      build-time: ${{ steps.build.outputs.build-time }}
+      
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: 🔧 Setup environment
+        id: setup
+        uses: ./.github/actions/setup-environment
+        with:
+          node-version: ${{ inputs.node-version }}
+          pnpm-version: ${{ inputs.pnpm-version }}
+          working-directory: ${{ inputs.working-directory }}
+          cache-version: ${{ inputs.cache-version }}
+          use-cache: 'true'
+          
+      - name: 🏗️ Build Astro site
+        id: build
+        uses: ./.github/actions/build-astro
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          cache-version: ${{ inputs.cache-version }}
+          analytics-token: ${{ inputs.analytics-enabled && secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN || '' }}
+          turnstile-site-key: ${{ secrets.PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY }}
+          use-cache: 'true'
+          
+      - name: 🚀 Deploy to Cloudflare Workers
+        id: deploy
+        uses: ./.github/actions/deploy-worker
+        with:
+          working-directory: './workers'
+          worker-name: ${{ inputs.worker-name }}
+          environment: ${{ inputs.environment }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY || '' }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL || 'info@phialo.de' }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL || 'info@phialo.de' }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY || '' }}
+          
+      - name: 📊 Calculate performance metrics
+        id: metrics
+        if: always()
+        shell: bash
+        run: |
+          # Calculate cache effectiveness
+          CACHE_HITS=0
+          CACHE_TOTAL=3
+          
+          if [[ "${{ steps.setup.outputs.cache-hit-modules }}" == "true" ]]; then
+            CACHE_HITS=$((CACHE_HITS + 1))
+          fi
+          
+          if [[ "${{ steps.build.outputs.cache-hit-images }}" == "true" ]]; then
+            CACHE_HITS=$((CACHE_HITS + 1))
+          fi
+          
+          if [[ "${{ steps.build.outputs.cache-hit-build }}" == "true" ]]; then
+            CACHE_HITS=$((CACHE_HITS + 1))
+          fi
+          
+          CACHE_PERCENTAGE=$((CACHE_HITS * 100 / CACHE_TOTAL))
+          
+          echo "cache-hits=$CACHE_HITS" >> $GITHUB_OUTPUT
+          echo "cache-total=$CACHE_TOTAL" >> $GITHUB_OUTPUT
+          echo "cache-percentage=$CACHE_PERCENTAGE" >> $GITHUB_OUTPUT
+          
+          # Format build time
+          BUILD_TIME="${{ steps.build.outputs.build-time }}"
+          if [[ -z "$BUILD_TIME" ]]; then
+            BUILD_TIME="N/A"
+          fi
+          echo "build-time=$BUILD_TIME" >> $GITHUB_OUTPUT
+          
+      - name: 💬 Post performance comment
+        if: inputs.enable-performance-comment && inputs.pr-number
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const prNumber = '${{ inputs.pr-number }}';
+            const environment = '${{ inputs.environment }}';
+            const deploymentUrl = '${{ inputs.deployment-url }}';
+            const cacheHits = '${{ steps.metrics.outputs.cache-hits }}';
+            const cacheTotal = '${{ steps.metrics.outputs.cache-total }}';
+            const cachePercentage = '${{ steps.metrics.outputs.cache-percentage }}';
+            const buildTime = '${{ steps.metrics.outputs.build-time }}';
+            
+            const comment = `## 🚀 Deployment Summary - ${environment}
+            
+            | Metric | Value |
+            |--------|-------|
+            | 🌐 **URL** | [${deploymentUrl}](${deploymentUrl}) |
+            | 🏗️ **Build Time** | ${buildTime} |
+            | 💾 **Cache Effectiveness** | ${cacheHits}/${cacheTotal} (${cachePercentage}%) |
+            | 🔧 **Node Modules Cache** | ${{ steps.setup.outputs.cache-hit-modules == 'true' && '✅ Hit' || '❌ Miss' }} |
+            | 🖼️ **Images Cache** | ${{ steps.build.outputs.cache-hit-images == 'true' && '✅ Hit' || '❌ Miss' }} |
+            | 📦 **Build Cache** | ${{ steps.build.outputs.cache-hit-build == 'true' && '✅ Hit' || '❌ Miss' }} |
+            
+            ### Cache Performance
+            ${cachePercentage >= 66 ? '🎉 Excellent cache utilization!' : cachePercentage >= 33 ? '⚡ Good cache utilization' : '⚠️ Low cache utilization - first build or significant changes'}
+            
+            ---
+            <details>
+            <summary>📝 Deployment Details</summary>
+            
+            - **Environment**: \`${environment}\`
+            - **Worker Name**: \`${{ inputs.worker-name }}\`
+            - **Cache Version**: \`${{ inputs.cache-version }}\`
+            - **Workflow**: \`${{ github.workflow }}\`
+            - **Run ID**: \`${{ github.run_id }}\`
+            
+            </details>`;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes(`Deployment Summary - ${environment}`)
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: comment
+              });
+            }
+            
+      - name: 🎯 Set deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const state = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            const description = state === 'success' 
+              ? `Deployed to ${inputs.environment}` 
+              : `Deployment to ${inputs.environment} failed`;
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              target_url: '${{ inputs.deployment-url }}',
+              description: description,
+              context: `deploy/${{ inputs.environment }}`
+            });
