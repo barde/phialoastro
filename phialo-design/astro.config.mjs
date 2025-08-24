@@ -63,12 +63,12 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: [
-        // Preact aliasing disabled for now due to SSR compatibility issues
-        // TODO: Fix Preact compatibility with LazyMotion components
+        // Preact aliasing disabled due to Framer Motion incompatibility
+        // TODO: Remove Framer Motion first, then enable Preact
         // ...(process.env.NODE_ENV === 'production' ? [
-        //   { find: 'react', replacement: 'preact/compat' },
-        //   { find: 'react-dom/test-utils', replacement: 'preact/test-utils' },
-        //   { find: 'react-dom', replacement: 'preact/compat' },
+        //   { find: 'react', replacement: '@preact/compat' },
+        //   { find: 'react-dom/test-utils', replacement: '@preact/compat/test-utils' },
+        //   { find: 'react-dom', replacement: '@preact/compat' },
         //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' }
         // ] : []),
         // Existing aliases

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { m, LazyMotion, domAnimation, type Variants } from '../../../lib/framer-motion';
 import PortfolioGrid from './OptimizedPortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
-import PortfolioModal from './PortfolioModal';
+import PortfolioModalCSS from './PortfolioModalCSS';
 import { portfolioItemsDE, portfolioItemsEN, categoryMap, categories } from '../data';
 import type { PortfolioItemData } from '../types/portfolio';
 
@@ -134,7 +134,7 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
 
         {/* Portfolio Modal */}
         {selectedItem && (
-          <PortfolioModal
+          <PortfolioModalCSS
             isOpen={isModalOpen}
             onClose={() => {
               // Find the specific portfolio item element that was clicked
