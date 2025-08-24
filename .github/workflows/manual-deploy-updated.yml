@@ -1,0 +1,151 @@
+# Manual Deployment Workflow
+# 
+# This workflow allows manual triggering of deployments to any environment
+# using the reusable deployment workflow. It provides flexibility for
+# emergency deployments and testing.
+
+name: 🎯 Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - preview
+          - master
+          - production
+      branch:
+        description: 'Branch or tag to deploy'
+        required: false
+        default: 'master'
+        type: string
+      pr-number:
+        description: 'PR number (for preview environment only)'
+        required: false
+        type: string
+      skip-cache:
+        description: 'Skip all caching'
+        required: false
+        default: false
+        type: boolean
+      debug:
+        description: 'Enable debug logging'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  prepare:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      worker-name: ${{ steps.config.outputs.worker-name }}
+      deployment-url: ${{ steps.config.outputs.deployment-url }}
+      analytics-enabled: ${{ steps.config.outputs.analytics-enabled }}
+      cache-version: ${{ steps.config.outputs.cache-version }}
+      enable-performance-comment: ${{ steps.config.outputs.enable-performance-comment }}
+    steps:
+      - name: Checkout specified branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          
+      - name: Configure deployment parameters
+        id: config
+        run: |
+          ENVIRONMENT="${{ inputs.environment }}"
+          SKIP_CACHE="${{ inputs.skip-cache }}"
+          PR_NUMBER="${{ inputs.pr-number }}"
+          
+          # Set environment-specific parameters
+          case "$ENVIRONMENT" in
+            preview)
+              if [ -z "$PR_NUMBER" ]; then
+                echo "❌ PR number is required for preview deployments"
+                exit 1
+              fi
+              echo "worker-name=phialo-pr-${PR_NUMBER}" >> $GITHUB_OUTPUT
+              echo "deployment-url=https://phialo-pr-${PR_NUMBER}.meise.workers.dev" >> $GITHUB_OUTPUT
+              echo "analytics-enabled=false" >> $GITHUB_OUTPUT
+              echo "cache-version=v1-pr-${PR_NUMBER}" >> $GITHUB_OUTPUT
+              echo "enable-performance-comment=true" >> $GITHUB_OUTPUT
+              ;;
+            master)
+              echo "worker-name=phialo-master" >> $GITHUB_OUTPUT
+              echo "deployment-url=https://phialo-master.meise.workers.dev" >> $GITHUB_OUTPUT
+              echo "analytics-enabled=true" >> $GITHUB_OUTPUT
+              echo "cache-version=v1-master" >> $GITHUB_OUTPUT
+              echo "enable-performance-comment=false" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "⚠️ WARNING: Deploying to PRODUCTION environment"
+              echo "worker-name=phialo-design" >> $GITHUB_OUTPUT
+              echo "deployment-url=https://phialo.de" >> $GITHUB_OUTPUT
+              echo "analytics-enabled=true" >> $GITHUB_OUTPUT
+              echo "cache-version=v1-prod" >> $GITHUB_OUTPUT
+              echo "enable-performance-comment=false" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ Unknown environment: $ENVIRONMENT"
+              exit 1
+              ;;
+          esac
+          
+          # Override cache version if skipping cache
+          if [ "$SKIP_CACHE" == "true" ]; then
+            echo "cache-version=no-cache-$(date +%s)" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "✅ Deployment configured for $ENVIRONMENT environment"
+
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    needs: prepare
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: ${{ inputs.environment }}
+      worker-name: ${{ needs.prepare.outputs.worker-name }}
+      deployment-url: ${{ needs.prepare.outputs.deployment-url }}
+      pr-number: ${{ inputs.pr-number }}
+      analytics-enabled: ${{ needs.prepare.outputs.analytics-enabled == 'true' }}
+      cache-version: ${{ needs.prepare.outputs.cache-version }}
+      enable-performance-comment: ${{ needs.prepare.outputs.enable-performance-comment == 'true' }}
+      enable-concurrency: ${{ inputs.environment != 'production' }}
+    secrets: inherit
+
+  summary:
+    name: Deployment Summary
+    needs: [prepare, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print deployment summary
+        run: |
+          echo "## 📋 Deployment Summary"
+          echo ""
+          echo "| Parameter | Value |"
+          echo "|-----------|-------|"
+          echo "| Environment | ${{ inputs.environment }} |"
+          echo "| Branch/Tag | ${{ inputs.branch }} |"
+          echo "| Worker Name | ${{ needs.prepare.outputs.worker-name }} |"
+          echo "| URL | ${{ needs.prepare.outputs.deployment-url }} |"
+          echo "| Status | ${{ needs.deploy.result }} |"
+          echo "| Debug Mode | ${{ inputs.debug }} |"
+          echo "| Cache Skipped | ${{ inputs.skip-cache }} |"
+          echo ""
+          
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "✅ Deployment successful!"
+            echo "🔗 Visit: ${{ needs.prepare.outputs.deployment-url }}"
+          else
+            echo "❌ Deployment failed. Check the logs above for details."
+          fi

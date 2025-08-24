@@ -1,99 +1,48 @@
-name: Auto-Deploy Master Branch
+# Master Branch Deployment Workflow
+# 
+# This workflow calls the reusable deployment workflow for the master branch.
+# It deploys the latest master branch code to the staging environment
+# for final testing before production release.
+
+name: 🚀 Deploy Master Branch
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
     paths:
       - 'phialo-design/**'
       - 'workers/**'
-      - '.github/workflows/deploy-master.yml'
+      - '!phialo-design/**.md'
+      - '!phialo-design/docs/**'
+      - '!workers/**.md'
+      - '!.github/**.md'
+  workflow_dispatch:
+    inputs:
+      force-deploy:
+        description: 'Force deployment even without changes'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
   deployments: write
+  statuses: write
+
+concurrency:
+  group: deploy-master
+  cancel-in-progress: true
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy Master Branch to Preview Environment
-    environment:
-      name: preview
-      url: https://phialo-master.meise.workers.dev
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      
-      - name: Setup environment
-        uses: ./.github/actions/setup-environment
-        with:
-          use-cache: true
-      
-      - name: Build Astro site
-        uses: ./.github/actions/build-astro
-        with:
-          working-directory: ./phialo-design
-          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
-        
-      - name: Create temporary wrangler config
-        working-directory: ./workers
-        run: |
-          cat > wrangler-master.toml << EOF
-          name = "phialo-master"
-          main = "src/index.ts"
-          compatibility_date = "2024-09-25"
-          compatibility_flags = ["nodejs_compat"]
-          workers_dev = true
-          
-          [assets]
-          directory = "../phialo-design/dist"
-          binding = "ASSETS"
-          
-          [vars]
-          ENVIRONMENT = "master"
-          EOF
-      
-      - name: Deploy to Cloudflare Workers
-        uses: ./.github/actions/deploy-worker
-        with:
-          environment: master
-          worker-name: phialo-master
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
-          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
-          REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
-      
-      - name: Clean up temporary config
-        if: always()
-        working-directory: ./workers
-        run: |
-          rm -f wrangler-master.toml
-      
-      - name: Create deployment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const deployment = await github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.sha,
-              environment: 'master',
-              description: 'Cloudflare Workers Master Deployment',
-              production_environment: false,
-              auto_merge: false,
-              required_contexts: []
-            });
-            
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: deployment.data.id,
-              state: 'success',
-              environment_url: 'https://phialo-master.meise.workers.dev',
-              description: 'Deployment successful'
-            });
+  deploy-master:
+    name: Deploy to Master Environment
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: master
+      worker-name: phialo-master
+      deployment-url: https://phialo-master.meise.workers.dev
+      analytics-enabled: true
+      cache-version: v1-master
+      enable-performance-comment: false
+      enable-concurrency: true
+    secrets: inherit
