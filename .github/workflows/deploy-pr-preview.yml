@@ -1,0 +1,39 @@
+# PR Preview Deployment Workflow
+# 
+# This workflow calls the reusable deployment workflow for PR preview environments.
+# It creates ephemeral deployments for each pull request to allow testing
+# before merging to the main branch.
+
+name: 🔍 PR Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'phialo-design/**'
+      - 'workers/**'
+      - '!phialo-design/**.md'
+      - '!phialo-design/docs/**'
+      - '!workers/**.md'
+      - '!.github/**.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+  statuses: write
+
+jobs:
+  deploy-preview:
+    name: Deploy PR Preview
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: preview
+      worker-name: phialo-pr-${{ github.event.pull_request.number }}
+      deployment-url: https://phialo-pr-${{ github.event.pull_request.number }}.meise.workers.dev
+      pr-number: ${{ github.event.pull_request.number }}
+      analytics-enabled: false
+      cache-version: v1-pr-${{ github.event.pull_request.number }}
+      enable-performance-comment: true
+      enable-concurrency: true
+    secrets: inherit

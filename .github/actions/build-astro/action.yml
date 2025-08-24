@@ -1,27 +1,120 @@
 name: 'Build Astro Site'
-description: 'Build Astro site with all required environment variables'
+description: 'Build Astro site with caching for generated images and build artifacts'
 inputs:
   working-directory:
     description: 'Working directory for the build'
     required: false
     default: './phialo-design'
-  PUBLIC_TURNSTILE_SITE_KEY:
-    description: 'Turnstile site key for CAPTCHA'
-    required: false
-  PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN:
+  analytics-token:
     description: 'Cloudflare Analytics token'
     required: false
+  turnstile-site-key:
+    description: 'Turnstile site key for CAPTCHA'
+    required: false
+  cache-version:
+    description: 'Cache version to force cache invalidation when needed'
+    required: false
+    default: 'v1'
+  use-cache:
+    description: 'Use caching for images and build artifacts'
+    required: false
+    default: 'true'
+
+outputs:
+  cache-hit-images:
+    description: 'Whether images cache was hit'
+    value: ${{ steps.cache-images.outputs.cache-hit }}
+  cache-hit-build:
+    description: 'Whether build cache was hit'
+    value: ${{ steps.cache-build.outputs.cache-hit }}
+  build-time:
+    description: 'Time taken to build'
+    value: ${{ steps.build-stats.outputs.build-time }}
 
 runs:
   using: 'composite'
   steps:
+    # Cache generated WebP/AVIF images
+    - name: Cache generated images
+      id: cache-images
+      if: inputs.use-cache == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.working-directory }}/public/images/portfolio/*-*w.webp
+          ${{ inputs.working-directory }}/public/images/portfolio/*-*w.avif
+          ${{ inputs.working-directory }}/public/images/homepage/*-*w.webp
+          ${{ inputs.working-directory }}/public/images/homepage/*-*w.avif
+          ${{ inputs.working-directory }}/.image-cache.json
+        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles('**/public/images/portfolio/*.jpg', '**/public/images/portfolio/*.jpeg', '**/public/images/portfolio/*.png', '**/public/images/homepage/*.jpg', '**/public/images/homepage/*.jpeg', '**/public/images/homepage/*.png') }}
+        restore-keys: |
+          ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-
+    
+    # Cache Astro build artifacts
+    - name: Cache Astro build artifacts
+      id: cache-build
+      if: inputs.use-cache == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.working-directory }}/.astro
+          ${{ inputs.working-directory }}/node_modules/.astro
+        key: ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-${{ hashFiles('**/src/**/*.astro', '**/src/**/*.tsx', '**/src/**/*.ts', '**/src/**/*.jsx', '**/src/**/*.js') }}
+        restore-keys: |
+          ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-
+    
+    # Log cache status
+    - name: Check cache status
+      if: inputs.use-cache == 'true'
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        echo "🔍 Checking cache status..."
+        
+        # Count existing generated images
+        PORTFOLIO_WEBP=$(find public/images/portfolio -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        PORTFOLIO_AVIF=$(find public/images/portfolio -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_WEBP=$(find public/images/homepage -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_AVIF=$(find public/images/homepage -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        
+        echo "📊 Found in cache:"
+        echo "  - Portfolio WebP: $PORTFOLIO_WEBP, AVIF: $PORTFOLIO_AVIF"
+        echo "  - Homepage WebP: $HOMEPAGE_WEBP, AVIF: $HOMEPAGE_AVIF"
+        
+        if [ -f .image-cache.json ]; then
+          CACHED_IMAGES=$(cat .image-cache.json | grep -c '"hash"' || echo "0")
+          echo "  - Cached image metadata: $CACHED_IMAGES entries"
+        else
+          echo "  - No image cache metadata found (will be created)"
+        fi
+        
+        if [ -d .astro ]; then
+          echo "  - Astro build cache: Found"
+        else
+          echo "  - Astro build cache: Not found (will be created)"
+        fi
+    
+    # Generate modern image formats (will use cache automatically)
+    - name: Generate modern image formats
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        echo "🖼️ Generating modern image formats..."
+        START_TIME=$(date +%s)
+        node scripts/generate-modern-images.js
+        END_TIME=$(date +%s)
+        IMAGE_TIME=$((END_TIME - START_TIME))
+        echo "IMAGE_TIME=$IMAGE_TIME" >> $GITHUB_ENV
+        echo "✅ Image generation completed in ${IMAGE_TIME}s"
+    
+    # Build Astro site
     - name: Build Astro site with all environment variables
       working-directory: ${{ inputs.working-directory }}
       shell: bash
       env:
         # Pass all PUBLIC_ inputs as environment variables
-        PUBLIC_TURNSTILE_SITE_KEY: ${{ inputs.PUBLIC_TURNSTILE_SITE_KEY }}
-        PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ inputs.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
+        PUBLIC_TURNSTILE_SITE_KEY: ${{ inputs.turnstile-site-key }}
+        PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ inputs.analytics-token }}
       run: |
         # Log which environment variables are set (without showing values)
         echo "Environment variables configured:"
@@ -30,4 +123,44 @@ runs:
         echo ""
         
         # Build the site
+        START_TIME=$(date +%s)
         pnpm run build
+        END_TIME=$(date +%s)
+        BUILD_TIME=$((END_TIME - START_TIME))
+        echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+        echo "✅ Build completed in ${BUILD_TIME}s"
+    
+    # Log final statistics
+    - name: Build statistics
+      id: build-stats
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        echo "📈 Build complete - final statistics:"
+        
+        # Count final generated images
+        PORTFOLIO_WEBP_FINAL=$(find public/images/portfolio -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        PORTFOLIO_AVIF_FINAL=$(find public/images/portfolio -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_WEBP_FINAL=$(find public/images/homepage -name "*-*w.webp" 2>/dev/null | wc -l || echo "0")
+        HOMEPAGE_AVIF_FINAL=$(find public/images/homepage -name "*-*w.avif" 2>/dev/null | wc -l || echo "0")
+        
+        echo "  - Portfolio images: WebP=$PORTFOLIO_WEBP_FINAL, AVIF=$PORTFOLIO_AVIF_FINAL"
+        echo "  - Homepage images: WebP=$HOMEPAGE_WEBP_FINAL, AVIF=$HOMEPAGE_AVIF_FINAL"
+        
+        # Check dist size
+        if [ -d dist ]; then
+          DIST_SIZE=$(du -sh dist | cut -f1)
+          echo "  - Distribution size: $DIST_SIZE"
+        fi
+        
+        # Show cache effectiveness
+        if [ -f .image-cache.json ]; then
+          echo "  - Image cache: Active ✓"
+        fi
+        
+        # Calculate total time
+        TOTAL_TIME=$((${IMAGE_TIME:-0} + ${BUILD_TIME:-0}))
+        echo "  - Total time: ${TOTAL_TIME}s (Images: ${IMAGE_TIME:-0}s, Build: ${BUILD_TIME:-0}s)"
+        
+        # Set output
+        echo "build-time=${TOTAL_TIME}s" >> $GITHUB_OUTPUT

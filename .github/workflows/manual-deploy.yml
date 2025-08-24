@@ -1,4 +1,10 @@
-name: Manual Cloudflare Deployment
+# Manual Deployment Workflow
+# 
+# This workflow allows manual triggering of deployments to any environment
+# using the reusable deployment workflow. It provides flexibility for
+# emergency deployments and testing.
+
+name: 🎯 Manual Deployment
 
 on:
   workflow_dispatch:
@@ -6,18 +12,22 @@ on:
       environment:
         description: 'Deployment environment'
         required: true
-        default: 'production'
         type: choice
         options:
-          - production
           - preview
+          - master
+          - production
       branch:
-        description: 'Branch to deploy'
+        description: 'Branch or tag to deploy'
         required: false
         default: 'master'
         type: string
-      skip_tests:
-        description: 'Skip tests before deployment'
+      pr-number:
+        description: 'PR number (for preview environment only)'
+        required: false
+        type: string
+      skip-cache:
+        description: 'Skip all caching'
         required: false
         default: false
         type: boolean
@@ -30,303 +40,151 @@ on:
 permissions:
   contents: write  # Changed from 'read' to allow tag creation for production deployments
   deployments: write
+  pull-requests: write
+  statuses: write
 
 jobs:
-  validate:
+  prepare:
+    name: Prepare Deployment
     runs-on: ubuntu-latest
     outputs:
-      should_deploy: ${{ steps.check.outputs.should_deploy }}
-      deploy_branch: ${{ steps.check.outputs.deploy_branch }}
+      worker-name: ${{ steps.config.outputs.worker-name }}
+      deployment-url: ${{ steps.config.outputs.deployment-url }}
+      analytics-enabled: ${{ steps.config.outputs.analytics-enabled }}
+      cache-version: ${{ steps.config.outputs.cache-version }}
+      enable-performance-comment: ${{ steps.config.outputs.enable-performance-comment }}
     steps:
-      - name: Validate deployment request
-        id: check
+      - name: Checkout specified branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          
+      - name: Configure deployment parameters
+        id: config
         run: |
-          # Determine branch to deploy
-          if [ -n "${{ github.event.inputs.branch }}" ]; then
-            DEPLOY_BRANCH="${{ github.event.inputs.branch }}"
-          else
-            # Default to master if no branch specified
-            DEPLOY_BRANCH="master"
+          ENVIRONMENT="${{ inputs.environment }}"
+          SKIP_CACHE="${{ inputs.skip-cache }}"
+          PR_NUMBER="${{ inputs.pr-number }}"
+          
+          # Set environment-specific parameters
+          case "$ENVIRONMENT" in
+            preview)
+              if [ -z "$PR_NUMBER" ]; then
+                echo "❌ PR number is required for preview deployments"
+                exit 1
+              fi
+              echo "worker-name=phialo-pr-${PR_NUMBER}" >> $GITHUB_OUTPUT
+              echo "deployment-url=https://phialo-pr-${PR_NUMBER}.meise.workers.dev" >> $GITHUB_OUTPUT
+              echo "analytics-enabled=false" >> $GITHUB_OUTPUT
+              echo "cache-version=v1-pr-${PR_NUMBER}" >> $GITHUB_OUTPUT
+              echo "enable-performance-comment=true" >> $GITHUB_OUTPUT
+              ;;
+            master)
+              echo "worker-name=phialo-master" >> $GITHUB_OUTPUT
+              echo "deployment-url=https://phialo-master.meise.workers.dev" >> $GITHUB_OUTPUT
+              echo "analytics-enabled=true" >> $GITHUB_OUTPUT
+              echo "cache-version=v1-master" >> $GITHUB_OUTPUT
+              echo "enable-performance-comment=false" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "⚠️ WARNING: Deploying to PRODUCTION environment"
+              echo "worker-name=phialo-design" >> $GITHUB_OUTPUT
+              echo "deployment-url=https://phialo.de" >> $GITHUB_OUTPUT
+              echo "analytics-enabled=true" >> $GITHUB_OUTPUT
+              echo "cache-version=v1-prod" >> $GITHUB_OUTPUT
+              echo "enable-performance-comment=false" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ Unknown environment: $ENVIRONMENT"
+              exit 1
+              ;;
+          esac
+          
+          # Override cache version if skipping cache
+          if [ "$SKIP_CACHE" == "true" ]; then
+            echo "cache-version=no-cache-$(date +%s)" >> $GITHUB_OUTPUT
           fi
           
-          echo "deploy_branch=$DEPLOY_BRANCH" >> $GITHUB_OUTPUT
-          
-          # Production deployments require explicit confirmation
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            if [ "$DEPLOY_BRANCH" != "master" ] && [ "$DEPLOY_BRANCH" != "main" ]; then
-              echo "⚠️  WARNING: Attempting to deploy non-master branch to production!"
-              echo "Branch: $DEPLOY_BRANCH"
-              echo "This requires manual approval in the next step."
-            fi
-          fi
-          
-          echo "should_deploy=true" >> $GITHUB_OUTPUT
-          
-      - name: Log deployment info
-        run: |
-          echo "📋 Deployment Request Summary"
-          echo "Environment: ${{ github.event.inputs.environment }}"
-          echo "Branch: ${{ steps.check.outputs.deploy_branch }}"
-          echo "Skip Tests: ${{ github.event.inputs.skip_tests }}"
-          echo "Debug Mode: ${{ github.event.inputs.debug }}"
-          echo "Triggered by: ${{ github.actor }}"
-
-  test:
-    needs: validate
-    if: needs.validate.outputs.should_deploy == 'true' && github.event.inputs.skip_tests != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.validate.outputs.deploy_branch }}
-      
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: 'phialo-design/pnpm-lock.yaml'
-      
-      - name: Install dependencies
-        working-directory: ./phialo-design
-        run: pnpm install --frozen-lockfile
-      
-      - name: Run type checking
-        working-directory: ./phialo-design
-        run: pnpm run typecheck
-      
-      - name: Run linting
-        working-directory: ./phialo-design
-        run: pnpm run lint
-      
-      - name: Run unit tests
-        working-directory: ./phialo-design
-        run: pnpm run test:run
+          echo "✅ Deployment configured for $ENVIRONMENT environment"
 
   deploy:
-    needs: [validate, test]
-    if: |
-      always() && 
-      needs.validate.outputs.should_deploy == 'true' &&
-      (needs.test.result == 'success' || github.event.inputs.skip_tests == 'true')
+    name: Deploy to ${{ inputs.environment }}
+    needs: prepare
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: ${{ inputs.environment }}
+      worker-name: ${{ needs.prepare.outputs.worker-name }}
+      deployment-url: ${{ needs.prepare.outputs.deployment-url }}
+      pr-number: ${{ inputs.pr-number }}
+      analytics-enabled: ${{ needs.prepare.outputs.analytics-enabled == 'true' }}
+      cache-version: ${{ needs.prepare.outputs.cache-version }}
+      enable-performance-comment: ${{ needs.prepare.outputs.enable-performance-comment == 'true' }}
+      enable-concurrency: ${{ inputs.environment != 'production' }}
+    secrets: inherit
+
+  summary:
+    name: Deployment Summary
+    needs: [prepare, deploy]
+    if: always()
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.validate.outputs.deploy_branch }}
-      
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: 'phialo-design/pnpm-lock.yaml'
-      
-      - name: Install dependencies
-        working-directory: ./phialo-design
-        run: pnpm install --frozen-lockfile
-      
-      - name: Install worker dependencies
-        working-directory: ./workers
-        run: pnpm install --frozen-lockfile
-      
-      - name: Build Astro site
-        uses: ./.github/actions/build-astro
-        with:
-          working-directory: ./phialo-design
-          PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
-      
-      - name: Install Wrangler
-        working-directory: ./workers
-        run: pnpm install wrangler@4.32.0
-      
-      - name: Deploy to Cloudflare Workers
-        id: deploy
-        working-directory: ./workers
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Print deployment summary
         run: |
-          # Deploy the worker
-          npx wrangler deploy --env ${{ github.event.inputs.environment }}
+          echo "## 📋 Deployment Summary"
+          echo ""
+          echo "| Parameter | Value |"
+          echo "|-----------|-------|"
+          echo "| Environment | ${{ inputs.environment }} |"
+          echo "| Branch/Tag | ${{ inputs.branch }} |"
+          echo "| Worker Name | ${{ needs.prepare.outputs.worker-name }} |"
+          echo "| URL | ${{ needs.prepare.outputs.deployment-url }} |"
+          echo "| Status | ${{ needs.deploy.result }} |"
+          echo "| Debug Mode | ${{ inputs.debug }} |"
+          echo "| Cache Skipped | ${{ inputs.skip-cache }} |"
+          echo ""
           
-          # Determine the worker name based on environment
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            WORKER_NAME="phialo"
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "✅ Deployment successful!"
+            echo "🔗 Visit: ${{ needs.prepare.outputs.deployment-url }}"
           else
-            WORKER_NAME="phialo-design-preview"
+            echo "❌ Deployment failed. Check the logs above for details."
           fi
           
-          # Set secrets for the deployed worker
-          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --name $WORKER_NAME --env=""
-          echo "${{ secrets.FROM_EMAIL }}" | npx wrangler secret put FROM_EMAIL --name $WORKER_NAME --env=""
-          echo "${{ secrets.TO_EMAIL }}" | npx wrangler secret put TO_EMAIL --name $WORKER_NAME --env=""
-          echo "${{ secrets.TURNSTILE_SECRET_KEY }}" | npx wrangler secret put TURNSTILE_SECRET_KEY --name $WORKER_NAME --env=""
-          
-          # Set optional REPLY_TO_EMAIL if it exists
-          if [ -n "${{ secrets.REPLY_TO_EMAIL }}" ]; then
-            echo "${{ secrets.REPLY_TO_EMAIL }}" | npx wrangler secret put REPLY_TO_EMAIL --name $WORKER_NAME --env=""
-          fi
-      
-      - name: Get deployment URL
-        id: url
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            echo "deployment_url=https://phialo.de" >> $GITHUB_OUTPUT
-          else
-            echo "deployment_url=https://phialo-design-preview.meise.workers.dev" >> $GITHUB_OUTPUT
-          fi
-      
       - name: Create production release tag
         id: create_tag
-        if: github.event.inputs.environment == 'production' && success()
-        continue-on-error: true  # Don't fail deployment if tag creation fails
-        run: |
-          # Generate timestamp-based tag name
-          TAG_NAME="production-$(date -u '+%Y-%m-%d-%H%M%S')"
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          
-          # Configure git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Fetch all tags to ensure we have the latest
-          git fetch --tags
-          
-          # Create annotated tag with deployment metadata
-          TAG_MESSAGE="Production deployment on $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          
-          Deployment Details:
-          - Deployed by: ${{ github.actor }}
-          - Branch: ${{ needs.validate.outputs.deploy_branch }}
-          - Commit: $(git rev-parse HEAD)
-          - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          - Environment URL: ${{ steps.url.outputs.deployment_url }}
-          
-          This tag marks an automated production deployment and can be used for:
-          - Rolling back to this specific version
-          - Tracking production release history
-          - Generating changelogs between releases"
-          
-          # Create the annotated tag
-          git tag -a "$TAG_NAME" -m "$TAG_MESSAGE"
-          
-          # Push the tag to the repository
-          if git push origin "$TAG_NAME"; then
-            echo "✅ Successfully created and pushed production tag: $TAG_NAME"
-            echo "tag_created=true" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ Warning: Failed to push tag $TAG_NAME to repository"
-            echo "tag_created=false" >> $GITHUB_OUTPUT
-            exit 1  # Exit with error to trigger continue-on-error
-          fi
-      
-      - name: Create deployment record
+        if: inputs.environment == 'production' && needs.deploy.result == 'success'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           script: |
-            const deployment = await github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: '${{ needs.validate.outputs.deploy_branch }}',
-              environment: '${{ github.event.inputs.environment }}',
-              required_contexts: [],
-              auto_merge: false,
-              production_environment: ${{ github.event.inputs.environment == 'production' }}
-            });
+            const tagName = `production-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
+            const tagMessage = `Production deployment on ${new Date().toISOString()}
             
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: deployment.data.id,
-              state: 'success',
-              environment_url: '${{ steps.url.outputs.deployment_url }}',
-              description: 'Deployment completed successfully'
-            });
-      
-      - name: Post deployment summary
-        run: |
-          echo "## 🚀 Deployment Complete!"
-          echo ""
-          echo "**Environment**: ${{ github.event.inputs.environment }}"
-          echo "**URL**: ${{ steps.url.outputs.deployment_url }}"
-          echo "**Branch**: ${{ needs.validate.outputs.deploy_branch }}"
-          echo "**Deployed by**: ${{ github.actor }}"
-          echo "**Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          if [ "${{ github.event.inputs.environment }}" = "production" ] && [ -n "${{ steps.create_tag.outputs.tag_name }}" ]; then
-            echo "**Release Tag**: \`${{ steps.create_tag.outputs.tag_name }}\`"
-            if [ "${{ steps.create_tag.outputs.tag_created }}" = "true" ]; then
-              echo "**Tag Status**: ✅ Successfully created"
-            else
-              echo "**Tag Status**: ⚠️ Tag creation failed (deployment succeeded)"
-            fi
-          fi
-          echo ""
-          echo "### Next Steps"
-          if [ "${{ github.event.inputs.environment }}" = "preview" ]; then
-            echo "- Test your changes at the preview URL"
-            echo "- If everything looks good, deploy to production"
-          else
-            echo "- Monitor the production site for any issues"
-            echo "- Check Cloudflare analytics for performance metrics"
-            if [ "${{ steps.create_tag.outputs.tag_created }}" = "true" ]; then
-              echo ""
-              echo "### Rollback Instructions"
-              echo "If you need to rollback to a previous version:"
-              echo '```bash'
-              echo '# List recent production tags'
-              echo 'git tag -l "production-*" --sort=-version:refname | head -10'
-              echo ''
-              echo '# Deploy a specific tagged version'
-              echo 'gh workflow run manual-deploy.yml \'
-              echo '  -f environment=production \'
-              echo '  -f branch=<tag-name> \'
-              echo '  -f skip_tests=false'
-              echo '```'
-            fi
-          fi
-
-  notify-failure:
-    needs: [validate, test, deploy]
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notify deployment failure
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue_comment = `
-            ## ❌ Manual Deployment Failed
+            Deployment Details:
+            - Deployed by: ${{ github.actor }}
+            - Branch: ${{ inputs.branch }}
+            - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            - Environment URL: ${{ needs.prepare.outputs.deployment-url }}
             
-            **Environment**: ${{ github.event.inputs.environment }}
-            **Branch**: ${{ needs.validate.outputs.deploy_branch }}
-            **Triggered by**: ${{ github.actor }}
+            This tag marks an automated production deployment and can be used for:
+            - Rolling back to this specific version
+            - Tracking production release history
+            - Generating changelogs between releases`;
             
-            Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
-            `;
-            
-            // If this was triggered from a PR context, comment on the PR
-            if (context.issue.number) {
-              await github.rest.issues.createComment({
+            try {
+              // Create the tag
+              await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: issue_comment
+                ref: `refs/tags/${tagName}`,
+                sha: context.sha
               });
+              
+              console.log(`✅ Successfully created production tag: ${tagName}`);
+              core.setOutput('tag_name', tagName);
+              core.setOutput('tag_created', 'true');
+            } catch (error) {
+              console.log(`⚠️ Warning: Failed to create tag ${tagName}: ${error.message}`);
+              core.setOutput('tag_created', 'false');
             }
