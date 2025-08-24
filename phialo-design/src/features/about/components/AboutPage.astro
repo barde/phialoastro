@@ -1,6 +1,6 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
-import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
+import AnimatedText from '../../../shared/components/ui/AnimatedTextCSS.astro';
 import TeamMemberImage from './TeamMemberImage.tsx';
 import { type Language, getTranslation } from '../../../i18n/ui';
 
@@ -57,11 +57,11 @@ const currentContent = content[lang];
     <div class="container mx-auto px-6 md:px-8 max-w-6xl">
       <!-- Title -->
       <div class="text-center mb-16">
-        <AnimatedText client:visible>
-          <h1 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
-            {t('about.heading')}
-          </h1>
-        </AnimatedText>
+        <AnimatedText 
+          text={t('about.heading')}
+          className="font-display text-4xl md:text-5xl font-medium text-midnight mb-6"
+          as="h1"
+        />
       </div>
 
       <!-- Gesa Pickbrenner Section -->
