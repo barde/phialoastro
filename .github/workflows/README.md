@@ -22,7 +22,7 @@ graph TD
     F[PR Preview<br/>deploy-pr-preview.yml] --> A
     G[Master Branch<br/>deploy-master.yml] --> A
     H[Production<br/>deploy-production.yml] --> A
-    I[Manual Deploy<br/>manual-deploy-updated.yml] --> A
+    I[Manual Deploy<br/>manual-deploy.yml] --> A
     
     style A fill:#f9f,stroke:#333,stroke-width:4px
     style B fill:#bbf,stroke:#333,stroke-width:2px
@@ -50,24 +50,38 @@ graph TD
 
 ## Deployment Workflows
 
-### `cloudflare-pr-preview.yml`
+### Core Reusable Workflow
+
+#### `deploy-reusable.yml`
+- **Type**: Reusable workflow (called by others)
+- **Purpose**: Central deployment logic for all environments
+- **Features**:
+  - Unified caching strategy
+  - Performance metrics reporting
+  - Concurrency control
+  - PR comment updates
+
+### Environment-Specific Callers
+
+#### `deploy-pr-preview.yml`
 - **Trigger**: PR opened/updated
 - **Purpose**: Deploy PR preview to Cloudflare Workers
 - **Output**: `https://phialo-pr-{number}.meise.workers.dev`
 
-### `cloudflare-pr-preview-cached.yml`
-- **Purpose**: Cached version of PR preview deployment
-- **Status**: Experimental
-
-### `cloudflare-master.yml`
+#### `deploy-master.yml`
 - **Trigger**: Push to master branch
 - **Purpose**: Deploy master to staging environment
 - **Output**: `https://phialo-master.meise.workers.dev`
 
-### `cloudflare-production.yml`
-- **Trigger**: Manual or tag push
-- **Purpose**: Deploy to production
+#### `deploy-production.yml`
+- **Trigger**: Release published or manual
+- **Purpose**: Deploy to production with confirmation
 - **Output**: `https://phialo.de`
+
+#### `manual-deploy.yml`
+- **Trigger**: Manual workflow dispatch
+- **Purpose**: Deploy any branch to any environment
+- **Features**: Production tagging, flexible configuration
 
 ## Testing Workflows
 
@@ -105,22 +119,17 @@ graph TD
 - **Purpose**: Monitor bundle size changes
 - **Report**: Comments on PR with size impact
 
-### `manual-deploy.yml`
-- **Trigger**: Manual or webhook
-- **Purpose**: Deploy any branch to any environment
-- **Use Case**: Testing, hotfixes, custom deployments
-
 ## Workflow Dependencies
 
 ```mermaid
 graph TD
-    PR[Pull Request] --> Deploy[cloudflare-pr-preview]
+    PR[Pull Request] --> Deploy[deploy-pr-preview]
     Deploy --> Perf[performance-check-v2]
     Deploy --> E2E[e2e tests]
     PR --> Size[size-limit]
     PR --> Lint[linting]
-    Master[Push to Master] --> MasterDeploy[cloudflare-master]
-    Tag[Tag Push] --> Prod[cloudflare-production]
+    Master[Push to Master] --> MasterDeploy[deploy-master]
+    Release[Release Published] --> Prod[deploy-production]
     Close[PR Closed] --> Cleanup[cleanup-preview]
 ```
 

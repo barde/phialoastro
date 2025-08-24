@@ -38,7 +38,7 @@ on:
         type: boolean
 
 permissions:
-  contents: read
+  contents: write  # Changed from 'read' to allow tag creation for production deployments
   deployments: write
   pull-requests: write
   statuses: write
@@ -149,3 +149,42 @@ jobs:
           else
             echo "❌ Deployment failed. Check the logs above for details."
           fi
+          
+      - name: Create production release tag
+        id: create_tag
+        if: inputs.environment == 'production' && needs.deploy.result == 'success'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const tagName = `production-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
+            const tagMessage = `Production deployment on ${new Date().toISOString()}
+            
+            Deployment Details:
+            - Deployed by: ${{ github.actor }}
+            - Branch: ${{ inputs.branch }}
+            - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            - Environment URL: ${{ needs.prepare.outputs.deployment-url }}
+            
+            This tag marks an automated production deployment and can be used for:
+            - Rolling back to this specific version
+            - Tracking production release history
+            - Generating changelogs between releases`;
+            
+            try {
+              // Create the tag
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${tagName}`,
+                sha: context.sha
+              });
+              
+              console.log(`✅ Successfully created production tag: ${tagName}`);
+              core.setOutput('tag_name', tagName);
+              core.setOutput('tag_created', 'true');
+            } catch (error) {
+              console.log(`⚠️ Warning: Failed to create tag ${tagName}: ${error.message}`);
+              core.setOutput('tag_created', 'false');
+            }
