@@ -28,7 +28,7 @@ on:
         type: boolean
 
 permissions:
-  contents: read
+  contents: write  # Changed from 'read' to allow tag creation for production deployments
   deployments: write
 
 jobs:
@@ -191,6 +191,50 @@ jobs:
             echo "deployment_url=https://phialo-design-preview.meise.workers.dev" >> $GITHUB_OUTPUT
           fi
       
+      - name: Create production release tag
+        id: create_tag
+        if: github.event.inputs.environment == 'production' && success()
+        continue-on-error: true  # Don't fail deployment if tag creation fails
+        run: |
+          # Generate timestamp-based tag name
+          TAG_NAME="production-$(date -u '+%Y-%m-%d-%H%M%S')"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Fetch all tags to ensure we have the latest
+          git fetch --tags
+          
+          # Create annotated tag with deployment metadata
+          TAG_MESSAGE="Production deployment on $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          
+          Deployment Details:
+          - Deployed by: ${{ github.actor }}
+          - Branch: ${{ needs.validate.outputs.deploy_branch }}
+          - Commit: $(git rev-parse HEAD)
+          - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Environment URL: ${{ steps.url.outputs.deployment_url }}
+          
+          This tag marks an automated production deployment and can be used for:
+          - Rolling back to this specific version
+          - Tracking production release history
+          - Generating changelogs between releases"
+          
+          # Create the annotated tag
+          git tag -a "$TAG_NAME" -m "$TAG_MESSAGE"
+          
+          # Push the tag to the repository
+          if git push origin "$TAG_NAME"; then
+            echo "✅ Successfully created and pushed production tag: $TAG_NAME"
+            echo "tag_created=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Warning: Failed to push tag $TAG_NAME to repository"
+            echo "tag_created=false" >> $GITHUB_OUTPUT
+            exit 1  # Exit with error to trigger continue-on-error
+          fi
+      
       - name: Create deployment record
         uses: actions/github-script@v7
         with:
@@ -224,6 +268,14 @@ jobs:
           echo "**Branch**: ${{ needs.validate.outputs.deploy_branch }}"
           echo "**Deployed by**: ${{ github.actor }}"
           echo "**Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          if [ "${{ github.event.inputs.environment }}" = "production" ] && [ -n "${{ steps.create_tag.outputs.tag_name }}" ]; then
+            echo "**Release Tag**: \`${{ steps.create_tag.outputs.tag_name }}\`"
+            if [ "${{ steps.create_tag.outputs.tag_created }}" = "true" ]; then
+              echo "**Tag Status**: ✅ Successfully created"
+            else
+              echo "**Tag Status**: ⚠️ Tag creation failed (deployment succeeded)"
+            fi
+          fi
           echo ""
           echo "### Next Steps"
           if [ "${{ github.event.inputs.environment }}" = "preview" ]; then
@@ -232,6 +284,21 @@ jobs:
           else
             echo "- Monitor the production site for any issues"
             echo "- Check Cloudflare analytics for performance metrics"
+            if [ "${{ steps.create_tag.outputs.tag_created }}" = "true" ]; then
+              echo ""
+              echo "### Rollback Instructions"
+              echo "If you need to rollback to a previous version:"
+              echo '```bash'
+              echo '# List recent production tags'
+              echo 'git tag -l "production-*" --sort=-version:refname | head -10'
+              echo ''
+              echo '# Deploy a specific tagged version'
+              echo 'gh workflow run manual-deploy.yml \'
+              echo '  -f environment=production \'
+              echo '  -f branch=<tag-name> \'
+              echo '  -f skip_tests=false'
+              echo '```'
+            fi
           fi
 
   notify-failure:
