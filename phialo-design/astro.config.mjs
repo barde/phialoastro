@@ -63,13 +63,14 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: [
-        // Preact aliasing disabled due to Framer Motion incompatibility
-        // TODO: Remove Framer Motion first, then enable Preact
+        // Enable Preact only in production for bundle size reduction
+        // Skip Preact for now due to SSR compatibility issues with icons
+        // TODO: Fix icon components then re-enable
         // ...(process.env.NODE_ENV === 'production' ? [
-        //   { find: 'react', replacement: '@preact/compat' },
         //   { find: 'react-dom/test-utils', replacement: '@preact/compat/test-utils' },
         //   { find: 'react-dom', replacement: '@preact/compat' },
-        //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' }
+        //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' },
+        //   { find: 'react', replacement: '@preact/compat' },
         // ] : []),
         // Existing aliases
         { find: '@features', replacement: new URL('./src/features', import.meta.url).pathname },
@@ -114,7 +115,8 @@ export default defineConfig({
     ],
     // Optimize dependency pre-bundling
     optimizeDeps: {
-      include: ['react', 'react-dom', 'framer-motion'],
+      include: ['react', 'react-dom', '@preact/compat'],
+      exclude: ['framer-motion'], // Exclude framer-motion since we're removing it
     },
     build: {
       // Optimize module preloading
@@ -125,23 +127,11 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // Bundle vendor libraries separately
+            // Aggressive chunk splitting for optimal loading
             if (id.includes('node_modules')) {
-              // Core React libraries - essential for hydration
-              if (id.includes('react-dom')) {
-                return 'react-dom';
-              }
-              if (id.includes('react')) {
-                return 'react-core';
-              }
-              
-              // Framer Motion - split into smaller chunks
-              if (id.includes('framer-motion')) {
-                // Check for specific framer-motion modules
-                if (id.includes('dom-animation') || id.includes('dom-max')) {
-                  return 'motion-features';
-                }
-                return 'motion-core';
+              // Preact core - tiny runtime
+              if (id.includes('@preact/compat') || id.includes('preact')) {
+                return 'preact-runtime';
               }
               
               // Icon libraries - lazy load when possible
@@ -159,8 +149,8 @@ export default defineConfig({
                 return 'utils';
               }
               
-              // All other smaller vendor code
-              return 'vendor-misc';
+              // All other vendor code
+              return 'vendor';
             }
             
             // Split feature-based chunks for better code splitting
