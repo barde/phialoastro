@@ -1,0 +1,169 @@
+name: Cloudflare Worker Garbage Collection
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (only list, do not delete)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  garbage-collection:
+    runs-on: ubuntu-latest
+    name: Clean up orphaned PR preview workers
+    permissions:
+      contents: read
+      pull-requests: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Identify and clean up orphaned workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          echo "=== Cloudflare Worker Garbage Collection ==="
+          echo "Mode: $([ "$DRY_RUN" = "true" ] && echo "DRY RUN" || echo "LIVE")"
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo ""
+          
+          # Function to check if PR is open
+          check_pr_status() {
+            local pr_number=$1
+            local response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number")
+            
+            if echo "$response" | grep -q '"state":"open"'; then
+              return 0  # PR is open
+            else
+              return 1  # PR is closed or doesn't exist
+            fi
+          }
+          
+          # Function to delete worker via API
+          delete_worker() {
+            local worker_name=$1
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  [DRY RUN] Would delete: $worker_name"
+              return 0
+            fi
+            
+            local response=$(curl -s -X DELETE \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$worker_name" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H "Content-Type: application/json")
+            
+            if echo "$response" | grep -q '"success":true'; then
+              echo "  ✅ Deleted: $worker_name"
+              return 0
+            else
+              echo "  ❌ Failed to delete: $worker_name"
+              echo "     Response: $response"
+              return 1
+            fi
+          }
+          
+          # Get all workers from Cloudflare
+          echo "📋 Fetching all workers from Cloudflare..."
+          WORKERS_RESPONSE=$(curl -s -X GET \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          # Extract worker names that match PR pattern
+          PR_WORKERS=$(echo "$WORKERS_RESPONSE" | grep -o '"id":"phialo-pr-[0-9]*"' | sed 's/"id":"//g' | sed 's/"//g' | sort -u)
+          
+          if [ -z "$PR_WORKERS" ]; then
+            echo "✅ No PR preview workers found. Nothing to clean up."
+            exit 0
+          fi
+          
+          echo "Found $(echo "$PR_WORKERS" | wc -l) PR preview workers"
+          echo ""
+          
+          # Check each worker
+          ORPHANED_COUNT=0
+          ACTIVE_COUNT=0
+          DELETED_COUNT=0
+          FAILED_COUNT=0
+          
+          echo "🔍 Checking worker status..."
+          for WORKER in $PR_WORKERS; do
+            # Extract PR number from worker name
+            PR_NUMBER=$(echo "$WORKER" | sed 's/phialo-pr-//')
+            
+            echo "Checking $WORKER (PR #$PR_NUMBER)..."
+            
+            # Check if PR is still open
+            if check_pr_status "$PR_NUMBER"; then
+              echo "  ✓ PR #$PR_NUMBER is still open - keeping worker"
+              ACTIVE_COUNT=$((ACTIVE_COUNT + 1))
+            else
+              echo "  ⚠️ PR #$PR_NUMBER is closed/merged - worker is orphaned"
+              ORPHANED_COUNT=$((ORPHANED_COUNT + 1))
+              
+              # Delete the orphaned worker
+              if delete_worker "$WORKER"; then
+                DELETED_COUNT=$((DELETED_COUNT + 1))
+              else
+                FAILED_COUNT=$((FAILED_COUNT + 1))
+              fi
+            fi
+          done
+          
+          echo ""
+          echo "=== Garbage Collection Summary ==="
+          echo "Total PR workers found: $(echo "$PR_WORKERS" | wc -l)"
+          echo "Active (PR still open): $ACTIVE_COUNT"
+          echo "Orphaned (PR closed): $ORPHANED_COUNT"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Would delete: $ORPHANED_COUNT"
+          else
+            echo "Successfully deleted: $DELETED_COUNT"
+            echo "Failed to delete: $FAILED_COUNT"
+          fi
+          echo ""
+          
+          # Set job status
+          if [ "$FAILED_COUNT" -gt 0 ] && [ "$DRY_RUN" != "true" ]; then
+            echo "⚠️ Some workers could not be deleted"
+            exit 1
+          else
+            echo "✅ Garbage collection completed successfully"
+          fi
+      
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 🧹 Cloudflare Worker Garbage Collection Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run time:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "**Mode:** ${{ github.event.inputs.dry_run == 'true' && 'Dry Run' || 'Live' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This workflow identifies and removes Cloudflare Workers associated with closed/merged PRs." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### How it works:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Lists all workers matching pattern \`phialo-pr-*\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Checks if the associated PR is still open" >> $GITHUB_STEP_SUMMARY
+          echo "3. Deletes workers for closed/merged PRs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Prevention:" >> $GITHUB_STEP_SUMMARY
+          echo "The primary cleanup happens automatically when PRs are closed via the \`cloudflare-pr-cleanup.yml\` workflow." >> $GITHUB_STEP_SUMMARY
+          echo "This garbage collection serves as a safety net for any workers that escape the primary cleanup." >> $GITHUB_STEP_SUMMARY
