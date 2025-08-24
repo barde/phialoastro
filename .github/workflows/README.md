@@ -1,152 +1,173 @@
 # GitHub Actions Workflows
 
-This directory contains automated workflows for the Phialo Design CI/CD pipeline.
+This directory contains all GitHub Actions workflows for the Phialo Design project.
 
-## Workflows Overview
+## Performance Monitoring
 
-### 🔨 `docker-images.yml` - Main CI/CD Pipeline
-- **Purpose**: Build, test, and publish Docker images
-- **Triggers**: Push to main, PRs, weekly schedule, manual
-- **Images**: Base, Test, Build/Deploy
-- **Features**: Multi-arch builds, security scanning, auto-tagging
+### `performance-check.yml` (v1 - Current)
+- **Trigger**: On PR changes to `phialo-design/`
+- **Purpose**: Run Lighthouse CI performance tests
+- **Environment**: Tests against `localhost:4322`
+- **Status**: Active, being phased out
 
-### 🔍 `docker-pr-builds.yml` - PR-Specific Builds
-- **Purpose**: Build unique images for each PR
-- **Triggers**: PR opened/updated
-- **Features**: PR comments with image info, auto-cleanup on close
+### `performance-check-v2.yml` (v2 - New)
+- **Trigger**: After PR preview deployment completes
+- **Purpose**: Run Lighthouse CI against deployed PR previews
+- **Environment**: Tests against `https://phialo-pr-{number}.meise.workers.dev`
+- **Status**: Testing phase
+- **Benefits**:
+  - Real-world performance metrics
+  - Collapsible report format
+  - No race conditions with deployment
 
-### 🛡️ `docker-security-updates.yml` - Security Scanning
-- **Purpose**: Daily vulnerability scanning and auto-rebuild
-- **Triggers**: Daily 3 AM UTC, manual
-- **Features**: Trivy scanning, issue creation, configurable thresholds
+**Migration Timeline**: See [Performance Check v2 Migration Guide](../../phialo-design/docs/how-to/performance-check-v2-migration.md)
 
-### 🧹 `docker-cleanup.yml` - Registry Maintenance
-- **Purpose**: Clean up old images and free space
-- **Triggers**: Weekly Sunday 4 AM UTC, manual
-- **Features**: Retention policies, dry run mode, detailed reports
+## Deployment Workflows
 
-### 🎭 `e2e-sharded.yml` - Parallel E2E Testing [DISABLED]
-- **Status**: Disabled to reduce CI costs - E2E tests now run only in nightly workflow
-- **Purpose**: Previously ran E2E tests in parallel shards on PRs
-- **Note**: To re-enable, rename `e2e-sharded.yml.disabled` back to `e2e-sharded.yml`
+### `cloudflare-pr-preview.yml`
+- **Trigger**: PR opened/updated
+- **Purpose**: Deploy PR preview to Cloudflare Workers
+- **Output**: `https://phialo-pr-{number}.meise.workers.dev`
 
-### 🌙 `nightly-tests.yml` - Comprehensive Nightly Tests
-- **Purpose**: Run full test suite including all Playwright E2E tests with visual/screenshot testing
-- **Triggers**: Daily 2 AM UTC on master branch, manual with suite selection
-- **Test Types**: Unit, Integration, E2E (including visual tests), Performance, Security
-- **Matrix**: Node.js 18/20/22, Ubuntu/Alpine, all browsers
-- **Features**: Issue creation on failure, 90-day report retention, parallel E2E sharding
+### `cloudflare-pr-preview-cached.yml`
+- **Purpose**: Cached version of PR preview deployment
+- **Status**: Experimental
 
-## Required Secrets
+### `cloudflare-master.yml`
+- **Trigger**: Push to master branch
+- **Purpose**: Deploy master to staging environment
+- **Output**: `https://phialo-master.meise.workers.dev`
 
-Configure these in Settings → Secrets and variables → Actions:
+### `cloudflare-production.yml`
+- **Trigger**: Manual or tag push
+- **Purpose**: Deploy to production
+- **Output**: `https://phialo.de`
 
-| Secret | Description | Required For |
-|--------|-------------|--------------|
-| `GITHUB_TOKEN` | Auto-provided by GitHub | All workflows |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare deployment | Deployment |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account | Deployment |
-| `RESEND_API_KEY` | Email service | Workers runtime |
-| `FROM_EMAIL` | Sender email | Workers runtime |
-| `TO_EMAIL` | Recipient email | Workers runtime |
-| `TURNSTILE_SECRET_KEY` | Bot protection | Workers runtime |
+## Testing Workflows
 
-## Permissions
+### `browserstack-*.yml`
+- Various BrowserStack integration workflows
+- Cross-browser testing
+- Visual regression testing
 
-Ensure workflows have proper permissions in Settings → Actions → General:
-- **Read and write permissions**
-- **Allow GitHub Actions to create and approve pull requests**
+### `e2e.yml`
+- **Trigger**: PR changes
+- **Purpose**: End-to-end testing with Playwright
+- **Environment**: Local and deployed URLs
 
-## Manual Triggers
+## Maintenance Workflows
 
-### Rebuild All Images
-```bash
-gh workflow run docker-images.yml -f force_rebuild=true
+### `cleanup-preview.yml`
+- **Trigger**: PR closed
+- **Purpose**: Clean up PR preview deployments
+- **Action**: Removes Cloudflare Workers for closed PRs
+
+### `cleanup-artifacts.yml`
+- **Trigger**: Daily
+- **Purpose**: Clean up old workflow artifacts
+- **Retention**: 7 days for most artifacts
+
+### `audit-fix.yml`
+- **Trigger**: Manual
+- **Purpose**: Run npm audit fix
+- **Creates**: PR with security updates
+
+## Utility Workflows
+
+### `size-limit.yml`
+- **Trigger**: PR changes
+- **Purpose**: Monitor bundle size changes
+- **Report**: Comments on PR with size impact
+
+### `manual-deploy.yml`
+- **Trigger**: Manual or webhook
+- **Purpose**: Deploy any branch to any environment
+- **Use Case**: Testing, hotfixes, custom deployments
+
+## Workflow Dependencies
+
+```mermaid
+graph TD
+    PR[Pull Request] --> Deploy[cloudflare-pr-preview]
+    Deploy --> Perf[performance-check-v2]
+    Deploy --> E2E[e2e tests]
+    PR --> Size[size-limit]
+    PR --> Lint[linting]
+    Master[Push to Master] --> MasterDeploy[cloudflare-master]
+    Tag[Tag Push] --> Prod[cloudflare-production]
+    Close[PR Closed] --> Cleanup[cleanup-preview]
 ```
 
-### Security Scan Only
-```bash
-gh workflow run docker-security-updates.yml -f severity_threshold=MEDIUM
-```
+## Environment Variables
 
-### Cleanup Preview
-```bash
-gh workflow run docker-cleanup.yml -f dry_run=true -f keep_days=7
-```
+Required secrets for workflows:
 
-### Run E2E Tests
-```bash
-# E2E tests are now part of nightly workflow only
-# To run E2E tests manually:
-gh workflow run nightly-tests.yml -f test_suites="e2e" -f browsers="chromium,firefox,webkit"
+### Cloudflare Deployment
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
 
-# Run specific browser only
-gh workflow run nightly-tests.yml -f test_suites="e2e" -f browsers="chromium"
-```
+### Performance Monitoring
+- `LHCI_GITHUB_APP_TOKEN`
+- `PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN`
 
-### Run Nightly Tests
-```bash
-# Full nightly test suite
-gh workflow run nightly-tests.yml
+### Email/Contact
+- `RESEND_API_KEY`
+- `FROM_EMAIL`
+- `TO_EMAIL`
+- `TURNSTILE_SECRET_KEY`
 
-# Select specific test suites
-gh workflow run nightly-tests.yml -f test_suites="unit,e2e"
-
-# Test specific Node.js versions
-gh workflow run nightly-tests.yml -f node_versions="20,22"
-
-# Skip security scanning
-gh workflow run nightly-tests.yml -f skip_security=true
-```
-
-## Workflow Status Badges
-
-Add these to your README:
-
-```markdown
-![Docker CI/CD](https://github.com/[owner]/phialoastro/actions/workflows/docker-images.yml/badge.svg)
-![Security Scan](https://github.com/[owner]/phialoastro/actions/workflows/docker-security-updates.yml/badge.svg)
-![E2E Tests](https://github.com/[owner]/phialoastro/actions/workflows/e2e-sharded.yml/badge.svg)
-![Nightly Tests](https://github.com/[owner]/phialoastro/actions/workflows/nightly-tests.yml/badge.svg)
-```
-
-## Monitoring
-
-1. **Actions Tab**: View all workflow runs
-2. **Security Tab**: Check vulnerability scan results
-3. **Packages**: Monitor registry usage
-4. **Issues**: Track security alerts
-
-## Troubleshooting
-
-### Workflow Not Running
-- Check workflow triggers match your changes
-- Verify workflow files are valid YAML
-- Check repository Actions settings
-
-### Permission Denied
-- Ensure `packages: write` permission
-- Check PAT has correct scopes
-- Verify workflow permissions
-
-### Build Failures
-- Check logs for specific errors
-- Verify base images are available
-- Check for rate limiting
+### BrowserStack Testing
+- `BROWSERSTACK_USERNAME`
+- `BROWSERSTACK_ACCESS_KEY`
 
 ## Best Practices
 
-1. **Test locally first**: Use `ci/scripts/test-ci-pipeline.sh`
-2. **Use PR builds**: Test changes in PR before merging
-3. **Monitor costs**: Track Actions minutes usage
-4. **Regular cleanup**: Run cleanup workflow monthly
-5. **Security first**: Address vulnerabilities promptly
+1. **Always test workflows** in a separate branch first
+2. **Use workflow_dispatch** for manual testing
+3. **Check permissions** - use least privilege principle
+4. **Cache dependencies** to speed up workflows
+5. **Set timeouts** to prevent hanging jobs
+6. **Use concurrency** groups to prevent duplicate runs
+7. **Archive artifacts** for debugging
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Workflow not triggering**
+   - Check trigger conditions
+   - Verify file paths in path filters
+   - Check branch protection rules
+
+2. **Permission denied**
+   - Check GITHUB_TOKEN permissions
+   - Verify secret availability
+   - Check environment protection rules
+
+3. **Deployment failures**
+   - Check Cloudflare API token validity
+   - Verify account ID
+   - Check worker name conflicts
+
+4. **Performance check failures**
+   - Verify deployment completed
+   - Check Lighthouse CI token
+   - Review performance budgets
 
 ## Contributing
 
-When modifying workflows:
-1. Test syntax with `yamllint`
-2. Use `act` for local testing (optional)
-3. Create PR with clear description
-4. Wait for PR build to complete
-5. Check all status checks pass
+When adding new workflows:
+
+1. Document the workflow purpose in this README
+2. Add clear names and descriptions in the workflow file
+3. Use consistent naming conventions
+4. Add error handling and retries
+5. Test in a feature branch first
+6. Update the dependency graph if needed
+
+## Resources
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
+- [Lighthouse CI Documentation](https://github.com/GoogleChrome/lighthouse-ci)
+- [BrowserStack Documentation](https://www.browserstack.com/docs)
