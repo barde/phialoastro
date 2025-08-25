@@ -1,7 +1,5 @@
 ---
-// WebVitalsMonitor.astro
-// This component adds Core Web Vitals monitoring with contextual data
-// It complements existing Cloudflare Web Analytics with additional insights
+// Lightweight Web Vitals monitoring
 ---
 
 <script type="module">
@@ -200,19 +198,9 @@
     }
   }
 
-  /**
-   * Log metrics to console in development
-   */
   function logMetric(metric) {
     if (import.meta.env.DEV) {
-      const color = metric.rating === 'good' ? 'green' : 
-                   metric.rating === 'needs-improvement' ? 'orange' : 'red';
-      
-      console.log(
-        `%c[Web Vitals] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`,
-        `color: ${color}; font-weight: bold;`,
-        metric
-      );
+      console.log(`[WV] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`);
     }
   }
 

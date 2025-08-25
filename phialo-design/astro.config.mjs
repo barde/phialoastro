@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
+import alpine from '@astrojs/alpinejs';
 import tailwind from '@astrojs/tailwind';
 import partytown from '@astrojs/partytown';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -11,7 +11,7 @@ import { constants } from 'zlib';
 // https://astro.build/config
 export default defineConfig({
   integrations: [
-    react(),
+    alpine(), // Alpine.js for lightweight interactivity
     tailwind({
       applyBaseStyles: false, // We apply our own base styles
     }),
@@ -40,6 +40,8 @@ export default defineConfig({
   build: {
     // Inline critical CSS automatically
     inlineStylesheets: 'auto',
+    // Split content data to reduce bundle size
+    assets: '_assets',
   },
   
   // Image optimization with automatic format conversion
@@ -115,8 +117,14 @@ export default defineConfig({
     ],
     // Optimize dependency pre-bundling
     optimizeDeps: {
-      include: ['react', 'react-dom', '@preact/compat'],
-      exclude: ['framer-motion'], // Exclude framer-motion since we're removing it
+      include: [
+        'alpinejs' // Pre-bundle Alpine.js since it's used across the site
+      ],
+      exclude: [
+        // Exclude unused packages
+        'react', 'react-dom', '@preact/compat',
+        'lucide-react', '@cloudflare/turnstile'
+      ]
     },
     build: {
       // Optimize module preloading
@@ -125,32 +133,37 @@ export default defineConfig({
       },
       // Optimize chunking to reduce dependency chains
       rollupOptions: {
+        onwarn: (warning, warn) => {
+          // Suppress unknown output options warnings
+          if (warning.code === 'UNKNOWN_OPTION') return;
+          warn(warning);
+        },
         output: {
           manualChunks: (id) => {
-            // Aggressive chunk splitting for optimal loading
+            // Optimized chunk splitting without React
             if (id.includes('node_modules')) {
-              // Preact core - tiny runtime
-              if (id.includes('@preact/compat') || id.includes('preact')) {
-                return 'preact-runtime';
+              // Alpine.js - core library
+              if (id.includes('alpinejs')) {
+                return 'alpine';
               }
               
-              // Icon libraries - lazy load when possible
-              if (id.includes('lucide-react')) {
-                return 'icons';
+              // Web vitals and analytics
+              if (id.includes('web-vitals')) {
+                return 'analytics';
               }
               
-              // Form/Contact related - load on demand
-              if (id.includes('@cloudflare/turnstile')) {
-                return 'turnstile';
-              }
-              
-              // Utility libraries
+              // Utility libraries - keep separate for caching
               if (id.includes('clsx') || id.includes('tailwind-merge')) {
                 return 'utils';
               }
               
-              // All other vendor code
+              // All other vendor code (should be minimal now)
               return 'vendor';
+            }
+            
+            // Split Alpine.js components separately
+            if (id.includes('Alpine') || id.includes('x-data')) {
+              return 'alpine-components';
             }
             
             // Split feature-based chunks for better code splitting
@@ -169,18 +182,38 @@ export default defineConfig({
             if (id.includes('src/features/home')) {
               return 'home';
             }
+            if (id.includes('src/features/classes')) {
+              return 'classes';
+            }
+            if (id.includes('src/features/legal')) {
+              return 'legal';
+            }
+            
+            // Split shared components by type
             if (id.includes('src/shared/navigation')) {
               return 'navigation';
+            }
+            if (id.includes('src/shared/components/ui')) {
+              return 'ui-components';
+            }
+            if (id.includes('src/shared/components/effects')) {
+              return 'effects';
             }
             if (id.includes('src/shared/components')) {
               return 'shared-components';
             }
+            
+            // Context providers
+            if (id.includes('src/shared/contexts')) {
+              return 'contexts';
+            }
           },
-          // Optimize chunk size
+          // Optimize chunk size and naming for better caching
           chunkFileNames: (chunkInfo) => {
             const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
             return `_astro/[name].[hash].js`;
           },
+          // Chunk size warnings moved to build.rollupOptions level
         },
       },
     },

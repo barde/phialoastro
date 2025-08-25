@@ -197,6 +197,12 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
       </script>
     )}
     
+    <!-- Dynamic Feature Loading for Code Splitting -->
+    <script type="module">
+      // Load the dynamic import manager
+      import('/src/shared/utils/dynamicImports.js');
+    </script>
+    
     <!-- Deferred performance optimizations -->
     <script defer>
       // Preload important resources on interaction

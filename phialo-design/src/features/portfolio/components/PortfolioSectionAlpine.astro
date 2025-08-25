@@ -1,0 +1,284 @@
+---
+import { getCollection } from 'astro:content';
+
+export interface Props {
+  lang?: 'de' | 'en';
+}
+
+const { lang = 'de' } = Astro.props;
+const isEnglish = lang === 'en';
+
+// Fetch portfolio items from content collections
+const allPortfolioItems = await getCollection('portfolio', ({ data }) => {
+  return data.language === lang;
+});
+
+// Transform to match expected format for Alpine.js
+const portfolioItems = allPortfolioItems.map((item) => ({
+  id: item.slug, // Use slug as unique ID
+  title: item.data.title,
+  category: item.data.category,
+  image: item.data.image,
+  slug: item.slug,
+  description: item.data.description,
+  year: item.data.projectDate ? new Date(item.data.projectDate).getFullYear() : new Date(item.data.publishedAt).getFullYear(),
+  materials: item.data.materials || [],
+  gallery: item.data.gallery || [item.data.image],
+  youtubeVideoId: item.data.youtubeVideoId,
+  youtubeAspectRatio: item.data.youtubeAspectRatio || '16:9',
+  tags: item.data.tags || [],
+  features: [], // Can be populated from content if needed
+  client: item.data.client,
+  projectDate: item.data.projectDate,
+  availability: item.data.availability || 'available'
+}));
+
+// Category mapping to handle language differences and maintain compatibility
+const categoryMap = {
+  'rings': 'rings',
+  'Rings': 'rings', // for backward compatibility
+  'earrings': 'earrings',
+  'Earrings': 'earrings', // for backward compatibility
+  'pendants': 'pendants',
+  'Pendants': 'pendants', // for backward compatibility
+  'sculptures': 'sculptures',
+  'Sculptures': 'sculptures', // for backward compatibility
+  'pins': 'pins',
+  'Pins': 'pins' // for backward compatibility
+} as const;
+
+// Define categories for the filter UI
+const categories = [
+  { id: 'all', label: 'Alle Arbeiten', labelEn: 'All Works' },
+  { id: 'rings', label: 'Ringe', labelEn: 'Rings' },
+  { id: 'earrings', label: 'Ohrringe', labelEn: 'Earrings' },
+  { id: 'pendants', label: 'Anhänger', labelEn: 'Pendants' },
+  { id: 'sculptures', label: 'Skulpturen', labelEn: 'Sculptures' },
+  { id: 'pins', label: 'Anstecker', labelEn: 'Pins' },
+  { id: 'necklaces', label: 'Halsketten', labelEn: 'Necklaces' },
+  { id: 'bracelets', label: 'Armbänder', labelEn: 'Bracelets' },
+  { id: 'custom', label: 'Maßanfertigungen', labelEn: 'Custom Work' }
+];
+
+// Prepare data for Alpine
+const portfolioData = {
+  items: portfolioItems,
+  categories: categories.map(cat => ({
+    id: cat.id,
+    label: isEnglish && cat.labelEn ? cat.labelEn : cat.label
+  })),
+  categoryMap: categoryMap,
+  lang: lang
+};
+---
+
+<div 
+  x-data={`window.portfolioSection(${JSON.stringify(portfolioData)})`}
+  class="portfolio-section w-full py-8"
+>
+  <!-- Portfolio Filter -->
+  <div class="portfolio-filter-wrapper mb-12">
+    <div class="flex flex-wrap justify-center gap-4">
+      <template x-for="category in categories" :key="category.id">
+        <button
+          @click="setFilter(category.id)"
+          :class="{
+            'bg-gold text-white': activeFilter === category.id,
+            'bg-white text-midnight border border-midnight/20': activeFilter !== category.id
+          }"
+          class="px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105"
+          x-text="category.label"
+        ></button>
+      </template>
+    </div>
+  </div>
+
+  <!-- Portfolio Grid -->
+  <div class="portfolio-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <template x-for="(item, index) in filteredItems" :key="item.id">
+      <div 
+        @click="openModal(item)"
+        :data-item-id="item.id"
+        class="portfolio-item group cursor-pointer relative overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        :style="`animation-delay: ${index * 0.1}s`"
+      >
+        <!-- Image -->
+        <div class="aspect-square overflow-hidden bg-gray-100">
+          <img 
+            :src="item.image" 
+            :alt="item.title"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+        </div>
+        
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-midnight/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            <h3 class="text-xl font-display font-medium mb-2" x-text="item.title"></h3>
+            <p class="text-sm opacity-90" x-text="item.shortDescription || item.description.substring(0, 100) + '...'"></p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Modal Container - populated lazily -->
+  <div id="modal-container"></div>
+
+  <!-- Loading indicator for modal -->
+  <div 
+    x-show="modalLoading"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-midnight/50"
+    style="display: none;"
+  >
+    <div class="bg-white rounded-lg p-6 shadow-2xl">
+      <div class="flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
+        <span class="text-gray-700">{isEnglish ? 'Loading...' : 'Wird geladen...'}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  window.portfolioSection = function(data) {
+    return {
+      items: data.items,
+      categories: data.categories,
+      categoryMap: data.categoryMap,
+      lang: data.lang,
+      activeFilter: 'all',
+      filteredItems: data.items,
+      isModalOpen: false,
+      selectedItem: null,
+      currentImageIndex: 0,
+      modalLoaded: false,
+      modalLoading: false,
+      
+      setFilter(filter) {
+        this.activeFilter = filter;
+        if (filter === 'all') {
+          this.filteredItems = this.items;
+        } else {
+          this.filteredItems = this.items.filter(item => {
+            // For English items, compare directly
+            if (item.category === filter) return true;
+            
+            // For German items, check if the active filter (English) maps to the item's German category
+            if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+            
+            // For English page with German filter IDs - though this shouldn't happen with our setup
+            if (this.lang === 'en' && item.category === filter) return true;
+            
+            return false;
+          });
+        }
+      },
+      
+      async openModal(item) {
+        if (this.modalLoading) return; // Prevent multiple simultaneous loads
+        
+        this.selectedItem = item;
+        this.currentImageIndex = 0;
+        
+        // Load modal content lazily if not already loaded
+        if (!this.modalLoaded) {
+          this.modalLoading = true;
+          try {
+            await this.loadModalContent();
+            this.modalLoaded = true;
+          } catch (error) {
+            console.error('Failed to load modal:', error);
+            this.modalLoading = false;
+            return;
+          }
+          this.modalLoading = false;
+        }
+        
+        this.isModalOpen = true;
+        document.body.style.overflow = 'hidden';
+      },
+      
+      async loadModalContent() {
+        // Dynamic import of lazy modal manager
+        const { default: lazyModalManager } = await import('/src/features/portfolio/utils/lazyModalManager.js');
+        
+        // Load and inject modal template
+        await lazyModalManager.loadModal(this.lang);
+        
+        // Find the modal container and inject template content
+        const modalContainer = this.$el.querySelector('#modal-container');
+        const template = document.querySelector('#portfolio-modal-template');
+        
+        if (template && modalContainer) {
+          // Clone template content
+          const templateContent = template.innerHTML;
+          modalContainer.innerHTML = templateContent;
+        } else {
+          throw new Error('Modal template or container not found');
+        }
+      },
+      
+      closeModal() {
+        this.isModalOpen = false;
+        document.body.style.overflow = '';
+        setTimeout(() => { this.selectedItem = null; }, 300);
+      },
+      
+      navigateModal(direction) {
+        if (!this.selectedItem) return;
+        
+        const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+        let newIndex;
+        
+        if (direction === 'prev') {
+          newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+        } else {
+          newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+        }
+        
+        this.selectedItem = this.filteredItems[newIndex];
+        this.currentImageIndex = 0;
+      },
+      
+      nextImage() {
+        if (this.selectedItem && this.selectedItem.gallery) {
+          this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+        }
+      },
+      
+      prevImage() {
+        if (this.selectedItem && this.selectedItem.gallery) {
+          this.currentImageIndex = this.currentImageIndex === 0 
+            ? this.selectedItem.gallery.length - 1 
+            : this.currentImageIndex - 1;
+        }
+      }
+    };
+  }
+</script>
+
+<style>
+  .portfolio-item {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

@@ -1,6 +1,5 @@
 ---
-import { Phone } from 'lucide-react';
-import { InstagramIcon, LinkedinIcon, YoutubeIcon } from '../components/icons/BrandIcons';
+import BrandIcon from '../components/icons/BrandIcons.astro';
 
 // Language-aware content
 const currentPath = Astro.url.pathname;
@@ -137,7 +136,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
             aria-label={content.socialLabels.linkedin}
           >
-            <LinkedinIcon size={20} />
+            <BrandIcon icon="linkedin" size={20} />
           </a>
           <a 
             href="https://youtube.com/@phialodesign" 
@@ -146,7 +145,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
             aria-label={content.socialLabels.youtube}
           >
-            <YoutubeIcon size={20} />
+            <BrandIcon icon="youtube" size={20} />
           </a>
           <a 
             href="https://www.instagram.com/phialo_design/" 
@@ -155,7 +154,7 @@ const getLocalizedHref = (href: string) => isEnglish ? `/en${href}` : href;
             class="p-2 text-theme-text-secondary hover:text-theme-text-primary transition-colors"
             aria-label={content.socialLabels.instagram}
           >
-            <InstagramIcon size={20} />
+            <BrandIcon icon="instagram" size={20} />
           </a>
         </div>
       </div>

@@ -1,7 +1,8 @@
 ---
 // English version - Content to be translated
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
-import Portfolio from '../../components/PortfolioSectionCSS.tsx';
+import PortfolioAlpine from '../../components/PortfolioSectionAlpine.astro';
+import AnimatedText from '../../../../shared/components/ui/AnimatedTextCSS.astro';
 
 const title = 'Portfolio | Phialo Design';
 const description = 'Discover our unique jewelry creations and 3D sculptures. From rings to sculptures - each piece is a work of art.';
@@ -12,9 +13,11 @@ const description = 'Discover our unique jewelry creations and 3D sculptures. Fr
   <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Portfolio
-        </h1>
+        <AnimatedText 
+          text="Portfolio"
+          className="text-5xl md:text-6xl font-light text-neutral-900 mb-8"
+          as="h1"
+        />
         <p class="text-lg text-neutral-600 leading-relaxed">
           Discover our unique jewelry creations and 3D sculptures. 
           Each piece is crafted with precision and artistic vision.
@@ -24,7 +27,7 @@ const description = 'Discover our unique jewelry creations and 3D sculptures. Fr
   </section>
 
   <!-- Portfolio Section -->
-  <Portfolio client:visible lang="en" />
+  <PortfolioAlpine lang="en" />
 
   <!-- Call-to-Action -->
   <section class="py-20 bg-neutral-50">
