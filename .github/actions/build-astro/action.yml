@@ -46,7 +46,7 @@ runs:
           ${{ inputs.working-directory }}/public/images/homepage/*-*w.webp
           ${{ inputs.working-directory }}/public/images/homepage/*-*w.avif
           ${{ inputs.working-directory }}/.image-cache.json
-        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles('**/public/images/portfolio/*.jpg', '**/public/images/portfolio/*.jpeg', '**/public/images/portfolio/*.png', '**/public/images/homepage/*.jpg', '**/public/images/homepage/*.jpeg', '**/public/images/homepage/*.png') }}
+        key: ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/public/images/portfolio/*.jpg', inputs.working-directory), format('{0}/public/images/portfolio/*.jpeg', inputs.working-directory), format('{0}/public/images/portfolio/*.png', inputs.working-directory), format('{0}/public/images/homepage/*.jpg', inputs.working-directory), format('{0}/public/images/homepage/*.jpeg', inputs.working-directory), format('{0}/public/images/homepage/*.png', inputs.working-directory)) }}
         restore-keys: |
           ${{ runner.os }}-generated-images-${{ inputs.cache-version }}-
     
@@ -59,9 +59,9 @@ runs:
         path: |
           ${{ inputs.working-directory }}/.astro
           ${{ inputs.working-directory }}/node_modules/.astro
-        key: ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-${{ hashFiles('**/src/**/*.astro', '**/src/**/*.tsx', '**/src/**/*.ts', '**/src/**/*.jsx', '**/src/**/*.js') }}
+        key: ${{ runner.os }}-astro-build-${{ inputs.working-directory }}-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/src/**/*.astro', inputs.working-directory), format('{0}/src/**/*.tsx', inputs.working-directory), format('{0}/src/**/*.ts', inputs.working-directory), format('{0}/src/**/*.jsx', inputs.working-directory), format('{0}/src/**/*.js', inputs.working-directory)) }}
         restore-keys: |
-          ${{ runner.os }}-astro-build-${{ inputs.cache-version }}-
+          ${{ runner.os }}-astro-build-${{ inputs.working-directory }}-${{ inputs.cache-version }}-
     
     # Log cache status
     - name: Check cache status
