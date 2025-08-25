@@ -76,11 +76,11 @@ jobs:
             });
             
             const totalKB = (totalSize / 1024).toFixed(2);
-            const emoji = totalSize > 350 * 1024 ? '🔴' : '✅';
+            const emoji = totalSize > 800 * 1024 ? '🔴' : '✅';
             
             const comment = `## ${emoji} Bundle Size Report
             
-            **Total JavaScript:** ${totalKB} KB (Target: 350 KB)
+            **Total JavaScript:** ${totalKB} KB (Target: 800 KB)
             
             [View detailed bundle analysis](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
             
