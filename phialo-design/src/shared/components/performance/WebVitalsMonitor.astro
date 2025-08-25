@@ -199,6 +199,7 @@
   }
 
   function logMetric(metric) {
+    // Only log in development mode to reduce console noise
     if (import.meta.env.DEV) {
       console.log(`[WV] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`);
     }
