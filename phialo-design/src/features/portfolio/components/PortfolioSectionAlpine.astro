@@ -214,7 +214,7 @@ const portfolioData = {
         await lazyModalManager.loadModal(this.lang);
         
         // Find the modal container and inject template content
-        const modalContainer = this.$el.querySelector('#modal-container');
+        const modalContainer = document.querySelector('#modal-container');
         const template = document.querySelector('#portfolio-modal-template');
         
         if (template && modalContainer) {

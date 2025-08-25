@@ -25,14 +25,6 @@ class DynamicImportManager {
       name: 'contact',
       selector: 'form[data-contact-form], .turnstile-widget, .contact-form, [data-feature="contact"]',
       loader: () => import('../../features/contact/client.js').then(() => void 0)
-    },
-    {
-      name: 'icons',
-      selector: '[data-lucide], .lucide-icon',
-      loader: async () => {
-        const lucide = await import('lucide-react');
-        (window as any).lucideReact = lucide;
-      }
     }
   ];
 
@@ -98,9 +90,7 @@ class DynamicImportManager {
         link.rel = 'modulepreload';
         link.href = detector.loader.toString().includes('portfolio') 
           ? '/_astro/portfolio.js' 
-          : detector.loader.toString().includes('contact')
-          ? '/_astro/contact.js'
-          : '/_astro/icons.js';
+          : '/_astro/contact.js';
         document.head.appendChild(link);
       }
     });
