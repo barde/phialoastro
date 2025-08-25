@@ -95,6 +95,7 @@ jobs:
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: ${{ inputs.environment }}
     
     outputs:
       deployment-url: ${{ inputs.deployment-url }}
