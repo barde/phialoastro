@@ -254,8 +254,8 @@ jobs:
           script: |
             const state = '${{ job.status }}' === 'success' ? 'success' : 'failure';
             const description = state === 'success' 
-              ? `Deployed to ${inputs.environment}` 
-              : `Deployment to ${inputs.environment} failed`;
+              ? 'Deployed to ${{ inputs.environment }}' 
+              : 'Deployment to ${{ inputs.environment }} failed';
             
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
