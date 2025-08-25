@@ -206,3 +206,4 @@ See [`DEPLOY.md`](./DEPLOY.md) for deployment instructions.
 
 Built with ❤️ and attention to detail, just like our jewelry.
 # Performance Check v2 Test
+# Analytics Engine enabled - triggering redeployment
