@@ -1,6 +1,5 @@
 ---
-import ContactFormWrapper from './ContactFormWrapper';
-import ContactFormErrorBoundary from './ContactFormErrorBoundary';
+import ContactFormAlpine from './ContactFormAlpine.astro';
 
 // Language detection based on URL pathname
 const currentPath = Astro.url.pathname;
@@ -58,10 +57,8 @@ const t = translations[isEnglish ? 'en' : 'de'];
         <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
           <h3 class="font-display text-2xl font-medium mb-6">{t.formTitle}</h3>
           
-          <!-- React Contact Form with Error Boundary and Pre-clearance -->
-          <ContactFormErrorBoundary client:load>
-            <ContactFormWrapper client:load usePreClearance={true} />
-          </ContactFormErrorBoundary>
+          <!-- Alpine.js Contact Form -->
+          <ContactFormAlpine lang={isEnglish ? 'en' : 'de'} />
 
           <!-- Contact info below form -->
           <div class="mt-8 pt-8 border-t border-white/10">

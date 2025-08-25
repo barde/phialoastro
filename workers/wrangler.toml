@@ -1,7 +1,7 @@
 name = "phialo-design"
 main = "src/index.ts"
 compatibility_date = "2024-09-25"
-compatibility_flags = ["nodejs_compat", "brotli_content_encoding"]
+compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
 [assets]
@@ -16,7 +16,7 @@ cwd = "../phialo-design"
 [env.preview]
 name = "phialo-design-preview"
 workers_dev = true
-compatibility_flags = ["nodejs_compat", "brotli_content_encoding"]
+compatibility_flags = ["nodejs_compat"]
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
@@ -31,7 +31,7 @@ name = "phialo"
 # Enable custom domain routing
 route = { pattern = "phialo.de/*", zone_name = "phialo.de" }
 workers_dev = false
-compatibility_flags = ["nodejs_compat", "brotli_content_encoding"]
+compatibility_flags = ["nodejs_compat"]
 
 [env.production.vars]
 ENVIRONMENT = "production"

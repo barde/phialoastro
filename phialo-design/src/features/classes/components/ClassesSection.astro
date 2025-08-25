@@ -1,7 +1,10 @@
 ---
+import { getCollection } from 'astro:content';
+
 // Language detection
 const currentPath = Astro.url.pathname;
 const isEnglish = currentPath.startsWith('/en/');
+const lang = isEnglish ? 'en' : 'de';
 
 // Language-specific content
 const content = {
@@ -21,216 +24,35 @@ const content = {
 
 const t = isEnglish ? content.en : content.de;
 
-// Multilingual classes data
-const classesData = {
-  de: [
-    {
-      id: 1,
-      title: 'Lern Blender - 3D Design für absolute Anfänger',
-      description: 'Lernen Sie Blender 3D Design von Grund auf. Ein umfassender Kurs für absolute Anfänger auf Deutsch.',
-      image: '/images/Thumbnaildeutscherkurs.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'Deutsch - Anfängerniveau',
-      language: 'de',
-      featured: true,
-      link: 'https://skl.sh/3F2b3lj'
-    },
-    {
-      id: 2,
-      title: 'Von der Skizze zum Modell - Design für 3D-Druck mit Blender (Englischsprachiger Kurs)',
-      description: 'Verwandeln Sie Ihre kreativen Skizzen in professionelle 3D-Modelle, die druckfertig sind.',
-      image: '/images/thumbnailSkillshare.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - Beginner',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/2Xjn9BV'
-    },
-    {
-      id: 3,
-      title: 'Blender lernen - 3D Design für absolute Anfänger (Englischsprachiger Kurs)',
-      description: 'Beherrschen Sie Blender 3D-Design von Grund auf. Verfügbar auf Skillshare oder als Direktkauf.',
-      image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - Beginner',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/3xw8S77',
-      directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
-    },
-    {
-      id: 4,
-      title: 'Alles über Kurven lernen und ein atemberaubendes Ringdesign erstellen (Englischsprachiger Kurs)',
-      description: 'Beherrschen Sie Blenders Kurven-Werkzeuge, um atemberaubende Ringdesigns mit fließenden Mustern zu erstellen.',
-      image: '/images/BlenderDazzlingDesigns.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - All Levels',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/419ltwx'
-    },
-    {
-      id: 5,
-      title: 'Einzigartige Oberflächenmuster mit Texturen erstellen (Englischsprachiger Kurs)',
-      description: 'Lernen Sie, mit Blenders Textursystem atemberaubende, einzigartige Oberflächenmuster zu erstellen.',
-      image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
-      duration: 'Mehrere Stunden',
-      category: 'English - Intermediate',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/4bMkx3o'
-    },
-    {
-      id: 6,
-      title: 'Kreativ werden: Von Druck zu Freiheit mit Schmuckzeichnung (Englischsprachiger Kurs)',
-      description: 'Entdecken Sie Ihre Kreativität neu und lernen Sie, mit Freiheit und Freude Schmuckdesigns zu zeichnen.',
-      image: '/images/BeCreativeJewelryDrawing.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - All Levels',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/4obtXfP'
-    },
-    {
-      id: 7,
-      title: 'Blender 3D: Die Kunst des Skulptierens (Englischsprachiger Kurs)',
-      description: 'Meistern Sie die Kunst des digitalen Skulptierens in Blender für atemberaubende 3D-Schmuckkreationen.',
-      image: '/images/Blender3D-TheArtOfSculpting_GesaPickbrenner.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - Intermediate',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/43yOXTT'
-    },
-    {
-      id: 8,
-      title: 'Blender Vertiefung: Grundlagen des Schmuckdesigns in 3D (Englischsprachiger Kurs)',
-      description: 'Vertiefen Sie Ihre Kenntnisse in professionellem 3D-Schmuckdesign mit fortgeschrittenen Blender-Techniken.',
-      image: '/images/SkillshareFoundationsBlenderGPickbrenner.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - Intermediate to Advanced',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/4csLHgN'
-    },
-    {
-      id: 9,
-      title: 'Blender lernen: Kreatives und 3D-druckbares Schmuckdesign (Englischsprachiger Kurs)',
-      description: 'Lernen Sie, kreative und 3D-druckbare Schmuckdesigns in Blender zu erstellen.',
-      image: '/images/BlenderCreativeJewelryDesign.jpg',
-      duration: 'Mehrere Stunden',
-      category: 'English - All Levels',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/43BaCdW'
-    }
-  ],
-  en: [
-    {
-      id: 1,
-      title: 'Learn Blender - 3D Design for Absolute Beginners',
-      description: 'Learn Blender 3D design from scratch. A comprehensive course for absolute beginners in German.',
-      image: '/images/Thumbnaildeutscherkurs.jpg',
-      duration: 'Several hours',
-      category: 'German - Beginner Level',
-      language: 'de',
-      featured: true,
-      link: 'https://skl.sh/3F2b3lj'
-    },
-    {
-      id: 2,
-      title: 'From Sketch To Model - Design for 3D Printing with Blender',
-      description: 'Transform your creative sketches into professional 3D models ready for printing.',
-      image: '/images/thumbnailSkillshare.jpg',
-      duration: 'Several hours',
-      category: 'English - Beginner',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/2Xjn9BV'
-    },
-    {
-      id: 3,
-      title: 'Learn Blender - 3D Design for Absolute Beginners',
-      description: 'Master Blender 3D design from scratch. Available on Skillshare or direct purchase.',
-      image: '/images/Thumbnail_BlenderBeginnerClass.jpg',
-      duration: 'Several hours',
-      category: 'English - Beginner',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/3xw8S77',
-      directLink: 'https://gesa-pickbrenner-s-school.teachable.com/p/learn-blender-3d-design-for-absolute-beginners'
-    },
-    {
-      id: 4,
-      title: 'Learn All About Curves And Create A Dazzling Ring Design',
-      description: 'Master Blender\'s curve tools to create stunning ring designs with flowing patterns.',
-      image: '/images/BlenderDazzlingDesigns.jpg',
-      duration: 'Several hours',
-      category: 'English - All Levels',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/419ltwx'
-    },
-    {
-      id: 5,
-      title: 'Create Unique Surface Patterns With Textures',
-      description: 'Learn to create stunning, unique surface patterns using Blender\'s texture system.',
-      image: '/images/BlenderCreativeUniqueSurfacePattern_forwebsite.png',
-      duration: 'Several hours',
-      category: 'English - Intermediate',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/4bMkx3o'
-    },
-    {
-      id: 6,
-      title: 'Be Creative: From Pressure to Freedom with Jewelry Drawing',
-      description: 'Rediscover your creativity and learn to draw jewelry designs with freedom and joy.',
-      image: '/images/BeCreativeJewelryDrawing.jpg',
-      duration: 'Several hours',
-      category: 'English - All Levels',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/4obtXfP'
-    },
-    {
-      id: 7,
-      title: 'Blender 3D: The Art of Sculpting',
-      description: 'Master the art of digital sculpting in Blender for stunning 3D jewelry creations.',
-      image: '/images/Blender3D-TheArtOfSculpting_GesaPickbrenner.jpg',
-      duration: 'Several hours',
-      category: 'English - Intermediate',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/43yOXTT'
-    },
-    {
-      id: 8,
-      title: 'Blender In-Depth: Jewelry Design Foundations in 3D',
-      description: 'Deepen your knowledge of professional 3D jewelry design with advanced Blender techniques.',
-      image: '/images/SkillshareFoundationsBlenderGPickbrenner.jpg',
-      duration: 'Several hours',
-      category: 'English - Intermediate to Advanced',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/4csLHgN'
-    },
-    {
-      id: 9,
-      title: 'Learn Blender: Creative and 3D Printable Jewelry Design',
-      description: 'Learn to create creative and 3D printable jewelry designs in Blender.',
-      image: '/images/BlenderCreativeJewelryDesign.jpg',
-      duration: 'Several hours',
-      category: 'English - All Levels',
-      language: 'en',
-      featured: true,
-      link: 'https://skl.sh/43BaCdW'
-    }
-  ]
-};
+// Fetch all classes from content collections (show both languages on each page for multilingual experience)
+const allClasses = await getCollection('classes');
 
-// Select classes based on current language
-const classes = isEnglish ? classesData.en : classesData.de;
+// Transform the classes to match the expected format
+const classes = allClasses.map((classItem) => ({
+  id: classItem.slug,
+  title: classItem.data.title,
+  description: classItem.data.description,
+  image: classItem.data.image,
+  duration: classItem.data.duration,
+  category: classItem.data.categoryDisplay,
+  language: classItem.data.language,
+  featured: classItem.data.featured,
+  link: classItem.data.link,
+  directLink: classItem.data.directLink,
+  platform: classItem.data.platform,
+  difficulty: classItem.data.difficulty,
+  author: classItem.data.author,
+  tags: classItem.data.tags || []
+})).sort((a, b) => {
+  // Sort by featured first, then by language (current language first)
+  if (a.featured !== b.featured) {
+    return b.featured ? 1 : -1;
+  }
+  if (a.language !== b.language) {
+    return a.language === lang ? -1 : 1;
+  }
+  return 0;
+});
 ---
 
 <section id="classes" class="py-20 bg-neutral-50">

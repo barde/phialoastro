@@ -1,0 +1,104 @@
+---
+export interface Props {
+  duration?: number;
+  easing?: string;
+}
+
+const { duration = 1200, easing = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)' } = Astro.props;
+---
+
+<script define:vars={{ duration, easing }}>
+  function initSmoothScroll() {
+    // Enable smooth scrolling for the entire document
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    // Enhanced smooth scroll for anchor links
+    const handleAnchorClick = (e) => {
+      const target = e.currentTarget;
+      if (!target.href) return;
+      
+      const url = new URL(target.href);
+      const hash = url.hash;
+      
+      if (hash && url.pathname === window.location.pathname) {
+        e.preventDefault();
+        const element = document.querySelector(hash);
+        
+        if (element) {
+          const headerHeight = 80; // Account for fixed header
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+          
+          // Update URL without triggering scroll
+          if (history.pushState) {
+            history.pushState(null, null, hash);
+          }
+        }
+      }
+    };
+
+    // Add event listeners to all anchor links
+    const attachAnchorListeners = () => {
+      const links = document.querySelectorAll('a[href^="#"]');
+      links.forEach(link => {
+        link.removeEventListener('click', handleAnchorClick); // Remove if exists
+        link.addEventListener('click', handleAnchorClick);
+      });
+    };
+
+    // Parallax effect for hero elements  
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrolled = window.pageYOffset;
+          const parallaxElements = document.querySelectorAll('[data-parallax]');
+          
+          parallaxElements.forEach(element => {
+            const speed = parseFloat(element.getAttribute('data-parallax') || '0.5');
+            const transform = `translateY(${scrolled * speed}px)`;
+            element.style.transform = transform;
+          });
+          
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Initialize
+    attachAnchorListeners();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Re-initialize on Astro page navigation
+    document.addEventListener('astro:page-load', () => {
+      attachAnchorListeners();
+    });
+    
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', (e) => {
+      if (window.location.hash) {
+        const element = document.querySelector(window.location.hash);
+        if (element) {
+          const headerHeight = 80;
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSmoothScroll);
+  } else {
+    initSmoothScroll();
+  }
+</script>

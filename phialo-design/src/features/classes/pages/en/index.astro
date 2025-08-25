@@ -2,6 +2,7 @@
 // English version - Content to be translated
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
 import Classes from '../../components/ClassesSection.astro';
+import AnimatedText from '../../../../shared/components/ui/AnimatedTextCSS.astro';
 
 const title = 'Classes | Phialo Design';
 const description = 'Learn 3D design and Blender in our comprehensive courses. From beginner to advanced.';
@@ -12,9 +13,11 @@ const description = 'Learn 3D design and Blender in our comprehensive courses. F
   <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Classes
-        </h1>
+        <AnimatedText 
+          text="Classes"
+          className="text-5xl md:text-6xl font-light text-neutral-900 mb-8"
+          as="h1"
+        />
         <p class="text-xl text-neutral-600 leading-relaxed">
           Learn 3D design and Blender from the ground up. Our courses guide you step by step 
           from beginner to skilled 3D designer.
