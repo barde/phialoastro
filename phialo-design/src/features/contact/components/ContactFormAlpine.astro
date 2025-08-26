@@ -94,7 +94,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Name Field -->
     <div>
       <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-        {t.nameLabel} <span class="text-red-500">*</span>
+        <span x-text="t.nameLabel"></span> <span class="text-red-500">*</span>
       </label>
       <input
         type="text"
@@ -103,7 +103,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         @blur="validateField('name')"
         :class="{'border-red-500': errors.name && touched.name}"
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent transition-colors"
-        placeholder={t.namePlaceholder}
+        :placeholder="t.namePlaceholder"
       />
       <p x-show="errors.name && touched.name" x-text="errors.name" class="mt-1 text-sm text-red-500"></p>
     </div>
@@ -111,7 +111,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Email Field -->
     <div>
       <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-        {t.emailLabel} <span class="text-red-500">*</span>
+        <span x-text="t.emailLabel"></span> <span class="text-red-500">*</span>
       </label>
       <input
         type="email"
@@ -120,7 +120,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         @blur="validateField('email')"
         :class="{'border-red-500': errors.email && touched.email}"
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent transition-colors"
-        placeholder={t.emailPlaceholder}
+        :placeholder="t.emailPlaceholder"
       />
       <p x-show="errors.email && touched.email" x-text="errors.email" class="mt-1 text-sm text-red-500"></p>
     </div>
@@ -128,7 +128,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Phone Field (Optional) -->
     <div>
       <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
-        {t.phoneLabel}
+        <span x-text="t.phoneLabel"></span>
       </label>
       <input
         type="tel"
@@ -137,7 +137,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         @blur="validateField('phone')"
         :class="{'border-red-500': errors.phone && touched.phone}"
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent transition-colors"
-        placeholder={t.phonePlaceholder}
+        :placeholder="t.phonePlaceholder"
       />
       <p x-show="errors.phone && touched.phone" x-text="errors.phone" class="mt-1 text-sm text-red-500"></p>
     </div>
@@ -145,7 +145,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Subject Field -->
     <div>
       <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">
-        {t.subjectLabel} <span class="text-red-500">*</span>
+        <span x-text="t.subjectLabel"></span> <span class="text-red-500">*</span>
       </label>
       <input
         type="text"
@@ -154,7 +154,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         @blur="validateField('subject')"
         :class="{'border-red-500': errors.subject && touched.subject}"
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent transition-colors"
-        placeholder={t.subjectPlaceholder}
+        :placeholder="t.subjectPlaceholder"
       />
       <p x-show="errors.subject && touched.subject" x-text="errors.subject" class="mt-1 text-sm text-red-500"></p>
     </div>
@@ -162,7 +162,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Message Field -->
     <div>
       <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
-        {t.messageLabel} <span class="text-red-500">*</span>
+        <span x-text="t.messageLabel"></span> <span class="text-red-500">*</span>
       </label>
       <textarea
         id="message"
@@ -171,7 +171,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         :class="{'border-red-500': errors.message && touched.message}"
         rows="6"
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent transition-colors resize-none"
-        placeholder={t.messagePlaceholder}
+        :placeholder="t.messagePlaceholder"
       ></textarea>
       <p x-show="errors.message && touched.message" x-text="errors.message" class="mt-1 text-sm text-red-500"></p>
     </div>
@@ -185,7 +185,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         class="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
       />
       <label for="sendCopy" class="ml-2 text-sm text-gray-700">
-        {t.sendCopyLabel}
+        <span x-text="t.sendCopyLabel"></span>
       </label>
     </div>
 
@@ -198,13 +198,13 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
       :disabled="isSubmitting"
       class="w-full px-6 py-3 bg-gold text-white font-medium rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <span x-show="!isSubmitting">{t.submitButton}</span>
+      <span x-show="!isSubmitting" x-text="t.submitButton"></span>
       <span x-show="isSubmitting" class="flex items-center justify-center">
         <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        {t.submitting}
+        <span x-text="t.submitting"></span>
       </span>
     </button>
   </form>
@@ -222,14 +222,14 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         <svg class="w-8 h-8 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <h3 class="text-lg font-semibold">{t.successTitle}</h3>
+        <h3 class="text-lg font-semibold" x-text="t.successTitle"></h3>
       </div>
-      <p class="text-gray-600 mb-4">{t.successMessage}</p>
+      <p class="text-gray-600 mb-4" x-text="t.successMessage"></p>
       <button 
         @click="submitStatus = 'idle'"
         class="w-full px-4 py-2 bg-gold text-white rounded-lg hover:bg-gold-dark transition-colors"
       >
-        {t.closeButton}
+        <span x-text="t.closeButton"></span>
       </button>
     </div>
   </div>
@@ -247,14 +247,14 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         <svg class="w-8 h-8 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <h3 class="text-lg font-semibold">{t.errorTitle}</h3>
+        <h3 class="text-lg font-semibold" x-text="t.errorTitle"></h3>
       </div>
       <p class="text-gray-600 mb-4" x-text="errorMessage"></p>
       <button 
         @click="submitStatus = 'idle'"
         class="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
       >
-        {t.tryAgain}
+        <span x-text="t.tryAgain"></span>
       </button>
     </div>
   </div>
@@ -269,6 +269,10 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
       const { t, siteKey, lang } = config;
       
       return {
+      // Store translations and config for template access
+      t: t,
+      siteKey: siteKey,
+      lang: lang,
       formData: {
         name: '',
         email: '',
