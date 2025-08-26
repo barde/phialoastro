@@ -24,8 +24,11 @@ const content = {
 
 const t = isEnglish ? content.en : content.de;
 
-// Fetch all classes from content collections (show both languages on each page for multilingual experience)
-const allClasses = await getCollection('classes');
+// Fetch classes for the current language
+// This gives us the localized titles and descriptions
+const allClasses = await getCollection('classes', ({ data }) => {
+  return data.language === lang;
+});
 
 // Transform the classes to match the expected format
 const classes = allClasses.map((classItem) => ({
