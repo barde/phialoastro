@@ -1,10 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi, afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
 
 // Clean up after each test to prevent memory leaks and test interference
 afterEach(() => {
-  cleanup();
+  // Cleanup removed - React testing library no longer used
 });
 
 // Mock window.matchMedia
