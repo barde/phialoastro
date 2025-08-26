@@ -83,7 +83,8 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
 ---
 
 <div 
-  x-data="contactForm()"
+  x-data="contactForm"
+  data-config={JSON.stringify({ t, siteKey, lang })}
   class="w-full max-w-2xl mx-auto"
 >
   <form 
@@ -259,9 +260,15 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
   </div>
 </div>
 
-<script define:vars={{ t, siteKey, lang }}>
-  function contactForm() {
-    return {
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('contactForm', function() {
+      // Get config from data attribute
+      const element = this.$el;
+      const config = JSON.parse(element.dataset.config || '{}');
+      const { t, siteKey, lang } = config;
+      
+      return {
       formData: {
         name: '',
         email: '',
@@ -434,7 +441,8 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         }
       }
     };
-  }
+    });
+  });
 </script>
 
 <!-- Load Turnstile script -->

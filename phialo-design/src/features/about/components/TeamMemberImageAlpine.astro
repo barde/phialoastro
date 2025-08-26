@@ -13,6 +13,7 @@ const { primaryImage, hoverImage, alt, className = '' } = Astro.props;
   x-data="{
     isHovered: false,
     imagesPreloaded: false,
+    altText: '${alt}',
     init() {
       // Preload hover image
       const img = new Image();
@@ -28,7 +29,7 @@ const { primaryImage, hoverImage, alt, className = '' } = Astro.props;
   class="group relative focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 rounded-lg"
   tabindex="0"
   role="button"
-  :aria-label="`${alt} - Press Enter to toggle alternate image`"
+  :aria-label="`${altText} - Press Enter to toggle alternate image`"
 >
   <!-- Primary image (always visible for SEO) -->
   <img 

@@ -200,7 +200,9 @@
 
   function logMetric(metric) {
     // Only log in development mode to reduce console noise
-    if (import.meta.env.DEV) {
+    // Check if we're in development by looking at the hostname
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isDev) {
       console.log(`[WV] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`);
     }
   }
