@@ -3,9 +3,9 @@
 ---
 
 <script type="module">
-  // Dynamic import to keep bundle size minimal
+  // Dynamic import from CDN to avoid bundling issues
   // Using attribution build for detailed debugging info
-  import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals/attribution';
+  const { onCLS, onINP, onLCP, onFCP, onTTFB } = await import('https://unpkg.com/web-vitals@5/dist/web-vitals.attribution.js');
 
   // Configuration for sending metrics
   const METRICS_ENDPOINT = '/api/vitals';
