@@ -338,134 +338,84 @@ jobs:
             });
           }
           
-          // Generate the report
-          let report = '## 📊 Core Web Vitals Report\n\n';
-          
-          // Determine test environment
-          const isLocal = '${{ steps.pr-details.outputs.is_local }}' === 'true';
-          const targetUrl = '${{ steps.pr-details.outputs.target_url }}';
-          const prNumber = '${{ steps.pr-details.outputs.pr_number }}';
-          
-          report += `**Test Environment:** ${isLocal ? '🖥️ Local Build' : '🌐 ' + targetUrl}\n`;
-          report += `**Test Date:** ${new Date().toISOString().split('T')[0]}\n\n`;
+          // Generate the report (compact version)
+          let report = '## 📊 Performance Check\n\n';
           
           // Calculate overall status
           const avgScore = summaryData.length > 0 
             ? Math.round(summaryData.reduce((acc, d) => acc + d.score, 0) / summaryData.length)
             : 0;
-          const overallStatus = avgScore >= 90 ? '✅ Excellent' : 
-                               avgScore >= 80 ? '🟢 Good' :
-                               avgScore >= 70 ? '🟡 Needs Improvement' :
-                               '🔴 Poor';
+          const overallStatus = avgScore >= 90 ? '✅' : 
+                               avgScore >= 80 ? '🟢' :
+                               avgScore >= 70 ? '🟡' :
+                               '🔴';
           
-          report += `### ${overallStatus} - Overall Score: ${avgScore}/100\n\n`;
+          report += `**Score:** ${overallStatus} ${avgScore}/100`;
           
-          // Summary table
-          if (summaryData.length > 0) {
-            report += '| Page | Performance | LCP | CLS | INP |\n';
-            report += '|------|------------|-----|-----|-----|\n';
-            
-            summaryData.forEach(data => {
-              const lcpStatus = getStatus(data.lcp, 2500, 4000);
-              const clsStatus = getStatus(data.cls, 0.1, 0.25);
-              const inpStatus = getStatus(data.inp, 200, 500);
-              const scoreStatus = data.score >= 90 ? '🟢' : data.score >= 50 ? '🟡' : '🔴';
-              
-              report += `| ${data.page} | ${data.score} ${scoreStatus} | ${formatValue(data.lcp, 's')} ${lcpStatus} | ${formatValue(data.cls, '')} ${clsStatus} | ${formatValue(data.inp, 'ms')} ${inpStatus} |\n`;
-            });
-            
-            report += '\n';
+          // Add test URL only if not local
+          const isLocal = '${{ steps.pr-details.outputs.is_local }}' === 'true';
+          const targetUrl = '${{ steps.pr-details.outputs.target_url }}';
+          if (!isLocal) {
+            const shortUrl = targetUrl.replace('https://', '').replace('.meise.workers.dev', '');
+            report += ` | **Preview:** [${shortUrl}](${targetUrl})`;
           }
+          report += '\n\n';
           
-          // Quick Actions
-          const hasIssues = summaryData.some(d => d.score < 90);
+          // Compact summary table - only show if there are issues
+          const hasIssues = summaryData.some(d => d.score < 90 || d.lcp > 2500 || d.cls > 0.1 || d.inp > 200);
+          
           if (hasIssues) {
-            report += '### ⚡ Quick Actions Needed\n\n';
+            report += '| Metric | Status | Pages with Issues |\n';
+            report += '|--------|--------|------------------|\n';
             
             const slowLCP = summaryData.filter(d => d.lcp > 2500);
             const highCLS = summaryData.filter(d => d.cls > 0.1);
             const slowINP = summaryData.filter(d => d.inp > 200);
+            const lowScore = summaryData.filter(d => d.score < 90);
             
             if (slowLCP.length > 0) {
-              report += `- 🖼️ **Optimize LCP** on: ${slowLCP.map(d => d.page).join(', ')}\n`;
+              const worst = Math.max(...slowLCP.map(d => d.lcp));
+              report += `| **LCP** | 🔴 ${formatValue(worst, 's')} | ${slowLCP.length} pages |\n`;
             }
             if (highCLS.length > 0) {
-              report += `- 📐 **Fix layout shifts** on: ${highCLS.map(d => d.page).join(', ')}\n`;
+              const worst = Math.max(...highCLS.map(d => d.cls));
+              report += `| **CLS** | 🟡 ${formatValue(worst, '')} | ${highCLS.length} pages |\n`;
             }
             if (slowINP.length > 0) {
-              report += `- ⚡ **Improve interactivity** on: ${slowINP.map(d => d.page).join(', ')}\n`;
+              const worst = Math.max(...slowINP.map(d => d.inp));
+              report += `| **INP** | 🟡 ${formatValue(worst, 'ms')} | ${slowINP.length} pages |\n`;
             }
+            if (lowScore.length > 0 && lowScore.length !== summaryData.length) {
+              report += `| **Score** | 🟡 <90 | ${lowScore.length} pages |\n`;
+            }
+            
             report += '\n';
-          }
-          
-          // Detailed reports in collapsible sections
-          report += '<details>\n';
-          report += '<summary><b>📋 Detailed Performance Metrics</b> (click to expand)</summary>\n\n';
-          
-          results.forEach(result => {
-            report += `### 📄 ${result.pageName}\n\n`;
-            report += '| Metric | Value | Status | Target |\n';
-            report += '|--------|-------|--------|--------|\n';
-            
-            // Core Web Vitals
-            const lcpStatus = getStatus(result.lcp, 2500, 4000);
-            const clsStatus = getStatus(result.cls, 0.1, 0.25);
-            const inpStatus = getStatus(result.inp, 200, 500);
-            const fcpStatus = getStatus(result.fcp, 1800, 3000);
-            const ttfbStatus = getStatus(result.ttfb, 800, 1800);
-            const siStatus = getStatus(result.si, 3400, 5800);
-            
-            report += `| **LCP** (Largest Contentful Paint) | ${formatValue(result.lcp, 's')} | ${lcpStatus} | < 2.5s |\n`;
-            report += `| **CLS** (Cumulative Layout Shift) | ${formatValue(result.cls, '')} | ${clsStatus} | < 0.1 |\n`;
-            report += `| **INP** (Interaction to Next Paint)* | ${formatValue(result.inp, 'ms')} | ${inpStatus} | < 200ms |\n`;
-            report += `| **FCP** (First Contentful Paint) | ${formatValue(result.fcp, 's')} | ${fcpStatus} | < 1.8s |\n`;
-            report += `| **TTFB** (Time to First Byte) | ${formatValue(result.ttfb, 'ms')} | ${ttfbStatus} | < 800ms |\n`;
-            report += `| **SI** (Speed Index) | ${formatValue(result.si, 's')} | ${siStatus} | < 3.4s |\n`;
-            report += '\n';
-          });
-          
-          report += '_*INP is estimated from Total Blocking Time. Real INP data requires field measurements._\n\n';
-          report += '</details>\n\n';
-          
-          // Lighthouse scores in collapsible section
-          report += '<details>\n';
-          report += '<summary><b>🏆 Lighthouse Scores</b> (click to expand)</summary>\n\n';
-          report += '| Page | Performance | Accessibility | Best Practices | SEO |\n';
-          report += '|------|------------|---------------|----------------|-----|\n';
-          
-          results.forEach(result => {
-            const perfIcon = result.perfScore >= 90 ? '🟢' : result.perfScore >= 50 ? '🟡' : '🔴';
-            const a11yIcon = result.accessibility >= 90 ? '🟢' : result.accessibility >= 50 ? '🟡' : '🔴';
-            const bpIcon = result.bestPractices >= 90 ? '🟢' : result.bestPractices >= 50 ? '🟡' : '🔴';
-            const seoIcon = result.seo >= 90 ? '🟢' : result.seo >= 50 ? '🟡' : '🔴';
-            
-            report += `| ${result.pageName} | ${result.perfScore} ${perfIcon} | ${result.accessibility} ${a11yIcon} | ${result.bestPractices} ${bpIcon} | ${result.seo} ${seoIcon} |\n`;
-          });
-          
-          report += '\n</details>\n\n';
-          
-          // Resources section
-          report += '<details>\n';
-          report += '<summary><b>📚 Resources & Next Steps</b> (click to expand)</summary>\n\n';
-          report += '### 🔍 Performance Tools\n';
-          report += '- [PageSpeed Insights](https://pagespeed.web.dev/) - Test production performance\n';
-          report += '- [WebPageTest](https://www.webpagetest.org/) - Advanced performance testing\n';
-          report += '- [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/) - Local profiling\n\n';
-          report += '### 📖 Optimization Guides\n';
-          report += '- [Web Vitals](https://web.dev/vitals/) - Core metrics explained\n';
-          report += '- [LCP Optimization](https://web.dev/optimize-lcp/) - Improve loading performance\n';
-          report += '- [CLS Optimization](https://web.dev/optimize-cls/) - Prevent layout shifts\n';
-          report += '- [INP Optimization](https://web.dev/optimize-inp/) - Enhance interactivity\n\n';
-          report += '</details>\n\n';
-          
-          // Footer
-          report += '---\n';
-          report += `_Generated by Performance Check v2 workflow on ${new Date().toUTCString()}_\n`;
-          if (!isLocal) {
-            report += `_Testing against deployed preview: ${targetUrl}_\n`;
           } else {
-            report += '_Testing against local build on localhost:4322_\n';
+            report += '✅ **All metrics passing!** ';
+            report += `LCP: ${formatValue(Math.max(...summaryData.map(d => d.lcp)), 's')} | `;
+            report += `CLS: ${formatValue(Math.max(...summaryData.map(d => d.cls)), '')} | `;
+            report += `INP: ${formatValue(Math.max(...summaryData.map(d => d.inp)), 'ms')}\n\n`;
           }
+          
+          // Compact details section - only show if requested
+          report += '<details>\n';
+          report += '<summary>View details</summary>\n\n';
+          
+          // Scores table
+          report += '| Page | Perf | A11y | BP | SEO |\n';
+          report += '|------|------|------|-------|-----|\n';
+          
+          results.forEach(result => {
+            const p = result.perfScore >= 90 ? '🟢' : result.perfScore >= 50 ? '🟡' : '🔴';
+            const a = result.accessibility >= 90 ? '🟢' : result.accessibility >= 50 ? '🟡' : '🔴';
+            const b = result.bestPractices >= 90 ? '🟢' : result.bestPractices >= 50 ? '🟡' : '🔴';
+            const s = result.seo >= 90 ? '🟢' : result.seo >= 50 ? '🟡' : '🔴';
+            
+            const shortName = result.pageName.replace(' (EN)', '').substring(0, 8);
+            report += `| ${shortName} | ${result.perfScore}${p} | ${result.accessibility}${a} | ${result.bestPractices}${b} | ${result.seo}${s} |\n`;
+          });
+          
+          report += '\n</details>';
           
           // Write the report
           fs.writeFileSync('performance-report.md', report);

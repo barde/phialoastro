@@ -8,28 +8,25 @@ This is **Phialo Design**, a luxury jewelry portfolio website built with Astro 5
 
 ## ⚠️ Critical Anti-Patterns - MUST AVOID
 
-### React Hydration Mistakes
-NEVER do this:
-```tsx
-// ❌ WRONG - Causes hydration mismatch
-const Component = () => {
-  const isGerman = window.location.pathname.startsWith('/en/') ? false : true;
-  return <div>{isGerman ? 'Deutsch' : 'English'}</div>;
-};
+### Alpine.js Best Practices
+ALWAYS define Alpine functions globally:
+```javascript
+// ✅ CORRECT - Make functions available globally
+<script is:inline>
+  window.myComponent = function(data) {
+    return {
+      // Alpine component logic
+    };
+  }
+</script>
 ```
 
-ALWAYS do this:
-```tsx
-// ✅ CORRECT - Handles SSR properly
-const Component = () => {
-  const [isGerman, setIsGerman] = useState(true); // Default state
-  
-  useEffect(() => {
-    setIsGerman(!window.location.pathname.startsWith('/en/'));
-  }, []);
-  
-  return <div>{isGerman ? 'Deutsch' : 'English'}</div>;
-};
+Proper Alpine.js initialization:
+```html
+<!-- ✅ CORRECT - Use window prefix for global functions -->
+<div x-data="window.myComponent(data)">
+  <!-- Component HTML -->
+</div>
 ```
 
 ### File Management Mistakes
@@ -136,10 +133,10 @@ This repository stores images directly in Git (no LFS required). Images are opti
 
 ### Core Stack
 - **Astro 5.9.3**: Static site generator with Islands Architecture
-- **React 19.1.0**: For interactive components only (selective hydration)
+- **Alpine.js 3.14.4**: Lightweight framework for interactive components (15KB vs React's 200KB)
 - **Tailwind CSS 3.4.1**: Comprehensive design system with luxury brand tokens
 - **TypeScript**: Strict configuration with Astro defaults
-- **Vitest**: Testing with React Testing Library
+- **Vitest**: Testing framework for unit and integration tests
 
 ### Feature-Based Architecture
 The project follows a feature-based architecture where functionality is organized by business domain rather than technical layers. Each feature is self-contained with its own components, pages, types, and styles. This improves maintainability, scalability, and team collaboration.
@@ -200,22 +197,22 @@ The site uses a custom URL-based multilingual system for German/English support:
 - English content is served under `/en/` prefix
 - Language preference persists across page navigation
 
-### Important Notes on React Hydration
-- Portfolio and other React components use URL-based language detection
-- Always handle hydration mismatches with useState/useEffect pattern
-- Use `useMemo` for language-dependent data that needs to be reactive
-- See [ISSUE-22-FIX.md](./docs/decisions/ISSUE-22-FIX.md) for detailed example
+### Important Notes on Alpine.js Components
+- Portfolio and other Alpine components use URL-based language detection
+- Alpine.js provides reactive data without hydration issues
+- Use `x-data` for component state and `x-show`/`x-if` for conditional rendering
+- Alpine automatically handles reactivity without manual state management
 
-## Hydration Testing Checklist
+## Alpine.js Testing Checklist
 
-Before submitting ANY React component PR:
+Before submitting ANY Alpine component PR:
 
 1. [ ] Test with JavaScript disabled - component should render meaningful content
-2. [ ] Check browser console for hydration warnings
+2. [ ] Check browser console for Alpine initialization errors
 3. [ ] Verify language switching works without page reload
 4. [ ] Test rapid navigation between pages
 5. [ ] Verify localStorage persistence works correctly
-6. [ ] Check that initial render matches server render
+6. [ ] Check that Alpine components initialize properly
 7. [ ] Run `pnpm run build && pnpm run preview` and test in production mode
 
 Test command sequence:
@@ -528,7 +525,7 @@ Note: The cleanup-preview.yml workflow now automatically handles worker cleanup 
 
 ## Key Files to Understand
 
-- `astro.config.mjs`: Core Astro configuration with React/Tailwind integration
+- `astro.config.mjs`: Core Astro configuration with Alpine.js/Tailwind integration
 - `tailwind.config.mjs`: Complete design system definition
 - `src/content/config.ts`: Content collections schema
 - `src/shared/navigation/LanguageSelector.astro`: Handles language switching
@@ -599,11 +596,11 @@ rg "useState.*useEffect" --type tsx -A 5 -B 5
 3. Check Workers script for CSP/header issues
 4. Verify environment variables and KV namespaces
 
-### If hydration errors appear:
-1. Add client:only="react" to affected components
-2. Implement proper useState/useEffect pattern
-3. Check for window/document usage
-4. Verify language detection logic
+### If Alpine.js errors appear:
+1. Ensure Alpine scripts have `is:inline` attribute
+2. Verify functions are attached to `window` object
+3. Check for proper x-data initialization
+4. Verify Alpine.js is loaded before components
 
 ### If build fails:
 1. Clear cache: `rm -rf .astro node_modules pnpm-lock.yaml`

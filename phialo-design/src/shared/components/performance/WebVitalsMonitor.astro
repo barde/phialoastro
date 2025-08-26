@@ -1,13 +1,11 @@
 ---
-// WebVitalsMonitor.astro
-// This component adds Core Web Vitals monitoring with contextual data
-// It complements existing Cloudflare Web Analytics with additional insights
+// Lightweight Web Vitals monitoring
 ---
 
 <script type="module">
-  // Dynamic import to keep bundle size minimal
+  // Dynamic import from CDN to avoid bundling issues
   // Using attribution build for detailed debugging info
-  import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals/attribution';
+  const { onCLS, onINP, onLCP, onFCP, onTTFB } = await import('https://unpkg.com/web-vitals@5/dist/web-vitals.attribution.js');
 
   // Configuration for sending metrics
   const METRICS_ENDPOINT = '/api/vitals';
@@ -82,6 +80,15 @@
    */
   function sendMetricsBatch() {
     if (metricsQueue.length === 0) return;
+    
+    // Only send metrics in production or if endpoint exists
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isDev) {
+      // In development, just log the metrics instead of sending
+      console.debug('[WV] Metrics batch:', metricsQueue);
+      metricsQueue = [];
+      return;
+    }
     
     const batch = [...metricsQueue];
     metricsQueue = [];
@@ -200,19 +207,12 @@
     }
   }
 
-  /**
-   * Log metrics to console in development
-   */
   function logMetric(metric) {
-    if (import.meta.env.DEV) {
-      const color = metric.rating === 'good' ? 'green' : 
-                   metric.rating === 'needs-improvement' ? 'orange' : 'red';
-      
-      console.log(
-        `%c[Web Vitals] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`,
-        `color: ${color}; font-weight: bold;`,
-        metric
-      );
+    // Only log in development mode to reduce console noise
+    // Check if we're in development by looking at the hostname
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isDev) {
+      console.log(`[WV] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`);
     }
   }
 

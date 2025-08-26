@@ -1,6 +1,7 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
-import Portfolio from '../components/PortfolioSection.tsx';
+import PortfolioAlpine from '../components/PortfolioSectionAlpine.astro';
+import AnimatedText from '../../../shared/components/ui/AnimatedTextCSS.astro';
 
 const title = 'Portfolio | Phialo Design';
 const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D-Skulpturen. Von Ringen bis zu Skulpturen - jedes Stück ein Kunstwerk.';
@@ -11,9 +12,11 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
   <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-5xl md:text-6xl font-light text-neutral-900 mb-8">
-          Portfolio
-        </h1>
+        <AnimatedText 
+          text="Portfolio"
+          className="text-5xl md:text-6xl font-light text-neutral-900 mb-8"
+          as="h1"
+        />
         <p class="text-lg text-neutral-600 leading-relaxed">
           Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D-Skulpturen. 
           Jedes Stück wird mit Präzision und künstlerischer Vision gefertigt.
@@ -23,7 +26,7 @@ const description = 'Entdecken Sie unsere einzigartigen Schmuckkreationen und 3D
   </section>
 
   <!-- Portfolio Section -->
-  <Portfolio client:visible lang="de" />
+  <PortfolioAlpine lang="de" />
 
   <!-- Call-to-Action -->
   <section class="py-20 bg-neutral-50">

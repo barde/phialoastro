@@ -12,7 +12,7 @@
       // Create link element for additional fonts
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = '/_astro/fonts-additional.css';
+      link.href = '/fonts-additional.css';
       link.media = 'print'; // Start with print to avoid blocking
       link.onload = function() {
         this.media = 'all'; // Switch to all media once loaded
@@ -25,7 +25,7 @@
       setTimeout(() => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = '/_astro/fonts-additional.css';
+        link.href = '/fonts-additional.css';
         document.head.appendChild(link);
       }, 1000);
     });
