@@ -81,6 +81,15 @@
   function sendMetricsBatch() {
     if (metricsQueue.length === 0) return;
     
+    // Only send metrics in production or if endpoint exists
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isDev) {
+      // In development, just log the metrics instead of sending
+      console.debug('[WV] Metrics batch:', metricsQueue);
+      metricsQueue = [];
+      return;
+    }
+    
     const batch = [...metricsQueue];
     metricsQueue = [];
     
