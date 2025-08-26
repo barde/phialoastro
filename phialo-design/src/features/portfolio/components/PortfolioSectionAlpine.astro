@@ -296,15 +296,17 @@ const portfolioData = {
   </div>
 </div>
 
-<script>
-  // Define the Alpine component before Alpine initializes
-  document.addEventListener('alpine:init', () => {
-    Alpine.data('portfolioSection', function() {
-      // Get the data from the data attribute
-      const element = this.$el;
-      const data = JSON.parse(element.dataset.portfolio || '{}');
-      
-      return {
+<script is:inline>
+  // Ensure Alpine component is registered immediately
+  if (typeof Alpine !== 'undefined') {
+    // If Alpine is already loaded, register immediately
+    if (!Alpine.data || !Alpine.data.portfolioSection) {
+      Alpine.data('portfolioSection', function() {
+        // Get the data from the data attribute
+        const element = this.$el;
+        const data = JSON.parse(element.dataset.portfolio || '{}');
+        
+        return {
       items: data.items,
       categories: data.categories,
       categoryMap: data.categoryMap,
@@ -378,7 +380,170 @@ const portfolioData = {
         }
       }
     };
+      });
+    }
+  } else {
+    // If Alpine is not loaded yet, wait for it
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('portfolioSection', function() {
+        // Get the data from the data attribute
+        const element = this.$el;
+        const data = JSON.parse(element.dataset.portfolio || '{}');
+        
+        return {
+          items: data.items,
+          categories: data.categories,
+          categoryMap: data.categoryMap,
+          lang: data.lang,
+          activeFilter: 'all',
+          filteredItems: data.items,
+          isModalOpen: false,
+          selectedItem: null,
+          currentImageIndex: 0,
+          
+          setFilter(filter) {
+            this.activeFilter = filter;
+            if (filter === 'all') {
+              this.filteredItems = this.items;
+            } else {
+              this.filteredItems = this.items.filter(item => {
+                // For English items, compare directly
+                if (item.category === filter) return true;
+                
+                // For German items, check if the active filter (English) maps to the item's German category
+                if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+                
+                // For English page with German filter IDs - though this shouldn't happen with our setup
+                if (this.lang === 'en' && item.category === filter) return true;
+                
+                return false;
+              });
+            }
+          },
+          
+          openModal(item) {
+            this.selectedItem = item;
+            this.currentImageIndex = 0;
+            this.isModalOpen = true;
+            document.body.style.overflow = 'hidden';
+          },
+          
+          closeModal() {
+            this.isModalOpen = false;
+            document.body.style.overflow = '';
+            setTimeout(() => { this.selectedItem = null; }, 300);
+          },
+          
+          navigateModal(direction) {
+            if (!this.selectedItem) return;
+            
+            const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+            let newIndex;
+            
+            if (direction === 'prev') {
+              newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+            } else {
+              newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+            }
+            
+            this.selectedItem = this.filteredItems[newIndex];
+            this.currentImageIndex = 0;
+          },
+          
+          nextImage() {
+            if (this.selectedItem && this.selectedItem.gallery) {
+              this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+            }
+          },
+          
+          prevImage() {
+            if (this.selectedItem && this.selectedItem.gallery) {
+              this.currentImageIndex = this.currentImageIndex === 0 
+                ? this.selectedItem.gallery.length - 1 
+                : this.currentImageIndex - 1;
+            }
+          }
+        };
+      });
     });
+  }
+  
+  // Also register on astro:after-swap for View Transitions
+  document.addEventListener('astro:after-swap', () => {
+    if (typeof Alpine !== 'undefined' && Alpine.data) {
+      if (!Alpine.data.portfolioSection) {
+        Alpine.data('portfolioSection', function() {
+          const element = this.$el;
+          const data = JSON.parse(element.dataset.portfolio || '{}');
+          
+          return {
+            items: data.items,
+            categories: data.categories,
+            categoryMap: data.categoryMap,
+            lang: data.lang,
+            activeFilter: 'all',
+            filteredItems: data.items,
+            isModalOpen: false,
+            selectedItem: null,
+            currentImageIndex: 0,
+            
+            setFilter(filter) {
+              this.activeFilter = filter;
+              if (filter === 'all') {
+                this.filteredItems = this.items;
+              } else {
+                this.filteredItems = this.items.filter(item => {
+                  if (item.category === filter) return true;
+                  if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+                  if (this.lang === 'en' && item.category === filter) return true;
+                  return false;
+                });
+              }
+            },
+            
+            openModal(item) {
+              this.selectedItem = item;
+              this.currentImageIndex = 0;
+              this.isModalOpen = true;
+              document.body.style.overflow = 'hidden';
+            },
+            
+            closeModal() {
+              this.isModalOpen = false;
+              document.body.style.overflow = '';
+              setTimeout(() => { this.selectedItem = null; }, 300);
+            },
+            
+            navigateModal(direction) {
+              if (!this.selectedItem) return;
+              const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+              let newIndex;
+              if (direction === 'prev') {
+                newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+              } else {
+                newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+              }
+              this.selectedItem = this.filteredItems[newIndex];
+              this.currentImageIndex = 0;
+            },
+            
+            nextImage() {
+              if (this.selectedItem && this.selectedItem.gallery) {
+                this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+              }
+            },
+            
+            prevImage() {
+              if (this.selectedItem && this.selectedItem.gallery) {
+                this.currentImageIndex = this.currentImageIndex === 0 
+                  ? this.selectedItem.gallery.length - 1 
+                  : this.currentImageIndex - 1;
+              }
+            }
+          };
+        });
+      }
+    }
   });
 </script>
 
