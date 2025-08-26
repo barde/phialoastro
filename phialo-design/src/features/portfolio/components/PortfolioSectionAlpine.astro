@@ -1,0 +1,566 @@
+---
+import { getCollection } from 'astro:content';
+
+export interface Props {
+  lang?: 'de' | 'en';
+}
+
+const { lang = 'de' } = Astro.props;
+const isEnglish = lang === 'en';
+
+// Fetch portfolio items from content collections
+const allPortfolioItems = await getCollection('portfolio', ({ data }) => {
+  return data.language === lang;
+});
+
+// Transform to match expected format for Alpine.js
+const portfolioItems = allPortfolioItems.map((item) => ({
+  id: item.slug, // Use slug as unique ID
+  title: item.data.title,
+  category: item.data.category,
+  image: item.data.image,
+  slug: item.slug,
+  description: item.data.description,
+  year: item.data.projectDate ? new Date(item.data.projectDate).getFullYear() : new Date(item.data.publishedAt).getFullYear(),
+  materials: item.data.materials || [],
+  gallery: item.data.gallery || [item.data.image],
+  youtubeVideoId: item.data.youtubeVideoId,
+  youtubeAspectRatio: item.data.youtubeAspectRatio || '16:9',
+  tags: item.data.tags || [],
+  features: [], // Can be populated from content if needed
+  client: item.data.client,
+  projectDate: item.data.projectDate,
+  availability: item.data.availability || 'available'
+}));
+
+// Category mapping to handle language differences and maintain compatibility
+const categoryMap = {
+  'rings': 'rings',
+  'Rings': 'rings', // for backward compatibility
+  'earrings': 'earrings',
+  'Earrings': 'earrings', // for backward compatibility
+  'pendants': 'pendants',
+  'Pendants': 'pendants', // for backward compatibility
+  'sculptures': 'sculptures',
+  'Sculptures': 'sculptures', // for backward compatibility
+  'pins': 'pins',
+  'Pins': 'pins' // for backward compatibility
+} as const;
+
+// Define categories for the filter UI - only include categories that have items
+const categories = [
+  { id: 'all', label: 'Alle Arbeiten', labelEn: 'All Works' },
+  { id: 'rings', label: 'Ringe', labelEn: 'Rings' },
+  { id: 'earrings', label: 'Ohrringe', labelEn: 'Earrings' },
+  { id: 'pendants', label: 'Anhänger', labelEn: 'Pendants' },
+  { id: 'sculptures', label: 'Skulpturen', labelEn: 'Sculptures' },
+  { id: 'pins', label: 'Anstecker', labelEn: 'Pins' }
+];
+
+// Prepare data for Alpine
+const portfolioData = {
+  items: portfolioItems,
+  categories: categories.map(cat => ({
+    id: cat.id,
+    label: isEnglish && cat.labelEn ? cat.labelEn : cat.label
+  })),
+  categoryMap: categoryMap,
+  lang: lang
+};
+---
+
+<div 
+  x-data="portfolioSection"
+  data-portfolio={JSON.stringify(portfolioData)}
+  class="portfolio-section w-full py-8"
+>
+  <!-- Portfolio Filter -->
+  <div class="portfolio-filter-wrapper mb-12">
+    <div class="flex flex-wrap justify-center gap-4">
+      <template x-for="category in categories" :key="category.id">
+        <button
+          @click="setFilter(category.id)"
+          :class="{
+            'bg-gold text-white': activeFilter === category.id,
+            'bg-white text-midnight border border-midnight/20': activeFilter !== category.id
+          }"
+          class="px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105"
+          x-text="category.label"
+        ></button>
+      </template>
+    </div>
+  </div>
+
+  <!-- Portfolio Grid -->
+  <div class="portfolio-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <template x-for="(item, index) in filteredItems" :key="item.id">
+      <div 
+        @click="openModal(item)"
+        :data-item-id="item.id"
+        class="portfolio-item group cursor-pointer relative overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        :style="`animation-delay: ${index * 0.1}s`"
+      >
+        <!-- Image -->
+        <div class="aspect-square overflow-hidden bg-gray-100">
+          <img 
+            :src="item.image" 
+            :alt="item.title"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+        </div>
+        
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-midnight/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            <h3 class="text-xl font-display font-medium mb-2" x-text="item.title"></h3>
+            <p class="text-sm opacity-90" x-text="item.shortDescription || item.description.substring(0, 100) + '...'"></p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Modal -->
+  <div 
+    class="portfolio-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-midnight/75"
+    x-show="isModalOpen"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    @click="closeModal()"
+    @keydown.escape.window="closeModal()"
+    style="display: none;"
+  >
+    <div 
+      @click.stop
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-90"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-90"
+      class="relative w-full max-w-6xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl"
+    >
+      <!-- Close button -->
+      <button 
+        @click="closeModal()"
+        class="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+        aria-label={isEnglish ? 'Close modal' : 'Modal schließen'}
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <!-- Navigation arrows -->
+      <template x-if="filteredItems && filteredItems.length > 1">
+        <div>
+          <button 
+            @click="navigateModal('prev')"
+            class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+            aria-label={isEnglish ? 'Previous item' : 'Vorheriges Element'}
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <button 
+            @click="navigateModal('next')"
+            class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+            aria-label={isEnglish ? 'Next item' : 'Nächstes Element'}
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </template>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 h-full">
+        <!-- Image carousel -->
+        <div class="relative bg-gray-100 flex items-center justify-center p-8">
+          <template x-if="selectedItem">
+            <div class="w-full">
+              <template x-if="selectedItem.youtubeVideoId">
+                <div class="aspect-video">
+                  <iframe
+                    :src="'https://www.youtube.com/embed/' + selectedItem.youtubeVideoId"
+                    class="w-full h-full rounded-lg"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    :title="selectedItem.title"
+                  ></iframe>
+                </div>
+              </template>
+              <template x-if="!selectedItem.youtubeVideoId && selectedItem.gallery">
+                <div>
+                  <img 
+                    :src="selectedItem.gallery[currentImageIndex]"
+                    :alt="selectedItem.title"
+                    class="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                  />
+                  <!-- Image navigation dots -->
+                  <template x-if="selectedItem.gallery.length > 1">
+                    <div class="flex justify-center gap-2 mt-4">
+                      <template x-for="(img, idx) in selectedItem.gallery" :key="idx">
+                        <button 
+                          @click="currentImageIndex = idx"
+                          :class="{'bg-gold': currentImageIndex === idx, 'bg-gray-300': currentImageIndex !== idx}"
+                          class="w-2 h-2 rounded-full transition-colors"
+                          :aria-label={`'${isEnglish ? 'Show image' : 'Bild zeigen'} ' + (idx + 1)`}
+                        ></button>
+                      </template>
+                    </div>
+                  </template>
+                  <!-- Image navigation arrows -->
+                  <template x-if="selectedItem.gallery.length > 1">
+                    <div>
+                      <button 
+                        @click="prevImage()"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                        aria-label={isEnglish ? 'Previous image' : 'Vorheriges Bild'}
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                      </button>
+                      <button 
+                        @click="nextImage()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                        aria-label={isEnglish ? 'Next image' : 'Nächstes Bild'}
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8 overflow-y-auto">
+          <template x-if="selectedItem">
+            <div>
+              <h2 class="text-3xl font-display font-medium mb-4" x-text="selectedItem.title"></h2>
+              <p class="text-gray-600 mb-6" x-text="selectedItem.description"></p>
+              
+              <!-- Features -->
+              <template x-if="selectedItem.features && selectedItem.features.length > 0">
+                <div class="mb-6">
+                  <h3 class="text-lg font-semibold mb-3">{isEnglish ? 'Features' : 'Eigenschaften'}</h3>
+                  <ul class="list-disc list-inside space-y-1 text-gray-600">
+                    <template x-for="feature in selectedItem.features" :key="feature">
+                      <li x-text="feature"></li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
+              
+              <!-- Materials -->
+              <template x-if="selectedItem.materials && selectedItem.materials.length > 0">
+                <div class="mb-6">
+                  <h3 class="text-lg font-semibold mb-3">{isEnglish ? 'Materials' : 'Materialien'}</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="material in selectedItem.materials" :key="material">
+                      <span class="px-3 py-1 bg-gray-100 rounded-full text-sm" x-text="material"></span>
+                    </template>
+                  </div>
+                </div>
+              </template>
+              
+              <!-- Tags -->
+              <template x-if="selectedItem.tags && selectedItem.tags.length > 0">
+                <div>
+                  <h3 class="text-lg font-semibold mb-3">Tags</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="tag in selectedItem.tags" :key="tag">
+                      <span class="px-3 py-1 bg-gold/10 text-gold rounded-full text-sm" x-text="tag"></span>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // Ensure Alpine component is registered immediately
+  if (typeof Alpine !== 'undefined') {
+    // If Alpine is already loaded, register immediately
+    if (!Alpine.data || !Alpine.data.portfolioSection) {
+      Alpine.data('portfolioSection', function() {
+        // Get the data from the data attribute
+        const element = this.$el;
+        const data = JSON.parse(element.dataset.portfolio || '{}');
+        
+        return {
+      items: data.items,
+      categories: data.categories,
+      categoryMap: data.categoryMap,
+      lang: data.lang,
+      activeFilter: 'all',
+      filteredItems: data.items,
+      isModalOpen: false,
+      selectedItem: null,
+      currentImageIndex: 0,
+      
+      setFilter(filter) {
+        this.activeFilter = filter;
+        if (filter === 'all') {
+          this.filteredItems = this.items;
+        } else {
+          this.filteredItems = this.items.filter(item => {
+            // For English items, compare directly
+            if (item.category === filter) return true;
+            
+            // For German items, check if the active filter (English) maps to the item's German category
+            if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+            
+            // For English page with German filter IDs - though this shouldn't happen with our setup
+            if (this.lang === 'en' && item.category === filter) return true;
+            
+            return false;
+          });
+        }
+      },
+      
+      openModal(item) {
+        this.selectedItem = item;
+        this.currentImageIndex = 0;
+        this.isModalOpen = true;
+        document.body.style.overflow = 'hidden';
+      },
+      
+      closeModal() {
+        this.isModalOpen = false;
+        document.body.style.overflow = '';
+        setTimeout(() => { this.selectedItem = null; }, 300);
+      },
+      
+      navigateModal(direction) {
+        if (!this.selectedItem) return;
+        
+        const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+        let newIndex;
+        
+        if (direction === 'prev') {
+          newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+        } else {
+          newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+        }
+        
+        this.selectedItem = this.filteredItems[newIndex];
+        this.currentImageIndex = 0;
+      },
+      
+      nextImage() {
+        if (this.selectedItem && this.selectedItem.gallery) {
+          this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+        }
+      },
+      
+      prevImage() {
+        if (this.selectedItem && this.selectedItem.gallery) {
+          this.currentImageIndex = this.currentImageIndex === 0 
+            ? this.selectedItem.gallery.length - 1 
+            : this.currentImageIndex - 1;
+        }
+      }
+    };
+      });
+    }
+  } else {
+    // If Alpine is not loaded yet, wait for it
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('portfolioSection', function() {
+        // Get the data from the data attribute
+        const element = this.$el;
+        const data = JSON.parse(element.dataset.portfolio || '{}');
+        
+        return {
+          items: data.items,
+          categories: data.categories,
+          categoryMap: data.categoryMap,
+          lang: data.lang,
+          activeFilter: 'all',
+          filteredItems: data.items,
+          isModalOpen: false,
+          selectedItem: null,
+          currentImageIndex: 0,
+          
+          setFilter(filter) {
+            this.activeFilter = filter;
+            if (filter === 'all') {
+              this.filteredItems = this.items;
+            } else {
+              this.filteredItems = this.items.filter(item => {
+                // For English items, compare directly
+                if (item.category === filter) return true;
+                
+                // For German items, check if the active filter (English) maps to the item's German category
+                if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+                
+                // For English page with German filter IDs - though this shouldn't happen with our setup
+                if (this.lang === 'en' && item.category === filter) return true;
+                
+                return false;
+              });
+            }
+          },
+          
+          openModal(item) {
+            this.selectedItem = item;
+            this.currentImageIndex = 0;
+            this.isModalOpen = true;
+            document.body.style.overflow = 'hidden';
+          },
+          
+          closeModal() {
+            this.isModalOpen = false;
+            document.body.style.overflow = '';
+            setTimeout(() => { this.selectedItem = null; }, 300);
+          },
+          
+          navigateModal(direction) {
+            if (!this.selectedItem) return;
+            
+            const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+            let newIndex;
+            
+            if (direction === 'prev') {
+              newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+            } else {
+              newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+            }
+            
+            this.selectedItem = this.filteredItems[newIndex];
+            this.currentImageIndex = 0;
+          },
+          
+          nextImage() {
+            if (this.selectedItem && this.selectedItem.gallery) {
+              this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+            }
+          },
+          
+          prevImage() {
+            if (this.selectedItem && this.selectedItem.gallery) {
+              this.currentImageIndex = this.currentImageIndex === 0 
+                ? this.selectedItem.gallery.length - 1 
+                : this.currentImageIndex - 1;
+            }
+          }
+        };
+      });
+    });
+  }
+  
+  // Also register on astro:after-swap for View Transitions
+  document.addEventListener('astro:after-swap', () => {
+    if (typeof Alpine !== 'undefined' && Alpine.data) {
+      if (!Alpine.data.portfolioSection) {
+        Alpine.data('portfolioSection', function() {
+          const element = this.$el;
+          const data = JSON.parse(element.dataset.portfolio || '{}');
+          
+          return {
+            items: data.items,
+            categories: data.categories,
+            categoryMap: data.categoryMap,
+            lang: data.lang,
+            activeFilter: 'all',
+            filteredItems: data.items,
+            isModalOpen: false,
+            selectedItem: null,
+            currentImageIndex: 0,
+            
+            setFilter(filter) {
+              this.activeFilter = filter;
+              if (filter === 'all') {
+                this.filteredItems = this.items;
+              } else {
+                this.filteredItems = this.items.filter(item => {
+                  if (item.category === filter) return true;
+                  if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+                  if (this.lang === 'en' && item.category === filter) return true;
+                  return false;
+                });
+              }
+            },
+            
+            openModal(item) {
+              this.selectedItem = item;
+              this.currentImageIndex = 0;
+              this.isModalOpen = true;
+              document.body.style.overflow = 'hidden';
+            },
+            
+            closeModal() {
+              this.isModalOpen = false;
+              document.body.style.overflow = '';
+              setTimeout(() => { this.selectedItem = null; }, 300);
+            },
+            
+            navigateModal(direction) {
+              if (!this.selectedItem) return;
+              const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+              let newIndex;
+              if (direction === 'prev') {
+                newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+              } else {
+                newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+              }
+              this.selectedItem = this.filteredItems[newIndex];
+              this.currentImageIndex = 0;
+            },
+            
+            nextImage() {
+              if (this.selectedItem && this.selectedItem.gallery) {
+                this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+              }
+            },
+            
+            prevImage() {
+              if (this.selectedItem && this.selectedItem.gallery) {
+                this.currentImageIndex = this.currentImageIndex === 0 
+                  ? this.selectedItem.gallery.length - 1 
+                  : this.currentImageIndex - 1;
+              }
+            }
+          };
+        });
+      }
+    }
+  });
+</script>
+
+<style>
+  .portfolio-item {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+// Dynamic Feature Loader - Load feature JavaScript only when needed
+export interface Props {
+  features: ('portfolio' | 'contact' | 'about' | 'services' | 'classes')[];
+}
+
+const { features = [] } = Astro.props;
+---
+
+<script define:vars={{ features }}>
+  // Load feature chunks only when their elements are detected
+  const loadFeature = async (featureName) => {
+    try {
+      switch (featureName) {
+        case 'portfolio':
+          if (document.querySelector('.portfolio-section, [data-portfolio]')) {
+            await import(`/src/features/portfolio/client.ts`);
+          }
+          break;
+        case 'contact':
+          if (document.querySelector('form[data-contact-form], .turnstile-widget')) {
+            await import(`/src/features/contact/client.ts`);
+          }
+          break;
+        case 'about':
+          if (document.querySelector('.team-member, [data-about]')) {
+            await import(`/src/features/about/client.ts`);
+          }
+          break;
+        case 'services':
+          if (document.querySelector('.services-grid, [data-services]')) {
+            await import(`/src/features/services/client.ts`);
+          }
+          break;
+        case 'classes':
+          if (document.querySelector('.classes-section, [data-classes]')) {
+            await import(`/src/features/classes/client.ts`);
+          }
+          break;
+      }
+    } catch (error) {
+      // Silently ignore import errors for features that don't have client-side code
+      console.debug(`Feature ${featureName} client code not available`);
+    }
+  };
+
+  // Use intersection observer to load features when they come into view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const featureName = entry.target.dataset.feature;
+        if (featureName && features.includes(featureName)) {
+          loadFeature(featureName);
+          observer.unobserve(entry.target);
+        }
+      }
+    });
+  }, { rootMargin: '50px' });
+
+  // Observe elements when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    features.forEach(feature => {
+      const elements = document.querySelectorAll(`[data-feature="${feature}"]`);
+      elements.forEach(el => observer.observe(el));
+    });
+
+    // Also check immediate loading needs
+    features.forEach(loadFeature);
+  });
+</script>

@@ -1,0 +1,95 @@
+name: Bundle Size Check
+
+on:
+  pull_request:
+    paths:
+      - 'phialo-design/**'
+      - '.github/workflows/bundle-size-check.yml'
+  push:
+    branches:
+      - master
+
+jobs:
+  check-bundle-size:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pnpm-store
+            phialo-design/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        working-directory: ./phialo-design
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        working-directory: ./phialo-design
+        run: pnpm run build
+
+      - name: Check bundle size
+        working-directory: ./phialo-design
+        run: node scripts/check-bundle-size.js
+
+      - name: Upload bundle stats
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: phialo-design/dist/stats.html
+
+      - name: Comment PR with bundle size
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read bundle sizes from dist
+            const distDir = path.join(process.cwd(), 'phialo-design', 'dist', '_astro');
+            const files = fs.readdirSync(distDir);
+            const jsFiles = files.filter(f => f.endsWith('.js'));
+            
+            let totalSize = 0;
+            jsFiles.forEach(file => {
+              const stats = fs.statSync(path.join(distDir, file));
+              totalSize += stats.size;
+            });
+            
+            const totalKB = (totalSize / 1024).toFixed(2);
+            const emoji = totalSize > 800 * 1024 ? '🔴' : '✅';
+            
+            const comment = `## ${emoji} Bundle Size Report
+            
+            **Total JavaScript:** ${totalKB} KB (Target: 800 KB)
+            
+            [View detailed bundle analysis](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

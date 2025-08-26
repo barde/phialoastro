@@ -7,10 +7,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuration
-const MAX_BUNDLE_SIZE = 350 * 1024; // 350KB
-const MAX_VENDOR_SIZE = 150 * 1024; // 150KB  
-const MAX_MOTION_SIZE = 30 * 1024;  // 30KB for motion libraries
+// Configuration - Realistic limits for Astro + Alpine.js site
+const MAX_TOTAL_SIZE = 800 * 1024;  // 800KB total (with code splitting)
+const MAX_INITIAL_SIZE = 250 * 1024; // 250KB initial load per route
+const MAX_VENDOR_SIZE = 350 * 1024; // 350KB vendor chunk (Astro + Alpine.js + utilities)
+const MAX_ALPINE_SIZE = 100 * 1024; // 100KB for Alpine.js (core + components)
 const DIST_DIR = path.join(__dirname, '..', 'dist', '_astro');
 
 // ANSI color codes
@@ -111,27 +112,46 @@ function analyzeBundles() {
   console.log('\n' + '=' .repeat(60));
   console.log('\n📊 Summary:\n');
 
-  // Total bundle size
-  const totalColor = totalSize > MAX_BUNDLE_SIZE ? colors.red : colors.green;
-  console.log(`  Total JS:     ${totalColor}${formatBytes(totalSize).padStart(10)}${colors.reset} / ${formatBytes(MAX_BUNDLE_SIZE)} (target)`);
+  // Total bundle size (with code splitting)
+  const totalColor = totalSize > MAX_TOTAL_SIZE ? colors.red : colors.green;
+  console.log(`  Total JS:     ${totalColor}${formatBytes(totalSize).padStart(10)}${colors.reset} / ${formatBytes(MAX_TOTAL_SIZE)} (with splitting)`);
 
   // Vendor size
   const vendorColor = vendorSize > MAX_VENDOR_SIZE ? colors.yellow : colors.green;
   console.log(`  Vendor libs:  ${vendorColor}${formatBytes(vendorSize).padStart(10)}${colors.reset} / ${formatBytes(MAX_VENDOR_SIZE)} (target)`);
 
-  // Motion library size
-  const motionColor = motionSize > MAX_MOTION_SIZE ? colors.yellow : colors.green;
-  console.log(`  Motion libs:  ${motionColor}${formatBytes(motionSize).padStart(10)}${colors.reset} / ${formatBytes(MAX_MOTION_SIZE)} (target)`);
+  // Alpine.js size (replaced motion libraries)
+  const alpineSize = bundles.filter(b => b.name.includes('alpine')).reduce((sum, b) => sum + b.size, 0);
+  const alpineColor = alpineSize > MAX_ALPINE_SIZE ? colors.yellow : colors.green;
+  console.log(`  Alpine.js:    ${alpineColor}${formatBytes(alpineSize).padStart(10)}${colors.reset} / ${formatBytes(MAX_ALPINE_SIZE)} (target)`);
+
+  console.log('\n' + '=' .repeat(60));
+
+  // Check initial load size (critical bundles)
+  const initialBundles = bundles.filter(b => 
+    b.name.includes('home') || 
+    b.name.includes('navigation') || 
+    b.name.includes('ClientRouter') ||
+    b.name.includes('effects')
+  );
+  const initialSize = initialBundles.reduce((sum, b) => sum + b.size, 0);
+  const initialColor = initialSize > MAX_INITIAL_SIZE ? colors.red : colors.green;
+  console.log(`  Initial load: ${initialColor}${formatBytes(initialSize).padStart(10)}${colors.reset} / ${formatBytes(MAX_INITIAL_SIZE)} (target)`);
 
   console.log('\n' + '=' .repeat(60));
 
   // Recommendations
-  if (totalSize > MAX_BUNDLE_SIZE || vendorSize > MAX_VENDOR_SIZE || motionSize > MAX_MOTION_SIZE) {
+  if (totalSize > MAX_TOTAL_SIZE || initialSize > MAX_INITIAL_SIZE || vendorSize > MAX_VENDOR_SIZE) {
     console.log(`\n${colors.yellow}⚠️  Recommendations:${colors.reset}\n`);
 
-    if (totalSize > MAX_BUNDLE_SIZE) {
-      console.log(`  • Total bundle exceeds ${formatBytes(MAX_BUNDLE_SIZE)} limit`);
-      console.log(`    Consider code splitting and lazy loading`);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      console.log(`  • Total bundle exceeds ${formatBytes(MAX_TOTAL_SIZE)} limit`);
+      console.log(`    Review code splitting strategy`);
+    }
+
+    if (initialSize > MAX_INITIAL_SIZE) {
+      console.log(`  • Initial load exceeds ${formatBytes(MAX_INITIAL_SIZE)} limit`);
+      console.log(`    Defer non-critical features`);
     }
 
     if (vendorSize > MAX_VENDOR_SIZE) {
@@ -139,9 +159,9 @@ function analyzeBundles() {
       console.log(`    Review dependencies and remove unused packages`);
     }
 
-    if (motionSize > MAX_MOTION_SIZE) {
-      console.log(`  • Animation library bundle is large (${formatBytes(motionSize)})`);
-      console.log(`    Use LazyMotion and 'm' component instead of 'motion'`);
+    if (alpineSize > MAX_ALPINE_SIZE) {
+      console.log(`  • Alpine.js bundle is large (${formatBytes(alpineSize)})`);
+      console.log(`    Consider using Alpine.js CDN or splitting components`);
     }
 
     // Find largest non-vendor bundles

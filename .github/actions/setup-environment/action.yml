@@ -60,10 +60,10 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ inputs.cache-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        key: ${{ runner.os }}-pnpm-store-${{ inputs.working-directory }}-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory), 'workers/pnpm-lock.yaml') }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-store-${{ inputs.cache-version }}-
-          ${{ runner.os }}-pnpm-store-
+          ${{ runner.os }}-pnpm-store-${{ inputs.working-directory }}-${{ inputs.cache-version }}-
+          ${{ runner.os }}-pnpm-store-${{ inputs.working-directory }}-
     
     # Cache node_modules for faster installs
     - name: Cache node_modules - phialo-design
@@ -72,9 +72,9 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.working-directory }}/node_modules
-        key: ${{ runner.os }}-node-modules-design-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}
+        key: ${{ runner.os }}-node-modules-${{ inputs.working-directory }}-${{ inputs.cache-version }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}
         restore-keys: |
-          ${{ runner.os }}-node-modules-design-${{ inputs.cache-version }}-
+          ${{ runner.os }}-node-modules-${{ inputs.working-directory }}-${{ inputs.cache-version }}-
     
     - name: Cache node_modules - workers
       if: inputs.use-cache == 'true' && inputs.install-worker-deps == 'true'

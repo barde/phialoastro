@@ -1,0 +1,108 @@
+---
+interface Props {
+  text: string;
+  className?: string;
+  delay?: number;
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span' | 'div';
+}
+
+const { text, className = '', delay = 0, as: Component = 'div' } = Astro.props;
+
+// Split text into words and characters for animation
+const words = text.split(' ').map(word => ({
+  word,
+  chars: word.split('')
+}));
+
+// Generate unique animation delays for each character
+let charIndex = 0;
+---
+
+<Component class={`animated-text ${className}`} style={`--animation-delay: ${delay}s`}>
+  {words.map((wordData, wordIndex) => (
+    <span class="word">
+      {wordData.chars.map((char) => {
+        const currentCharIndex = charIndex++;
+        const charDelay = delay + (currentCharIndex * 0.08) + 0.1;
+        return (
+          <span 
+            class="char" 
+            style={`--char-delay: ${charDelay}s`}
+            aria-hidden="true"
+          >
+            {char}
+          </span>
+        );
+      })}
+      {wordIndex < words.length - 1 && <span class="space">&nbsp;</span>}
+    </span>
+  ))}
+  <span class="sr-only">{text}</span>
+</Component>
+
+<style>
+  .animated-text {
+    display: block;
+    position: relative;
+  }
+
+  .word {
+    display: inline-block;
+    margin-right: 0.3em;
+  }
+
+  .word:last-child {
+    margin-right: 0;
+  }
+
+  .char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: revealChar 0.6s var(--char-delay) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .space {
+    display: inline-block;
+  }
+
+  /* Screen reader only text for accessibility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  @keyframes revealChar {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .char {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Performance optimization for mobile */
+  @media (max-width: 768px) {
+    .char {
+      animation-duration: 0.4s;
+    }
+  }
+</style>

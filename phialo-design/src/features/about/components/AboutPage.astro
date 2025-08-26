@@ -1,7 +1,7 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
-import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
-import TeamMemberImage from './TeamMemberImage.tsx';
+import AnimatedText from '../../../shared/components/ui/AnimatedTextCSS.astro';
+import TeamMemberImageAlpine from './TeamMemberImageAlpine.astro';
 import { type Language, getTranslation } from '../../../i18n/ui';
 
 export interface Props {
@@ -57,11 +57,11 @@ const currentContent = content[lang];
     <div class="container mx-auto px-6 md:px-8 max-w-6xl">
       <!-- Title -->
       <div class="text-center mb-16">
-        <AnimatedText client:visible>
-          <h1 class="font-display text-4xl md:text-5xl font-medium text-midnight mb-6">
-            {t('about.heading')}
-          </h1>
-        </AnimatedText>
+        <AnimatedText 
+          text={t('about.heading')}
+          className="font-display text-4xl md:text-5xl font-medium text-midnight mb-6"
+          as="h1"
+        />
       </div>
 
       <!-- Gesa Pickbrenner Section -->
@@ -82,11 +82,10 @@ const currentContent = content[lang];
 
           <!-- Image and Social Links - appears first on mobile, second on desktop -->
           <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
-            <TeamMemberImage
+            <TeamMemberImageAlpine
               primaryImage="/gesa-portrait.jpg"
               hoverImage="/gesa-portrait-alt.jpg"
               alt={currentContent.gesaName}
-              client:visible
             />
             
             <!-- Social Links -->
@@ -152,11 +151,10 @@ const currentContent = content[lang];
 
           <!-- Image and Social Links - appears first on mobile, second on desktop -->
           <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
-            <TeamMemberImage
+            <TeamMemberImageAlpine
               primaryImage="/bartholomaeus-portrait.jpg"
               hoverImage="/bartholomaeus-portrait-alt.jpg"
               alt={currentContent.bartholomausName}
-              client:visible
             />
             
             <!-- Social Links -->
