@@ -65,15 +65,7 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: [
-        // Enable Preact only in production for bundle size reduction
-        // Skip Preact for now due to SSR compatibility issues with icons
-        // TODO: Fix icon components then re-enable
-        // ...(process.env.NODE_ENV === 'production' ? [
-        //   { find: 'react-dom/test-utils', replacement: '@preact/compat/test-utils' },
-        //   { find: 'react-dom', replacement: '@preact/compat' },
-        //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' },
-        //   { find: 'react', replacement: '@preact/compat' },
-        // ] : []),
+        // React and Preact removed - using Alpine.js for interactivity
         // Existing aliases
         { find: '@features', replacement: new URL('./src/features', import.meta.url).pathname },
         { find: '@shared', replacement: new URL('./src/shared', import.meta.url).pathname },
@@ -122,8 +114,7 @@ export default defineConfig({
       ],
       exclude: [
         // Exclude unused packages
-        'react', 'react-dom', '@preact/compat',
-        'lucide-react', '@cloudflare/turnstile'
+        '@cloudflare/turnstile'
       ]
     },
     build: {
@@ -140,7 +131,7 @@ export default defineConfig({
         },
         output: {
           manualChunks: (id) => {
-            // Optimized chunk splitting without React
+            // Optimized chunk splitting
             if (id.includes('node_modules')) {
               // Alpine.js - core library
               if (id.includes('alpinejs')) {
