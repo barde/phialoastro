@@ -84,6 +84,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
 
 <div 
   x-data="contactForm"
+  x-cloak
   data-config={JSON.stringify({ t, siteKey, lang })}
   class="w-full max-w-2xl mx-auto"
 >
@@ -94,7 +95,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Name Field -->
     <div>
       <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-        <span x-text="t.nameLabel"></span> <span class="text-red-500">*</span>
+        <span x-text="t.nameLabel">{t.nameLabel}</span> <span class="text-red-500">*</span>
       </label>
       <input
         type="text"
@@ -111,7 +112,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Email Field -->
     <div>
       <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-        <span x-text="t.emailLabel"></span> <span class="text-red-500">*</span>
+        <span x-text="t.emailLabel">{t.emailLabel}</span> <span class="text-red-500">*</span>
       </label>
       <input
         type="email"
@@ -128,7 +129,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Phone Field (Optional) -->
     <div>
       <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
-        <span x-text="t.phoneLabel"></span>
+        <span x-text="t.phoneLabel">{t.phoneLabel}</span>
       </label>
       <input
         type="tel"
@@ -145,7 +146,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Subject Field -->
     <div>
       <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">
-        <span x-text="t.subjectLabel"></span> <span class="text-red-500">*</span>
+        <span x-text="t.subjectLabel">{t.subjectLabel}</span> <span class="text-red-500">*</span>
       </label>
       <input
         type="text"
@@ -162,7 +163,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
     <!-- Message Field -->
     <div>
       <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
-        <span x-text="t.messageLabel"></span> <span class="text-red-500">*</span>
+        <span x-text="t.messageLabel">{t.messageLabel}</span> <span class="text-red-500">*</span>
       </label>
       <textarea
         id="message"
@@ -185,7 +186,7 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000
         class="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
       />
       <label for="sendCopy" class="ml-2 text-sm text-gray-700">
-        <span x-text="t.sendCopyLabel"></span>
+        <span x-text="t.sendCopyLabel">{t.sendCopyLabel}</span>
       </label>
     </div>
 
