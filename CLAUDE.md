@@ -609,3 +609,4 @@ rg "useState.*useEffect" --type tsx -A 5 -B 5
 4. Verify all imports resolve correctly
 
 - check the debug console web developer tools via mcp for hints. always check it when using mcp browser and fix all issues.
+- If changing existing code don't make versioning via file name, i.e. no "example-v2.c" or "example-optimized.c" but keep "example.c" and use the versioning from Git
