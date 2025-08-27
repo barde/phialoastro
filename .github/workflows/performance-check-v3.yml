@@ -1,0 +1,948 @@
+name: Performance Check v3
+
+on:
+  workflow_run:
+    workflows: ["Cloudflare PR Preview Deployment"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (leave empty to test master)'
+        required: false
+        type: string
+      test_local:
+        description: 'Test local build instead of deployed URL'
+        required: false
+        type: boolean
+        default: false
+      viewport:
+        description: 'Viewport to test (mobile, desktop, or both)'
+        required: false
+        type: choice
+        options: ['both', 'mobile', 'desktop']
+        default: 'both'
+
+jobs:
+  performance-check-mobile:
+    name: Performance Check - Mobile
+    if: |
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.viewport == 'mobile' || github.event.inputs.viewport == 'both')) ||
+      (github.event_name != 'workflow_dispatch' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Get PR details
+        id: pr-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            let targetUrl;
+            let isLocal = false;
+            
+            if (context.eventName === 'workflow_dispatch') {
+              // Manual trigger
+              prNumber = context.payload.inputs?.pr_number || '';
+              isLocal = context.payload.inputs?.test_local === 'true';
+              
+              if (prNumber) {
+                targetUrl = `https://phialo-pr-${prNumber}.meise.workers.dev`;
+              } else {
+                // Testing master branch
+                targetUrl = 'https://phialo-master.meise.workers.dev';
+              }
+            } else {
+              // Triggered by workflow_run
+              const workflows = context.payload.workflow_run.pull_requests;
+              if (workflows && workflows.length > 0) {
+                prNumber = workflows[0].number;
+                targetUrl = `https://phialo-pr-${prNumber}.meise.workers.dev`;
+              } else {
+                // Workflow run on master branch
+                targetUrl = 'https://phialo-master.meise.workers.dev';
+              }
+            }
+            
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('target_url', targetUrl);
+            core.setOutput('is_local', isLocal);
+            core.setOutput('is_pr', !!prNumber);
+            
+            console.log(`PR Number: ${prNumber || 'N/A (master branch)'}`);
+            console.log(`Target URL: ${targetUrl}`);
+            console.log(`Test Local: ${isLocal}`);
+      
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.pr-details.outputs.is_pr == 'true' && format('refs/pull/{0}/head', steps.pr-details.outputs.pr_number) || 'refs/heads/master' }}
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
+      
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+      
+      # Build and start local server only if testing locally
+      - name: Build application (local testing)
+        if: steps.pr-details.outputs.is_local == 'true'
+        working-directory: phialo-design
+        run: pnpm run build
+        env:
+          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
+      
+      - name: Start preview server (local testing)
+        if: steps.pr-details.outputs.is_local == 'true'
+        working-directory: phialo-design
+        run: |
+          pnpm run preview &
+          sleep 5
+      
+      # Wait for deployment to be ready if testing deployed URL
+      - name: Wait for deployment readiness
+        if: steps.pr-details.outputs.is_local != 'true'
+        id: wait-deployment
+        run: |
+          URL="${{ steps.pr-details.outputs.target_url }}"
+          MAX_ATTEMPTS=30
+          SLEEP_INTERVAL=10
+          
+          echo "🕐 Waiting for deployment to be ready at $URL..."
+          echo "⏳ Initial wait for Cloudflare Workers propagation (30s)..."
+          sleep 30
+          
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "🔄 Attempt $i/$MAX_ATTEMPTS: Checking deployment..."
+            
+            # Check HTTP status and capture response
+            HTTP_CODE=$(curl -s -o /tmp/response.html -w "%{http_code}" -L "$URL" || echo "000")
+            
+            case "$HTTP_CODE" in
+              200|201|202)
+                echo "✅ Deployment is ready! (HTTP $HTTP_CODE)"
+                echo "ready=true" >> $GITHUB_OUTPUT
+                # Additional wait to ensure full propagation
+                echo "⏳ Final wait for complete propagation (10s)..."
+                sleep 10
+                exit 0
+                ;;
+              301|302|307|308)
+                echo "↩️ Redirect detected (HTTP $HTTP_CODE), following..."
+                ;;
+              404)
+                echo "❌ Not found (HTTP 404) - deployment may not be ready"
+                ;;
+              5*)
+                echo "⚠️ Server error (HTTP $HTTP_CODE) - retrying..."
+                ;;
+              000)
+                echo "🚫 Connection failed - retrying..."
+                ;;
+              *)
+                echo "❓ Unexpected response (HTTP $HTTP_CODE) - retrying..."
+                ;;
+            esac
+            
+            if [ $i -lt $MAX_ATTEMPTS ]; then
+              echo "⏳ Waiting ${SLEEP_INTERVAL}s before retry..."
+              sleep $SLEEP_INTERVAL
+            fi
+          done
+          
+          echo "❌ Deployment not ready after $MAX_ATTEMPTS attempts"
+          echo "ready=false" >> $GITHUB_OUTPUT
+          exit 1
+      
+      - name: Create mobile Lighthouse config
+        working-directory: phialo-design
+        run: |
+          BASE_URL="${{ steps.pr-details.outputs.is_local == 'true' && 'http://localhost:4322' || steps.pr-details.outputs.target_url }}"
+          
+          cat > .lighthouserc.mobile.js << 'EOF'
+          module.exports = {
+            ci: {
+              collect: {
+                url: [
+                  '${BASE_URL}/',
+                  '${BASE_URL}/en/',
+                  '${BASE_URL}/portfolio',
+                  '${BASE_URL}/en/portfolio',
+                  '${BASE_URL}/services',
+                  '${BASE_URL}/en/services',
+                  '${BASE_URL}/about',
+                  '${BASE_URL}/en/about',
+                  '${BASE_URL}/contact',
+                  '${BASE_URL}/en/contact'
+                ],
+                numberOfRuns: 3,
+                settings: {
+                  preset: 'mobile',
+                  formFactor: 'mobile',
+                  throttling: {
+                    rttMs: 150,
+                    throughputKbps: 1638,
+                    cpuSlowdownMultiplier: 4
+                  },
+                  screenEmulation: {
+                    mobile: true,
+                    width: 390,
+                    height: 844,
+                    deviceScaleFactor: 3
+                  },
+                  emulatedUserAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1'
+                }
+              },
+              assert: {
+                assertions: {
+                  'categories:performance': ['warn', { minScore: 0.75 }],
+                  'categories:accessibility': ['warn', { minScore: 0.90 }],
+                  'categories:best-practices': ['warn', { minScore: 0.90 }],
+                  'categories:seo': ['warn', { minScore: 0.95 }],
+                  
+                  // Core Web Vitals - Mobile thresholds
+                  'first-contentful-paint': ['error', { maxNumericValue: 3000 }],
+                  'largest-contentful-paint': ['error', { maxNumericValue: 4000 }],
+                  'cumulative-layout-shift': ['warn', { maxNumericValue: 0.25 }],
+                  'total-blocking-time': ['error', { maxNumericValue: 600 }],
+                  'interactive': ['error', { maxNumericValue: 5300 }],
+                  'speed-index': ['error', { maxNumericValue: 4300 }],
+                  
+                  // Resource budgets
+                  'resource-summary:script:size': ['warn', { maxNumericValue: 1200000 }],
+                  'resource-summary:stylesheet:size': ['warn', { maxNumericValue: 100000 }],
+                  'resource-summary:image:size': ['warn', { maxNumericValue: 1500000 }],
+                  'resource-summary:total:size': ['warn', { maxNumericValue: 3000000 }]
+                }
+              },
+              upload: {
+                target: 'temporary-public-storage',
+                githubAppToken: process.env.LHCI_GITHUB_APP_TOKEN,
+                githubStatusContextSuffix: '/mobile'
+              }
+            }
+          };
+          EOF
+          
+          # Replace BASE_URL placeholder
+          sed -i "s|\${BASE_URL}|$BASE_URL|g" .lighthouserc.mobile.js
+      
+      - name: Run Lighthouse CI - Mobile
+        working-directory: phialo-design
+        run: |
+          npx @lhci/cli@0.14.x autorun \
+            --config=.lighthouserc.mobile.js
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      
+      - name: Save mobile results
+        working-directory: phialo-design
+        run: |
+          if [ -d ".lighthouseci" ]; then
+            mv .lighthouseci .lighthouseci-mobile
+          fi
+      
+      - name: Upload mobile Lighthouse reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports-mobile
+          path: phialo-design/.lighthouseci-mobile/
+          retention-days: 7
+
+  performance-check-desktop:
+    name: Performance Check - Desktop
+    if: |
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.viewport == 'desktop' || github.event.inputs.viewport == 'both')) ||
+      (github.event_name != 'workflow_dispatch' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Get PR details
+        id: pr-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            let targetUrl;
+            let isLocal = false;
+            
+            if (context.eventName === 'workflow_dispatch') {
+              // Manual trigger
+              prNumber = context.payload.inputs?.pr_number || '';
+              isLocal = context.payload.inputs?.test_local === 'true';
+              
+              if (prNumber) {
+                targetUrl = `https://phialo-pr-${prNumber}.meise.workers.dev`;
+              } else {
+                // Testing master branch
+                targetUrl = 'https://phialo-master.meise.workers.dev';
+              }
+            } else {
+              // Triggered by workflow_run
+              const workflows = context.payload.workflow_run.pull_requests;
+              if (workflows && workflows.length > 0) {
+                prNumber = workflows[0].number;
+                targetUrl = `https://phialo-pr-${prNumber}.meise.workers.dev`;
+              } else {
+                // Workflow run on master branch
+                targetUrl = 'https://phialo-master.meise.workers.dev';
+              }
+            }
+            
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('target_url', targetUrl);
+            core.setOutput('is_local', isLocal);
+            core.setOutput('is_pr', !!prNumber);
+            
+            console.log(`PR Number: ${prNumber || 'N/A (master branch)'}`);
+            console.log(`Target URL: ${targetUrl}`);
+            console.log(`Test Local: ${isLocal}`);
+      
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.pr-details.outputs.is_pr == 'true' && format('refs/pull/{0}/head', steps.pr-details.outputs.pr_number) || 'refs/heads/master' }}
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: phialo-design/pnpm-lock.yaml
+      
+      - name: Install dependencies
+        working-directory: phialo-design
+        run: pnpm install --frozen-lockfile
+      
+      # Build and start local server only if testing locally
+      - name: Build application (local testing)
+        if: steps.pr-details.outputs.is_local == 'true'
+        working-directory: phialo-design
+        run: pnpm run build
+        env:
+          PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN }}
+      
+      - name: Start preview server (local testing)
+        if: steps.pr-details.outputs.is_local == 'true'
+        working-directory: phialo-design
+        run: |
+          pnpm run preview &
+          sleep 5
+      
+      # Wait for deployment to be ready if testing deployed URL
+      - name: Wait for deployment readiness
+        if: steps.pr-details.outputs.is_local != 'true'
+        id: wait-deployment
+        run: |
+          URL="${{ steps.pr-details.outputs.target_url }}"
+          MAX_ATTEMPTS=30
+          SLEEP_INTERVAL=10
+          
+          echo "🕐 Waiting for deployment to be ready at $URL..."
+          echo "⏳ Initial wait for Cloudflare Workers propagation (30s)..."
+          sleep 30
+          
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "🔄 Attempt $i/$MAX_ATTEMPTS: Checking deployment..."
+            
+            # Check HTTP status and capture response
+            HTTP_CODE=$(curl -s -o /tmp/response.html -w "%{http_code}" -L "$URL" || echo "000")
+            
+            case "$HTTP_CODE" in
+              200|201|202)
+                echo "✅ Deployment is ready! (HTTP $HTTP_CODE)"
+                echo "ready=true" >> $GITHUB_OUTPUT
+                # Additional wait to ensure full propagation
+                echo "⏳ Final wait for complete propagation (10s)..."
+                sleep 10
+                exit 0
+                ;;
+              301|302|307|308)
+                echo "↩️ Redirect detected (HTTP $HTTP_CODE), following..."
+                ;;
+              404)
+                echo "❌ Not found (HTTP 404) - deployment may not be ready"
+                ;;
+              5*)
+                echo "⚠️ Server error (HTTP $HTTP_CODE) - retrying..."
+                ;;
+              000)
+                echo "🚫 Connection failed - retrying..."
+                ;;
+              *)
+                echo "❓ Unexpected response (HTTP $HTTP_CODE) - retrying..."
+                ;;
+            esac
+            
+            if [ $i -lt $MAX_ATTEMPTS ]; then
+              echo "⏳ Waiting ${SLEEP_INTERVAL}s before retry..."
+              sleep $SLEEP_INTERVAL
+            fi
+          done
+          
+          echo "❌ Deployment not ready after $MAX_ATTEMPTS attempts"
+          echo "ready=false" >> $GITHUB_OUTPUT
+          exit 1
+      
+      - name: Create desktop Lighthouse config
+        working-directory: phialo-design
+        run: |
+          BASE_URL="${{ steps.pr-details.outputs.is_local == 'true' && 'http://localhost:4322' || steps.pr-details.outputs.target_url }}"
+          
+          cat > .lighthouserc.desktop.js << 'EOF'
+          module.exports = {
+            ci: {
+              collect: {
+                url: [
+                  '${BASE_URL}/',
+                  '${BASE_URL}/en/',
+                  '${BASE_URL}/portfolio',
+                  '${BASE_URL}/en/portfolio',
+                  '${BASE_URL}/services',
+                  '${BASE_URL}/en/services',
+                  '${BASE_URL}/about',
+                  '${BASE_URL}/en/about',
+                  '${BASE_URL}/contact',
+                  '${BASE_URL}/en/contact'
+                ],
+                numberOfRuns: 3,
+                settings: {
+                  preset: 'desktop',
+                  formFactor: 'desktop',
+                  throttling: {
+                    rttMs: 40,
+                    throughputKbps: 10240,
+                    cpuSlowdownMultiplier: 1
+                  },
+                  screenEmulation: {
+                    mobile: false,
+                    width: 1350,
+                    height: 940,
+                    deviceScaleFactor: 1
+                  }
+                }
+              },
+              assert: {
+                assertions: {
+                  'categories:performance': ['warn', { minScore: 0.85 }],
+                  'categories:accessibility': ['warn', { minScore: 0.93 }],
+                  'categories:best-practices': ['warn', { minScore: 0.93 }],
+                  'categories:seo': ['warn', { minScore: 0.95 }],
+                  
+                  // Core Web Vitals - Desktop thresholds
+                  'first-contentful-paint': ['error', { maxNumericValue: 2000 }],
+                  'largest-contentful-paint': ['error', { maxNumericValue: 2500 }],
+                  'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
+                  'total-blocking-time': ['error', { maxNumericValue: 300 }],
+                  'interactive': ['error', { maxNumericValue: 3800 }],
+                  'speed-index': ['error', { maxNumericValue: 3400 }],
+                  
+                  // Resource budgets
+                  'resource-summary:script:size': ['warn', { maxNumericValue: 1000000 }],
+                  'resource-summary:stylesheet:size': ['warn', { maxNumericValue: 75000 }],
+                  'resource-summary:image:size': ['warn', { maxNumericValue: 1100000 }],
+                  'resource-summary:total:size': ['warn', { maxNumericValue: 2500000 }]
+                }
+              },
+              upload: {
+                target: 'temporary-public-storage',
+                githubAppToken: process.env.LHCI_GITHUB_APP_TOKEN,
+                githubStatusContextSuffix: '/desktop'
+              }
+            }
+          };
+          EOF
+          
+          # Replace BASE_URL placeholder
+          sed -i "s|\${BASE_URL}|$BASE_URL|g" .lighthouserc.desktop.js
+      
+      - name: Run Lighthouse CI - Desktop
+        working-directory: phialo-design
+        run: |
+          npx @lhci/cli@0.14.x autorun \
+            --config=.lighthouserc.desktop.js
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      
+      - name: Save desktop results
+        working-directory: phialo-design
+        run: |
+          if [ -d ".lighthouseci" ]; then
+            mv .lighthouseci .lighthouseci-desktop
+          fi
+      
+      - name: Upload desktop Lighthouse reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports-desktop
+          path: phialo-design/.lighthouseci-desktop/
+          retention-days: 7
+
+  generate-report:
+    name: Generate Combined Performance Report
+    needs: [performance-check-mobile, performance-check-desktop]
+    if: always() && (needs.performance-check-mobile.result == 'success' || needs.performance-check-desktop.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Get PR details
+        id: pr-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            let targetUrl;
+            let isLocal = false;
+            
+            if (context.eventName === 'workflow_dispatch') {
+              // Manual trigger
+              prNumber = context.payload.inputs?.pr_number || '';
+              isLocal = context.payload.inputs?.test_local === 'true';
+              
+              if (prNumber) {
+                targetUrl = `https://phialo-pr-${prNumber}.meise.workers.dev`;
+              } else {
+                // Testing master branch
+                targetUrl = 'https://phialo-master.meise.workers.dev';
+              }
+            } else {
+              // Triggered by workflow_run
+              const workflows = context.payload.workflow_run?.pull_requests;
+              if (workflows && workflows.length > 0) {
+                prNumber = workflows[0].number;
+                targetUrl = `https://phialo-pr-${prNumber}.meise.workers.dev`;
+              } else {
+                // Workflow run on master branch
+                targetUrl = 'https://phialo-master.meise.workers.dev';
+              }
+            }
+            
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('target_url', targetUrl);
+            core.setOutput('is_local', isLocal);
+            core.setOutput('is_pr', !!prNumber);
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: lighthouse-results
+      
+      - name: Generate Enhanced Performance Report
+        run: |
+          # Create the enhanced report
+          node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Helper functions
+          function getStatus(value, goodThreshold, needsImprovementThreshold, unit = '') {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) return '❓';
+            
+            if (unit === 'ms' || unit === 's') {
+              // For time metrics, lower is better
+              if (numValue <= goodThreshold) return '🟢';
+              if (numValue <= needsImprovementThreshold) return '🟡';
+              return '🔴';
+            } else {
+              // For scores and other metrics
+              if (numValue >= goodThreshold) return '🟢';
+              if (numValue >= needsImprovementThreshold) return '🟡';
+              return '🔴';
+            }
+          }
+          
+          function formatValue(value, unit = '') {
+            if (value === null || value === undefined || isNaN(value)) {
+              return 'N/A';
+            }
+            if (unit === 'ms') {
+              return Math.round(value) + 'ms';
+            } else if (unit === 's') {
+              return (value / 1000).toFixed(1) + 's';
+            } else if (unit === 'score') {
+              return Math.round(value);
+            } else if (unit === '') {
+              return value.toFixed(3);
+            }
+            return value + unit;
+          }
+          
+          function getWebVitalStatus(metric, value) {
+            const thresholds = {
+              lcp: { good: 2500, poor: 4000 },
+              cls: { good: 0.1, poor: 0.25 },
+              inp: { good: 200, poor: 500 },
+              fcp: { good: 1800, poor: 3000 },
+              ttfb: { good: 800, poor: 1800 }
+            };
+            
+            const t = thresholds[metric];
+            if (!t) return '';
+            
+            if (metric === 'cls') {
+              if (value <= t.good) return '🟢';
+              if (value <= t.poor) return '🟡';
+              return '🔴';
+            } else {
+              if (value <= t.good) return '🟢';
+              if (value <= t.poor) return '🟡';
+              return '🔴';
+            }
+          }
+          
+          // Collect results from both mobile and desktop
+          const results = {
+            mobile: [],
+            desktop: []
+          };
+          
+          // Process mobile results
+          const mobilePath = 'lighthouse-results/lighthouse-reports-mobile';
+          if (fs.existsSync(mobilePath)) {
+            const files = fs.readdirSync(mobilePath).filter(f => f.startsWith('lhr-') && f.endsWith('.json'));
+            
+            const resultsByUrl = {};
+            files.forEach(file => {
+              const content = JSON.parse(fs.readFileSync(path.join(mobilePath, file), 'utf8'));
+              const url = content.finalUrl || content.requestedUrl;
+              const urlPath = new URL(url).pathname || '/';
+              
+              if (!resultsByUrl[urlPath]) {
+                resultsByUrl[urlPath] = [];
+              }
+              resultsByUrl[urlPath].push(content);
+            });
+            
+            Object.entries(resultsByUrl).forEach(([urlPath, runs]) => {
+              const medianRun = runs[Math.floor(runs.length / 2)];
+              
+              results.mobile.push({
+                url: urlPath,
+                lcp: medianRun.audits['largest-contentful-paint']?.numericValue || 0,
+                cls: medianRun.audits['cumulative-layout-shift']?.numericValue || 0,
+                tbt: medianRun.audits['total-blocking-time']?.numericValue || 0,
+                fcp: medianRun.audits['first-contentful-paint']?.numericValue || 0,
+                ttfb: medianRun.audits['server-response-time']?.numericValue || 0,
+                si: medianRun.audits['speed-index']?.numericValue || 0,
+                perfScore: Math.round((medianRun.categories?.performance?.score || 0) * 100),
+                accessibility: Math.round((medianRun.categories?.accessibility?.score || 0) * 100),
+                bestPractices: Math.round((medianRun.categories?.['best-practices']?.score || 0) * 100),
+                seo: Math.round((medianRun.categories?.seo?.score || 0) * 100)
+              });
+            });
+          }
+          
+          // Process desktop results
+          const desktopPath = 'lighthouse-results/lighthouse-reports-desktop';
+          if (fs.existsSync(desktopPath)) {
+            const files = fs.readdirSync(desktopPath).filter(f => f.startsWith('lhr-') && f.endsWith('.json'));
+            
+            const resultsByUrl = {};
+            files.forEach(file => {
+              const content = JSON.parse(fs.readFileSync(path.join(desktopPath, file), 'utf8'));
+              const url = content.finalUrl || content.requestedUrl;
+              const urlPath = new URL(url).pathname || '/';
+              
+              if (!resultsByUrl[urlPath]) {
+                resultsByUrl[urlPath] = [];
+              }
+              resultsByUrl[urlPath].push(content);
+            });
+            
+            Object.entries(resultsByUrl).forEach(([urlPath, runs]) => {
+              const medianRun = runs[Math.floor(runs.length / 2)];
+              
+              results.desktop.push({
+                url: urlPath,
+                lcp: medianRun.audits['largest-contentful-paint']?.numericValue || 0,
+                cls: medianRun.audits['cumulative-layout-shift']?.numericValue || 0,
+                tbt: medianRun.audits['total-blocking-time']?.numericValue || 0,
+                fcp: medianRun.audits['first-contentful-paint']?.numericValue || 0,
+                ttfb: medianRun.audits['server-response-time']?.numericValue || 0,
+                si: medianRun.audits['speed-index']?.numericValue || 0,
+                perfScore: Math.round((medianRun.categories?.performance?.score || 0) * 100),
+                accessibility: Math.round((medianRun.categories?.accessibility?.score || 0) * 100),
+                bestPractices: Math.round((medianRun.categories?.['best-practices']?.score || 0) * 100),
+                seo: Math.round((medianRun.categories?.seo?.score || 0) * 100)
+              });
+            });
+          }
+          
+          // Generate the enhanced report
+          let report = '## 🚀 Lighthouse Performance Report\n\n';
+          
+          // Calculate overall status
+          const allScores = [...results.mobile, ...results.desktop].map(r => r.perfScore);
+          const avgScore = allScores.length > 0 
+            ? Math.round(allScores.reduce((acc, s) => acc + s, 0) / allScores.length)
+            : 0;
+          
+          const overallStatus = avgScore >= 90 ? '✅ Excellent' : 
+                               avgScore >= 80 ? '🟢 Good' :
+                               avgScore >= 70 ? '🟡 Needs Improvement' :
+                               '🔴 Poor';
+          
+          report += `### ${overallStatus} - Overall Score: ${avgScore}/100\n\n`;
+          
+          // Test environment info
+          const isLocal = '${{ steps.pr-details.outputs.is_local }}' === 'true';
+          const targetUrl = '${{ steps.pr-details.outputs.target_url }}';
+          if (!isLocal && targetUrl) {
+            const shortUrl = targetUrl.replace('https://', '').replace('.meise.workers.dev', '');
+            report += `**Preview URL:** [${shortUrl}](${targetUrl})\n`;
+          }
+          report += `**Test Date:** ${new Date().toISOString().split('T')[0]}\n\n`;
+          
+          // Core Web Vitals Summary
+          report += '### 📊 Core Web Vitals Summary\n\n';
+          
+          // Calculate worst metrics across all pages
+          const allResults = [...results.mobile, ...results.desktop];
+          if (allResults.length > 0) {
+            const worstLCP = Math.max(...allResults.map(r => r.lcp));
+            const worstCLS = Math.max(...allResults.map(r => r.cls));
+            const worstTBT = Math.max(...allResults.map(r => r.tbt));
+            const worstINP = Math.round(worstTBT * 0.8); // Estimate INP from TBT
+            
+            report += '| Metric | Desktop | Mobile | Status | Target |\n';
+            report += '|--------|---------|--------|--------|--------|\n';
+            
+            // LCP
+            const desktopLCP = Math.max(...(results.desktop.map(r => r.lcp).length > 0 ? results.desktop.map(r => r.lcp) : [0]));
+            const mobileLCP = Math.max(...(results.mobile.map(r => r.lcp).length > 0 ? results.mobile.map(r => r.lcp) : [0]));
+            report += `| **LCP** | ${formatValue(desktopLCP, 's')} | ${formatValue(mobileLCP, 's')} | ${getWebVitalStatus('lcp', Math.max(desktopLCP, mobileLCP))} | ≤2.5s |\n`;
+            
+            // CLS
+            const desktopCLS = Math.max(...(results.desktop.map(r => r.cls).length > 0 ? results.desktop.map(r => r.cls) : [0]));
+            const mobileCLS = Math.max(...(results.mobile.map(r => r.cls).length > 0 ? results.mobile.map(r => r.cls) : [0]));
+            report += `| **CLS** | ${formatValue(desktopCLS, '')} | ${formatValue(mobileCLS, '')} | ${getWebVitalStatus('cls', Math.max(desktopCLS, mobileCLS))} | ≤0.1 |\n`;
+            
+            // INP (estimated)
+            const desktopINP = Math.round(Math.max(...(results.desktop.map(r => r.tbt).length > 0 ? results.desktop.map(r => r.tbt) : [0])) * 0.8);
+            const mobileINP = Math.round(Math.max(...(results.mobile.map(r => r.tbt).length > 0 ? results.mobile.map(r => r.tbt) : [0])) * 0.8);
+            report += `| **INP** (est) | ${formatValue(desktopINP, 'ms')} | ${formatValue(mobileINP, 'ms')} | ${getWebVitalStatus('inp', Math.max(desktopINP, mobileINP))} | ≤200ms |\n`;
+            
+            // FCP
+            const desktopFCP = Math.max(...(results.desktop.map(r => r.fcp).length > 0 ? results.desktop.map(r => r.fcp) : [0]));
+            const mobileFCP = Math.max(...(results.mobile.map(r => r.fcp).length > 0 ? results.mobile.map(r => r.fcp) : [0]));
+            report += `| **FCP** | ${formatValue(desktopFCP, 's')} | ${formatValue(mobileFCP, 's')} | ${getWebVitalStatus('fcp', Math.max(desktopFCP, mobileFCP))} | ≤1.8s |\n`;
+            
+            report += '\n';
+          }
+          
+          // Performance by Page
+          if (results.desktop.length > 0 || results.mobile.length > 0) {
+            report += '<details>\n';
+            report += '<summary><b>📱 Performance by Device & Page</b> (click to expand)</summary>\n\n';
+            
+            // Desktop scores
+            if (results.desktop.length > 0) {
+              report += '#### 💻 Desktop Performance\n\n';
+              report += '| Page | Score | LCP | CLS | FCP | A11y | SEO |\n';
+              report += '|------|-------|-----|-----|-----|------|-----|\n';
+              
+              results.desktop.forEach(result => {
+                const pageName = result.url === '/' ? 'Home' : 
+                               result.url === '/en/' ? 'Home (EN)' :
+                               result.url.replace(/^\/en\//, '').replace(/^\//, '').charAt(0).toUpperCase() + 
+                               result.url.replace(/^\/en\//, '').replace(/^\//, '').slice(1);
+                
+                const scoreIcon = result.perfScore >= 90 ? '🟢' : result.perfScore >= 50 ? '🟡' : '🔴';
+                
+                report += `| ${pageName} | ${result.perfScore}${scoreIcon} | ${formatValue(result.lcp, 's')} | ${formatValue(result.cls, '')} | ${formatValue(result.fcp, 's')} | ${result.accessibility}% | ${result.seo}% |\n`;
+              });
+              
+              report += '\n';
+            }
+            
+            // Mobile scores
+            if (results.mobile.length > 0) {
+              report += '#### 📱 Mobile Performance\n\n';
+              report += '| Page | Score | LCP | CLS | FCP | A11y | SEO |\n';
+              report += '|------|-------|-----|-----|-----|------|-----|\n';
+              
+              results.mobile.forEach(result => {
+                const pageName = result.url === '/' ? 'Home' : 
+                               result.url === '/en/' ? 'Home (EN)' :
+                               result.url.replace(/^\/en\//, '').replace(/^\//, '').charAt(0).toUpperCase() + 
+                               result.url.replace(/^\/en\//, '').replace(/^\//, '').slice(1);
+                
+                const scoreIcon = result.perfScore >= 90 ? '🟢' : result.perfScore >= 50 ? '🟡' : '🔴';
+                
+                report += `| ${pageName} | ${result.perfScore}${scoreIcon} | ${formatValue(result.lcp, 's')} | ${formatValue(result.cls, '')} | ${formatValue(result.fcp, 's')} | ${result.accessibility}% | ${result.seo}% |\n`;
+              });
+            }
+            
+            report += '\n</details>\n\n';
+          }
+          
+          // Action items if there are issues
+          const hasIssues = allResults.some(r => 
+            r.perfScore < 90 || r.lcp > 2500 || r.cls > 0.1 || r.tbt > 300
+          );
+          
+          if (hasIssues) {
+            report += '<details>\n';
+            report += '<summary><b>⚠️ Action Items</b> (click to expand)</summary>\n\n';
+            
+            const lcpIssues = allResults.filter(r => r.lcp > 2500);
+            const clsIssues = allResults.filter(r => r.cls > 0.1);
+            const tbtIssues = allResults.filter(r => r.tbt > 300);
+            const perfIssues = allResults.filter(r => r.perfScore < 90);
+            
+            if (lcpIssues.length > 0) {
+              report += '**🔴 Largest Contentful Paint Issues:**\n';
+              report += '- Optimize image loading and sizes\n';
+              report += '- Implement lazy loading for below-fold images\n';
+              report += '- Consider using a CDN for faster asset delivery\n\n';
+            }
+            
+            if (clsIssues.length > 0) {
+              report += '**🟡 Cumulative Layout Shift Issues:**\n';
+              report += '- Add explicit dimensions to images and videos\n';
+              report += '- Avoid inserting content above existing content\n';
+              report += '- Use CSS transform for animations\n\n';
+            }
+            
+            if (tbtIssues.length > 0) {
+              report += '**🔴 Total Blocking Time Issues:**\n';
+              report += '- Split long JavaScript tasks\n';
+              report += '- Defer non-critical JavaScript\n';
+              report += '- Optimize third-party scripts\n\n';
+            }
+            
+            report += '</details>\n\n';
+          }
+          
+          // Performance trends (placeholder for future implementation)
+          report += '<details>\n';
+          report += '<summary><b>📈 Performance Budgets</b> (click to expand)</summary>\n\n';
+          report += '| Resource | Budget | Actual | Status |\n';
+          report += '|----------|--------|--------|--------|\n';
+          report += '| JavaScript | 350 KB | TBD | - |\n';
+          report += '| CSS | 50 KB | TBD | - |\n';
+          report += '| Images | 1000 KB | TBD | - |\n';
+          report += '| Total | 2000 KB | TBD | - |\n';
+          report += '\n</details>\n\n';
+          
+          // Footer
+          report += '---\n';
+          report += '*Generated by Lighthouse CI v3 • [View Documentation](https://github.com/phialoastro/phialoastro/blob/master/docs/performance-monitoring.md)*\n';
+          
+          // Write the report
+          fs.writeFileSync('performance-report.md', report);
+          console.log('Enhanced report generated successfully!');
+          EOF
+      
+      - name: Post PR comment
+        if: steps.pr-details.outputs.is_pr == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('performance-report.md', 'utf8');
+            
+            const prNumber = parseInt('${{ steps.pr-details.outputs.pr_number }}');
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Lighthouse Performance Report')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: report
+              });
+              console.log(`Updated comment on PR #${prNumber}`);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: report
+              });
+              console.log(`Created new comment on PR #${prNumber}`);
+            }
+      
+      - name: Check for performance regressions
+        run: |
+          # Exit with error if critical performance budgets are exceeded
+          REGRESSION_FOUND=false
+          
+          # Check mobile results
+          if [ -d "lighthouse-results/lighthouse-reports-mobile" ]; then
+            for file in lighthouse-results/lighthouse-reports-mobile/assertion-results*.json; do
+              if [ -f "$file" ]; then
+                if [ -s "$file" ]; then
+                  failures=$(jq '[.[] | select(.level == "error")] | length' "$file" 2>/dev/null || echo "0")
+                  if [ "$failures" -gt "0" ]; then
+                    echo "❌ Mobile performance budgets exceeded! Found $failures errors."
+                    jq '.[] | select(.level == "error")' "$file"
+                    REGRESSION_FOUND=true
+                  fi
+                fi
+              fi
+            done
+          fi
+          
+          # Check desktop results
+          if [ -d "lighthouse-results/lighthouse-reports-desktop" ]; then
+            for file in lighthouse-results/lighthouse-reports-desktop/assertion-results*.json; do
+              if [ -f "$file" ]; then
+                if [ -s "$file" ]; then
+                  failures=$(jq '[.[] | select(.level == "error")] | length' "$file" 2>/dev/null || echo "0")
+                  if [ "$failures" -gt "0" ]; then
+                    echo "❌ Desktop performance budgets exceeded! Found $failures errors."
+                    jq '.[] | select(.level == "error")' "$file"
+                    REGRESSION_FOUND=true
+                  fi
+                fi
+              fi
+            done
+          fi
+          
+          if [ "$REGRESSION_FOUND" = "true" ]; then
+            echo "⚠️ Performance regressions detected. Please review the report above."
+            exit 1
+          else
+            echo "✅ All performance checks passed!"
+          fi
