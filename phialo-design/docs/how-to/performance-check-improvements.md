@@ -1,8 +1,8 @@
-# Performance Check v3 Migration Guide
+# Performance Check Improvements Guide
 
 ## Overview
 
-Performance Check v3 represents a major enhancement to our Lighthouse CI implementation, addressing all requirements from issue #421:
+This enhanced Performance Check workflow represents a major improvement to our Lighthouse CI implementation, addressing all requirements from issue #421:
 
 1. ✅ **Enhanced PR comment formatting** with comprehensive metrics display
 2. ✅ **Mobile and desktop viewport testing** run in parallel
@@ -11,9 +11,9 @@ Performance Check v3 represents a major enhancement to our Lighthouse CI impleme
 5. ✅ **Performance budgets** with graduated failure conditions
 6. ✅ **Core Web Vitals focus** with clear visual indicators
 
-## Key Improvements Over v2
+## Key Improvements
 
-### 🎯 What's New in v3
+### 🎯 What's New
 
 #### 1. Dual Viewport Testing
 - **Mobile Testing**: Simulates real mobile conditions with 4x CPU throttling
@@ -85,44 +85,24 @@ jobs:
 4. **Report Job**: Waits for both, generates combined report
 5. **PR Comment**: Posts/updates comprehensive results
 
-## Migration Steps
+## Testing the Workflow
 
-### Phase 1: Testing (Current)
+### Manual Testing
 ```bash
-# Test the new workflow on a PR
-gh workflow run performance-check-v3.yml -f pr_number=123
+# Test the workflow on a PR
+gh workflow run performance-check.yml -f pr_number=123
 
 # Test with specific viewport
-gh workflow run performance-check-v3.yml -f pr_number=123 -f viewport=mobile
+gh workflow run performance-check.yml -f pr_number=123 -f viewport=mobile
 ```
 
-### Phase 2: Validation
-1. Compare v3 results with v2 on same PR
-2. Verify mobile/desktop scores are appropriate
-3. Check report formatting and clarity
-4. Validate performance budget thresholds
-
-### Phase 3: Gradual Rollout
-1. Run v3 alongside v2 for 1 week
-2. Monitor for false positives
-3. Adjust budgets based on real data
-4. Gather developer feedback
-
-### Phase 4: Full Migration
-1. Update deployment workflows to trigger v3
-2. Disable v2 workflow
-3. Archive v2 configuration
-4. Update documentation
-
-### Phase 5: Cleanup
-```bash
-# Disable old workflows
-mv .github/workflows/performance-check-v2.yml .github/workflows/performance-check-v2.yml.archived
-mv .github/workflows/performance-check.yml.disabled .github/workflows/performance-check.yml.archived
-
-# Rename v3 to standard name
-mv .github/workflows/performance-check-v3.yml .github/workflows/performance-check.yml
-```
+### Validation Steps
+1. Verify mobile/desktop scores are appropriate
+2. Check report formatting and clarity
+3. Validate performance budget thresholds
+4. Monitor for false positives
+5. Adjust budgets based on real data
+6. Gather developer feedback
 
 ## Configuration Details
 
@@ -190,27 +170,27 @@ mv .github/workflows/performance-check-v3.yml .github/workflows/performance-chec
 | Images | 1100KB | 1500KB | Per page |
 | Total | 2500KB | 3000KB | Full page weight |
 
-## Testing the New Workflow
+## Testing Commands
 
 ### Manual Testing Commands
 ```bash
 # Test both viewports on a PR
-gh workflow run performance-check-v3.yml \
+gh workflow run performance-check.yml \
   -f pr_number=123 \
   -f viewport=both
 
 # Test mobile only
-gh workflow run performance-check-v3.yml \
+gh workflow run performance-check.yml \
   -f pr_number=123 \
   -f viewport=mobile
 
 # Test desktop only
-gh workflow run performance-check-v3.yml \
+gh workflow run performance-check.yml \
   -f pr_number=123 \
   -f viewport=desktop
 
 # Test local build (debugging)
-gh workflow run performance-check-v3.yml \
+gh workflow run performance-check.yml \
   -f pr_number=123 \
   -f test_local=true
 ```
@@ -238,30 +218,26 @@ gh workflow run performance-check-v3.yml \
 ### Issue: PR Comment Not Appearing
 **Solution**: Verify `pull-requests: write` permission is set
 
-## Benefits Over Previous Versions
+## Key Benefits
 
-### v1 → v2 Improvements
-- Tests deployed URLs instead of localhost
-- Waits for deployment completion
-- Collapsible report sections
-
-### v2 → v3 Improvements
 - **2x Coverage**: Mobile + Desktop testing
 - **Better UX**: Enhanced visual indicators
 - **Actionable**: Specific improvement recommendations
 - **Comprehensive**: All pages, both languages
 - **Reliable**: Parallel execution, median of 3 runs
 - **Graduated Failures**: Errors vs warnings
+- **Tests deployed URLs**: Uses real PR preview URLs
+- **Smart waiting**: Ensures deployment is ready before testing
 
 ## Performance Impact
 
 ### Expected Metrics
-| Metric | v2 | v3 | Change |
-|--------|-----|-----|--------|
-| Total Tests | 30 | 60 | +100% |
-| Execution Time | ~5 min | ~8 min | +60% |
-| Report Detail | Basic | Comprehensive | +200% |
-| Actionability | Low | High | Significant |
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Total Tests | 60 | 30 mobile + 30 desktop |
+| Execution Time | ~8 min | Parallel execution |
+| Report Detail | Comprehensive | Core Web Vitals focus |
+| Actionability | High | Specific recommendations |
 
 ### Resource Usage
 - **GitHub Actions Minutes**: ~16 minutes per run (2 parallel jobs)
@@ -270,19 +246,18 @@ gh workflow run performance-check-v3.yml \
 
 ## Next Steps
 
-### Immediate (Week 1)
-1. Deploy v3 workflow to repository
+### Immediate Actions
+1. Deploy workflow to repository
 2. Test on 3-5 active PRs
 3. Gather initial feedback
 4. Adjust budgets if needed
 
-### Short Term (Week 2-3)
-1. Run v3 alongside v2
-2. Compare results consistency
-3. Fine-tune thresholds
-4. Update team documentation
+### Short Term Goals
+1. Fine-tune thresholds based on data
+2. Update team documentation
+3. Train team on new metrics
 
-### Long Term (Month 2+)
+### Long Term Goals
 1. Implement historical tracking
 2. Add baseline comparison
 3. Create performance dashboard
@@ -290,7 +265,7 @@ gh workflow run performance-check-v3.yml \
 
 ## Future Enhancements
 
-### Planned for v4
+### Planned Improvements
 - **Baseline Comparison**: Compare PR vs master metrics
 - **Historical Tracking**: Store results in database
 - **Trend Analysis**: Show performance over time
@@ -307,7 +282,7 @@ gh workflow run performance-check-v3.yml \
 ## Support
 
 For issues or questions:
-- Create issue with `performance-check-v3` label
+- Create issue with `performance-check` label
 - Check [workflow logs](https://github.com/barde/phialoastro/actions)
 - Review this guide for troubleshooting
 - Contact @devops-team for urgent issues
