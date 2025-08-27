@@ -22,6 +22,7 @@ const { primaryImage, hoverImage, alt, className = '' } = Astro.props;
       img.onerror = () => { this.imagesPreloaded = true; };
     }
   }"
+  x-cloak
   @mouseenter="isHovered = true"
   @mouseleave="isHovered = false"
   @keydown.enter.prevent="isHovered = !isHovered"

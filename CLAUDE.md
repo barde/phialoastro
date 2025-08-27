@@ -607,3 +607,5 @@ rg "useState.*useEffect" --type tsx -A 5 -B 5
 2. Reinstall: `pnpm install`
 3. Check Node version: `node --version` (should be 18+)
 4. Verify all imports resolve correctly
+
+- check the debug console web developer tools via mcp for hints. always check it when using mcp browser and fix all issues.

@@ -48,31 +48,88 @@ const categoryMap = {
 } as const;
 
 // Define categories for the filter UI - only include categories that have items
+const uniqueCategories = [...new Set(portfolioItems.map(item => item.category))];
 const categories = [
-  { id: 'all', label: 'Alle Arbeiten', labelEn: 'All Works' },
-  { id: 'rings', label: 'Ringe', labelEn: 'Rings' },
-  { id: 'earrings', label: 'Ohrringe', labelEn: 'Earrings' },
-  { id: 'pendants', label: 'Anhänger', labelEn: 'Pendants' },
-  { id: 'sculptures', label: 'Skulpturen', labelEn: 'Sculptures' },
-  { id: 'pins', label: 'Anstecker', labelEn: 'Pins' }
+  { id: 'all', label: isEnglish ? 'All' : 'Alle' },
+  ...uniqueCategories.map(cat => {
+    const normalizedCat = categoryMap[cat as keyof typeof categoryMap] || cat;
+    const label = isEnglish ? 
+      normalizedCat.charAt(0).toUpperCase() + normalizedCat.slice(1) : 
+      (normalizedCat === 'rings' ? 'Ringe' : 
+       normalizedCat === 'earrings' ? 'Ohrringe' : 
+       normalizedCat === 'pendants' ? 'Anhänger' : 
+       normalizedCat === 'sculptures' ? 'Skulpturen' : 
+       normalizedCat === 'pins' ? 'Anstecknadeln' : 
+       normalizedCat.charAt(0).toUpperCase() + normalizedCat.slice(1));
+    return { id: normalizedCat, label };
+  })
 ];
 
-// Prepare data for Alpine
+// Prepare data for Alpine.js component
 const portfolioData = {
   items: portfolioItems,
-  categories: categories.map(cat => ({
-    id: cat.id,
-    label: isEnglish && cat.labelEn ? cat.labelEn : cat.label
-  })),
+  categories: categories,
   categoryMap: categoryMap,
   lang: lang
 };
 ---
 
+<!-- Server-side rendered fallback (shown immediately, hidden when Alpine loads) -->
+<div class="portfolio-section w-full py-8" id="portfolio-fallback">
+  <!-- Portfolio Filter -->
+  <div class="portfolio-filter-wrapper mb-12">
+    <div class="flex flex-wrap justify-center gap-4">
+      {categories.map((category) => (
+        <button
+          class={`px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 ${
+            category.id === 'all' 
+              ? 'bg-gold text-white' 
+              : 'bg-white text-midnight border border-midnight/20'
+          }`}
+        >
+          {category.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Portfolio Grid -->
+  <div class="portfolio-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {portfolioItems.map((item, index) => (
+      <div 
+        data-item-id={item.id}
+        class="portfolio-item group cursor-pointer relative overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        style={`animation-delay: ${index * 0.1}s`}
+      >
+        <!-- Image -->
+        <div class="aspect-square overflow-hidden bg-gray-100">
+          <img 
+            src={item.image}
+            alt={item.title}
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+        </div>
+        
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-midnight/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            <h3 class="text-xl font-display font-medium mb-2">{item.title}</h3>
+            <p class="text-sm opacity-90">{item.description.substring(0, 100)}...</p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<!-- Alpine.js enhanced version (hidden until Alpine loads) -->
 <div 
   x-data="portfolioSection"
+  x-cloak
   data-portfolio={JSON.stringify(portfolioData)}
   class="portfolio-section w-full py-8"
+  x-init="$nextTick(() => { document.getElementById('portfolio-fallback').style.display = 'none'; })"
 >
   <!-- Portfolio Filter -->
   <div class="portfolio-filter-wrapper mb-12">
@@ -197,33 +254,21 @@ const portfolioData = {
                   ></iframe>
                 </div>
               </template>
-              <template x-if="!selectedItem.youtubeVideoId && selectedItem.gallery">
-                <div>
+              
+              <template x-if="!selectedItem.youtubeVideoId">
+                <div class="relative">
                   <img 
-                    :src="selectedItem.gallery[currentImageIndex]"
+                    :src="selectedItem.gallery ? selectedItem.gallery[currentImageIndex] : selectedItem.image"
                     :alt="selectedItem.title"
                     class="w-full h-auto max-h-[60vh] object-contain rounded-lg"
                   />
-                  <!-- Image navigation dots -->
-                  <template x-if="selectedItem.gallery.length > 1">
-                    <div class="flex justify-center gap-2 mt-4">
-                      <template x-for="(img, idx) in selectedItem.gallery" :key="idx">
-                        <button 
-                          @click="currentImageIndex = idx"
-                          :class="{'bg-gold': currentImageIndex === idx, 'bg-gray-300': currentImageIndex !== idx}"
-                          class="w-2 h-2 rounded-full transition-colors"
-                          :aria-label={`'${isEnglish ? 'Show image' : 'Bild zeigen'} ' + (idx + 1)`}
-                        ></button>
-                      </template>
-                    </div>
-                  </template>
-                  <!-- Image navigation arrows -->
-                  <template x-if="selectedItem.gallery.length > 1">
+                  
+                  <!-- Image navigation -->
+                  <template x-if="selectedItem.gallery && selectedItem.gallery.length > 1">
                     <div>
                       <button 
                         @click="prevImage()"
-                        class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
-                        aria-label={isEnglish ? 'Previous image' : 'Vorheriges Bild'}
+                        class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
                       >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -231,8 +276,7 @@ const portfolioData = {
                       </button>
                       <button 
                         @click="nextImage()"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
-                        aria-label={isEnglish ? 'Next image' : 'Nächstes Bild'}
+                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
                       >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -246,41 +290,28 @@ const portfolioData = {
           </template>
         </div>
 
-        <!-- Content -->
+        <!-- Details -->
         <div class="p-8 overflow-y-auto">
           <template x-if="selectedItem">
             <div>
-              <h2 class="text-3xl font-display font-medium mb-4" x-text="selectedItem.title"></h2>
+              <h2 class="text-3xl font-display font-bold text-midnight mb-4" x-text="selectedItem.title"></h2>
               <p class="text-gray-600 mb-6" x-text="selectedItem.description"></p>
               
-              <!-- Features -->
-              <template x-if="selectedItem.features && selectedItem.features.length > 0">
+              <!-- Materials -->
+              <template x-if="selectedItem.materials && selectedItem.materials.length > 0">
                 <div class="mb-6">
-                  <h3 class="text-lg font-semibold mb-3">{isEnglish ? 'Features' : 'Eigenschaften'}</h3>
-                  <ul class="list-disc list-inside space-y-1 text-gray-600">
-                    <template x-for="feature in selectedItem.features" :key="feature">
-                      <li x-text="feature"></li>
+                  <h3 class="text-lg font-semibold text-midnight mb-2">{isEnglish ? 'Materials' : 'Materialien'}</h3>
+                  <ul class="list-disc list-inside text-gray-600">
+                    <template x-for="material in selectedItem.materials" :key="material">
+                      <li x-text="material"></li>
                     </template>
                   </ul>
                 </div>
               </template>
               
-              <!-- Materials -->
-              <template x-if="selectedItem.materials && selectedItem.materials.length > 0">
-                <div class="mb-6">
-                  <h3 class="text-lg font-semibold mb-3">{isEnglish ? 'Materials' : 'Materialien'}</h3>
-                  <div class="flex flex-wrap gap-2">
-                    <template x-for="material in selectedItem.materials" :key="material">
-                      <span class="px-3 py-1 bg-gray-100 rounded-full text-sm" x-text="material"></span>
-                    </template>
-                  </div>
-                </div>
-              </template>
-              
               <!-- Tags -->
               <template x-if="selectedItem.tags && selectedItem.tags.length > 0">
-                <div>
-                  <h3 class="text-lg font-semibold mb-3">Tags</h3>
+                <div class="mb-6">
                   <div class="flex flex-wrap gap-2">
                     <template x-for="tag in selectedItem.tags" :key="tag">
                       <span class="px-3 py-1 bg-gold/10 text-gold rounded-full text-sm" x-text="tag"></span>
@@ -288,6 +319,26 @@ const portfolioData = {
                   </div>
                 </div>
               </template>
+              
+              <!-- Year and Client -->
+              <div class="text-sm text-gray-500">
+                <template x-if="selectedItem.year">
+                  <p><span class="font-medium">{isEnglish ? 'Year' : 'Jahr'}:</span> <span x-text="selectedItem.year"></span></p>
+                </template>
+                <template x-if="selectedItem.client">
+                  <p><span class="font-medium">{isEnglish ? 'Client' : 'Kunde'}:</span> <span x-text="selectedItem.client"></span></p>
+                </template>
+                <template x-if="selectedItem.availability">
+                  <p class="mt-2">
+                    <span class="font-medium">{isEnglish ? 'Availability' : 'Verfügbarkeit'}:</span> 
+                    <span 
+                      x-text="selectedItem.availability === 'available' ? '${isEnglish ? 'Available' : 'Verfügbar'}' : 
+                              selectedItem.availability === 'sold' ? '${isEnglish ? 'Sold' : 'Verkauft'}' : 
+                              '${isEnglish ? 'On Request' : 'Auf Anfrage'}'"
+                    ></span>
+                  </p>
+                </template>
+              </div>
             </div>
           </template>
         </div>
@@ -296,8 +347,8 @@ const portfolioData = {
   </div>
 </div>
 
-<script is:inline>
-  // Ensure Alpine component is registered immediately
+<script>
+  // Register Alpine component immediately if Alpine is already loaded
   if (typeof Alpine !== 'undefined') {
     // If Alpine is already loaded, register immediately
     if (!Alpine.data || !Alpine.data.portfolioSection) {
@@ -468,99 +519,90 @@ const portfolioData = {
     });
   }
   
-  // Also register on astro:after-swap for View Transitions
-  document.addEventListener('astro:after-swap', () => {
-    if (typeof Alpine !== 'undefined' && Alpine.data) {
-      if (!Alpine.data.portfolioSection) {
-        Alpine.data('portfolioSection', function() {
-          const element = this.$el;
-          const data = JSON.parse(element.dataset.portfolio || '{}');
+  // Also listen for DOMContentLoaded to ensure Alpine is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // Double-check Alpine is loaded after DOM is ready
+    if (typeof Alpine !== 'undefined' && !Alpine.data.portfolioSection) {
+      Alpine.data('portfolioSection', function() {
+        // Get the data from the data attribute
+        const element = this.$el;
+        const data = JSON.parse(element.dataset.portfolio || '{}');
+        
+        return {
+          items: data.items,
+          categories: data.categories,
+          categoryMap: data.categoryMap,
+          lang: data.lang,
+          activeFilter: 'all',
+          filteredItems: data.items,
+          isModalOpen: false,
+          selectedItem: null,
+          currentImageIndex: 0,
           
-          return {
-            items: data.items,
-            categories: data.categories,
-            categoryMap: data.categoryMap,
-            lang: data.lang,
-            activeFilter: 'all',
-            filteredItems: data.items,
-            isModalOpen: false,
-            selectedItem: null,
-            currentImageIndex: 0,
-            
-            setFilter(filter) {
-              this.activeFilter = filter;
-              if (filter === 'all') {
-                this.filteredItems = this.items;
-              } else {
-                this.filteredItems = this.items.filter(item => {
-                  if (item.category === filter) return true;
-                  if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
-                  if (this.lang === 'en' && item.category === filter) return true;
-                  return false;
-                });
-              }
-            },
-            
-            openModal(item) {
-              this.selectedItem = item;
-              this.currentImageIndex = 0;
-              this.isModalOpen = true;
-              document.body.style.overflow = 'hidden';
-            },
-            
-            closeModal() {
-              this.isModalOpen = false;
-              document.body.style.overflow = '';
-              setTimeout(() => { this.selectedItem = null; }, 300);
-            },
-            
-            navigateModal(direction) {
-              if (!this.selectedItem) return;
-              const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
-              let newIndex;
-              if (direction === 'prev') {
-                newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
-              } else {
-                newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
-              }
-              this.selectedItem = this.filteredItems[newIndex];
-              this.currentImageIndex = 0;
-            },
-            
-            nextImage() {
-              if (this.selectedItem && this.selectedItem.gallery) {
-                this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
-              }
-            },
-            
-            prevImage() {
-              if (this.selectedItem && this.selectedItem.gallery) {
-                this.currentImageIndex = this.currentImageIndex === 0 
-                  ? this.selectedItem.gallery.length - 1 
-                  : this.currentImageIndex - 1;
-              }
+          setFilter(filter) {
+            this.activeFilter = filter;
+            if (filter === 'all') {
+              this.filteredItems = this.items;
+            } else {
+              this.filteredItems = this.items.filter(item => {
+                // For English items, compare directly
+                if (item.category === filter) return true;
+                
+                // For German items, check if the active filter (English) maps to the item's German category
+                if (this.lang === 'de' && this.categoryMap[filter] === item.category) return true;
+                
+                // For English page with German filter IDs - though this shouldn't happen with our setup
+                if (this.lang === 'en' && item.category === filter) return true;
+                
+                return false;
+              });
             }
-          };
-        });
-      }
+          },
+          
+          openModal(item) {
+            this.selectedItem = item;
+            this.currentImageIndex = 0;
+            this.isModalOpen = true;
+            document.body.style.overflow = 'hidden';
+          },
+          
+          closeModal() {
+            this.isModalOpen = false;
+            document.body.style.overflow = '';
+            setTimeout(() => { this.selectedItem = null; }, 300);
+          },
+          
+          navigateModal(direction) {
+            if (!this.selectedItem) return;
+            
+            const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+            let newIndex;
+            
+            if (direction === 'prev') {
+              newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+            } else {
+              newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+            }
+            
+            this.selectedItem = this.filteredItems[newIndex];
+            this.currentImageIndex = 0;
+          },
+          
+          nextImage() {
+            if (this.selectedItem && this.selectedItem.gallery) {
+              this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+            }
+          },
+          
+          prevImage() {
+            if (this.selectedItem && this.selectedItem.gallery) {
+              this.currentImageIndex = this.currentImageIndex === 0 
+                ? this.selectedItem.gallery.length - 1 
+                : this.currentImageIndex - 1;
+            }
+          }
+        };
+      });
     }
   });
 </script>
-
-<style>
-  .portfolio-item {
-    animation: fadeInUp 0.6s ease-out forwards;
-    opacity: 0;
-  }
-  
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-</style>

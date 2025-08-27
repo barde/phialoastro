@@ -7,7 +7,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     globals: true,
     exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**', '**/tests/future/**'],
-    // Improve React 19 compatibility with jsdom
+    // Improve jsdom compatibility
     environmentOptions: {
       jsdom: {
         resources: 'usable',
@@ -15,7 +15,7 @@ export default defineConfig({
         pretendToBeVisual: true,
       },
     },
-    // Additional options for React 19 compatibility
+    // Additional test environment options
     pool: 'forks',
   },
   resolve: {

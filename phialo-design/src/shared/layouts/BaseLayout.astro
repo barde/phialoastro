@@ -95,6 +95,11 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
+      
+      /* Alpine.js x-cloak - hide elements until Alpine loads */
+      [x-cloak] { 
+        display: none !important; 
+      }
     </style>
     
     <!-- Prefetch likely next navigation -->

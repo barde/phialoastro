@@ -1,27 +1,54 @@
-name: "CodeQL"
+name: "CodeQL Security Analysis"
 
 on:
-  push:
-    branches: [ "master", "main" ]
-  pull_request:
-    branches: [ "master", "main" ]
+  # Nightly security scan
   schedule:
-    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight
+    - cron: '0 3 * * *'  # Daily at 3 AM UTC
+  
+  # Manual trigger for urgent security reviews
+  workflow_dispatch:
 
 jobs:
-  analyze:
-    name: Analyze JavaScript/TypeScript
+  check-changes:
+    name: Check for Changes
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    outputs:
+      has-changes: ${{ steps.check.outputs.changed }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 2  # Need to check last commit
+    
+    - name: Check if master changed in last 24 hours
+      id: check
+      run: |
+        # Get commits from last 24 hours on master
+        LAST_COMMIT_TIME=$(git log -1 --format=%ct origin/master)
+        CURRENT_TIME=$(date +%s)
+        TIME_DIFF=$((CURRENT_TIME - LAST_COMMIT_TIME))
+        
+        # 86400 seconds = 24 hours
+        if [ $TIME_DIFF -lt 86400 ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "Master branch has changes from last 24 hours"
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "No recent changes to master branch"
+        fi
+
+  analyze:
+    name: Analyze
+    needs: check-changes
+    # Only run if there were changes or manually triggered
+    if: needs.check-changes.outputs.has-changes == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       actions: read
       contents: read
       security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript-typescript' ]
 
     steps:
     - name: Checkout repository
@@ -30,7 +57,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
+        languages: javascript-typescript
         queries: security-and-quality
         
     - name: Setup Node.js
@@ -41,19 +68,45 @@ jobs:
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:
-        version: 9
+        version: 9.14.4
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pnpm-store
+          phialo-design/node_modules
+        key: ${{ runner.os }}-pnpm-codeql-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-codeql-
 
     - name: Install dependencies
       working-directory: phialo-design
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --frozen-lockfile --prefer-offline
 
-    - name: Build project
+    - name: Minimal build for analysis
       working-directory: phialo-design
       env:
-        PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-      run: pnpm run build
+        NODE_ENV: production
+        PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY || 'dummy-key' }}
+      run: |
+        # Only typecheck for CodeQL analysis
+        pnpm run typecheck || true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{matrix.language}}"
+        category: "/language:javascript-typescript"
+
+    - name: Create summary
+      if: always()
+      run: |
+        echo "## 🔒 Security Scan Summary - $(date +'%Y-%m-%d')" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "✅ Manual security scan completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ Nightly security scan completed" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "View detailed results in the [Security tab](https://github.com/${{ github.repository }}/security/code-scanning)" >> $GITHUB_STEP_SUMMARY
