@@ -19,6 +19,7 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
 
 <header 
   id="main-header" 
+  data-transparent={transparent ? 'true' : 'false'}
   class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
     transparent ? 'bg-transparent' : 'bg-theme-background/95 backdrop-blur-sm border-b border-theme-border'
   }`}
@@ -65,11 +66,16 @@ const logoAriaLabel = isEnglish ? 'Phialo Design Homepage' : 'Phialo Design Star
       
       // Add background on scroll
       if (currentScrollY > 50) {
+        // Always add background when scrolling down past 50px
         header.classList.remove('bg-transparent');
         header.classList.add('bg-theme-background/95', 'backdrop-blur-sm', 'border-b', 'border-theme-border');
-      } else if (header.dataset.transparent === 'true') {
-        header.classList.add('bg-transparent');
+      } else {
+        // Scrolled back to top
         header.classList.remove('bg-theme-background/95', 'backdrop-blur-sm', 'border-b', 'border-theme-border');
+        // Only re-apply bg-transparent if the header was initially transparent
+        if (header.dataset.transparent === 'true') {
+          header.classList.add('bg-transparent');
+        }
       }
       
       // Hide/show header on scroll direction
