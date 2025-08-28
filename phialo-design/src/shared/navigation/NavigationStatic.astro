@@ -28,10 +28,10 @@ const isActiveLink = (href: string) => {
     return (
       <a 
         href={localizedHref}
-        class={`text-sm font-medium transition-colors hover:text-theme-accent ${
+        class={`text-sm font-medium transition-colors hover:text-theme-accent pb-1 border-b-2 ${
           isActive 
-            ? 'text-theme-accent border-b-2 border-theme-accent pb-1' 
-            : 'text-theme-text-secondary'
+            ? 'text-theme-accent border-theme-accent' 
+            : 'text-theme-text-secondary border-transparent'
         }`}
       >
         {displayLabel}

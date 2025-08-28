@@ -156,24 +156,24 @@ const portfolioData = {
         </svg>
       </button>
 
-      <!-- Navigation arrows -->
+      <!-- Navigation arrows positioned at viewport edges -->
       <template x-if="filteredItems && filteredItems.length > 1">
         <div>
           <button 
             @click="navigateModal('prev')"
-            class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+            class="fixed left-8 top-1/2 -translate-y-1/2 z-[60] p-3 bg-white/90 rounded-full shadow-xl hover:bg-white hover:scale-110 transition-all"
             aria-label={isEnglish ? 'Previous item' : 'Vorheriges Element'}
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
           <button 
             @click="navigateModal('next')"
-            class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+            class="fixed right-8 top-1/2 -translate-y-1/2 z-[60] p-3 bg-white/90 rounded-full shadow-xl hover:bg-white hover:scale-110 transition-all"
             aria-label={isEnglish ? 'Next item' : 'Nächstes Element'}
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
@@ -217,29 +217,7 @@ const portfolioData = {
                       </template>
                     </div>
                   </template>
-                  <!-- Image navigation arrows -->
-                  <template x-if="selectedItem.gallery.length > 1">
-                    <div>
-                      <button 
-                        @click="prevImage()"
-                        class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
-                        aria-label={isEnglish ? 'Previous image' : 'Vorheriges Bild'}
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                      </button>
-                      <button 
-                        @click="nextImage()"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
-                        aria-label={isEnglish ? 'Next image' : 'Nächstes Bild'}
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </template>
+                  <!-- Image navigation arrows moved outside below -->
                 </div>
               </template>
             </div>
