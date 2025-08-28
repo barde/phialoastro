@@ -217,7 +217,29 @@ const portfolioData = {
                       </template>
                     </div>
                   </template>
-                  <!-- Image navigation arrows moved outside below -->
+                  <!-- Inner image navigation arrows for gallery -->
+                  <template x-if="selectedItem.gallery && selectedItem.gallery.length > 1">
+                    <div>
+                      <button 
+                        @click="prevImage()"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                        aria-label={isEnglish ? 'Previous image' : 'Vorheriges Bild'}
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                      </button>
+                      <button 
+                        @click="nextImage()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors"
+                        aria-label={isEnglish ? 'Next image' : 'Nächstes Bild'}
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </template>
                 </div>
               </template>
             </div>
