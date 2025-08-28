@@ -1,0 +1,581 @@
+---
+import { getCollection } from 'astro:content';
+
+export interface Props {
+  lang?: 'de' | 'en';
+}
+
+const { lang = 'de' } = Astro.props;
+const isEnglish = lang === 'en';
+
+// Fetch portfolio items from content collections
+const allPortfolioItems = await getCollection('portfolio', ({ data }) => {
+  return data.language === lang;
+});
+
+// Transform to match expected format
+const portfolioItems = allPortfolioItems.map((item) => ({
+  id: item.slug,
+  title: item.data.title,
+  category: item.data.category,
+  image: item.data.image,
+  slug: item.slug,
+  description: item.data.description,
+  shortDescription: item.data.shortDescription,
+  year: item.data.projectDate ? new Date(item.data.projectDate).getFullYear() : new Date(item.data.publishedAt).getFullYear(),
+  materials: item.data.materials || [],
+  gallery: item.data.gallery || [item.data.image],
+  youtubeVideoId: item.data.youtubeVideoId,
+  youtubeAspectRatio: item.data.youtubeAspectRatio || '16:9',
+  tags: item.data.tags || [],
+  client: item.data.client,
+  projectDate: item.data.projectDate,
+  availability: item.data.availability || 'available'
+}));
+
+// Category mapping for normalization
+const categoryMap = {
+  'rings': 'rings',
+  'Rings': 'rings',
+  'earrings': 'earrings',
+  'Earrings': 'earrings',
+  'pendants': 'pendants',
+  'Pendants': 'pendants',
+  'sculptures': 'sculptures',
+  'Sculptures': 'sculptures',
+  'pins': 'pins',
+  'Pins': 'pins'
+} as const;
+
+// Define categories for the filter UI
+const uniqueCategories = [...new Set(portfolioItems.map(item => {
+  const cat = item.category as keyof typeof categoryMap;
+  return categoryMap[cat] || item.category.toLowerCase();
+}))];
+
+const categories = [
+  { id: 'all', label: isEnglish ? 'All' : 'Alle' },
+  ...uniqueCategories.map(cat => {
+    const label = isEnglish ? 
+      cat.charAt(0).toUpperCase() + cat.slice(1) : 
+      (cat === 'rings' ? 'Ringe' : 
+       cat === 'earrings' ? 'Ohrringe' : 
+       cat === 'pendants' ? 'Anhänger' : 
+       cat === 'sculptures' ? 'Skulpturen' : 
+       cat === 'pins' ? 'Anstecknadeln' : 
+       cat.charAt(0).toUpperCase() + cat.slice(1));
+    return { id: cat, label };
+  })
+];
+
+// Prepare data for JavaScript
+const portfolioData = {
+  items: portfolioItems,
+  categories: categories,
+  categoryMap: categoryMap,
+  lang: lang
+};
+---
+
+<!-- Portfolio Section -->
+<div id="portfolio-section" class="portfolio-section w-full py-8" data-portfolio={JSON.stringify(portfolioData)}>
+  <!-- Portfolio Filter -->
+  <div class="portfolio-filter-wrapper mb-12">
+    <div class="flex flex-wrap justify-center gap-4" id="portfolio-filters">
+      {categories.map((category) => (
+        <button
+          data-filter={category.id}
+          class={`portfolio-filter-btn px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 ${
+            category.id === 'all' 
+              ? 'bg-gold text-white active' 
+              : 'bg-white text-midnight border border-midnight/20'
+          }`}
+        >
+          {category.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Portfolio Grid -->
+  <div id="portfolio-grid" class="portfolio-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {portfolioItems.map((item, index) => (
+      <div 
+        data-item-id={item.id}
+        data-category={categoryMap[item.category as keyof typeof categoryMap] || item.category.toLowerCase()}
+        class="portfolio-item group cursor-pointer relative overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        style={`animation-delay: ${index * 0.1}s`}
+      >
+        <!-- Image -->
+        <div class="aspect-square overflow-hidden bg-gray-100">
+          <img 
+            src={item.image}
+            alt={item.title}
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+        </div>
+        
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-midnight/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            <h3 class="text-xl font-display font-medium mb-2">{item.title}</h3>
+            <p class="text-sm opacity-90">{item.shortDescription || item.description.substring(0, 100)}...</p>
+            <p class="text-xs mt-2 opacity-75">{item.year}</p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Modal -->
+  <div id="portfolio-modal" class="portfolio-modal fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-midnight/75 hidden">
+    <div class="modal-content relative w-full max-w-6xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl">
+      <!-- Close button -->
+      <button 
+        id="modal-close"
+        class="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+        aria-label={isEnglish ? 'Close modal' : 'Modal schließen'}
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <!-- Navigation arrows -->
+      <button 
+        id="modal-prev"
+        class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+        aria-label={isEnglish ? 'Previous item' : 'Vorheriges Element'}
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <button 
+        id="modal-next"
+        class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+        aria-label={isEnglish ? 'Next item' : 'Nächstes Element'}
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 h-full">
+        <!-- Image carousel -->
+        <div class="relative bg-gray-100 flex items-center justify-center p-8">
+          <div id="modal-image-container" class="w-full">
+            <!-- Dynamic content will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div id="modal-details" class="p-8 overflow-y-auto">
+          <!-- Dynamic content will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  class PortfolioGallery {
+    constructor() {
+      this.section = null;
+      this.data = null;
+      this.activeFilter = 'all';
+      this.filteredItems = [];
+      this.selectedItem = null;
+      this.currentImageIndex = 0;
+      this.modal = null;
+      this.isTransitioning = false;
+    }
+
+    init() {
+      // Find portfolio section
+      this.section = document.getElementById('portfolio-section');
+      if (!this.section) return;
+
+      // Parse data
+      try {
+        this.data = JSON.parse(this.section.dataset.portfolio || '{}');
+        this.filteredItems = [...this.data.items];
+      } catch (e) {
+        console.error('Failed to parse portfolio data:', e);
+        return;
+      }
+
+      // Get modal
+      this.modal = document.getElementById('portfolio-modal');
+      if (!this.modal) return;
+
+      // Setup event listeners
+      this.setupFilterListeners();
+      this.setupItemListeners();
+      this.setupModalListeners();
+    }
+
+    setupFilterListeners() {
+      const filterButtons = document.querySelectorAll('.portfolio-filter-btn');
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const filter = e.currentTarget.dataset.filter;
+          this.setFilter(filter);
+        });
+      });
+    }
+
+    setupItemListeners() {
+      const items = document.querySelectorAll('.portfolio-item');
+      items.forEach(item => {
+        item.addEventListener('click', (e) => {
+          const itemId = e.currentTarget.dataset.itemId;
+          const portfolioItem = this.data.items.find(i => i.id === itemId);
+          if (portfolioItem) {
+            this.openModal(portfolioItem);
+          }
+        });
+      });
+    }
+
+    setupModalListeners() {
+      // Close button
+      const closeBtn = document.getElementById('modal-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => this.closeModal());
+      }
+
+      // Navigation buttons
+      const prevBtn = document.getElementById('modal-prev');
+      const nextBtn = document.getElementById('modal-next');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => this.navigateModal('prev'));
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => this.navigateModal('next'));
+      }
+
+      // Click outside to close
+      this.modal.addEventListener('click', (e) => {
+        if (e.target === this.modal) {
+          this.closeModal();
+        }
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !this.modal.classList.contains('hidden')) {
+          this.closeModal();
+        }
+      });
+    }
+
+    setFilter(filter) {
+      this.activeFilter = filter;
+      
+      // Update button states
+      const filterButtons = document.querySelectorAll('.portfolio-filter-btn');
+      filterButtons.forEach(btn => {
+        const isActive = btn.dataset.filter === filter;
+        if (isActive) {
+          btn.classList.remove('bg-white', 'text-midnight', 'border', 'border-midnight/20');
+          btn.classList.add('bg-gold', 'text-white', 'active');
+        } else {
+          btn.classList.remove('bg-gold', 'text-white', 'active');
+          btn.classList.add('bg-white', 'text-midnight', 'border', 'border-midnight/20');
+        }
+      });
+
+      // Filter items
+      if (filter === 'all') {
+        this.filteredItems = [...this.data.items];
+      } else {
+        this.filteredItems = this.data.items.filter(item => {
+          const itemCategory = this.data.categoryMap[item.category] || item.category.toLowerCase();
+          return itemCategory === filter;
+        });
+      }
+
+      // Update grid visibility
+      const items = document.querySelectorAll('.portfolio-item');
+      items.forEach((item, index) => {
+        const itemCategory = item.dataset.category;
+        const shouldShow = filter === 'all' || itemCategory === filter;
+        
+        if (shouldShow) {
+          item.style.display = '';
+          // Add stagger animation
+          setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'scale(1)';
+          }, index * 50);
+        } else {
+          item.style.opacity = '0';
+          item.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            item.style.display = 'none';
+          }, 300);
+        }
+      });
+    }
+
+    openModal(item) {
+      if (this.isTransitioning) return;
+      
+      this.selectedItem = item;
+      this.currentImageIndex = 0;
+      
+      // Update modal content
+      this.updateModalContent();
+      
+      // Show modal with animation
+      this.modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        this.modal.classList.add('opacity-100');
+        this.modal.querySelector('.modal-content').classList.add('scale-100');
+      });
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+
+    closeModal() {
+      // Hide modal with animation
+      this.modal.classList.remove('opacity-100');
+      this.modal.querySelector('.modal-content').classList.remove('scale-100');
+      
+      setTimeout(() => {
+        this.modal.classList.add('hidden');
+        this.selectedItem = null;
+        this.currentImageIndex = 0;
+      }, 300);
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+
+    navigateModal(direction) {
+      if (!this.selectedItem) return;
+      
+      const currentIndex = this.filteredItems.findIndex(item => item.id === this.selectedItem.id);
+      let newIndex;
+      
+      if (direction === 'prev') {
+        newIndex = currentIndex === 0 ? this.filteredItems.length - 1 : currentIndex - 1;
+      } else {
+        newIndex = currentIndex === this.filteredItems.length - 1 ? 0 : currentIndex + 1;
+      }
+      
+      this.selectedItem = this.filteredItems[newIndex];
+      this.currentImageIndex = 0;
+      this.updateModalContent();
+    }
+
+    updateModalContent() {
+      if (!this.selectedItem) return;
+      
+      const imageContainer = document.getElementById('modal-image-container');
+      const detailsContainer = document.getElementById('modal-details');
+      const isEnglish = this.data.lang === 'en';
+      
+      // Update image/video
+      if (this.selectedItem.youtubeVideoId) {
+        imageContainer.innerHTML = `
+          <div class="aspect-video">
+            <iframe
+              src="https://www.youtube.com/embed/${this.selectedItem.youtubeVideoId}"
+              class="w-full h-full rounded-lg"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              title="${this.selectedItem.title}"
+            ></iframe>
+          </div>
+        `;
+      } else {
+        const gallery = this.selectedItem.gallery || [this.selectedItem.image];
+        const currentImage = gallery[this.currentImageIndex];
+        
+        imageContainer.innerHTML = `
+          <div class="relative">
+            <img 
+              src="${currentImage}"
+              alt="${this.selectedItem.title}"
+              class="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+            />
+            ${gallery.length > 1 ? `
+              <button 
+                id="gallery-prev"
+                class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+              <button 
+                id="gallery-next"
+                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            ` : ''}
+          </div>
+        `;
+        
+        // Add gallery navigation listeners
+        if (gallery.length > 1) {
+          setTimeout(() => {
+            const prevBtn = document.getElementById('gallery-prev');
+            const nextBtn = document.getElementById('gallery-next');
+            if (prevBtn) {
+              prevBtn.addEventListener('click', () => this.prevImage());
+            }
+            if (nextBtn) {
+              nextBtn.addEventListener('click', () => this.nextImage());
+            }
+          }, 0);
+        }
+      }
+      
+      // Update details
+      detailsContainer.innerHTML = `
+        <h2 class="text-3xl font-display font-bold text-midnight mb-4">${this.selectedItem.title}</h2>
+        <p class="text-gray-600 mb-6">${this.selectedItem.description}</p>
+        
+        ${this.selectedItem.materials && this.selectedItem.materials.length > 0 ? `
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-midnight mb-2">${isEnglish ? 'Materials' : 'Materialien'}</h3>
+            <ul class="list-disc list-inside text-gray-600">
+              ${this.selectedItem.materials.map(m => `<li>${m}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+        
+        ${this.selectedItem.tags && this.selectedItem.tags.length > 0 ? `
+          <div class="mb-6">
+            <div class="flex flex-wrap gap-2">
+              ${this.selectedItem.tags.map(tag => `
+                <span class="px-3 py-1 bg-gold/10 text-gold rounded-full text-sm">${tag}</span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        
+        <div class="text-sm text-gray-500">
+          ${this.selectedItem.year ? `<p><span class="font-medium">${isEnglish ? 'Year' : 'Jahr'}:</span> ${this.selectedItem.year}</p>` : ''}
+          ${this.selectedItem.client ? `<p><span class="font-medium">${isEnglish ? 'Client' : 'Kunde'}:</span> ${this.selectedItem.client}</p>` : ''}
+          ${this.selectedItem.availability ? `
+            <p class="mt-2">
+              <span class="font-medium">${isEnglish ? 'Availability' : 'Verfügbarkeit'}:</span> 
+              ${this.selectedItem.availability === 'available' ? (isEnglish ? 'Available' : 'Verfügbar') : 
+                this.selectedItem.availability === 'sold' ? (isEnglish ? 'Sold' : 'Verkauft') : 
+                (isEnglish ? 'On Request' : 'Auf Anfrage')}
+            </p>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    nextImage() {
+      if (this.selectedItem && this.selectedItem.gallery) {
+        this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedItem.gallery.length;
+        this.updateModalContent();
+      }
+    }
+
+    prevImage() {
+      if (this.selectedItem && this.selectedItem.gallery) {
+        this.currentImageIndex = this.currentImageIndex === 0 
+          ? this.selectedItem.gallery.length - 1 
+          : this.currentImageIndex - 1;
+        this.updateModalContent();
+      }
+    }
+  }
+
+  // Initialize portfolio gallery
+  let portfolioGallery = null;
+
+  function initPortfolioGallery() {
+    portfolioGallery = new PortfolioGallery();
+    portfolioGallery.init();
+  }
+
+  // Handle View Transitions
+  document.addEventListener('astro:before-swap', () => {
+    if (portfolioGallery) {
+      portfolioGallery.isTransitioning = true;
+      // Clean up any open modals
+      const modal = document.getElementById('portfolio-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    // Re-initialize after swap
+    initPortfolioGallery();
+  });
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPortfolioGallery);
+  } else {
+    initPortfolioGallery();
+  }
+
+  // Also listen for astro:page-load for full page navigations
+  document.addEventListener('astro:page-load', initPortfolioGallery);
+</script>
+
+<style>
+  /* Ensure smooth transitions */
+  .portfolio-modal {
+    transition: opacity 300ms ease-in-out;
+  }
+  
+  .portfolio-modal.hidden {
+    opacity: 0;
+  }
+  
+  .portfolio-modal.opacity-100 {
+    opacity: 1;
+  }
+  
+  .modal-content {
+    transition: transform 300ms ease-in-out;
+    transform: scale(0.9);
+  }
+  
+  .modal-content.scale-100 {
+    transform: scale(1);
+  }
+  
+  /* Portfolio item animations */
+  .portfolio-item {
+    transition: all 300ms ease-in-out;
+  }
+  
+  /* Ensure grid doesn't break */
+  .portfolio-grid {
+    display: grid !important;
+    grid-template-columns: repeat(1, 1fr);
+  }
+  
+  @media (min-width: 768px) {
+    .portfolio-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .portfolio-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
