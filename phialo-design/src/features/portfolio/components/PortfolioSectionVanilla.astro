@@ -85,7 +85,7 @@ const portfolioData = {
       {categories.map((category) => (
         <button
           data-filter={category.id}
-          class={`portfolio-filter-btn px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 ${
+          class={`portfolio-filter-btn px-6 py-2 rounded-full font-medium hover:scale-105 ${
             category.id === 'all' 
               ? 'bg-gold text-white active' 
               : 'bg-white text-midnight border border-midnight/20'
@@ -103,22 +103,21 @@ const portfolioData = {
       <div 
         data-item-id={item.id}
         data-category={categoryMap[item.category as keyof typeof categoryMap] || item.category.toLowerCase()}
-        class="portfolio-item group cursor-pointer relative overflow-hidden rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
-        style={`animation-delay: ${index * 0.1}s`}
+        class="portfolio-item group cursor-pointer relative overflow-hidden rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl"
       >
         <!-- Image -->
         <div class="aspect-square overflow-hidden bg-gray-100">
           <img 
             src={item.image}
             alt={item.title}
-            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            class="w-full h-full object-cover group-hover:scale-110"
             loading="lazy"
           />
         </div>
         
         <!-- Overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-midnight/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+        <div class="absolute inset-0 bg-gradient-to-t from-midnight/60 to-transparent opacity-0 group-hover:opacity-100">
+          <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0">
             <h3 class="text-xl font-display font-medium mb-2">{item.title}</h3>
             <p class="text-sm opacity-90">{item.shortDescription || item.description.substring(0, 100)}...</p>
             <p class="text-xs mt-2 opacity-75">{item.year}</p>
@@ -130,35 +129,35 @@ const portfolioData = {
 
   <!-- Modal -->
   <div id="portfolio-modal" class="portfolio-modal fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-midnight/75 hidden">
+    <!-- Navigation arrows - positioned at viewport edges, inside modal container -->
+    <button 
+      id="modal-prev"
+      class="absolute left-8 top-1/2 -translate-y-1/2 z-[10001] p-3 bg-white rounded-full shadow-lg hover:bg-gray-100"
+      aria-label={isEnglish ? 'Previous item' : 'Vorheriges Element'}
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+    </button>
+    <button 
+      id="modal-next"
+      class="absolute right-8 top-1/2 -translate-y-1/2 z-[10001] p-3 bg-white rounded-full shadow-lg hover:bg-gray-100"
+      aria-label={isEnglish ? 'Next item' : 'Nächstes Element'}
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
     <div class="modal-content relative w-full max-w-6xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl">
       <!-- Close button -->
       <button 
         id="modal-close"
-        class="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+        class="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
         aria-label={isEnglish ? 'Close modal' : 'Modal schließen'}
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-
-      <!-- Navigation arrows -->
-      <button 
-        id="modal-prev"
-        class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-        aria-label={isEnglish ? 'Previous item' : 'Vorheriges Element'}
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-      </button>
-      <button 
-        id="modal-next"
-        class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-        aria-label={isEnglish ? 'Next item' : 'Nächstes Element'}
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
         </svg>
       </button>
 
@@ -189,7 +188,6 @@ const portfolioData = {
       this.selectedItem = null;
       this.currentImageIndex = 0;
       this.modal = null;
-      this.isTransitioning = false;
     }
 
     init() {
@@ -305,51 +303,39 @@ const portfolioData = {
         
         if (shouldShow) {
           item.style.display = '';
-          // Add stagger animation
-          setTimeout(() => {
-            item.style.opacity = '1';
-            item.style.transform = 'scale(1)';
-          }, index * 50);
+          item.style.opacity = '1';
+          item.style.transform = 'scale(1)';
         } else {
+          item.style.display = 'none';
           item.style.opacity = '0';
           item.style.transform = 'scale(0.9)';
-          setTimeout(() => {
-            item.style.display = 'none';
-          }, 300);
         }
       });
     }
 
     openModal(item) {
-      if (this.isTransitioning) return;
-      
       this.selectedItem = item;
       this.currentImageIndex = 0;
       
       // Update modal content
       this.updateModalContent();
       
-      // Show modal with animation
+      // Show modal immediately
       this.modal.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        this.modal.classList.add('opacity-100');
-        this.modal.querySelector('.modal-content').classList.add('scale-100');
-      });
+      this.modal.classList.add('opacity-100');
+      this.modal.querySelector('.modal-content').classList.add('scale-100');
       
       // Prevent body scroll
       document.body.style.overflow = 'hidden';
     }
 
     closeModal() {
-      // Hide modal with animation
+      // Hide modal immediately
       this.modal.classList.remove('opacity-100');
       this.modal.querySelector('.modal-content').classList.remove('scale-100');
-      
-      setTimeout(() => {
-        this.modal.classList.add('hidden');
-        this.selectedItem = null;
-        this.currentImageIndex = 0;
-      }, 300);
+      this.modal.classList.add('hidden');
+      this.selectedItem = null;
+      this.currentImageIndex = 0;
       
       // Restore body scroll
       document.body.style.overflow = '';
@@ -407,7 +393,7 @@ const portfolioData = {
             ${gallery.length > 1 ? `
               <button 
                 id="gallery-prev"
-                class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -415,7 +401,7 @@ const portfolioData = {
               </button>
               <button 
                 id="gallery-next"
-                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -507,7 +493,6 @@ const portfolioData = {
   // Handle View Transitions
   document.addEventListener('astro:before-swap', () => {
     if (portfolioGallery) {
-      portfolioGallery.isTransitioning = true;
       // Clean up any open modals
       const modal = document.getElementById('portfolio-modal');
       if (modal) {
@@ -534,9 +519,9 @@ const portfolioData = {
 </script>
 
 <style>
-  /* Ensure smooth transitions */
+  /* Remove all transitions for stability */
   .portfolio-modal {
-    transition: opacity 300ms ease-in-out;
+    /* No transitions */
   }
   
   .portfolio-modal.hidden {
@@ -548,7 +533,6 @@ const portfolioData = {
   }
   
   .modal-content {
-    transition: transform 300ms ease-in-out;
     transform: scale(0.9);
   }
   
@@ -556,9 +540,9 @@ const portfolioData = {
     transform: scale(1);
   }
   
-  /* Portfolio item animations */
+  /* Portfolio item - no animations */
   .portfolio-item {
-    transition: all 300ms ease-in-out;
+    /* No transitions */
   }
   
   /* Ensure grid doesn't break */
