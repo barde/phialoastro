@@ -65,15 +65,11 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: [
-        // Enable Preact only in production for bundle size reduction
-        // Skip Preact for now due to SSR compatibility issues with icons
-        // TODO: Fix icon components then re-enable
-        // ...(process.env.NODE_ENV === 'production' ? [
-        //   { find: 'react-dom/test-utils', replacement: '@preact/compat/test-utils' },
-        //   { find: 'react-dom', replacement: '@preact/compat' },
-        //   { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' },
-        //   { find: 'react', replacement: '@preact/compat' },
-        // ] : []),
+        // Enable Preact compatibility layer for React code
+        { find: 'react-dom/test-utils', replacement: '@preact/compat/test-utils' },
+        { find: 'react-dom', replacement: '@preact/compat' },
+        { find: 'react/jsx-runtime', replacement: 'preact/jsx-runtime' },
+        { find: 'react', replacement: '@preact/compat' },
         // Existing aliases
         { find: '@features', replacement: new URL('./src/features', import.meta.url).pathname },
         { find: '@shared', replacement: new URL('./src/shared', import.meta.url).pathname },
