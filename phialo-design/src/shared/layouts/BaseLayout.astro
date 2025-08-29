@@ -203,10 +203,12 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     )}
     
     <!-- Dynamic Feature Loading for Code Splitting -->
+    <!-- Temporarily disabled for vanilla JS portfolio implementation
     <script type="module">
       // Load the dynamic import manager
-      import('/src/shared/utils/dynamicImports.js');
+      import('/src/shared/utils/dynamicImports.ts');
     </script>
+    -->
     
     <!-- Deferred performance optimizations -->
     <script defer>
