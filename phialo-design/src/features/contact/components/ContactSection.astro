@@ -1,5 +1,5 @@
 ---
-import ContactFormAlpine from './ContactFormAlpine.astro';
+import ContactFormWithPreClearance from './ContactFormWithPreClearance.tsx';
 
 // Language detection based on URL pathname
 const currentPath = Astro.url.pathname;
@@ -58,7 +58,7 @@ const t = translations[isEnglish ? 'en' : 'de'];
           <h3 class="font-display text-2xl font-medium mb-6">{t.formTitle}</h3>
           
           <!-- Alpine.js Contact Form -->
-          <ContactFormAlpine lang={isEnglish ? 'en' : 'de'} />
+          <ContactFormWithPreClearance lang={isEnglish ? 'en' : 'de'} />
 
           <!-- Contact info below form -->
           <div class="mt-8 pt-8 border-t border-white/10">

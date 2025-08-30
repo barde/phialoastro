@@ -1,8 +1,8 @@
 ---
 // English version - Content to be translated
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
-import PortfolioAlpine from '../../components/PortfolioSectionAlpine.astro';
-import AnimatedText from '../../../../shared/components/ui/AnimatedTextCSS.astro';
+import PortfolioSection from '../../components/PortfolioSectionAlpine.tsx';
+import AnimatedText from '../../../../shared/components/ui/AnimatedText.tsx';
 
 const title = 'Portfolio | Phialo Design';
 const description = 'Discover our unique jewelry creations and 3D sculptures. From rings to sculptures - each piece is a work of art.';
@@ -27,7 +27,7 @@ const description = 'Discover our unique jewelry creations and 3D sculptures. Fr
   </section>
 
   <!-- Portfolio Section -->
-  <PortfolioAlpine lang="en" />
+  <PortfolioSection lang="en" />
 
   <!-- Call-to-Action -->
   <section class="py-20 bg-neutral-50">

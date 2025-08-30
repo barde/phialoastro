@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import alpine from '@astrojs/alpinejs';
+import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import partytown from '@astrojs/partytown';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -11,7 +11,7 @@ import { constants } from 'zlib';
 // https://astro.build/config
 export default defineConfig({
   integrations: [
-    alpine(), // Alpine.js for lightweight interactivity
+    react(), // React for interactive components
     tailwind({
       applyBaseStyles: false, // We apply our own base styles
     }),
@@ -110,7 +110,9 @@ export default defineConfig({
     // Optimize dependency pre-bundling
     optimizeDeps: {
       include: [
-        'alpinejs' // Pre-bundle Alpine.js since it's used across the site
+        'react', // Pre-bundle React since it's used across the site
+        'react-dom',
+        'framer-motion'
       ],
       exclude: [
         // Exclude unused packages
@@ -133,9 +135,9 @@ export default defineConfig({
           manualChunks: (id) => {
             // Optimized chunk splitting
             if (id.includes('node_modules')) {
-              // Alpine.js - core library
-              if (id.includes('alpinejs')) {
-                return 'alpine';
+              // React core libraries
+              if (id.includes('react')) {
+                return 'react-vendor';
               }
               
               // Web vitals and analytics
@@ -152,9 +154,9 @@ export default defineConfig({
               return 'vendor';
             }
             
-            // Split Alpine.js components separately
-            if (id.includes('Alpine') || id.includes('x-data')) {
-              return 'alpine-components';
+            // Split React components separately
+            if (id.includes('.tsx') || id.includes('framer-motion')) {
+              return 'react-components';
             }
             
             // Split feature-based chunks for better code splitting
