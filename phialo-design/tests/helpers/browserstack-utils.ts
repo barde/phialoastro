@@ -59,7 +59,7 @@ export class BrowserStackTestDistributor {
         const data = JSON.parse(fs.readFileSync(this.metricsFile, 'utf-8'));
         this.metrics = new Map(Object.entries(data));
       }
-    } catch (error) {
+    } catch {
       console.warn('Could not load test metrics, using defaults');
     }
   }
@@ -71,7 +71,7 @@ export class BrowserStackTestDistributor {
     try {
       const data = Object.fromEntries(this.metrics);
       fs.writeFileSync(this.metricsFile, JSON.stringify(data, null, 2));
-    } catch (error) {
+    } catch {
       console.warn('Could not save test metrics');
     }
   }
@@ -258,7 +258,7 @@ ${shards.some(s => s.tests.length === 0) ? '- Some shards are empty, reduce para
  */
 export const test = base.extend({
   // Auto-fixture that collects metrics
-  collectMetrics: [async ({ page }, use, testInfo) => {
+  collectMetrics: [async ({ page: _page }, use, testInfo) => {
     const startTime = Date.now();
     const distributor = new BrowserStackTestDistributor();
 
@@ -276,7 +276,7 @@ export const test = base.extend({
     );
     distributor.saveMetrics();
   }, { auto: true }],
-});
+} as any);
 
 /**
  * Intelligent retry strategy for flaky tests
