@@ -5,6 +5,7 @@
   "license": "AGPL-3.0",
   "packageManager": "pnpm@9.14.4",
   "scripts": {
+    "predev": "node scripts/generate-modern-images.js",
     "dev": "astro dev",
     "prebuild": "node scripts/generate-modern-images.js && node scripts/generate-favicons.mjs",
     "build": "astro build",
