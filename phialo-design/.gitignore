@@ -30,6 +30,8 @@ public/images/homepage/*-*w.webp
 public/images/homepage/*-*w.avif
 public/images/**/*-*w.webp
 public/images/**/*-*w.avif
+public/*-*w.webp
+public/*-*w.avif
 
 # Image generation cache
 .image-cache.json
