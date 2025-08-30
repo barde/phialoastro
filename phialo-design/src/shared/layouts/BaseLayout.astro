@@ -1,6 +1,6 @@
 ---
 // SEO component removed to reduce bundle size - using native meta tags
-import { ClientRouter } from "astro:transitions";
+// View Transitions removed - causing hydration issues
 import SmoothScrollStatic from '../components/effects/SmoothScrollStatic.astro';
 import CriticalCSS from './CriticalCSS.astro';
 import WebVitalsMonitor from '../components/performance/WebVitalsMonitor.astro';
@@ -177,7 +177,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Theme Color -->
     <meta name="theme-color" content="#0A192F" />
     
-    <ClientRouter />
+    <!-- ClientRouter removed - was causing hydration issues -->
   </head>
   <body class="min-h-screen antialiased">
     <!-- Static smooth scroll - no React needed -->
@@ -202,11 +202,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
       </script>
     )}
     
-    <!-- Dynamic Feature Loading for Code Splitting -->
-    <script type="module">
-      // Load the dynamic import manager
-      import('/src/shared/utils/dynamicImports.js');
-    </script>
+    <!-- Hydration fix removed - no longer needed without View Transitions -->
     
     <!-- Deferred performance optimizations -->
     <script defer>
