@@ -62,9 +62,9 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
   // Token expiry time (5 minutes)
   const TOKEN_EXPIRY = 5 * 60 * 1000;
 
-  // Load Turnstile script globally
-  useEffect(() => {
-    if (!siteKey || typeof window === 'undefined') return;
+  // Lazy load Turnstile script only when needed
+  const loadTurnstileScript = React.useCallback(async () => {
+    if (!siteKey || typeof window === 'undefined') return false;
 
     // Check if script is already loaded
     const existingScript = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
@@ -72,34 +72,45 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       // Script already exists, check if Turnstile is ready
       if (window.turnstile) {
         setIsReady(true);
+        return true;
       } else {
         // Wait for the existing script to load
-        window.onloadTurnstileCallback = () => {
-          setIsReady(true);
-        };
+        return new Promise((resolve) => {
+          window.onloadTurnstileCallback = () => {
+            setIsReady(true);
+            resolve(true);
+          };
+        });
       }
-      return;
     }
 
     // Load the script
     setIsLoading(true);
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback';
-    script.async = true;
-    script.defer = true;
+    
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback';
+      script.async = true;
+      script.defer = true;
 
-    window.onloadTurnstileCallback = () => {
-      setIsReady(true);
-      setIsLoading(false);
-    };
+      window.onloadTurnstileCallback = () => {
+        setIsReady(true);
+        setIsLoading(false);
+        resolve(true);
+      };
 
-    script.onerror = () => {
-      setError('Failed to load Turnstile script');
-      setIsLoading(false);
-    };
+      script.onerror = () => {
+        setError('Failed to load Turnstile script');
+        setIsLoading(false);
+        reject(false);
+      };
 
-    document.head.appendChild(script);
+      document.head.appendChild(script);
+    });
+  }, [siteKey]);
 
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       // Cleanup widget refs on unmount
       widgetRefs.current.forEach((widgetId) => {
@@ -109,7 +120,7 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
       });
       widgetRefs.current.clear();
     };
-  }, [siteKey]);
+  }, []);
 
   // Check if a token is still valid
   const isTokenValid = (token: TurnstileToken): boolean => {
@@ -159,7 +170,20 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
 
   // Execute a challenge to get a new token
   const executeChallenge = useCallback(async (action: string = 'default'): Promise<string> => {
-    if (!isReady || !window.turnstile || !siteKey || !containerRef.current) {
+    if (!siteKey || !containerRef.current) {
+      throw new Error('Turnstile is not configured');
+    }
+
+    // Load script if not ready
+    if (!isReady) {
+      try {
+        await loadTurnstileScript();
+      } catch {
+        throw new Error('Failed to load Turnstile');
+      }
+    }
+
+    if (!window.turnstile) {
       throw new Error('Turnstile is not ready');
     }
 
@@ -281,7 +305,7 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
         reject(error);
       }
     });
-  }, [isReady, siteKey, language, getAppearanceForAction, containerRef]);
+  }, [isReady, siteKey, language, getAppearanceForAction, containerRef, loadTurnstileScript]);
 
   // Preload a token for better UX (optional)
   const preloadToken = useCallback(async (action: string = 'pageload'): Promise<void> => {
@@ -295,12 +319,8 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({
     }
   }, [isReady, getToken]);
 
-  // Optional: Pre-warm cache on initialization
-  useEffect(() => {
-    if (isReady && !tokens.has('pageload')) {
-      preloadToken().catch(() => {});
-    }
-  }, [isReady, tokens, preloadToken]);
+  // Removed automatic pre-warming to reduce initial load time
+  // Pre-warming can be triggered manually when needed
 
   // Clear a specific token
   const clearToken = useCallback((action: string = 'default') => {

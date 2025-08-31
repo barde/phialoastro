@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import { m, LazyMotion, domAnimation, type Variants } from 'framer-motion';
 import PortfolioGrid from './OptimizedPortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
 import { portfolioItemsDE, portfolioItemsEN, categoryMap, categories } from '../data';
@@ -61,78 +60,40 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
     setSelectedItem(item);
     setIsModalOpen(true);
   };
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring" as const,
-        damping: 20,
-        stiffness: 100
-      }
-    }
-  };
-
   return (
-    <LazyMotion features={domAnimation} strict>
-      <section id="portfolio" className="portfolio-section py-24 bg-white" aria-label="Portfolio">
+    <section id="portfolio" className="portfolio-section py-24 bg-white" aria-label="Portfolio">
       <div className="container mx-auto px-6">
         {/* Instagram Link */}
-        <m.div
-          variants={itemVariants}
-          initial="visible"
-          animate="visible"
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <div className="text-center">
             <a 
               href="https://www.instagram.com/phialo_design/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center text-gold hover:text-gold/80 font-medium transition-colors"
+              className="inline-flex items-center text-amber-700 hover:text-amber-800 font-medium transition-colors"
             >
               {isEnglish ? "Portfolio on Instagram" : "Portfolio auf Instagram"}
               <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-              </svg>            </a>
+              </svg>
+            </a>
           </div>
-        </m.div>
+        </div>
 
         {/* Filter */}
-        <m.div
-          variants={itemVariants}
-          initial="visible"
-          animate="visible"
-          className="mb-12"
-        >
+        <div className="mb-12">
           <PortfolioFilter
             categories={categories}
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
             isEnglish={isEnglish}
           />
-        </m.div>
+        </div>
 
         {/* Portfolio Grid */}
-        <m.div
-          variants={containerVariants}
-          initial="visible"
-          animate="visible"
-        >
+        <div>
           <PortfolioGrid items={filteredItems} onItemClick={handleItemClick} lang={lang} />
-        </m.div>
+        </div>
 
         {/* Portfolio Modal - Lazy loaded */}
         {selectedItem && (
@@ -162,7 +123,6 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           </Suspense>
         )}
       </div>
-      </section>
-    </LazyMotion>
+    </section>
   );
 }

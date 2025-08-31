@@ -20,7 +20,7 @@ export default function PortfolioFilter({ categories, activeFilter, onFilterChan
           onClick={() => onFilterChange(category.id)}
           className={`px-6 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
             activeFilter === category.id
-              ? 'bg-gold text-white shadow-sm'
+              ? 'bg-amber-700 text-white shadow-sm hover:bg-amber-800'
               : 'text-gray-600 hover:text-midnight hover:bg-gray-100'
           }`}
         >

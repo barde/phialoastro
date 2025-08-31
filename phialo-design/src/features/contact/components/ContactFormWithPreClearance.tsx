@@ -97,8 +97,8 @@ const ContactFormWithPreClearance: React.FC<ContactFormProps> = ({ onSuccess }) 
     setIsHydrated(true);
   }, []);
 
-  // Translations
-  const translations: Record<'de' | 'en', Translations> = {
+  // Optimized translations - use useMemo to avoid recreation on every render
+  const translations = React.useMemo((): Record<'de' | 'en', Translations> => ({
     de: {
       nameLabel: 'Name',
       namePlaceholder: 'Ihr Name',
@@ -169,41 +169,41 @@ const ContactFormWithPreClearance: React.FC<ContactFormProps> = ({ onSuccess }) 
       errorTurnstile: 'Security verification failed. Please try again.',
       loadingTurnstile: 'Loading security verification...',
     }
-  };
+  }), []);
 
   const t = translations[isGerman ? 'de' : 'en'];
 
-  // Validation functions
-  const validateName = (name: string): string | undefined => {
+  // Memoized validation functions to avoid recreation
+  const validateName = React.useCallback((name: string): string | undefined => {
     if (!name.trim()) return t.nameRequired;
     if (name.length < 2 || name.length > 100) return t.nameInvalid;
     return undefined;
-  };
+  }, [t.nameRequired, t.nameInvalid]);
 
-  const validateEmail = (email: string): string | undefined => {
+  const validateEmail = React.useCallback((email: string): string | undefined => {
     if (!email.trim()) return t.emailRequired;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return t.emailInvalid;
     return undefined;
-  };
+  }, [t.emailRequired, t.emailInvalid]);
 
-  const validatePhone = (phone: string): string | undefined => {
+  const validatePhone = React.useCallback((phone: string): string | undefined => {
     if (!phone) return undefined; // Optional field
     const phoneRegex = /^[\d\s+\-()]+$/;
     if (!phoneRegex.test(phone) || phone.length < 6) return t.phoneInvalid;
     return undefined;
-  };
+  }, [t.phoneInvalid]);
 
-  const validateSubject = (subject: string): string | undefined => {
+  const validateSubject = React.useCallback((subject: string): string | undefined => {
     if (!subject.trim()) return t.subjectRequired;
     return undefined;
-  };
+  }, [t.subjectRequired]);
 
-  const validateMessage = (message: string): string | undefined => {
+  const validateMessage = React.useCallback((message: string): string | undefined => {
     if (!message.trim()) return t.messageRequired;
     if (message.length < 10) return t.messageTooShort;
     return undefined;
-  };
+  }, [t.messageRequired, t.messageTooShort]);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -246,8 +246,8 @@ const ContactFormWithPreClearance: React.FC<ContactFormProps> = ({ onSuccess }) 
     }
   };
 
-  // Validate all fields
-  const validateForm = (): boolean => {
+  // Memoized validate form function
+  const validateForm = React.useCallback((): boolean => {
     const newErrors: ValidationErrors = {};
     
     const nameError = validateName(formData.name);
@@ -275,7 +275,7 @@ const ContactFormWithPreClearance: React.FC<ContactFormProps> = ({ onSuccess }) 
     });
     
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData, validateName, validateEmail, validatePhone, validateSubject, validateMessage]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {

@@ -112,12 +112,12 @@ export default defineConfig({
       include: [
         'react', // Pre-bundle React since it's used across the site
         'react-dom/client', // Only client-side React DOM
-        'framer-motion'
       ],
       exclude: [
         // Exclude unused packages
         '@cloudflare/turnstile',
-        'react-dom/server' // Exclude server-side rendering code
+        'react-dom/server', // Exclude server-side rendering code
+        'framer-motion' // Load framer-motion on-demand to reduce initial bundle
       ]
     },
     build: {
@@ -130,6 +130,8 @@ export default defineConfig({
         moduleSideEffects: false,
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
+        preset: 'recommended',
+        manualPureFunctions: ['console.log', 'console.warn', 'console.error']
       },
       // Optimize chunking to reduce dependency chains
       rollupOptions: {
@@ -147,19 +149,19 @@ export default defineConfig({
                 return 'vendor';
               }
               
-              // Keep framer-motion with React for portfolio
+              // Split framer-motion into separate chunk for lazy loading
               if (id.includes('framer-motion')) {
-                return 'vendor';
+                return 'animations';
               }
               
-              // Web vitals and analytics
+              // Web vitals and analytics - separate chunk for performance monitoring
               if (id.includes('web-vitals')) {
                 return 'analytics';
               }
               
-              // Utility libraries - bundle with vendor
-              if (id.includes('clsx') || id.includes('tailwind-merge')) {
-                return 'vendor';
+              // Utility libraries - keep small and bundle separately
+              if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('lucide-react')) {
+                return 'utils';
               }
               
               // All other vendor code

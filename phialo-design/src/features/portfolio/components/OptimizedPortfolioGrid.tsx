@@ -1,9 +1,59 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
 import OptimizedPicture from '../../../shared/components/OptimizedPicture';
 import { useAdaptiveLoading } from '../../../utils/adaptive-loading';
 import type { PortfolioItemData } from './PortfolioSection';
+
+// Lazy load framer-motion only when needed to reduce initial bundle size
+const MotionGrid = React.lazy(async () => {
+  const { m, AnimatePresence, LazyMotion, domAnimation } = await import('framer-motion');
+  
+  // Create the animated grid component
+  const AnimatedGrid = ({ items, onItemClick, lang }: OptimizedPortfolioGridProps) => {
+    const { animationSettings } = useAdaptiveLoading();
+    
+    const effectiveVariants = {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: 0.03,
+          delayChildren: 0.1,
+        },
+      },
+    };
+
+    return (
+      <LazyMotion features={domAnimation} strict>
+        <m.div
+          className="portfolio-grid"
+          data-testid="portfolio-grid"
+          variants={effectiveVariants}
+          initial="hidden"
+          animate="visible"
+          style={{
+            minHeight: items.length > 0 ? '500px' : 'auto',
+            contain: 'layout style paint',
+          }}
+        >
+          <AnimatePresence mode="popLayout">
+            {items.map((item, index) => (
+              <StaticPortfolioItem
+                key={item.id}
+                item={item}
+                index={index}
+                onItemClick={onItemClick}
+                lang={lang}
+              />
+            ))}
+          </AnimatePresence>
+        </m.div>
+      </LazyMotion>
+    );
+  };
+
+  return { default: AnimatedGrid };
+});
 
 interface OptimizedPortfolioGridProps {
   items: PortfolioItemData[];
@@ -44,7 +94,8 @@ const itemVariants = {
   },
 };
 
-function OptimizedPortfolioItem({ 
+// Static portfolio item without animations for better performance
+function StaticPortfolioItem({ 
   item, 
   index, 
   onItemClick, 
@@ -62,8 +113,9 @@ function OptimizedPortfolioItem({
   // Use adaptive loading to determine preload count
   const { preloadCount } = useAdaptiveLoading();
 
-  // Determine if this is a priority image based on adaptive loading
-  const isPriority = index < preloadCount;
+  // Determine if this is a priority image - first image always gets highest priority for LCP
+  const isPriority = index === 0 || index < preloadCount;
+
 
   // Keyboard handler for accessibility
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
@@ -83,14 +135,19 @@ function OptimizedPortfolioItem({
     console.error(`Failed to load image: ${item.image}`);
   }, [item.image]);
 
-  // Check if image is already loaded (from cache)
+  // Simplified approach - let the browser handle caching and remove preload checks for LCP
   useEffect(() => {
-    // Extract filename for WebP version
+    // For LCP (first image), don't do complex preload checks - let it load naturally
+    if (index === 0 && isPriority) {
+      // Assume it will load quickly due to preload in head
+      return;
+    }
+    
+    // For non-LCP images, do the normal preload check
     const filename = item.image.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
     const basePath = item.image.substring(0, item.image.lastIndexOf('/'));
-    
-    // Use WebP version for preloading
-    const webpSrc = `${basePath}/${filename}-800w.webp`;
+    const optimalSize = isPriority ? '640' : '800';
+    const webpSrc = `${basePath}/${filename}-${optimalSize}w.webp`;
     
     const img = new Image();
     img.src = webpSrc;
@@ -100,7 +157,6 @@ function OptimizedPortfolioItem({
     } else {
       img.onload = handleImageLoad;
       img.onerror = () => {
-        // If WebP fails, don't fallback to JPG - just log the error
         console.error(`Failed to load WebP image: ${webpSrc}`);
         handleImageError();
       };
@@ -110,7 +166,7 @@ function OptimizedPortfolioItem({
       img.onload = null;
       img.onerror = null;
     };
-  }, [item.image, handleImageLoad, handleImageError]);
+  }, [item.image, handleImageLoad, handleImageError, index, isPriority]);
 
   // Translations for accessibility
   const cardLabel = isEnglish 
@@ -118,13 +174,13 @@ function OptimizedPortfolioItem({
     : `Portfolio-Element: ${item.title}. Kategorie: ${item.category}. Drücken Sie Enter oder Leertaste, um Details anzuzeigen.`;
 
   return (
-    <m.div
-      variants={itemVariants}
-      layout
+    <div
       className="portfolio-item"
       style={{
-        // CSS containment for performance
-        contain: 'layout style paint',
+        // CSS containment for performance and layout shift prevention
+        contain: 'layout style paint size',
+        // Explicit dimensions to prevent shifts
+        aspectRatio: '4/5',
       }}
     >
       <div
@@ -139,9 +195,16 @@ function OptimizedPortfolioItem({
       >
         <MagneticCursor>
           <div className="portfolio-item-container overflow-hidden rounded-lg aspect-[4/5] transition-all duration-300 group-hover:shadow-lg">
-            {/* Show placeholder while image loads */}
-            {!imageLoaded && !imageError && (
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 animate-pulse" />
+            {/* Show placeholder while image loads - skip for LCP image to prevent render delay */}
+            {!imageLoaded && !imageError && !(index === 0 && isPriority) && (
+              <div 
+                className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 animate-pulse"
+                style={{
+                  aspectRatio: '4/5',
+                  width: '100%',
+                  height: '100%',
+                }}
+              />
             )}
             
             {/* Error state */}
@@ -156,7 +219,7 @@ function OptimizedPortfolioItem({
               src={item.image}
               alt={`${item.title} - ${item.category}`}
               className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-focus:scale-105 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
+                imageLoaded || (index === 0 && isPriority) ? 'opacity-100' : 'opacity-0'
               }`}
               loading={isPriority ? 'eager' : 'lazy'}
               fetchPriority={isPriority ? 'high' : 'auto'}
@@ -178,21 +241,18 @@ function OptimizedPortfolioItem({
           </div>
         </MagneticCursor>
       </div>
-    </m.div>
+    </div>
   );
 }
 
+
+// Main component with adaptive loading
 export default function OptimizedPortfolioGrid({ 
   items, 
   onItemClick, 
   lang = 'de' 
 }: OptimizedPortfolioGridProps) {
-  // Use adaptive loading for performance optimization
-  const { 
-    animationSettings
-  } = useAdaptiveLoading();
-  
-  // Check for reduced m preference
+  const { animationSettings } = useAdaptiveLoading();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -207,56 +267,19 @@ export default function OptimizedPortfolioGrid({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Use adaptive animations based on device capability
-  const effectiveVariants = !animationSettings.animate || prefersReducedMotion
-    ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
-    : {
-        hidden: { opacity: 0 },
-        visible: {
-          opacity: 1,
-          transition: {
-            staggerChildren: animationSettings.stagger,
-            delayChildren: animationSettings.duration * 0.2,
-          },
-        },
-      };
-
-  const effectiveItemVariants = !animationSettings.animate || prefersReducedMotion
-    ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
-    : {
-        hidden: { 
-          opacity: 0, 
-          y: animationSettings.complexity === 'simple' ? 10 : 20,
-        },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            type: "spring" as const,
-            damping: 30,
-            stiffness: 150,
-            mass: animationSettings.complexity === 'simple' ? 0.3 : 0.5,
-            duration: animationSettings.duration,
-          },
-        },
-      };
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <m.div
+  // Use static version for better performance or when animations are disabled
+  if (!animationSettings.animate || prefersReducedMotion) {
+    return (
+      <div
         className="portfolio-grid"
         data-testid="portfolio-grid"
-      variants={effectiveVariants}
-      initial="hidden"
-      animate="visible"
-      style={{
-        // Prevent layout shifts
-        minHeight: items.length > 0 ? '500px' : 'auto',
-      }}
-    >
-      <AnimatePresence mode="popLayout">
+        style={{
+          minHeight: items.length > 0 ? '500px' : 'auto',
+          contain: 'layout style paint',
+        }}
+      >
         {items.map((item, index) => (
-          <OptimizedPortfolioItem
+          <StaticPortfolioItem
             key={item.id}
             item={item}
             index={index}
@@ -264,8 +287,37 @@ export default function OptimizedPortfolioGrid({
             lang={lang}
           />
         ))}
-      </AnimatePresence>
-      </m.div>
-    </LazyMotion>
+      </div>
+    );
+  }
+
+  // Use animated version with lazy-loaded framer-motion
+  return (
+    <Suspense fallback={
+      <div
+        className="portfolio-grid"
+        data-testid="portfolio-grid"
+        style={{
+          minHeight: items.length > 0 ? '500px' : 'auto',
+          contain: 'layout style paint',
+        }}
+      >
+        {items.map((item, index) => (
+          <StaticPortfolioItem
+            key={item.id}
+            item={item}
+            index={index}
+            onItemClick={onItemClick}
+            lang={lang}
+          />
+        ))}
+      </div>
+    }>
+      <MotionGrid 
+        items={items}
+        onItemClick={onItemClick}
+        lang={lang}
+      />
+    </Suspense>
   );
 }

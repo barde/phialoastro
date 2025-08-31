@@ -134,10 +134,14 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
         <!-- Preload critical JavaScript chunks for portfolio page to reduce dependency chains -->
         <!-- Note: These will be dynamically injected by Astro's module preload -->
         
-        <!-- Preload first visible portfolio images in WebP format -->
-        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-800w.webp" type="image/webp" fetchpriority="high" />
-        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-800w.webp" type="image/webp" fetchpriority="high" />
-        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-800w.webp" type="image/webp" fetchpriority="high" />
+        <!-- Preload LCP image with highest priority - use 640w for faster loading -->
+        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-640w.webp" type="image/webp" fetchpriority="high" 
+              imagesrcset="/images/portfolio/winged-ring-1-320w.webp 320w, /images/portfolio/winged-ring-1-640w.webp 640w, /images/portfolio/winged-ring-1-800w.webp 800w"
+              imagesizes="(max-width: 640px) 100vw, (max-width: 768px) 384px, (max-width: 1024px) 340px, (max-width: 1280px) 310px, 400px" />
+        
+        <!-- Preload additional critical above-the-fold portfolio images with optimal size -->
+        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-640w.webp" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-640w.webp" type="image/webp" fetchpriority="high" />
         <!-- Prefetch additional portfolio images -->
       </>
     ) : null}

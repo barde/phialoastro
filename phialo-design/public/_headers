@@ -12,6 +12,11 @@
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
 
+# Content-hashed assets (/_assets/*) - cache indefinitely
+/_assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  Vary: Accept-Encoding
+
 # Images - cache with stale-while-revalidate
 /images/*.jpg
   Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
@@ -58,6 +63,11 @@
   Access-Control-Allow-Origin: *
   Vary: Accept-Encoding
 
+# Font-related CSS files (rarely change) - longer cache
+/fonts-additional.css
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
 # JavaScript and CSS with intelligent caching
 /*.js
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
@@ -91,10 +101,17 @@
 
 # Special handling for service worker - avoid must-revalidate for bfcache
 /sw.js
-  Cache-Control: public, max-age=0
+  Cache-Control: public, max-age=0, stale-while-revalidate=3600
   
 /manifest.json
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Root-level static files - moderate caching
+/robots.txt
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  
+/sitemap.xml
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 # Favicons and app icons - cache for 1 year
 /favicon.ico

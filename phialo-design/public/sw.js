@@ -1,8 +1,8 @@
 // Service Worker for Phialo Design
-// Version: 1.0.0
-// Last Updated: 2025-08-19
+// Version: 1.1.0
+// Last Updated: 2025-08-31
 
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.1.0';
 const CACHE_PREFIX = 'phialo-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `${CACHE_PREFIX}dynamic-${CACHE_VERSION}`;
@@ -138,9 +138,14 @@ async function handleRequest(request) {
     return handleStaticAsset(request);
   }
   
-  // Astro static assets: Cache first with network update
-  if (url.pathname.startsWith('/_astro/')) {
-    return handleStaticAsset(request);
+  // Content-hashed assets: Cache first (immutable)
+  if (url.pathname.startsWith('/_astro/') || url.pathname.startsWith('/_assets/')) {
+    return handleContentHashedAsset(request);
+  }
+  
+  // Font CSS files: Cache first with longer duration
+  if (url.pathname.includes('fonts-additional.css')) {
+    return handleFontAsset(request);
   }
   
   // CSS/JS: Stale while revalidate
@@ -289,15 +294,133 @@ async function handleStaticAsset(request) {
   }
 }
 
-// Stale while revalidate strategy
+// Content-hashed asset handling (immutable assets)
+async function handleContentHashedAsset(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  
+  // Check cache first - these are immutable so can be cached indefinitely
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    // Fetch from network
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      // Cache with long expiration for content-hashed assets
+      const responseToCache = networkResponse.clone();
+      responseToCache.headers.set('sw-cache-time', Date.now().toString());
+      responseToCache.headers.set('sw-cache-type', 'immutable');
+      await cache.put(request, responseToCache);
+      return networkResponse;
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.error('[SW] Content-hashed asset fetch failed:', error);
+    
+    return new Response('', {
+      status: 404,
+      statusText: 'Not Found'
+    });
+  }
+}
+
+// Font asset handling (longer cache duration)
+async function handleFontAsset(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  
+  // Check cache first
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    // Check if cache is still fresh (7 days for font CSS)
+    const cacheTime = cachedResponse.headers.get('sw-cache-time');
+    if (cacheTime) {
+      const age = Date.now() - parseInt(cacheTime);
+      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+      
+      if (age < maxAge) {
+        return cachedResponse;
+      }
+    } else {
+      // If no timestamp, assume it's fresh (backward compatibility)
+      return cachedResponse;
+    }
+  }
+  
+  try {
+    // Fetch from network
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      // Cache with timestamp
+      const responseToCache = networkResponse.clone();
+      responseToCache.headers.set('sw-cache-time', Date.now().toString());
+      responseToCache.headers.set('sw-cache-type', 'font-css');
+      await cache.put(request, responseToCache);
+      return networkResponse;
+    }
+    
+    // Return cached version if network fails but we have cache
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.error('[SW] Font asset fetch failed:', error);
+    
+    // Return cached version if available
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    return new Response('', {
+      status: 404,
+      statusText: 'Not Found'
+    });
+  }
+}
+
+// Stale while revalidate strategy with optimized cache duration
 async function handleStaleWhileRevalidate(request) {
   const cache = await caches.open(DYNAMIC_CACHE);
   const cachedResponse = await caches.match(request);
   
+  // Check if cached response is still fresh based on asset type
+  if (cachedResponse) {
+    const cacheTime = cachedResponse.headers.get('sw-cache-time');
+    const now = Date.now();
+    
+    if (cacheTime) {
+      const age = now - parseInt(cacheTime);
+      const url = new URL(request.url);
+      
+      // Different freshness thresholds for different asset types
+      let maxAge = 24 * 60 * 60 * 1000; // Default 24 hours
+      
+      if (url.pathname.startsWith('/_assets/') || url.pathname.startsWith('/_astro/')) {
+        maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days for content-hashed assets
+      } else if (url.pathname.includes('fonts-additional.css')) {
+        maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days for font CSS
+      }
+      
+      // If cache is still fresh, return immediately without background update
+      if (age < maxAge) {
+        return cachedResponse;
+      }
+    }
+  }
+  
   // Fetch from network in background
   const fetchPromise = fetch(request).then(response => {
     if (response.ok) {
-      cache.put(request, response.clone());
+      // Add timestamp to cached response for freshness checking
+      const responseToCache = response.clone();
+      responseToCache.headers.set('sw-cache-time', Date.now().toString());
+      cache.put(request, responseToCache);
     }
     return response;
   }).catch(error => {

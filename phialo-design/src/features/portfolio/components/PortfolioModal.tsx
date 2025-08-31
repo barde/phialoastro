@@ -347,7 +347,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                   transition={{ duration: 0.4, delay: 0.1 }}
                 >
                   {/* Category badge */}
-                  <span className="inline-block px-3 py-1 text-xs font-medium text-gold bg-gold/10 rounded-full mb-4 uppercase tracking-wider">
+                  <span className="inline-block px-3 py-1 text-xs font-medium text-amber-800 bg-amber-100 rounded-full mb-4 uppercase tracking-wider">
                     {isEnglish && categoryTranslations[portfolioItem.category] 
                       ? categoryTranslations[portfolioItem.category] 
                       : portfolioItem.category}

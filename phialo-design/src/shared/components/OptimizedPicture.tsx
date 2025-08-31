@@ -34,19 +34,23 @@ export default function OptimizedPicture({
   // Check if this is a profile image
   const isProfileImage = src.includes('portrait');
   
-  // Sizes for responsive images - more accurate for portfolio grid
-  const sizes = '(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 320px';
+  // Sizes for responsive images - optimized for portfolio grid performance
+  // Updated to better match actual display sizes and reduce oversized image selection
+  const sizes = isProfileImage 
+    ? '(max-width: 640px) 200px, (max-width: 1024px) 300px, 400px'
+    : '(max-width: 640px) 100vw, (max-width: 768px) 384px, (max-width: 1024px) 340px, (max-width: 1280px) 310px, 400px';
   
-  // Generate srcset for different formats
+  // Generate srcset for different formats - prioritize faster loading for critical images
   const generateSrcSet = (ext: string, includeLarge: boolean = true) => {
     let sizesArray: number[];
     if (isProfileImage) {
       // Use smaller sizes for profile images
       sizesArray = [200, 400, 600, 800, 1200];
     } else {
+      // For portfolio images, prioritize commonly used sizes for faster loading
       sizesArray = includeLarge 
-        ? [320, 400, 640, 800, 1024, 1200, 1600, 2000]
-        : [320, 400, 640, 800];
+        ? [320, 640, 800, 1200, 1600] // Removed redundant sizes to reduce network overhead
+        : [320, 640, 800];
     }
     
     // AVIF is only generated for sizes >= 800px to save build time (except for profiles)
@@ -62,10 +66,14 @@ export default function OptimizedPicture({
   // Check if we have modern formats available
   const hasModernFormats = !src.includes('http') || src.includes('phialo');
   
-  // For now, just return a simple img tag since picture element isn't working
-  // We'll use direct WebP URLs when available
+  // Choose optimal image size based on priority - smaller for faster LCP and better matching actual display size
+  const optimalSize = fetchPriority === 'high' && loading === 'eager' 
+    ? (isProfileImage ? '400' : '640') // Use smaller size for LCP images to load faster
+    : (isProfileImage ? '400' : '640'); // Changed from 800 to 640 to better match typical display sizes
+    
+  // Use direct WebP URLs when available with optimal sizing
   const webpSrc = hasModernFormats && filename 
-    ? `${basePath}/${filename}-${isProfileImage ? '400' : '800'}w.webp`
+    ? `${basePath}/${filename}-${optimalSize}w.webp`
     : src;
   
   return (
@@ -82,6 +90,13 @@ export default function OptimizedPicture({
       onError={onError}
       decoding={loading === 'eager' ? 'sync' : 'async'}
       sizes={sizes}
+      style={{
+        // Prevent layout shifts by maintaining aspect ratio
+        aspectRatio: `${width}/${height}`,
+        objectFit: 'cover',
+        maxWidth: '100%',
+        height: 'auto',
+      }}
     />
   );
 }
