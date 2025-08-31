@@ -1,7 +1,7 @@
 ---
 // SEO component removed to reduce bundle size - using native meta tags
 // View Transitions removed - causing hydration issues
-import SmoothScroll from '../components/effects/SmoothScroll.tsx';
+import SmoothScrollStatic from '../components/effects/SmoothScrollStatic.astro';
 import '../../styles/fonts.css';
 import '../../styles/global.css';
 import '../../styles/mobile-optimizations.css';
@@ -216,7 +216,7 @@ const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
     </script>
     
     <!-- ClientRouter removed - was causing hydration issues -->
-    <SmoothScroll client:load />
+    <SmoothScrollStatic />
     <slot />
     
     <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
