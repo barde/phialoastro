@@ -124,6 +124,12 @@ export default defineConfig({
       modulePreload: {
         polyfill: true,
       },
+      // Enable tree shaking for better dead code elimination
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+      },
       // Optimize chunking to reduce dependency chains
       rollupOptions: {
         onwarn: (warning, warn) => {

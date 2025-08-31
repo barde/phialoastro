@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { m, LazyMotion, domAnimation, type Variants } from 'framer-motion';
 import PortfolioGrid from './OptimizedPortfolioGrid';
 import PortfolioFilter from './PortfolioFilter';
-import PortfolioModal from './PortfolioModal';
 import { portfolioItemsDE, portfolioItemsEN, categoryMap, categories } from '../data';
 import type { PortfolioItemData } from '../types/portfolio';
+
+// Lazy load the modal component since it's not needed on initial render
+const PortfolioModal = lazy(() => import('./PortfolioModal'));
 
 // Re-export for backward compatibility
 export type { PortfolioItemData } from '../types/portfolio';
@@ -132,30 +134,32 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
           <PortfolioGrid items={filteredItems} onItemClick={handleItemClick} lang={lang} />
         </m.div>
 
-        {/* Portfolio Modal */}
+        {/* Portfolio Modal - Lazy loaded */}
         {selectedItem && (
-          <PortfolioModal
-            isOpen={isModalOpen}
-            onClose={() => {
-              // Find the specific portfolio item element that was clicked
-              const itemElement = document.querySelector(`[data-item-id="${selectedItem.id}"]`);
+          <Suspense fallback={null}>
+            <PortfolioModal
+              isOpen={isModalOpen}
+              onClose={() => {
+                // Find the specific portfolio item element that was clicked
+                const itemElement = document.querySelector(`[data-item-id="${selectedItem.id}"]`);
 
-              if (itemElement) {
-                // Add a class to temporarily disable the hover effect
-                itemElement.classList.add('no-hover-until-leave');
+                if (itemElement) {
+                  // Add a class to temporarily disable the hover effect
+                  itemElement.classList.add('no-hover-until-leave');
 
-                // Add a one-time event listener to remove the class when the mouse leaves
-                itemElement.addEventListener('mouseleave', () => {
-                  itemElement.classList.remove('no-hover-until-leave');
-                }, { once: true });
-              }
-              
-              setIsModalOpen(false);
-              setSelectedItem(null);
-            }}
-            portfolioItem={selectedItem}
-            lang={lang}
-          />
+                  // Add a one-time event listener to remove the class when the mouse leaves
+                  itemElement.addEventListener('mouseleave', () => {
+                    itemElement.classList.remove('no-hover-until-leave');
+                  }, { once: true });
+                }
+                
+                setIsModalOpen(false);
+                setSelectedItem(null);
+              }}
+              portfolioItem={selectedItem}
+              lang={lang}
+            />
+          </Suspense>
         )}
       </div>
       </section>
