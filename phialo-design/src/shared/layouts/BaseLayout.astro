@@ -131,6 +131,9 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
       </>
     ) : (Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') ? (
       <>
+        <!-- Preload critical JavaScript chunks for portfolio page to reduce dependency chains -->
+        <!-- Note: These will be dynamically injected by Astro's module preload -->
+        
         <!-- Preload first visible portfolio images in WebP format -->
         <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-800w.webp" type="image/webp" fetchpriority="high" />
         <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-800w.webp" type="image/webp" fetchpriority="high" />

@@ -133,11 +133,16 @@ export default defineConfig({
         },
         output: {
           manualChunks: (id) => {
-            // Optimized chunk splitting
+            // Optimized chunk splitting to reduce dependency chains
             if (id.includes('node_modules')) {
-              // React core libraries
-              if (id.includes('react')) {
-                return 'react-vendor';
+              // Bundle React with vendor to reduce chains
+              if (id.includes('react') || id.includes('scheduler')) {
+                return 'vendor';
+              }
+              
+              // Keep framer-motion with React for portfolio
+              if (id.includes('framer-motion')) {
+                return 'vendor';
               }
               
               // Web vitals and analytics
@@ -145,17 +150,17 @@ export default defineConfig({
                 return 'analytics';
               }
               
-              // Utility libraries - keep separate for caching
+              // Utility libraries - bundle with vendor
               if (id.includes('clsx') || id.includes('tailwind-merge')) {
-                return 'utils';
+                return 'vendor';
               }
               
-              // All other vendor code (should be minimal now)
+              // All other vendor code
               return 'vendor';
             }
             
-            // Split React components separately
-            if (id.includes('.tsx') || id.includes('framer-motion')) {
+            // Bundle all React components together to reduce chains
+            if (id.includes('.tsx')) {
               return 'react-components';
             }
             
