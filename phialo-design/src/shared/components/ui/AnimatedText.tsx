@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { m, LazyMotion, domAnimation, useAnimation, useInView, type Variants } from '../../../lib/framer-motion';
+import { m, LazyMotion, domAnimation, useAnimation, useInView, type Variants } from 'framer-motion';
 
 interface AnimatedTextProps {
   children: React.ReactNode;

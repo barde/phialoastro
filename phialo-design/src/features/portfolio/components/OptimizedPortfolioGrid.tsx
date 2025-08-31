@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { m, AnimatePresence, LazyMotion, domAnimation } from '../../../lib/framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import MagneticCursor from '../../../shared/components/effects/MagneticCursor';
 import OptimizedPicture from '../../../shared/components/OptimizedPicture';
 import { useAdaptiveLoading } from '../../../utils/adaptive-loading';

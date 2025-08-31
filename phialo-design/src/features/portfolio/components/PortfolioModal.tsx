@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { m, AnimatePresence, LazyMotion, domAnimation } from '../../../lib/framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { YouTubeEmbed } from './YouTubeEmbed';
 import OptimizedPicture from '../../../shared/components/OptimizedPicture';
