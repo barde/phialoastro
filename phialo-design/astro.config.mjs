@@ -111,27 +111,18 @@ export default defineConfig({
     optimizeDeps: {
       include: [
         'react', // Pre-bundle React since it's used across the site
-        'react-dom/client', // Only client-side React DOM
+        'react-dom',
+        'framer-motion'
       ],
       exclude: [
         // Exclude unused packages
-        '@cloudflare/turnstile',
-        'react-dom/server', // Exclude server-side rendering code
-        'framer-motion' // Load framer-motion on-demand to reduce initial bundle
+        '@cloudflare/turnstile'
       ]
     },
     build: {
       // Optimize module preloading
       modulePreload: {
         polyfill: true,
-      },
-      // Enable tree shaking for better dead code elimination
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
-        preset: 'recommended',
-        manualPureFunctions: ['console.log', 'console.warn', 'console.error']
       },
       // Optimize chunking to reduce dependency chains
       rollupOptions: {
