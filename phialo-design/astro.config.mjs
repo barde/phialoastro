@@ -31,7 +31,7 @@ export default defineConfig({
     locales: ['de', 'en'],
     routing: {
       prefixDefaultLocale: false, // German URLs without /de prefix
-      fallbackType: 'redirect'
+      fallbackType: 'rewrite' // Use rewrite instead of redirect to avoid redirect chains
     }
   },
   
