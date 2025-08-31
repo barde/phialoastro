@@ -85,14 +85,25 @@ function OptimizedPortfolioItem({
 
   // Check if image is already loaded (from cache)
   useEffect(() => {
+    // Extract filename for WebP version
+    const filename = item.image.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
+    const basePath = item.image.substring(0, item.image.lastIndexOf('/'));
+    
+    // Use WebP version for preloading
+    const webpSrc = `${basePath}/${filename}-800w.webp`;
+    
     const img = new Image();
-    img.src = item.image;
+    img.src = webpSrc;
     
     if (img.complete && img.naturalWidth > 0) {
       setImageLoaded(true);
     } else {
       img.onload = handleImageLoad;
-      img.onerror = handleImageError;
+      img.onerror = () => {
+        // If WebP fails, don't fallback to JPG - just log the error
+        console.error(`Failed to load WebP image: ${webpSrc}`);
+        handleImageError();
+      };
     }
 
     return () => {
