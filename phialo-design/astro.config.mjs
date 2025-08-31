@@ -111,12 +111,13 @@ export default defineConfig({
     optimizeDeps: {
       include: [
         'react', // Pre-bundle React since it's used across the site
-        'react-dom',
+        'react-dom/client', // Only client-side React DOM
         'framer-motion'
       ],
       exclude: [
         // Exclude unused packages
-        '@cloudflare/turnstile'
+        '@cloudflare/turnstile',
+        'react-dom/server' // Exclude server-side rendering code
       ]
     },
     build: {
