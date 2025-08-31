@@ -231,15 +231,17 @@
   onFCP(handleMetric);
   onTTFB(handleMetric);
 
-  // Send any remaining metrics when page unloads
+  // Send any remaining metrics when page becomes hidden
+  // This preserves bfcache eligibility by avoiding beforeunload
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       sendMetricsBatch();
     }
   });
 
-  // Also handle beforeunload for older browsers
-  window.addEventListener('beforeunload', sendMetricsBatch);
+  // Use pagehide instead of beforeunload to maintain bfcache compatibility
+  // pagehide fires on both unload and freeze (bfcache)
+  window.addEventListener('pagehide', sendMetricsBatch);
 
   // Performance marks for custom metrics
   if (window.performance && window.performance.mark) {

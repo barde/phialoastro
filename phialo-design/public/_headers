@@ -76,22 +76,22 @@
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-# HTML pages - must revalidate but allow edge caching
+# HTML pages - optimized for bfcache while maintaining freshness
 /*.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0
   Surrogate-Control: max-age=3600
   CDN-Cache-Control: max-age=60
   Vary: Accept-Encoding
   
 /
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0
   Surrogate-Control: max-age=3600
   CDN-Cache-Control: max-age=60
   Vary: Accept-Encoding
 
-# Special handling for service worker
+# Special handling for service worker - avoid must-revalidate for bfcache
 /sw.js
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0
   
 /manifest.json
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
