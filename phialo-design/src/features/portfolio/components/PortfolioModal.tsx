@@ -358,9 +358,14 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                     {portfolioItem.title}
                   </h2>
 
-                  {/* Description */}
+                  {/* Description with year */}
                   <div className="prose prose-lg text-gray-600 mb-8">
                     <p>{portfolioItem.description}</p>
+                    {portfolioItem.year && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        {isEnglish ? 'Created in' : 'Erstellt'} {portfolioItem.year}
+                      </p>
+                    )}
                   </div>
 
                   {/* Determine layout based on video aspect ratio */}
