@@ -150,28 +150,17 @@ export class AdaptiveLoader {
   }
 
   /**
-<<<<<<< HEAD
    * Get the number of items to preload - increased for better LCP
-=======
-   * Get the number of items to preload
->>>>>>> origin/master
    */
   getPreloadCount(): number {
     const speed = this.getNetworkSpeed();
     const capability = this.getDeviceCapability();
     
-<<<<<<< HEAD
     // Increase preload count to improve LCP performance
     if (speed === 'slow' || capability === 'low') return 3; // Increased from 2
     if (speed === 'medium' || capability === 'medium') return 6; // Increased from 4
     
     return 9; // Increased from 6 for fast connections
-=======
-    if (speed === 'slow' || capability === 'low') return 2;
-    if (speed === 'medium' || capability === 'medium') return 4;
-    
-    return 6;
->>>>>>> origin/master
   }
 
   /**
@@ -230,11 +219,7 @@ export function useAdaptiveLoading() {
         complexity: 'medium' as const
       },
       shouldLazyLoad: true,
-<<<<<<< HEAD
       preloadCount: 6, // Increased for better LCP in SSR
-=======
-      preloadCount: 3,
->>>>>>> origin/master
       shouldPrefetch: false,
       deferOperation: (callback: () => void) => callback(),
     };
