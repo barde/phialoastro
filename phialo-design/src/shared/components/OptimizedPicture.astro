@@ -30,6 +30,7 @@ const basePath = src.substring(0, src.lastIndexOf('/'));
 
 // Generate srcset for different formats
 function generateSrcSet(ext: string, includeLarge: boolean = true): string {
+<<<<<<< HEAD
   // Check if this is a profile image
   const isProfileImage = src.includes('portrait');
   
@@ -47,6 +48,14 @@ function generateSrcSet(ext: string, includeLarge: boolean = true): string {
   const filteredSizes = (ext === 'avif' && !isProfileImage) 
     ? sizesArray.filter(s => s >= 800) 
     : sizesArray;
+=======
+  const sizesArray = includeLarge 
+    ? [320, 400, 640, 800, 1024, 1200, 1600, 2000]
+    : [320, 400, 640, 800];
+  
+  // AVIF is only generated for sizes >= 800px to save build time
+  const filteredSizes = ext === 'avif' ? sizesArray.filter(s => s >= 800) : sizesArray;
+>>>>>>> origin/master
   
   return filteredSizes
     .map(size => `${basePath}/${filename}-${size}w.${ext} ${size}w`)

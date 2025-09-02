@@ -11,8 +11,11 @@ gallery: [
   "/images/portfolio/schuetzenplakette-3.jpg",
   "/images/portfolio/schuetzenplakette-2.jpg"
 ]
+<<<<<<< HEAD
 youtubeVideoId: "PLoXu-trLcQ"
 youtubeAspectRatio: "9:16"
+=======
+>>>>>>> origin/master
 materials: ["Sterling Silber"]
 client: "Eigenes Projekt"
 projectDate: "2024"

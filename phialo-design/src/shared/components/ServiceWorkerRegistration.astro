@@ -31,6 +31,7 @@
       }
       
       try {
+<<<<<<< HEAD
         // DISABLED: Service worker causing cache issues - see PR #434
         // Register service worker
         // this.registration = await navigator.serviceWorker.register('/sw.js', {
@@ -40,6 +41,15 @@
         
         console.log('[SW] Service worker registration disabled');
         return; // Exit early to prevent further SW setup
+=======
+        // Register service worker
+        this.registration = await navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
+          updateViaCache: 'none'
+        });
+        
+        console.log('[SW] Registered successfully:', this.registration);
+>>>>>>> origin/master
         
         // Check for updates immediately
         this.registration.update();

@@ -24,6 +24,7 @@ const IMAGE_CONFIGS = [
     dir: path.join(__dirname, '../public/images/homepage'),
     sizes: [576, 800, 1200],
     generateAvif: false // Homepage images don't need AVIF
+<<<<<<< HEAD
   },
   {
     name: '3DfuerSie',
@@ -38,6 +39,8 @@ const IMAGE_CONFIGS = [
     generateAvif: true,
     // Only process portrait images in the root public directory
     filter: (filename) => filename.includes('portrait')
+=======
+>>>>>>> origin/master
   }
 ];
 
@@ -176,6 +179,7 @@ async function processImagesInParallel(imagesToProcess) {
 
 // Process a single directory
 async function processDirectory(config, cache) {
+<<<<<<< HEAD
   const { name, dir, sizes, generateAvif, filter } = config;
   
   try {
@@ -188,6 +192,15 @@ async function processDirectory(config, cache) {
     if (filter) {
       imageFiles = imageFiles.filter(filter);
     }
+=======
+  const { name, dir, sizes, generateAvif } = config;
+  
+  try {
+    const files = await fs.readdir(dir);
+    const imageFiles = files.filter(file => 
+      /\.(jpg|jpeg|png)$/i.test(file) && !file.includes('-w.')
+    );
+>>>>>>> origin/master
 
     console.info(`\n📁 Processing ${name} images:`);
     console.info(`   Found ${imageFiles.length} images in ${dir}`);
