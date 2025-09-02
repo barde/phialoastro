@@ -273,7 +273,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             {/* Content container */}
             <div className="flex flex-col lg:flex-row max-h-[90vh]">
               {/* Image section */}
-              <div className="relative flex-1 bg-white flex items-center justify-center min-h-[400px] lg:min-h-[600px] h-[85vh] lg:h-[88vh]">
+              <div className="relative flex-1 bg-white flex items-center justify-center overflow-auto">
                 {/* Loading spinner */}
                 {imageLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white">
@@ -287,12 +287,12 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: imageLoading ? 0 : 1 }}
                   transition={{ duration: 0.3 }}
-                  className="relative w-full h-full flex items-center justify-center p-2"
+                  className="flex items-center justify-center"
                 >
                   <OptimizedPicture
                     src={allImages[currentImageIndex]}
                     alt={portfolioItem.title}
-                    className="max-w-full max-h-full object-contain"
+                    className="block"
                     loading="eager"
                     fetchPriority="high"
                     width={1200}
