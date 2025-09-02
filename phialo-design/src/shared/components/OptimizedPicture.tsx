@@ -92,7 +92,6 @@ export default function OptimizedPicture({
       sizes={sizes}
       style={{
         // Prevent layout shifts by maintaining aspect ratio
-        aspectRatio: `${width}/${height}`,
         objectFit: 'cover',
         maxWidth: '100%',
         height: 'auto',
