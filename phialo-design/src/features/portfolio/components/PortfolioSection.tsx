@@ -102,9 +102,12 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
               isOpen={isModalOpen}
               onClose={() => {
                 // Find the specific portfolio item element that was clicked
-                const itemElement = document.querySelector(`[data-item-id="${selectedItem.id}"]`);
+                const itemElement = document.querySelector(`[data-item-id="${selectedItem.id}"]`) as HTMLElement;
 
                 if (itemElement) {
+                  // Remove focus from the element to clear focus state
+                  itemElement.blur();
+                  
                   // Add a class to temporarily disable the hover effect
                   itemElement.classList.add('no-hover-until-leave');
 

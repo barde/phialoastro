@@ -230,7 +230,7 @@ function StaticPortfolioItem({
             />
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-midnight/80 via-midnight/20 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div className="portfolio-overlay absolute inset-0 bg-gradient-to-t from-midnight/80 via-midnight/20 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 pointer-events-none [.no-hover-until-leave_&]:opacity-0 [.no-hover-until-leave_&]:group-hover:opacity-0">
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                 <div className="bg-black/50 rounded-lg p-4 backdrop-blur-sm">
                   <h3 className="font-display text-3xl font-medium mb-2">{item.title}</h3>
