@@ -77,8 +77,8 @@ export default function TeamMemberImage({
           alt={alt}
           className={className}
           loading="lazy"
-          width={1200}
-          height={800}
+          width={600}
+          height={600}
         />
       </div>
       

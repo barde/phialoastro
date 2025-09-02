@@ -71,18 +71,25 @@ const currentContent = content[lang];
           {currentContent.gesaName}
         </h2>
         
-        <div class="flex flex-col gap-12">
-          <!-- Image and Social Links - Full width -->
-          <div class="flex flex-col items-center px-5 md:px-0">
-            <div class="w-full max-w-4xl">
-              <TeamMemberImage
-                primaryImage="/gesa-portrait.jpg"
-                hoverImage="/gesa-portrait-alt.jpg"
-                alt={currentContent.gesaName}
-                className="w-full h-auto rounded-lg shadow-xl"
-                client:load
-              />
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <!-- Text content - left side on desktop, second on mobile -->
+          <div class="space-y-6 px-5 md:px-0 order-2 lg:order-1">
+            {currentContent.gesaContent.map((paragraph) => (
+              <p class="text-lg leading-relaxed text-gray-700">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <!-- Image and Social Links - right side on desktop, first on mobile -->
+          <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
+            <TeamMemberImage
+              primaryImage="/gesa-portrait.jpg"
+              hoverImage="/gesa-portrait-alt.jpg"
+              alt={currentContent.gesaName}
+              className="w-full h-auto rounded-lg shadow-xl"
+              client:load
+            />
             
             <!-- Social Links -->
             <div class="flex gap-4 mt-8">
@@ -126,15 +133,6 @@ const currentContent = content[lang];
               </a>
             </div>
           </div>
-
-          <!-- Text content - Full width -->
-          <div class="space-y-6 px-5 md:px-0 max-w-4xl mx-auto">
-            {currentContent.gesaContent.map((paragraph) => (
-              <p class="text-lg leading-relaxed text-gray-700">
-                {paragraph}
-              </p>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -144,18 +142,25 @@ const currentContent = content[lang];
           {currentContent.bartholomausName}
         </h2>
         
-        <div class="flex flex-col gap-12">
-          <!-- Image and Social Links - Full width -->
-          <div class="flex flex-col items-center px-5 md:px-0">
-            <div class="w-full max-w-4xl">
-              <TeamMemberImage
-                primaryImage="/bartholomaeus-portrait.jpg"
-                hoverImage="/bartholomaeus-portrait-alt.jpg"
-                alt={currentContent.bartholomausName}
-                className="w-full h-auto rounded-lg shadow-xl"
-                client:load
-              />
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <!-- Text content - left side on desktop, second on mobile -->
+          <div class="space-y-6 px-5 md:px-0 order-2 lg:order-1">
+            {currentContent.bartholomausContent.map((paragraph) => (
+              <p class="text-lg leading-relaxed text-gray-700">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <!-- Image and Social Links - right side on desktop, first on mobile -->
+          <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
+            <TeamMemberImage
+              primaryImage="/bartholomaeus-portrait.jpg"
+              hoverImage="/bartholomaeus-portrait-alt.jpg"
+              alt={currentContent.bartholomausName}
+              className="w-full h-auto rounded-lg shadow-xl"
+              client:load
+            />
             
             <!-- Social Links -->
             <div class="flex gap-4 mt-8">
@@ -172,15 +177,6 @@ const currentContent = content[lang];
                 </svg>
               </a>
             </div>
-          </div>
-
-          <!-- Text content - Full width -->
-          <div class="space-y-6 px-5 md:px-0 max-w-4xl mx-auto">
-            {currentContent.bartholomausContent.map((paragraph) => (
-              <p class="text-lg leading-relaxed text-gray-700">
-                {paragraph}
-              </p>
-            ))}
           </div>
         </div>
       </div>
