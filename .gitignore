@@ -60,6 +60,9 @@ workers/coverage/
 coverage/
 *.lcov
 .nyc_output/
+
+# Playwright MCP screenshots
+.playwright-mcp/
 *.zip
 *.tar
 *.tar.gz
