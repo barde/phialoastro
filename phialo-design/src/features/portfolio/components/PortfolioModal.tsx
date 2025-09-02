@@ -271,9 +271,9 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             </button>
 
             {/* Content container */}
-            <div className="flex flex-col lg:flex-row max-h-[90vh]">
+            <div className="flex flex-col lg:flex-row overflow-auto">
               {/* Image section */}
-              <div className="relative flex-1 bg-white flex items-center justify-center overflow-auto">
+              <div className="bg-white overflow-auto">
                 {/* Loading spinner */}
                 {imageLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white">
@@ -281,26 +281,16 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                   </div>
                 )}
                 
-                {/* Main image */}
-                <m.div
-                  key={currentImageIndex}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: imageLoading ? 0 : 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center justify-center"
-                >
-                  <OptimizedPicture
-                    src={allImages[currentImageIndex]}
-                    alt={portfolioItem.title}
-                    className="block"
-                    loading="eager"
-                    fetchPriority="high"
-                    width={1200}
-                    height={900}
-                    onLoad={() => setImageLoading(false)}
-                    onError={() => setImageLoading(false)}
-                  />
-                </m.div>
+                {/* Main image - just display it at full size */}
+                <OptimizedPicture
+                  src={allImages[currentImageIndex]}
+                  alt={portfolioItem.title}
+                  className=""
+                  loading="eager"
+                  fetchPriority="high"
+                  onLoad={() => setImageLoading(false)}
+                  onError={() => setImageLoading(false)}
+                />
 
                 {/* Gallery navigation */}
                 {hasMultipleImages && (
