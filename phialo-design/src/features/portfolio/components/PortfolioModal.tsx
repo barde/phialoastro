@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { YouTubeEmbed } from './YouTubeEmbed';
-import OptimizedPicture from '../../../shared/components/OptimizedPicture';
 
 import type { PortfolioItemData } from './PortfolioSection';
 
@@ -282,12 +281,10 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                 )}
                 
                 {/* Main image - just display it at full size */}
-                <OptimizedPicture
+                <img
                   src={allImages[currentImageIndex]}
                   alt={portfolioItem.title}
-                  className=""
-                  loading="eager"
-                  fetchPriority="high"
+                  style={{ display: 'block' }}
                   onLoad={() => setImageLoading(false)}
                   onError={() => setImageLoading(false)}
                 />
