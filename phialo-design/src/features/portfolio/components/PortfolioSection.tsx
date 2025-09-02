@@ -57,6 +57,12 @@ export default function Portfolio({ lang = 'de' }: PortfolioProps) {
   }, [activeFilter, portfolioItems, lang]);
 
   const handleItemClick = (item: PortfolioItemData) => {
+    // Remove focus from any currently focused element to prevent hover state from sticking
+    const activeElement = document.activeElement as HTMLElement;
+    if (activeElement) {
+      activeElement.blur();
+    }
+    
     setSelectedItem(item);
     setIsModalOpen(true);
   };

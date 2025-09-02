@@ -292,7 +292,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                   <OptimizedPicture
                     src={allImages[currentImageIndex]}
                     alt={portfolioItem.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     loading="eager"
                     fetchPriority="high"
                     width={1200}
