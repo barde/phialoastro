@@ -273,10 +273,10 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
             {/* Content container */}
             <div className="flex flex-col lg:flex-row max-h-[90vh]">
               {/* Image section */}
-              <div className="relative flex-1 bg-gray-100 flex items-center justify-center">
+              <div className="relative flex-1 bg-white flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
                 {/* Loading spinner */}
                 {imageLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                  <div className="absolute inset-0 flex items-center justify-center bg-white">
                     <div className="w-8 h-8 border-2 border-gray-300 border-t-gold rounded-full animate-spin" />
                   </div>
                 )}
