@@ -340,7 +340,7 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
               </div>
 
               {/* Details section */}
-              <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
+              <div className="w-full lg:w-[450px] lg:flex-shrink-0 p-8 lg:p-12 overflow-y-auto">
                 <m.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
