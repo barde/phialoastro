@@ -3,8 +3,6 @@
 // View Transitions removed - causing hydration issues
 import SmoothScrollStatic from '../components/effects/SmoothScrollStatic.astro';
 import CriticalCSS from './CriticalCSS.astro';
-import WebVitalsMonitor from '../components/performance/WebVitalsMonitor.astro';
-import ServiceWorkerRegistration from '../components/ServiceWorkerRegistration.astro';
 import FontLoader from '../components/FontLoader.astro';
 // Import CSS files - they will be automatically optimized by Astro
 import '../../styles/fonts.css';
@@ -201,12 +199,6 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     
     <!-- Font Loading Optimization -->
     <FontLoader />
-    
-    <!-- Core Web Vitals Monitoring with Attribution -->
-    <WebVitalsMonitor />
-    
-    <!-- Service Worker Registration -->
-    <ServiceWorkerRegistration />
     
     <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
     {analyticsToken && (
