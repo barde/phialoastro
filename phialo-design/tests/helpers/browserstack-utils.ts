@@ -59,11 +59,7 @@ export class BrowserStackTestDistributor {
         const data = JSON.parse(fs.readFileSync(this.metricsFile, 'utf-8'));
         this.metrics = new Map(Object.entries(data));
       }
-<<<<<<< HEAD
     } catch {
-=======
-    } catch (error) {
->>>>>>> origin/master
       console.warn('Could not load test metrics, using defaults');
     }
   }
@@ -75,11 +71,7 @@ export class BrowserStackTestDistributor {
     try {
       const data = Object.fromEntries(this.metrics);
       fs.writeFileSync(this.metricsFile, JSON.stringify(data, null, 2));
-<<<<<<< HEAD
     } catch {
-=======
-    } catch (error) {
->>>>>>> origin/master
       console.warn('Could not save test metrics');
     }
   }
@@ -266,11 +258,7 @@ ${shards.some(s => s.tests.length === 0) ? '- Some shards are empty, reduce para
  */
 export const test = base.extend({
   // Auto-fixture that collects metrics
-<<<<<<< HEAD
   collectMetrics: [async ({ page: _page }, use, testInfo) => {
-=======
-  collectMetrics: [async ({ page }, use, testInfo) => {
->>>>>>> origin/master
     const startTime = Date.now();
     const distributor = new BrowserStackTestDistributor();
 
@@ -288,11 +276,7 @@ export const test = base.extend({
     );
     distributor.saveMetrics();
   }, { auto: true }],
-<<<<<<< HEAD
 } as any);
-=======
-});
->>>>>>> origin/master
 
 /**
  * Intelligent retry strategy for flaky tests
