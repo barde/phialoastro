@@ -37,11 +37,7 @@ export function getCacheHeaders(pathname: string): HeadersInit {
   const headers: HeadersInit = {};
   
   // Immutable assets with hash in filename (Astro generates these)
-<<<<<<< HEAD
   if (pathname.match(/\/_(astro|assets)\/.*\.[a-zA-Z0-9_-]{8,}\.(js|css)$/)) {
-=======
-  if (pathname.match(/\/_astro\/.*\.[a-zA-Z0-9]{8,}\.(js|css)$/)) {
->>>>>>> origin/master
     // These are immutable - cache forever
     headers['Cache-Control'] = 'public, max-age=31536000, immutable';
   }
