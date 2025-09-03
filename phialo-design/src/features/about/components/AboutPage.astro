@@ -1,7 +1,8 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
-import AnimatedText from '../../../shared/components/ui/AnimatedTextCSS.astro';
-import TeamMemberImageAlpine from './TeamMemberImageAlpine.astro';
+import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
+import TeamMemberImage from './TeamMemberImage.tsx';
+import OptimizedPicture from '../../../shared/components/OptimizedPicture.tsx';
 import { type Language, getTranslation } from '../../../i18n/ui';
 
 export interface Props {
@@ -71,7 +72,7 @@ const currentContent = content[lang];
         </h2>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <!-- Text content - appears second on mobile, first on desktop -->
+          <!-- Text content - left side on desktop, second on mobile -->
           <div class="space-y-6 px-5 md:px-0 order-2 lg:order-1">
             {currentContent.gesaContent.map((paragraph) => (
               <p class="text-lg leading-relaxed text-gray-700">
@@ -80,12 +81,14 @@ const currentContent = content[lang];
             ))}
           </div>
 
-          <!-- Image and Social Links - appears first on mobile, second on desktop -->
+          <!-- Image and Social Links - right side on desktop, first on mobile -->
           <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
-            <TeamMemberImageAlpine
+            <TeamMemberImage
               primaryImage="/gesa-portrait.jpg"
               hoverImage="/gesa-portrait-alt.jpg"
               alt={currentContent.gesaName}
+              className="w-full h-auto rounded-lg shadow-xl"
+              client:load
             />
             
             <!-- Social Links -->
@@ -140,7 +143,7 @@ const currentContent = content[lang];
         </h2>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <!-- Text content - appears second on mobile, first on desktop -->
+          <!-- Text content - left side on desktop, second on mobile -->
           <div class="space-y-6 px-5 md:px-0 order-2 lg:order-1">
             {currentContent.bartholomausContent.map((paragraph) => (
               <p class="text-lg leading-relaxed text-gray-700">
@@ -149,12 +152,14 @@ const currentContent = content[lang];
             ))}
           </div>
 
-          <!-- Image and Social Links - appears first on mobile, second on desktop -->
+          <!-- Image and Social Links - right side on desktop, first on mobile -->
           <div class="flex flex-col items-center px-5 md:px-0 order-1 lg:order-2">
-            <TeamMemberImageAlpine
+            <TeamMemberImage
               primaryImage="/bartholomaeus-portrait.jpg"
               hoverImage="/bartholomaeus-portrait-alt.jpg"
               alt={currentContent.bartholomausName}
+              className="w-full h-auto rounded-lg shadow-xl"
+              client:load
             />
             
             <!-- Social Links -->

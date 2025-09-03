@@ -1,7 +1,7 @@
 ---
 import PageLayout from '../../../shared/layouts/PageLayout.astro';
-import AnimatedText from '../../../shared/components/ui/AnimatedTextCSS.astro';
-import ContactFormAlpine from '../components/ContactFormAlpine.astro';
+import AnimatedText from '../../../shared/components/ui/AnimatedText.tsx';
+import ContactFormWrapper from '../components/ContactFormWrapper.tsx';
 ---
 
 <PageLayout title="Kontakt - Gesa Pickbrenner | Phialo Design" description="Kontaktieren Sie Gesa Pickbrenner für Ihre 3D Design Projekte, Schmuckdesign oder Blender Tutorials.">
@@ -19,7 +19,7 @@ import ContactFormAlpine from '../components/ContactFormAlpine.astro';
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <!-- Contact Form on the left -->
         <div class="space-y-6 px-5 md:px-0">
-          <ContactFormAlpine lang="de" />
+          <ContactFormWrapper lang="de" client:load />
 
           <!-- Contact info below form -->
           <div class="mt-8 pt-8 border-t border-gray-200">

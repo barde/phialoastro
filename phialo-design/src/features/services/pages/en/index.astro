@@ -2,7 +2,7 @@
 // English version - Content to be translated
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
 import Services from '../../components/ServicesSection.astro';
-import AnimatedText from '../../../../shared/components/ui/AnimatedTextCSS.astro';
+import AnimatedText from '../../../../shared/components/ui/AnimatedText.tsx';
 
 const title = '3D for You | Phialo Design';
 const description = 'Professional 3D design services for your individual projects. From idea to finished 3D model.';
@@ -25,6 +25,19 @@ const description = 'Professional 3D design services for your individual project
       </div>
     </div>
   </section>
+
+  <!-- YouTube Video Embed -->
+  <div class="mb-12 flex justify-center">
+    <iframe 
+      class="w-full max-w-2xl aspect-video rounded-lg shadow-lg border-0" 
+      src="https://www.youtube.com/embed/os0Y88dDGSA?si=gcNPcctpvrc186kW" 
+      title="YouTube video player" 
+      loading="lazy"
+      allow="web-share" 
+      referrerpolicy="strict-origin-when-cross-origin" 
+      allowfullscreen>
+    </iframe>
+  </div>
 
   <!-- Services Section -->
   <div class="pt-0">

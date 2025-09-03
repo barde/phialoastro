@@ -1,10 +1,8 @@
 ---
 // SEO component removed to reduce bundle size - using native meta tags
-import { ClientRouter } from "astro:transitions";
+// View Transitions removed - causing hydration issues
 import SmoothScrollStatic from '../components/effects/SmoothScrollStatic.astro';
 import CriticalCSS from './CriticalCSS.astro';
-import WebVitalsMonitor from '../components/performance/WebVitalsMonitor.astro';
-import ServiceWorkerRegistration from '../components/ServiceWorkerRegistration.astro';
 import FontLoader from '../components/FontLoader.astro';
 // Import CSS files - they will be automatically optimized by Astro
 import '../../styles/fonts.css';
@@ -66,6 +64,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     
     <!-- Preload critical fonts with high priority for immediate text rendering -->
     <link rel="preload" href="/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" fetchpriority="high" />
+    <link rel="preload" href="/fonts/playfair-500-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" fetchpriority="high" />
     <link rel="preload" href="/fonts/playfair-700-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" fetchpriority="high" />
     
     <!-- Inline critical font CSS to prevent render-blocking -->
@@ -77,6 +76,15 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
         font-weight: 400;
         font-display: swap; /* Use swap for critical fonts to show text immediately */
         src: url('/fonts/inter-400-latin.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      
+      @font-face {
+        font-family: 'Playfair Display';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap; /* Use swap for critical fonts to show text immediately */
+        src: url('/fonts/playfair-500-latin.woff2') format('woff2');
         unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
       }
       
@@ -121,13 +129,18 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
       </>
     ) : (Astro.url.pathname === '/portfolio/' || Astro.url.pathname === '/en/portfolio/') ? (
       <>
-        <!-- Preload first visible portfolio images in WebP format -->
-        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-800w.webp" type="image/webp" fetchpriority="high" />
-        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-800w.webp" type="image/webp" fetchpriority="high" />
-        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-800w.webp" type="image/webp" fetchpriority="high" />
+        <!-- Preload critical JavaScript chunks for portfolio page to reduce dependency chains -->
+        <!-- Note: These will be dynamically injected by Astro's module preload -->
+        
+        <!-- Preload LCP image with highest priority - use 640w for faster loading -->
+        <link rel="preload" as="image" href="/images/portfolio/winged-ring-1-640w.webp" type="image/webp" fetchpriority="high" 
+              imagesrcset="/images/portfolio/winged-ring-1-320w.webp 320w, /images/portfolio/winged-ring-1-640w.webp 640w, /images/portfolio/winged-ring-1-800w.webp 800w"
+              imagesizes="(max-width: 640px) 100vw, (max-width: 768px) 384px, (max-width: 1024px) 340px, (max-width: 1280px) 310px, 400px" />
+        
+        <!-- Preload additional critical above-the-fold portfolio images with optimal size -->
+        <link rel="preload" as="image" href="/images/portfolio/dna_spirale_freigestellt_refl-640w.webp" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="/images/portfolio/turmalinring_refl-640w.webp" type="image/webp" fetchpriority="high" />
         <!-- Prefetch additional portfolio images -->
-        <link rel="prefetch" as="image" href="/images/portfolio/pearl-ring-800w.webp" type="image/webp" />
-        <link rel="prefetch" as="image" href="/images/portfolio/spiral-bracelet-800w.webp" type="image/webp" />
       </>
     ) : null}
     
@@ -177,7 +190,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Theme Color -->
     <meta name="theme-color" content="#0A192F" />
     
-    <ClientRouter />
+    <!-- ClientRouter removed - was causing hydration issues -->
   </head>
   <body class="min-h-screen antialiased">
     <!-- Static smooth scroll - no React needed -->
@@ -186,12 +199,6 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     
     <!-- Font Loading Optimization -->
     <FontLoader />
-    
-    <!-- Core Web Vitals Monitoring with Attribution -->
-    <WebVitalsMonitor />
-    
-    <!-- Service Worker Registration -->
-    <ServiceWorkerRegistration />
     
     <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
     {analyticsToken && (
@@ -202,11 +209,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
       </script>
     )}
     
-    <!-- Dynamic Feature Loading for Code Splitting -->
-    <script type="module">
-      // Load the dynamic import manager
-      import('/src/shared/utils/dynamicImports.js');
-    </script>
+    <!-- Hydration fix removed - no longer needed without View Transitions -->
     
     <!-- Deferred performance optimizations -->
     <script defer>

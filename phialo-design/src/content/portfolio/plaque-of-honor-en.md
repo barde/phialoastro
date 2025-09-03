@@ -11,6 +11,8 @@ gallery: [
   "/images/portfolio/schuetzenplakette-3.jpg",
   "/images/portfolio/schuetzenplakette-2.jpg"
 ]
+youtubeVideoId: "PLoXu-trLcQ"
+youtubeAspectRatio: "9:16"
 materials: ["Sterling Silver"]
 client: "Personal Project"
 projectDate: "2024"

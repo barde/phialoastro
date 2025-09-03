@@ -223,10 +223,22 @@
     @apply image-cover transition-transform duration-700 hover:scale-105;
   }
 
-  /* Portfolio grid styles */
+  /* Portfolio grid styles with layout shift prevention */
   .portfolio-grid {
     @apply grid gap-8;
     grid-template-columns: repeat(3, 1fr);
+    /* Prevent layout shifts with consistent containment */
+    contain: layout style paint;
+  }
+  
+  /* Portfolio item styles */
+  .portfolio-item {
+    /* Ensure consistent aspect ratio */
+    aspect-ratio: 4/5;
+    /* CSS containment for performance */
+    contain: layout style paint size;
+    /* Position context for absolute elements */
+    position: relative;
   }
   
   @media (max-width: 1024px) {

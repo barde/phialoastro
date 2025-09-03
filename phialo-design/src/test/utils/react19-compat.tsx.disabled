@@ -21,7 +21,11 @@ export function renderHookCompat<TResult>(
     wrapper?: React.ComponentType<{ children: React.ReactNode }>;
   }
 ) {
+<<<<<<< HEAD
+  const result: { current: TResult } = { current: undefined as any };
+=======
   let result: { current: TResult } = { current: undefined as any };
+>>>>>>> origin/master
   let rerender: () => void;
 
   function TestComponent() {

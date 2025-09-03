@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import alpine from '@astrojs/alpinejs';
+import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import partytown from '@astrojs/partytown';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -11,7 +11,7 @@ import { constants } from 'zlib';
 // https://astro.build/config
 export default defineConfig({
   integrations: [
-    alpine(), // Alpine.js for lightweight interactivity
+    react(), // React for interactive components
     tailwind({
       applyBaseStyles: false, // We apply our own base styles
     }),
@@ -31,7 +31,7 @@ export default defineConfig({
     locales: ['de', 'en'],
     routing: {
       prefixDefaultLocale: false, // German URLs without /de prefix
-      fallbackType: 'redirect'
+      fallbackType: 'rewrite' // Use rewrite instead of redirect to avoid redirect chains
     }
   },
   
@@ -110,7 +110,9 @@ export default defineConfig({
     // Optimize dependency pre-bundling
     optimizeDeps: {
       include: [
-        'alpinejs' // Pre-bundle Alpine.js since it's used across the site
+        'react', // Pre-bundle React since it's used across the site
+        'react-dom',
+        'framer-motion'
       ],
       exclude: [
         // Exclude unused packages
@@ -131,30 +133,35 @@ export default defineConfig({
         },
         output: {
           manualChunks: (id) => {
-            // Optimized chunk splitting
+            // Optimized chunk splitting to reduce dependency chains
             if (id.includes('node_modules')) {
-              // Alpine.js - core library
-              if (id.includes('alpinejs')) {
-                return 'alpine';
+              // Bundle React with vendor to reduce chains
+              if (id.includes('react') || id.includes('scheduler')) {
+                return 'vendor';
               }
               
-              // Web vitals and analytics
+              // Split framer-motion into separate chunk for lazy loading
+              if (id.includes('framer-motion')) {
+                return 'animations';
+              }
+              
+              // Web vitals and analytics - separate chunk for performance monitoring
               if (id.includes('web-vitals')) {
                 return 'analytics';
               }
               
-              // Utility libraries - keep separate for caching
-              if (id.includes('clsx') || id.includes('tailwind-merge')) {
+              // Utility libraries - keep small and bundle separately
+              if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('lucide-react')) {
                 return 'utils';
               }
               
-              // All other vendor code (should be minimal now)
+              // All other vendor code
               return 'vendor';
             }
             
-            // Split Alpine.js components separately
-            if (id.includes('Alpine') || id.includes('x-data')) {
-              return 'alpine-components';
+            // Bundle all React components together to reduce chains
+            if (id.includes('.tsx')) {
+              return 'react-components';
             }
             
             // Split feature-based chunks for better code splitting
