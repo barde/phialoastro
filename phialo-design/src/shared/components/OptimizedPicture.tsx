@@ -91,8 +91,6 @@ export default function OptimizedPicture({
       decoding={loading === 'eager' ? 'sync' : 'async'}
       sizes={sizes}
       style={{
-        // Prevent layout shifts by maintaining aspect ratio
-        objectFit: 'cover',
         maxWidth: '100%',
         height: 'auto',
       }}
