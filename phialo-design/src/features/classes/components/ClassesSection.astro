@@ -84,16 +84,6 @@ const classes = allClasses.map((classItem) => ({
                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 loading="lazy"
               />
-              <!-- Language Badge -->
-              <div class="absolute top-3 right-3">
-                <span class={`inline-flex items-center justify-center w-10 h-10 rounded-full text-xs font-bold backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-110 ${
-                  classItem.language === 'de' 
-                    ? 'bg-neutral-900/85 text-white border-2 border-white/30 hover:bg-neutral-900/95' 
-                    : 'bg-white/85 text-neutral-900 border-2 border-neutral-900/20 hover:bg-white/95'
-                }`}>
-                  {classItem.language === 'de' ? 'DE' : 'EN'}
-                </span>
-              </div>
             </div>            <!-- Content -->
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
