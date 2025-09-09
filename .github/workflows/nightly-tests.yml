@@ -517,7 +517,7 @@ jobs:
 
       - name: Create issue if tests failed
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
@@ -554,7 +554,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete old nightly artifacts
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const artifacts = await github.rest.actions.listArtifactsForRepo({
