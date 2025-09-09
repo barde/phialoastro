@@ -154,7 +154,7 @@ jobs:
         id: create_tag
         if: inputs.environment == 'production' && needs.deploy.result == 'success'
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ github.token }}
           script: |
