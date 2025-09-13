@@ -202,13 +202,42 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     
     <!-- Cloudflare Web Analytics - Using Partytown to run in web worker -->
     {analyticsToken && (
-      <script 
+      <script
         type="text/partytown"
-        src='https://static.cloudflareinsights.com/beacon.min.js' 
+        src='https://static.cloudflareinsights.com/beacon.min.js'
         data-cf-beacon={JSON.stringify({ token: analyticsToken })}>
       </script>
     )}
-    
+
+    <!-- Core Web Vitals Tracking -->
+    {import.meta.env.PROD && (
+      <script type="module">
+        // Dynamically import Web Vitals to avoid blocking initial load
+        import { initWebVitals } from '@/utils/web-vitals';
+
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            initWebVitals({
+              endpoint: '/api/vitals',
+              sampling: 0.1, // 10% sampling to control costs
+              debug: false,
+              enableAttribution: true, // Get detailed attribution data
+            });
+          });
+        } else {
+          // Fallback for browsers without requestIdleCallback
+          setTimeout(() => {
+            initWebVitals({
+              endpoint: '/api/vitals',
+              sampling: 0.1,
+              debug: false,
+              enableAttribution: true,
+            });
+          }, 2000);
+        }
+      </script>
+    )}
+
     <!-- Hydration fix removed - no longer needed without View Transitions -->
     
     <!-- Deferred performance optimizations -->
