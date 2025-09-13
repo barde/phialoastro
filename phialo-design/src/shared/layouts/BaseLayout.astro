@@ -210,7 +210,7 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     )}
 
     <!-- Core Web Vitals Tracking -->
-    {import.meta.env.PROD && (
+    {true && (  // Temporarily enabled for testing - REVERT BEFORE MERGING
       <script type="module">
         // Dynamically import Web Vitals to avoid blocking initial load
         import { initWebVitals } from '@/utils/web-vitals';
@@ -219,8 +219,8 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
           requestIdleCallback(() => {
             initWebVitals({
               endpoint: '/api/vitals',
-              sampling: 0.1, // 10% sampling to control costs
-              debug: false,
+              sampling: 1.0, // 100% sampling for testing - REVERT TO 0.1
+              debug: true,  // Enable debug logging - REVERT TO false
               enableAttribution: true, // Get detailed attribution data
             });
           });
@@ -229,8 +229,8 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
           setTimeout(() => {
             initWebVitals({
               endpoint: '/api/vitals',
-              sampling: 0.1,
-              debug: false,
+              sampling: 1.0, // 100% sampling for testing - REVERT TO 0.1
+              debug: true,  // Enable debug logging - REVERT TO false
               enableAttribution: true,
             });
           }, 2000);
