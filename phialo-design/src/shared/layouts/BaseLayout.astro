@@ -212,28 +212,94 @@ const englishUrl = new URL('/en' + basePath, Astro.site).href;
     <!-- Core Web Vitals Tracking -->
     {true && (  // Temporarily enabled for testing - REVERT BEFORE MERGING
       <script type="module">
-        // Dynamically import Web Vitals to avoid blocking initial load
-        import { initWebVitals } from '@/utils/web-vitals';
+        // Import web-vitals from CDN for now (bundling issue fix)
+        import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'https://unpkg.com/web-vitals@5/dist/web-vitals.attribution.js';
 
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(() => {
-            initWebVitals({
-              endpoint: '/api/vitals',
-              sampling: 1.0, // 100% sampling for testing - REVERT TO 0.1
-              debug: true,  // Enable debug logging - REVERT TO false
-              enableAttribution: true, // Get detailed attribution data
-            });
-          });
+        // Simple inline implementation for testing
+        const config = {
+          endpoint: '/api/vitals',
+          sampling: 1.0, // 100% sampling for testing
+          debug: true,   // Enable debug logging
+        };
+
+        const sessionId = Math.random().toString(36).substring(2);
+        const queue = [];
+        let batchTimer = null;
+
+        // Check sampling
+        if (Math.random() > config.sampling) {
+          console.log('[Web Vitals] Session excluded from sampling');
         } else {
-          // Fallback for browsers without requestIdleCallback
-          setTimeout(() => {
-            initWebVitals({
-              endpoint: '/api/vitals',
-              sampling: 1.0, // 100% sampling for testing - REVERT TO 0.1
-              debug: true,  // Enable debug logging - REVERT TO false
-              enableAttribution: true,
-            });
-          }, 2000);
+          console.log('[Web Vitals] Session included in sampling');
+
+          function sendBatch() {
+            if (queue.length === 0) return;
+
+            const batch = { metrics: [...queue] };
+            queue.length = 0;
+
+            const url = new URL(config.endpoint, window.location.origin);
+
+            if (navigator.sendBeacon) {
+              const blob = new Blob([JSON.stringify(batch)], { type: 'text/plain' });
+              navigator.sendBeacon(url, blob);
+              if (config.debug) console.log('[Web Vitals] Batch sent via sendBeacon:', batch);
+            } else {
+              fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(batch),
+                headers: { 'Content-Type': 'application/json' },
+                keepalive: true,
+              }).catch(err => console.error('[Web Vitals] Failed to send:', err));
+            }
+          }
+
+          function collectMetric(metric) {
+            const payload = {
+              name: metric.name,
+              value: metric.value,
+              rating: metric.rating,
+              delta: metric.delta,
+              timestamp: Date.now(),
+              sessionId: sessionId,
+              path: window.location.pathname,
+              language: document.documentElement.lang || 'de',
+              viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+              },
+              deviceType: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop',
+              browser: navigator.userAgent.includes('Chrome') ? 'Chrome' :
+                       navigator.userAgent.includes('Safari') ? 'Safari' :
+                       navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Other',
+              referrer: document.referrer || 'direct',
+              speed: navigator.connection?.effectiveType || 'unknown',
+            };
+
+            queue.push(payload);
+            if (config.debug) console.log(`[Web Vitals] ${metric.name}:`, metric.value, metric.rating);
+
+            // Batch sending
+            if (batchTimer) clearTimeout(batchTimer);
+            if (queue.length >= 5) {
+              sendBatch();
+            } else {
+              batchTimer = setTimeout(sendBatch, 5000);
+            }
+          }
+
+          // Register handlers
+          onLCP(collectMetric);
+          onINP(collectMetric);
+          onCLS(collectMetric);
+          onFCP(collectMetric);
+          onTTFB(collectMetric);
+
+          // Send on page hide
+          window.addEventListener('pagehide', sendBatch, { once: true });
+          window.addEventListener('beforeunload', sendBatch, { once: true });
+
+          console.log('[Web Vitals] Initialized and listening for metrics');
         }
       </script>
     )}
