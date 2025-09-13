@@ -150,41 +150,48 @@ jobs:
             echo "❌ Deployment failed. Check the logs above for details."
           fi
           
-      - name: Create production release tag
-        id: create_tag
+      - name: Update 'current-production' Tag
+        id: update_production_tag
         if: inputs.environment == 'production' && needs.deploy.result == 'success'
         continue-on-error: true
         uses: actions/github-script@v8
         with:
           github-token: ${{ github.token }}
           script: |
-            const tagName = `production-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
-            const tagMessage = `Production deployment on ${new Date().toISOString()}
-            
-            Deployment Details:
-            - Deployed by: ${{ github.actor }}
-            - Branch: ${{ inputs.branch }}
-            - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            - Environment URL: ${{ needs.prepare.outputs.deployment-url }}
-            
-            This tag marks an automated production deployment and can be used for:
-            - Rolling back to this specific version
-            - Tracking production release history
-            - Generating changelogs between releases`;
-            
+            const tagName = 'current-production';
+            const ref = `refs/tags/${tagName}`;
+
             try {
-              // Create the tag
+              // Delete the existing tag first. This will fail if it does not exist, which is fine.
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tagName}`
+              });
+              console.log(`Successfully deleted existing tag ${tagName}.`);
+            } catch (error) {
+              if (error.status === 422 || error.message.includes("Reference does not exist")) {
+                console.log(`Tag ${tagName} did not exist, no need to delete.`);
+              } else {
+                // rethrow other errors
+                console.error(`Error deleting tag: ${error.message}`);
+                throw error;
+              }
+            }
+
+            // Create the new tag
+            try {
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: `refs/tags/${tagName}`,
+                ref: ref,
                 sha: context.sha
               });
-              
-              console.log(`✅ Successfully created production tag: ${tagName}`);
+              console.log(`✅ Successfully created/updated tag ${tagName} to point to ${context.sha}`);
               core.setOutput('tag_name', tagName);
               core.setOutput('tag_created', 'true');
             } catch (error) {
-              console.log(`⚠️ Warning: Failed to create tag ${tagName}: ${error.message}`);
+              console.error(`Error creating tag: ${error.message}`);
               core.setOutput('tag_created', 'false');
+              throw error;
             }
