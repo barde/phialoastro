@@ -1,4 +1,4 @@
-# 🎨 Phialo Design
+# Phialo Design
 
 > **Luxury jewelry portfolio showcasing exquisite craftsmanship through modern web technology**
 
@@ -9,20 +9,20 @@
 
 A luxury jewelry portfolio website built with cutting-edge web technologies, featuring multilingual support (German/English), responsive design, and deployed on Cloudflare Workers for optimal global performance.
 
-🌐 **Live Site**: [phialo.de](https://phialo.de)
+**Live Site**: [phialo.de](https://phialo.de)
 
 ## ✨ Key Features
 
-- 🏛️ **Luxury Design System** - Glass morphism effects, elegant animations, and premium typography
-- 🌍 **Multilingual Support** - Seamless German/English language switching with automatic detection
-- 📱 **Responsive Architecture** - Mobile-first design that adapts beautifully to all screen sizes
-- 🚀 **Optimized Performance** - Static site generation with selective hydration (Astro Islands)
-- 🔒 **Security First** - Cloudflare Turnstile CAPTCHA protection with pre-clearance support
-- 📧 **Contact Integration** - Fully functional contact form with Resend email service
-- 🎨 **Portfolio Showcase** - Filterable gallery with smooth animations
-- 📚 **Tutorial Section** - Educational content for jewelry design enthusiasts
+- **Luxury Design System** - Glass morphism effects, elegant animations, and premium typography
+- **Multilingual Support** - Seamless German/English language switching with automatic detection
+- **Responsive Architecture** - Mobile-first design that adapts beautifully to all screen sizes
+- **Optimized Performance** - Static site generation with selective hydration (Astro Islands)
+- **Security First** - Cloudflare Turnstile CAPTCHA protection with pre-clearance support
+- **Contact Integration** - Fully functional contact form with Resend email service
+- **Portfolio Showcase** - Filterable gallery with smooth animations
+- **Tutorial Section** - Educational content for jewelry design enthusiasts
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Core Technologies
 - **[Astro 5.12.9](https://astro.build/)** - Static site generator with Islands Architecture
@@ -41,7 +41,7 @@ A luxury jewelry portfolio website built with cutting-edge web technologies, fea
 - **[ESLint 9.33.0](https://eslint.org/)** - Code quality enforcement
 - **[Prettier 3.6.2](https://prettier.io/)** - Consistent code formatting
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -110,11 +110,11 @@ pnpm run lint          # Lint code
 pnpm run typecheck     # TypeScript checking
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 phialoastro/
-├── 📱 phialo-design/          # Main Astro application
+├── phialo-design/             # Main Astro application
 │   ├── src/
 │   │   ├── features/         # Feature-based modules
 │   │   │   ├── portfolio/   # Portfolio showcase
@@ -128,20 +128,20 @@ phialoastro/
 │   ├── public/              # Static assets (optimized images)
 │   └── tests/               # Test suites
 │
-├── ⚡ workers/               # Cloudflare Workers
+├── workers/                  # Cloudflare Workers
 │   ├── src/
 │   │   ├── router/         # Request routing
 │   │   ├── handlers/       # API endpoints
 │   │   └── middleware/     # Security & logging
 │   └── wrangler.toml       # Worker configuration
 │
-└── 📚 docs/                 # Documentation
+└── docs/                     # Documentation
     ├── architecture/        # System design
     ├── decisions/          # ADRs
     └── how-to/            # Guides
 ```
 
-## 🌍 Deployment Environments
+## Deployment Environments
 
 | Environment | URL | Deployment | Purpose |
 |------------|-----|------------|---------|
@@ -187,7 +187,7 @@ pnpm run deploy:preview
 # Use workflow dispatch or PR comment: /deploy
 ```
 
-## 📊 Performance Monitoring
+## Performance Monitoring
 
 The site includes Real User Monitoring (RUM) for Core Web Vitals using Cloudflare Analytics Engine:
 
@@ -208,7 +208,7 @@ curl -X POST "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/anal
   -d '{"query": "SELECT index1 as metric, APPROX_QUANTILE(double1, 0.75) as p75 FROM VITALS_ANALYTICS WHERE timestamp >= NOW() - INTERVAL \"24\" HOUR GROUP BY index1"}'
 ```
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 Our comprehensive testing ensures quality across all aspects:
 
@@ -233,7 +233,7 @@ pnpm run test:e2e:debug
 pnpm run test:unit:coverage
 ```
 
-## 🛠️ Development Tools
+## Development Tools
 
 ### Git Hooks with Lefthook
 
@@ -246,7 +246,7 @@ To avoid "Can't find lefthook in PATH" warnings, either:
 - Install globally: `npm install -g lefthook`
 - Use via npx: `npx lefthook install` (after running `pnpm install`)
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please follow these steps:
 
@@ -260,7 +260,7 @@ We welcome contributions! Please follow these steps:
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
-## 📄 License
+## License
 
 This project uses a dual licensing approach:
 
@@ -269,22 +269,22 @@ This project uses a dual licensing approach:
 
 For commercial licensing, contact: info@phialo.de
 
-## 📚 Documentation
+## Documentation
 
-- 🏗️ [Architecture Overview](./docs/architecture/project-structure.md)
-- 🚀 [Deployment Guide](./phialo-design/docs/how-to/DEPLOY.md)
-- 🔐 [Security Setup](./phialo-design/docs/how-to/setup-turnstile-preclearance.md)
-- 🤖 [AI Development Guide](./CLAUDE.md)
-- 📱 [Component Patterns](./docs/decisions/component-patterns.md)
-- 🌍 [Multilingual Implementation](./docs/decisions/ISSUE-22-FIX.md)
+- [Architecture Overview](./docs/architecture/project-structure.md)
+- [Deployment Guide](./phialo-design/docs/how-to/DEPLOY.md)
+- [Security Setup](./phialo-design/docs/how-to/setup-turnstile-preclearance.md)
+- [AI Development Guide](./CLAUDE.md)
+- [Component Patterns](./docs/decisions/component-patterns.md)
+- [Multilingual Implementation](./docs/decisions/ISSUE-22-FIX.md)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Tested with [BrowserStack](https://www.browserstack.com/)
 - Deployed on [Cloudflare Workers](https://workers.cloudflare.com/)
 - Email service by [Resend](https://resend.com/)
 
-## 📞 Contact
+## Contact
 
 - **Website**: [phialo.de](https://phialo.de)
 - **Email**: info@phialo.de
