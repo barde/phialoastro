@@ -68,11 +68,10 @@ runs:
           else
             npx wrangler deploy --env preview --name ${{ inputs.worker-name }}
           fi
-        elif ls wrangler-pr*.toml >/dev/null 2>&1; then
-          # For PR previews with custom config
-          CONFIG_FILE=$(ls wrangler-pr*.toml | head -1)
-          echo "Using config file: $CONFIG_FILE"
-          npx wrangler deploy --config "$CONFIG_FILE"
+        elif [ -f "wrangler.pr.toml" ]; then
+          # For PR previews with custom config including Analytics Engine
+          echo "Using PR config file: wrangler.pr.toml"
+          npx wrangler deploy --config wrangler.pr.toml --name ${{ inputs.worker-name }}
         else
           # Default preview deployment
           npx wrangler deploy --env preview --name ${{ inputs.worker-name }}
