@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@cloudflare/workers-types';
+import { ExecutionContext, AnalyticsEngineDataset } from '@cloudflare/workers-types';
 
 /**
  * Environment variables and bindings available to the worker
@@ -7,20 +7,23 @@ export interface WorkerEnv {
   ASSETS: Fetcher;  // Modern assets binding
   BRANCH_NAME?: string;
   ENVIRONMENT?: 'development' | 'preview' | 'production' | 'test';
-  
+
+  // Analytics Engine binding for Web Vitals
+  VITALS_ANALYTICS: AnalyticsEngineDataset;
+
   // Email service configuration
   RESEND_API_KEY?: string;
-  
+
   // Email settings
   FROM_EMAIL?: string;
   TO_EMAIL?: string;
   REPLY_TO_EMAIL?: string;
   ALLOWED_EMAIL_DOMAINS?: string;
   BLOCKED_EMAIL_DOMAINS?: string;
-  
+
   // Turnstile
   TURNSTILE_SECRET_KEY?: string;
-  
+
   // PR deployment
   PR_NUMBER?: string;
 }

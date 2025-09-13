@@ -32,7 +32,7 @@ jobs:
       worker-name: phialo-pr-${{ github.event.pull_request.number }}
       deployment-url: https://phialo-pr-${{ github.event.pull_request.number }}.meise.workers.dev
       pr-number: ${{ github.event.pull_request.number }}
-      analytics-enabled: false
+      analytics-enabled: true
       cache-version: v1-pr-${{ github.event.pull_request.number }}
       enable-performance-comment: true
       enable-concurrency: true

@@ -24,6 +24,7 @@ ENVIRONMENT = "preview"
 # Analytics Engine binding for Web Vitals
 [[env.preview.analytics_engine_datasets]]
 binding = "VITALS_ANALYTICS"
+dataset = "VITALS_ANALYTICS"
 
 # Production environment
 [env.production]
@@ -39,6 +40,7 @@ ENVIRONMENT = "production"
 # Analytics Engine binding for Web Vitals
 [[env.production.analytics_engine_datasets]]
 binding = "VITALS_ANALYTICS"
+dataset = "VITALS_ANALYTICS"
 
 [vars]
 ENVIRONMENT = "development"

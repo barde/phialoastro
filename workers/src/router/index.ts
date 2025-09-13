@@ -8,6 +8,7 @@ import { withTiming } from '../middleware/timing';
 import { withCORS } from '../middleware/cors';
 import { handleContactForm } from '../handlers/api/contact';
 import { testHandleContactForm } from '../handlers/api/test-contact';
+import { handleVitals, handleVitalsOptions } from '../handlers/api/vitals';
 
 // Extend Request with context
 interface ContextRequest extends IRequest {
@@ -62,6 +63,18 @@ export function createRouter() {
         headers: { 'Content-Type': 'application/json' }
       });
     }
+  });
+
+  // Web Vitals API route
+  router.post('/api/vitals', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
+    if (!request.context) request.context = { request, env, ctx };
+    return handleVitals(request.context);
+  });
+
+  // Web Vitals OPTIONS route for CORS preflight
+  router.options('/api/vitals', async (request: ContextRequest, env: WorkerEnv, ctx: ExecutionContext) => {
+    if (!request.context) request.context = { request, env, ctx };
+    return handleVitalsOptions();
   });
   
   // Apply middleware chain for GET requests
