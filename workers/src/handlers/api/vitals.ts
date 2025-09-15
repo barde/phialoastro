@@ -91,12 +91,19 @@ async function writeMetricsToAnalytics(
 
       console.log(`[Analytics] Writing metric: ${metric.name} with value ${metric.value} to blob2`);
       console.log(`[Analytics] Full write - blob2: "${blobs[1]}", double1: ${doubles[0]}`);
+      console.log(`[Analytics] Dataset name: VITALS_ANALYTICS`);
 
-      env.VITALS_ANALYTICS.writeDataPoint({
-        blobs,
-        doubles,
-        indexes,
-      });
+      try {
+        env.VITALS_ANALYTICS.writeDataPoint({
+          blobs,
+          doubles,
+          indexes,
+        });
+        console.log(`[Analytics] SUCCESS: Wrote ${metric.name} to Analytics Engine`);
+      } catch (writeError) {
+        console.error(`[Analytics] WRITE ERROR:`, writeError);
+        throw writeError;
+      }
     } catch (error) {
       console.error('Failed to write metric to Analytics Engine:', error);
     }
