@@ -84,6 +84,14 @@ async function writeMetricsToAnalytics(
       indexes[3] = metric.language || 'de';    // index4: Language
 
       // Write to Analytics Engine (non-blocking)
+      if (!env.VITALS_ANALYTICS) {
+        console.error('[Analytics] ERROR: VITALS_ANALYTICS binding not found!');
+        throw new Error('Analytics Engine binding not configured');
+      }
+
+      console.log(`[Analytics] Writing metric: ${metric.name} with value ${metric.value} to blob2`);
+      console.log(`[Analytics] Full write - blob2: "${blobs[1]}", double1: ${doubles[0]}`);
+
       env.VITALS_ANALYTICS.writeDataPoint({
         blobs,
         doubles,
