@@ -7,18 +7,9 @@ import type { WorkerContext } from '../../types/worker';
 
 /**
  * Analytics Engine field mappings for consistent schema
- * These map to blob1, blob2, etc. in Analytics Engine
+ * CRITICAL: blob2 MUST be the metric name for Grafana dashboard queries!
  */
-const BLOB_FIELDS = {
-  URL: 0,           // blob1: URL path
-  SESSION_ID: 1,    // blob2: Session ID for tracking
-  CONNECTION: 2,    // blob3: Network type (4g, 3g, etc.)
-  BROWSER: 3,       // blob4: Browser name
-  DEVICE_TYPE: 4,   // blob5: Device type (mobile, desktop, tablet)
-  COUNTRY: 5,       // blob6: Country code from CF-IPCountry
-  LANGUAGE: 6,      // blob7: Language (de, en)
-  REFERRER: 7,      // blob8: Referrer URL
-} as const;
+// Direct array indexing is used - see writeMetricsToAnalytics function for mapping
 
 const DOUBLE_FIELDS = {
   METRIC_VALUE: 0,
@@ -66,15 +57,16 @@ async function writeMetricsToAnalytics(
   for (const metric of metrics) {
     try {
       // Prepare blob fields (dimensions)
+      // IMPORTANT: blob2 MUST be metric name for dashboard queries to work!
       const blobs: string[] = new Array(8);
-      blobs[BLOB_FIELDS.URL] = metric.path || '/';
-      blobs[BLOB_FIELDS.SESSION_ID] = metric.sessionId || 'anonymous';  // blob2 for session tracking
-      blobs[BLOB_FIELDS.CONNECTION] = metric.speed || 'unknown';  // blob3 for network type
-      blobs[BLOB_FIELDS.BROWSER] = metric.browser || 'unknown';   // blob4 for browser
-      blobs[BLOB_FIELDS.DEVICE_TYPE] = metric.deviceType || 'unknown';  // blob5 for device type
-      blobs[BLOB_FIELDS.COUNTRY] = country;
-      blobs[BLOB_FIELDS.LANGUAGE] = metric.language || 'de';
-      blobs[BLOB_FIELDS.REFERRER] = metric.referrer || 'direct';
+      blobs[0] = metric.path || '/';                        // blob1: URL path
+      blobs[1] = metric.name || 'unknown';                  // blob2: METRIC NAME (LCP, FCP, etc.) - CRITICAL!
+      blobs[2] = metric.sessionId || 'anonymous';           // blob3: Session ID
+      blobs[3] = metric.speed || 'unknown';                 // blob4: Network type
+      blobs[4] = metric.browser || 'unknown';               // blob5: Browser
+      blobs[5] = metric.deviceType || 'unknown';            // blob6: Device type
+      blobs[6] = country;                                   // blob7: Country
+      blobs[7] = metric.language || 'de';                   // blob8: Language
 
       // Prepare double fields (numeric values)
       const doubles: number[] = new Array(5);
