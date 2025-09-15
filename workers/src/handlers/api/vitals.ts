@@ -7,17 +7,17 @@ import type { WorkerContext } from '../../types/worker';
 
 /**
  * Analytics Engine field mappings for consistent schema
+ * These map to blob1, blob2, etc. in Analytics Engine
  */
 const BLOB_FIELDS = {
-  URL: 0,
-  METRIC_NAME: 1,
-  RATING: 2,
-  DEVICE_TYPE: 3,
-  CONNECTION: 4,
-  BROWSER: 5,
-  COUNTRY: 6,
-  LANGUAGE: 7,
-  REFERRER: 8,
+  URL: 0,           // blob1: URL path
+  SESSION_ID: 1,    // blob2: Session ID for tracking
+  CONNECTION: 2,    // blob3: Network type (4g, 3g, etc.)
+  BROWSER: 3,       // blob4: Browser name
+  DEVICE_TYPE: 4,   // blob5: Device type (mobile, desktop, tablet)
+  COUNTRY: 5,       // blob6: Country code from CF-IPCountry
+  LANGUAGE: 6,      // blob7: Language (de, en)
+  REFERRER: 7,      // blob8: Referrer URL
 } as const;
 
 const DOUBLE_FIELDS = {
@@ -66,13 +66,12 @@ async function writeMetricsToAnalytics(
   for (const metric of metrics) {
     try {
       // Prepare blob fields (dimensions)
-      const blobs: string[] = new Array(9);
+      const blobs: string[] = new Array(8);
       blobs[BLOB_FIELDS.URL] = metric.path || '/';
-      blobs[BLOB_FIELDS.METRIC_NAME] = metric.name || 'unknown';
-      blobs[BLOB_FIELDS.RATING] = metric.rating || 'unknown';
-      blobs[BLOB_FIELDS.DEVICE_TYPE] = metric.deviceType || 'unknown';
-      blobs[BLOB_FIELDS.CONNECTION] = metric.speed || 'unknown';
-      blobs[BLOB_FIELDS.BROWSER] = metric.browser || 'unknown';
+      blobs[BLOB_FIELDS.SESSION_ID] = metric.sessionId || 'anonymous';  // blob2 for session tracking
+      blobs[BLOB_FIELDS.CONNECTION] = metric.speed || 'unknown';  // blob3 for network type
+      blobs[BLOB_FIELDS.BROWSER] = metric.browser || 'unknown';   // blob4 for browser
+      blobs[BLOB_FIELDS.DEVICE_TYPE] = metric.deviceType || 'unknown';  // blob5 for device type
       blobs[BLOB_FIELDS.COUNTRY] = country;
       blobs[BLOB_FIELDS.LANGUAGE] = metric.language || 'de';
       blobs[BLOB_FIELDS.REFERRER] = metric.referrer || 'direct';
@@ -85,8 +84,12 @@ async function writeMetricsToAnalytics(
       doubles[DOUBLE_FIELDS.VIEWPORT_HEIGHT] = metric.viewport?.height || 0;
       doubles[DOUBLE_FIELDS.DELTA] = metric.delta || 0;
 
-      // Use sessionId as index for sampling
-      const indexes = [metric.sessionId || 'anonymous'];
+      // Prepare indexes for querying (MUST match dashboard expectations)
+      const indexes: string[] = [];
+      indexes[0] = metric.name || 'unknown';  // index1: Metric name (LCP, FCP, etc.)
+      indexes[1] = metric.rating || 'unknown'; // index2: Rating (good, needs-improvement, poor)
+      indexes[2] = metric.path?.split('/')[1] || 'home'; // index3: Page type from URL
+      indexes[3] = metric.language || 'de';    // index4: Language
 
       // Write to Analytics Engine (non-blocking)
       env.VITALS_ANALYTICS.writeDataPoint({
