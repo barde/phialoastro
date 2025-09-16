@@ -14,7 +14,7 @@ gallery: [
 youtubeVideoId: "PLoXu-trLcQ"
 youtubeAspectRatio: "9:16"
 materials: ["Sterling Silber"]
-client: "Eigenes Projekt"
+client: "Goldschmiede Feld"
 projectDate: "2024"
 availability: "commission"
 tags: ["sculpture", "plakette", "ehrenzeichen", "sterlingsilber", "3d-druck"]

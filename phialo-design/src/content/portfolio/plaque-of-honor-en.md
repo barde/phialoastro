@@ -14,7 +14,7 @@ gallery: [
 youtubeVideoId: "PLoXu-trLcQ"
 youtubeAspectRatio: "9:16"
 materials: ["Sterling Silver"]
-client: "Personal Project"
+client: "Goldschmiede Feld"
 projectDate: "2024"
 availability: "commission"
 tags: ["sculpture", "plaque", "honor", "sterling-silver", "3d-printing"]
