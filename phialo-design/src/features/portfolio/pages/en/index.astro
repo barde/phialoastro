@@ -3,6 +3,7 @@
 import PageLayout from '../../../../shared/layouts/PageLayout.astro';
 import PortfolioSection from '../../components/PortfolioSection.tsx';
 import AnimatedText from '../../../../shared/components/ui/AnimatedText.tsx';
+import BrandIcons from '../../../../shared/components/icons/BrandIcons.astro';
 
 const title = 'Portfolio | Phialo Design';
 const description = 'Discover our unique jewelry creations and 3D sculptures. From rings to sculptures - each piece is a work of art.';
@@ -13,21 +14,32 @@ const description = 'Discover our unique jewelry creations and 3D sculptures. Fr
   <section class="pt-32 pb-20 bg-gradient-to-b from-neutral-50 to-white">
     <div class="container mx-auto px-6">
       <div class="max-w-4xl mx-auto text-center">
-        <AnimatedText 
+        <AnimatedText
           text="Portfolio"
           className="text-5xl md:text-6xl font-light text-neutral-900 mb-8"
           as="h1"
         />
-        <p class="text-lg text-neutral-600 leading-relaxed">
-          Discover our unique jewelry creations and 3D sculptures. 
-          Each piece is crafted with precision and artistic vision.
-        </p>
       </div>
     </div>
   </section>
 
   <!-- Portfolio Section -->
   <PortfolioSection lang="en" client:load />
+
+  <!-- Instagram Link -->
+  <section class="py-20 bg-white">
+    <div class="container mx-auto px-6 text-center">
+      <a
+        href="https://www.instagram.com/phialo.design/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center text-neutral-600 hover:text-neutral-900 transition-colors"
+      >
+        <BrandIcons icon="instagram" size={28} className="mr-3" />
+        <span class="text-xl font-medium">Portfolio on Instagram</span>
+      </a>
+    </div>
+  </section>
 
   <!-- Call-to-Action -->
   <section class="py-20 bg-neutral-50">
