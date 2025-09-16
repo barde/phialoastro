@@ -2,16 +2,19 @@ import React, { useEffect, useRef } from 'react';
 import { m, LazyMotion, domAnimation, useAnimation, useInView, type Variants } from 'framer-motion';
 
 interface AnimatedTextProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  text?: string;
   className?: string;
   delay?: number;
+  as?: keyof JSX.IntrinsicElements;
 }
 
 /**
  * Optimized AnimatedText component using LazyMotion and 'm' component.
  * Reduces bundle size from ~34kb to ~4.6kb initial + 15kb on demand.
  */
-export default function AnimatedText({ children, className = '', delay = 0 }: AnimatedTextProps) {
+export default function AnimatedText({ children, text, className = '', delay = 0, as }: AnimatedTextProps) {
+  const content = children || text;
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const controls = useAnimation();
@@ -70,10 +73,10 @@ export default function AnimatedText({ children, className = '', delay = 0 }: An
 
   // Simplified text rendering for better compatibility
   const renderContent = () => {
-    if (typeof children === 'string') {
-      return splitText(children);
+    if (typeof content === 'string') {
+      return splitText(content);
     }
-    return children;
+    return content;
   };
 
   return (

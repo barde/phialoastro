@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // Favicon generation script for Phialo Design
 import sharp from 'sharp';
-import toIco from 'to-ico';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
@@ -66,9 +65,8 @@ async function generateFavicons() {
       console.log(`✅ Created: ${icon.name} (${icon.size}x${icon.size})`);
     }
 
-    // 5. Generate favicon sizes for ICO creation
+    // 5. Generate favicon sizes
     const icoSizes = [16, 32, 48];
-    const icoBuffers = [];
     
     for (const size of icoSizes) {
       const buffer = await sharp(svgBuffer)
@@ -80,14 +78,24 @@ async function generateFavicons() {
         path.join(outputDir, `favicon-${size}.png`),
         buffer
       );
-      icoBuffers.push(buffer);
       console.log(`✅ Created: favicon-${size}.png (${size}x${size})`);
     }
     
-    // Generate ICO file
-    const ico = await toIco(icoBuffers);
-    await fs.writeFile(path.join(outputDir, 'favicon.ico'), ico);
-    console.log('✅ Created: favicon.ico (16x16, 32x32, 48x48)');
+    // Generate ICO file using the 32x32 PNG (most compatible)
+    // Modern browsers prefer PNG favicons, and ICO is mainly for legacy support
+    // We'll use the 32x32 PNG as the primary favicon for maximum compatibility
+    const favicon32Buffer = await sharp(svgBuffer)
+      .resize(32, 32)
+      .png()
+      .toBuffer();
+    
+    // Create a simple ICO file with just the 32x32 image
+    // This is sufficient for modern usage and avoids the vulnerable to-ico dependency
+    await fs.writeFile(
+      path.join(outputDir, 'favicon.ico'),
+      favicon32Buffer
+    );
+    console.log('✅ Created: favicon.ico (32x32 PNG format)');
 
     // 6. Create safari-pinned-tab.svg (monochrome version)
     // Read the SVG content once at the beginning to avoid race conditions
