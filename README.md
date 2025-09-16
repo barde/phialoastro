@@ -2,7 +2,8 @@
 
 > **Luxury jewelry portfolio showcasing exquisite craftsmanship through modern web technology**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-gold.svg)](https://github.com/barde/phialoastro/releases)
+[![Master Commit](https://img.shields.io/github/commit-hash/barde/phialoastro/master.svg)](https://github.com/barde/phialoastro/commits/master)
+[![Production Commit](https://img.shields.io/github/commit-hash/barde/phialoastro/current-production.svg)](https://github.com/barde/phialoastro/tree/current-production)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](./LICENSE-CODE)
 [![Deployed on Cloudflare](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Workers-orange)](https://phialo.de)
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
