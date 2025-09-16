@@ -22,7 +22,6 @@ client: "Jeweler Willer"
 projectDate: "August 2019"
 dimensions: "150x55x65mm"
 weight: "2kg"
-availability: "custom"
 tags: ["silver", "castle", "box", "sculpture", "unique"]
 publishedAt: 2017-04-01
 ---

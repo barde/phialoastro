@@ -12,7 +12,6 @@ gallery: [
 materials: ["18k Yellow Gold", "Green Tourmaline", "Diamonds"]
 client: "DomCaillou"
 projectDate: "September 2017"
-availability: "custom"
 tags: ["tourmaline", "yellow-gold", "diamonds", "masterpiece", "green-stone"]
 publishedAt: 2017-10-01
 ---

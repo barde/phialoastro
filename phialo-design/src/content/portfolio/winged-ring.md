@@ -19,8 +19,7 @@ youtubeVideoId: "P6dbNl9xsc8"
 youtubeAspectRatio: "9:16"
 materials: ["18kt Gold", "Antikes grünes römisches Glas"]
 client: "Privater Klient"
-projectDate: "Dezember 2019"
-availability: "custom"
+projectDate: "2025"
 tags: ["ring", "winged", "gold", "roman-glass", "3d-print", "custom"]
 publishedAt: 2017-05-01
 ---

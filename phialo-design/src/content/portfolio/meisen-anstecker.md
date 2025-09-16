@@ -16,7 +16,6 @@ gallery: [
 materials: ["Rhodiniertes Silber"]
 client: "Privater Auftraggeber"
 projectDate: "Dezember 2017"
-availability: "custom"
 tags: ["bird", "pin", "silver", "rhodium", "custom", "brooch"]
 publishedAt: 2017-12-01
 ---

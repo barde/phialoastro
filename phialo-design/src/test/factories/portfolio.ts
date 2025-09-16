@@ -26,7 +26,6 @@ export function createMockPortfolioItem(
     ],
     client: 'Test Client',
     projectDate: 'January 2024',
-    availability: 'available',
     price: '$1,000',
     tags: ['modern', 'minimal', 'luxury'],
     ...overrides

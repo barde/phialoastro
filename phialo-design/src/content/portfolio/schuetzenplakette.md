@@ -16,7 +16,6 @@ youtubeAspectRatio: "9:16"
 materials: ["Sterling Silber"]
 client: "Eigenes Projekt"
 projectDate: "2024"
-availability: "commission"
 tags: ["sculpture", "plakette", "ehrenzeichen", "sterlingsilber", "3d-druck"]
 publishedAt: 2024-12-01
 ---

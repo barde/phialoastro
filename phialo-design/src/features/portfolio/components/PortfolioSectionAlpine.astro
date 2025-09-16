@@ -29,8 +29,7 @@ const portfolioItems = allPortfolioItems.map((item) => ({
   tags: item.data.tags || [],
   features: [], // Can be populated from content if needed
   client: item.data.client,
-  projectDate: item.data.projectDate,
-  availability: item.data.availability || 'available'
+  projectDate: item.data.projectDate
 }));
 
 // Category mapping to handle language differences and maintain compatibility
@@ -327,16 +326,6 @@ const portfolioData = {
                 </template>
                 <template x-if="selectedItem.client">
                   <p><span class="font-medium">{isEnglish ? 'Client' : 'Kunde'}:</span> <span x-text="selectedItem.client"></span></p>
-                </template>
-                <template x-if="selectedItem.availability">
-                  <p class="mt-2">
-                    <span class="font-medium">{isEnglish ? 'Availability' : 'Verfügbarkeit'}:</span> 
-                    <span 
-                      x-text="selectedItem.availability === 'available' ? '${isEnglish ? 'Available' : 'Verfügbar'}' : 
-                              selectedItem.availability === 'sold' ? '${isEnglish ? 'Sold' : 'Verkauft'}' : 
-                              '${isEnglish ? 'On Request' : 'Auf Anfrage'}'"
-                    ></span>
-                  </p>
                 </template>
               </div>
             </div>

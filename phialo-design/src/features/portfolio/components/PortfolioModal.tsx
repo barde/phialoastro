@@ -37,7 +37,6 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
       materials: 'Materialien',
       client: 'Kunde',
       projectDate: 'Projektdatum',
-      availability: 'Verfügbarkeit',
       price: 'Preis',
       tags: 'Tags'
     },
@@ -49,7 +48,6 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
       materials: 'Materials',
       client: 'Client',
       projectDate: 'Project Date',
-      availability: 'Availability',
       price: 'Price',
       tags: 'Tags'
     }
@@ -65,14 +63,6 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
     // Add any other categories that might exist
     'Schmuck': 'Jewelry',
     '3D Design': '3D Design'
-  };
-
-  // Availability translations
-  const availabilityTranslations: { [key: string]: string } = {
-    'available': isEnglish ? 'Available' : 'Verfügbar',
-    'custom': isEnglish ? 'Custom Order' : 'Auf Bestellung',
-    'sold': isEnglish ? 'Sold' : 'Verkauft',
-    'exhibition': isEnglish ? 'Exhibition Only' : 'Nur Ausstellung'
   };
 
   const t = isEnglish ? translations.en : translations.de;
@@ -397,14 +387,6 @@ export default function PortfolioModal({ isOpen, onClose, portfolioItem, lang = 
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-1">{t.projectDate}</h4>
                           <p className="text-midnight">{portfolioItem.projectDate}</p>
-                        </div>
-                      )}
-                      {portfolioItem.availability && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">{t.availability}</h4>
-                          <p className="text-midnight capitalize">
-                            {availabilityTranslations[portfolioItem.availability] || portfolioItem.availability}
-                          </p>
                         </div>
                       )}
                       {portfolioItem.price && (

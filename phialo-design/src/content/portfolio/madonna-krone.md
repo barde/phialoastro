@@ -12,7 +12,6 @@ gallery: [
 materials: ["Silber", "Gold-Details", "Edelsteine", "Diamanten"]
 client: "Firma Roth, Dirk Vielmeyer"
 projectDate: "November 2019"
-availability: "custom"
 tags: ["crown", "silver", "madonna", "japan", "religious", "gemstones"]
 publishedAt: 2017-06-01
 ---

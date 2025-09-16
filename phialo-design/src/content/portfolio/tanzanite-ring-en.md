@@ -13,7 +13,6 @@ gallery: [
 materials: ["Yellow Gold", "Tanzanite", "Diamonds"]
 client: "Jeweler Willer"
 projectDate: "October 2018"
-availability: "custom"
 tags: ["tanzanite", "yellow-gold", "diamonds", "oriental", "exclusive"]
 publishedAt: 2017-08-01
 ---

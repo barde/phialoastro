@@ -12,7 +12,6 @@ gallery: [
 materials: ["Platin", "Brillanten"]
 client: "Goldschmiede Christoph Greinert"
 projectDate: "Juni 2016"
-availability: "custom"
 tags: ["dna", "spiral", "earrings", "platinum", "diamonds", "3d-design"]
 publishedAt: 2016-06-01
 ---

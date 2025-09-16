@@ -12,7 +12,6 @@ gallery: [
 materials: ["Precious Metal"]
 client: "Jeweler Schotten"
 projectDate: "January 2019"
-availability: "custom"
 tags: ["festival", "unisex", "music", "techno", "anniversary", "logo"]
 publishedAt: 2017-07-01
 ---

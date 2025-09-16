@@ -12,7 +12,6 @@ gallery: [
 materials: ["Platinum", "Diamonds"]
 client: "Goldsmith Christoph Greinert"
 projectDate: "June 2016"
-availability: "custom"
 tags: ["dna", "spiral", "earrings", "platinum", "diamonds", "3d-design"]
 publishedAt: 2016-06-01
 ---
