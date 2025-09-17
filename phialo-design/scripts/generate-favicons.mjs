@@ -134,7 +134,7 @@ async function generateFavicons() {
       scope: '/',
       display: 'standalone',
       orientation: 'portrait-primary',
-      theme_color: '#d4af37',
+      theme_color: '#C71585',
       background_color: '#ffffff',
       categories: ['lifestyle', 'shopping']
     };
