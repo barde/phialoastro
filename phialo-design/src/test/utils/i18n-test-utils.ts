@@ -281,8 +281,7 @@ export const TEST_TRANSLATIONS = {
   },
   portfolio: {
     category: { de: 'Kategorie', en: 'Category' },
-    materials: { de: 'Materialien', en: 'Materials' },
-    availability: { de: 'Verfügbarkeit', en: 'Availability' },
+    materials: { de: 'Materialien', 'en': 'Materials' },
     dimensions: { de: 'Abmessungen', en: 'Dimensions' }
   }
 } as const;

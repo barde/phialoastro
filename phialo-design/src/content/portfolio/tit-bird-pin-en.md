@@ -16,7 +16,6 @@ gallery: [
 materials: ["Rhodium-plated Silver"]
 client: "Private Client"
 projectDate: "December 2017"
-availability: "custom"
 tags: ["bird", "pin", "silver", "rhodium", "custom", "brooch"]
 publishedAt: 2017-12-01
 ---

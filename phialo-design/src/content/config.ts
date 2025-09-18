@@ -20,7 +20,6 @@ const portfolioCollection = defineCollection({
     dimensions: z.string().optional(),
     weight: z.string().optional(),
     certifications: z.array(z.string()).optional(),
-    availability: z.enum(['available', 'sold', 'commission', 'custom']).default('available'),
     tags: z.array(z.string()).optional(),
     publishedAt: z.date(),
   }),

@@ -12,7 +12,6 @@ gallery: [
 materials: ["750 Gelbgold", "Grüner Turmalin", "Brillanten"]
 client: "DomCaillou"
 projectDate: "September 2017"
-availability: "custom"
 tags: ["tourmaline", "yellow-gold", "diamonds", "masterpiece", "green-stone"]
 publishedAt: 2017-10-01
 ---
