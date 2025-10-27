@@ -256,7 +256,7 @@ jobs:
           fi
       
       - name: Upload mobile Lighthouse reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lighthouse-reports-mobile
           path: phialo-design/.lighthouseci-mobile/
@@ -494,7 +494,7 @@ jobs:
           fi
       
       - name: Upload desktop Lighthouse reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lighthouse-reports-desktop
           path: phialo-design/.lighthouseci-desktop/

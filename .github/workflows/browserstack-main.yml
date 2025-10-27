@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: browserstack-results-${{ matrix.project }}
           path: |
@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload trace on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: browserstack-trace-${{ matrix.project }}
           path: phialo-design/test-results/
