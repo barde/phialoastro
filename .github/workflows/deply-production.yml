@@ -1,0 +1,35 @@
+name: 🚀 Deploy Production (phialo.de)
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'phialo-design/**'
+      - 'workers/**'
+      - '!**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: corepack enable
+
+      # Publish the production env defined in wrangler.toml ([env.production] name="phialo")
+      - name: Deploy to Cloudflare Workers (production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: wrangler deploy -e production
