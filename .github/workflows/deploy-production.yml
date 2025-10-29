@@ -58,7 +58,7 @@ jobs:
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: production
-      worker-name: phialo-design
+      worker-name: phialo
       deployment-url: https://phialo.de
       analytics-enabled: true
       cache-version: v1-prod
