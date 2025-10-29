@@ -297,7 +297,7 @@ For commercial licensing, contact: info@phialo.de
   Made with ❤️ by Phialo Design<br>
   © 2025 Phialo Design. All rights reserved.
 
-💎
+   ~💎~
 </p>
 
 
