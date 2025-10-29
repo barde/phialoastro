@@ -8,9 +8,14 @@ workers_dev = true
 directory = "../phialo-design/dist"
 binding = "ASSETS"
 
+#[build] OLD
+#command = "npm run build"
+#cwd = "../phialo-design"
+
 [build]
-command = "npm run build"
+command = "pnpm install --frozen-lockfile && pnpm run build"
 cwd = "../phialo-design"
+
 
 # Preview environment for branch deployments
 [env.preview]
