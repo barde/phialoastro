@@ -296,6 +296,8 @@ For commercial licensing, contact: info@phialo.de
 <p align="center">
   Made with ❤️ by Phialo Design<br>
   © 2025 Phialo Design. All rights reserved.
-</p>
 
 💎
+</p>
+
+
