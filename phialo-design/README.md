@@ -1,4 +1,4 @@
-# Phialo Design - Luxury Jewelry Website
+# 💎 Phialo Design - Luxury Jewelry Website
 
 A modern, high-performance website built with Astro, React, and Tailwind CSS, showcasing the "Minimalist Elegance" design concept for Phialo Design's luxury jewelry and gemstone collection.
 
@@ -207,5 +207,3 @@ See [`DEPLOY.md`](./DEPLOY.md) for deployment instructions.
 Built with ❤️ and attention to detail, just like our jewelry.
 # Performance Check v2 Test
 # Analytics Engine enabled - triggering redeployment
-
-~ 💎 ~
