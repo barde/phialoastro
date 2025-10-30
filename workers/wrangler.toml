@@ -23,6 +23,10 @@ name = "phialo-design-preview"
 workers_dev = true
 compatibility_flags = ["nodejs_compat"]
 
+[env.profile_update]
+name = "phialo-profile-update"   # new, unique worker
+workers_dev = true               # no routes → safe preview
+
 [env.preview.vars]
 ENVIRONMENT = "preview"
 
