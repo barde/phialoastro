@@ -77,7 +77,7 @@ jobs:
             console.log(`Test Local: ${isLocal}`);
       
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr-details.outputs.is_pr == 'true' && format('refs/pull/{0}/head', steps.pr-details.outputs.pr_number) || 'refs/heads/master' }}
       
@@ -316,7 +316,7 @@ jobs:
             console.log(`Test Local: ${isLocal}`);
       
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr-details.outputs.is_pr == 'true' && format('refs/pull/{0}/head', steps.pr-details.outputs.pr_number) || 'refs/heads/master' }}
       

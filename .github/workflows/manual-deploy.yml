@@ -55,7 +55,7 @@ jobs:
       enable-performance-comment: ${{ steps.config.outputs.enable-performance-comment }}
     steps:
       - name: Checkout specified branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.branch }}
           
