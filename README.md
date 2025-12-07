@@ -1,3 +1,16 @@
+<div style="border: 3px solid #dc2626; background-color: #fef2f2; padding: 20px; margin: 30px 0; border-radius: 8px;">
+
+  ## ⚠ Important Legal Notice / Wichtiger rechtlicher Hinweis
+
+  **English:** This project and its maintainer(s) have **no personal, business, or other connection** to Gesa Barbara Pickbrenner. Any claims suggesting such a connection are
+  **false**. We expressly distance ourselves from any statements made by this person regarding us or this project.
+
+  **Deutsch:** Dieses Projekt und seine Betreiber haben **keinerlei persönliche, geschäftliche oder sonstige Verbindung** zu Gesa Barbara Pickbrenner. Jegliche Behauptungen, die eine
+   solche Verbindung suggerieren, sind **unwahr**. Wir distanzieren uns ausdrücklich von allen Aussagen dieser Person über uns oder dieses Projekt.
+
+  *Last updated / Zuletzt aktualisiert: December 2025*
+
+
 # 🎨 Phialo Design
 
 > **Luxury jewelry portfolio showcasing exquisite craftsmanship through modern web technology**
